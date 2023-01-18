@@ -1,0 +1,13 @@
+#-----------------------------------------------------------
+# Webtalk v2019.2.1 (64-bit)
+# SW Build 2729669 on Thu Dec  5 04:48:12 MST 2019
+# IP Build 2729494 on Thu Dec  5 07:38:25 MST 2019
+# Start of session at: Wed Dec 28 17:49:48 2022
+# Process ID: 166346
+# Current directory: /home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival/fuzzy_carnival_base/fuzzy_carnival_base.sim/sim_1/behav/xsim
+# Command line: wbtcv -mode batch -source /home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival/fuzzy_carnival_base/fuzzy_carnival_base.sim/sim_1/behav/xsim/xsim.dir/tb_top_behav/webtalk/xsim_webtalk.tcl -notrace
+# Log file: /home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival/fuzzy_carnival_base/fuzzy_carnival_base.sim/sim_1/behav/xsim/webtalk.log
+# Journal file: /home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival/fuzzy_carnival_base/fuzzy_carnival_base.sim/sim_1/behav/xsim/webtalk.jou
+#-----------------------------------------------------------
+source /home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival/fuzzy_carnival_base/fuzzy_carnival_base.sim/sim_1/behav/xsim/xsim.dir/tb_top_behav/webtalk/xsim_webtalk.tcl -notrace
+INFO: [Common 17-206] Exiting Webtalk at Wed Dec 28 17:49:48 2022...
