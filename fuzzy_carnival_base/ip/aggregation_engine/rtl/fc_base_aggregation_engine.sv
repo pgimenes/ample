@@ -67,7 +67,9 @@ module fc_base_aggregation_engine #(
     output  logic                                               m_axi_wlast,
     input   logic                                               m_axi_wready,
     output  logic [3:0]                                         m_axi_wstrb,
-    output  logic                                               m_axi_wvalid
+    output  logic                                               m_axi_wvalid,
+
+    input logic c0_init_calib_complete_0
 );
 
 
@@ -184,7 +186,7 @@ end
 always_comb begin
     state_n = state;
     case(state)
-        IDLE:           state_n = AW_STATE;
+        IDLE:           state_n = c0_init_calib_complete_0 ? AW_STATE : IDLE;
         AW_STATE:       state_n = (m_axi_awvalid && m_axi_awready) ? W_STATE : AW_STATE;
         W_STATE:        state_n = (m_axi_wvalid && m_axi_wready) ? B_STATE : W_STATE;
         B_STATE:        state_n = (m_axi_bvalid && m_axi_bready) ? WAIT_STATE : B_STATE;
@@ -197,7 +199,7 @@ always_comb begin
     endcase
 end
 
-// AXI signals
+// Wait counter
 // ----------------------------------------------------
 
 always_ff @(posedge core_clk or negedge resetn) begin
@@ -210,10 +212,33 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end
 end
 
+// Checker
+// ----------------------------------------------------
+
+logic [31:0] received_data;
+logic check_pass, check_fail;
+
+always_ff @( posedge core_clk or negedge resetn ) begin : reg_checker
+    if (!resetn) begin
+        received_data <= '0;
+        check_pass    <= '0;
+        check_fail    <= '0;
+    end else begin
+        received_data <= (state == R_STATE) && m_axi_rvalid ? m_axi_rdata
+                        : received_data;
+
+        if (state == CHECK_STATE) begin
+            check_pass <= (received_data == TEST_DATA);
+            check_fail <= (received_data != TEST_DATA);
+        end
+    end
+end
+
 // AXI signals
 // ----------------------------------------------------
 
 parameter TEST_ADDR = 32'hDBADD000;
+parameter TEST_DATA = 32'hDEADBEEF;
 
 always_comb begin
     // AW stage
@@ -229,7 +254,7 @@ always_comb begin
     m_axi_awsize        = '0;
     m_axi_awvalid       = (state == AW_STATE);
 
-    m_axi_wdata         = 32'hDEADBEEF;
+    m_axi_wdata         = TEST_DATA;
     m_axi_wlast         = (state == W_STATE);
     m_axi_wstrb         = '1;
     m_axi_wvalid        = (state == W_STATE);

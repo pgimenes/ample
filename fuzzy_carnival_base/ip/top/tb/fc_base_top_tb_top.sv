@@ -51,6 +51,8 @@ logic                      ddr4_sdram_c0_odt;
 logic                      ddr4_sdram_c0_par;
 logic                      ddr4_sdram_c0_reset_n;
 
+logic                       c0_init_calib_complete;
+
 // ===============================================================================================================
 // Instances
 // ===============================================================================================================
@@ -72,7 +74,8 @@ fc_base_top fc_base_top_i (
     .ddr4_sdram_c0_dqs_t,
     .ddr4_sdram_c0_odt,
     .ddr4_sdram_c0_par,
-    .ddr4_sdram_c0_reset_n
+    .ddr4_sdram_c0_reset_n,
+    .c0_init_calib_complete
 );
 
 // Memory Model
@@ -117,21 +120,21 @@ generate
             .ddr4_addr          (ddr4_sdram_c0_adr          ), // input
             .ddr4_ba            (ddr4_sdram_c0_ba           ), // input
             .ddr4_bg            (ddr4_sdram_c0_bg           ), // input
-            .ddr4_ck_c          (ddr4_sdram_c0_ck_c         ), // input
-            .ddr4_ck_t          (ddr4_sdram_c0_ck_t         ), // input
-            .ddr4_cke           (ddr4_sdram_c0_cke          ), // input
-            .ddr4_cs_n          (ddr4_sdram_c0_cs_n         ), // input
-            .ddr4_dq            (ddr4_sdram_c0_dq           ), // inout
-            .ddr4_dqs_c         (ddr4_sdram_c0_dqs_c        ), // inout
-            .ddr4_dqs_t         (ddr4_sdram_c0_dqs_t        ), // inout
-            .ddr4_odt           (ddr4_sdram_c0_odt          ), // input
             .ddr4_par           (ddr4_sdram_c0_par          ), // input
+            .ddr4_cke           (ddr4_sdram_c0_cke          ), // input
+            .ddr4_odt           (ddr4_sdram_c0_odt          ), // input
+            .ddr4_cs_n          (ddr4_sdram_c0_cs_n         ), // input
+            .ddr4_ck_t          (ddr4_sdram_c0_ck_t         ), // input
+            .ddr4_ck_c          (ddr4_sdram_c0_ck_c         ), // input
             .ddr4_reset_n       (ddr4_sdram_c0_reset_n      ), // input
-            
             .ddr4_dm_dbi_n       (),
+            .ddr4_dq            (ddr4_sdram_c0_dq           ), // inout
+            .ddr4_dqs_t         (ddr4_sdram_c0_dqs_t        ), // inout
+            .ddr4_dqs_c         (ddr4_sdram_c0_dqs_c        ), // inout
+            
             .ddr4_alert_n        (), // inout
 
-            .initDone           (1'b0                       ), // inout - not used
+            .initDone           (c0_init_calib_complete), // inout - not used
 
             .scl(), // input
             .sa0(), // input
