@@ -27,8 +27,7 @@ ifeq ($(GUI), 1)
   XSIM_OPTS := $(XSIM_OPTS) --gui
 endif
 
-all:
-	worklib parse elab sim
+all: worklib parse elab sim
 
 worklib:
 	@echo "====================================="

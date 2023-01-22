@@ -8,5 +8,7 @@ if { [string length $curr_wave] == 0 } {
   }
 }
 
+open_wave_config {/home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival_base/fc_base_top_tb_top.wcfg}
+
 log_wave -r *
 run $::env(XSIM_TIME_LIMIT)

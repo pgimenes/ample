@@ -19,7 +19,9 @@ module fc_base_top(
     inout   logic [17:0]               ddr4_sdram_c0_dqs_t,
     output  logic                      ddr4_sdram_c0_odt,
     output  logic                      ddr4_sdram_c0_par,
-    output  logic                      ddr4_sdram_c0_reset_n
+    output  logic                      ddr4_sdram_c0_reset_n,
+
+    output logic c0_init_calib_complete
 );
 
 parameter AXI_ADDR_WIDTH = 32;
@@ -175,6 +177,9 @@ logic [1:0]                fc_base_transformation_engine_s_axi_bresp;
 logic                      fc_base_transformation_engine_s_axi_bvalid;
 logic                      fc_base_transformation_engine_s_axi_bready;
 
+logic c0_init_calib_complete_0;
+assign c0_init_calib_complete = c0_init_calib_complete_0;
+
 // ===============================================================================================================
 // Instances
 // ===============================================================================================================
@@ -304,7 +309,9 @@ axi_interconnect_bd_wrapper axi_interconnect_bd_wrapper_i (
     .ddr4_sdram_c0_dqs_t,
     .ddr4_sdram_c0_odt,
     .ddr4_sdram_c0_par,
-    .ddr4_sdram_c0_reset_n
+    .ddr4_sdram_c0_reset_n,
+
+    .c0_init_calib_complete_0
 );
 
 // Aggregation Engine
@@ -372,7 +379,10 @@ fc_base_aggregation_engine fc_base_aggregation_engine_i (
     .m_axi_wlast                                            (aggregation_engine_axi_interconnect_wlast),
     .m_axi_wready                                           (aggregation_engine_axi_interconnect_wready),
     .m_axi_wstrb                                            (aggregation_engine_axi_interconnect_wstrb),
-    .m_axi_wvalid                                           (aggregation_engine_axi_interconnect_wvalid)
+    .m_axi_wvalid                                           (aggregation_engine_axi_interconnect_wvalid),
+
+    // from dram for debug
+    .c0_init_calib_complete_0
 );
 
 // Transformation Engine
