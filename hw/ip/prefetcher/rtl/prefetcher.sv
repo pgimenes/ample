@@ -1,10 +1,17 @@
-
+import top_pkg::*;
 
 module prefetcher #(
     parameter AXI_ADDR_WIDTH = 34
 ) (
     input logic core_clk,
     input logic resetn,
+
+    // Controller -> Prefetcher Interface
+    input  logic                                                controller_prefetcher_req_valid,
+    output logic                                                controller_prefetcher_req_ready,
+    input  CONTROLLER_PREF_REQ_t                                controller_prefetcher_req,
+    output logic                                                controller_prefetcher_resp_valid, // valid only for now
+    output CONTROLLER_PREF_RESP_t                               controller_prefetcher_resp,
 
     // Prefetcher -> AXI Memory Interconnect
     output logic [33:0]                       prefetcher_axi_interconnect_axi_araddr,

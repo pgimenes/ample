@@ -1,10 +1,17 @@
-
+import top_pkg::*;
 
 module weight_buffer #(
     parameter AXI_ADDR_WIDTH = 34
 ) (
     input logic core_clk,
     input logic resetn,
+
+    // Controller -> Weight Buffer Interface
+    input  logic                                                controller_weight_buffer_req_valid,
+    output logic                                                controller_weight_buffer_req_ready,
+    input  CONTROLLER_WBUFF_REQ_t                               controller_weight_buffer_req,
+    output logic                                                controller_weight_buffer_resp_valid, // valid only for now
+    output CONTROLLER_WBUFF_RESP_t                              controller_weight_buffer_resp,
 
     // Prefetcher -> AXI Memory Interconnect
     output logic [33:0]                       weight_buffer_axi_interconnect_axi_araddr,
