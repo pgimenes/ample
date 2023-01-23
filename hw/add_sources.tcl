@@ -23,4 +23,6 @@ add_files -fileset sim_1 ip/transformation_engine/tb
 add_files -fileset sources_1 ip/weight_buffer/rtl
 add_files -fileset sim_1 ip/weight_buffer/tb
 
+add_files -fileset sources_1 ip/include
+
 # Add packages at top of compile order

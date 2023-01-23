@@ -1,5 +1,7 @@
 `timescale 1ps/1ps
 
+import top_pkg::*;
+
 module top
 (
     input logic                           sys_clk,
@@ -282,6 +284,40 @@ logic                              output_buffer_axi_interconnect_axi_wready;
 logic [63:0]                       output_buffer_axi_interconnect_axi_wstrb;
 logic                              output_buffer_axi_interconnect_axi_wvalid;
 
+// Controller -> Aggregation Engine Interface
+logic                                                controller_aggregation_engine_req_valid;
+logic                                                controller_aggregation_engine_req_ready;
+CONTROLLER_AGG_REQ_t                                 controller_aggregation_engine_req;
+logic                                                controller_aggregation_engine_resp_valid; // valid only for now
+CONTROLLER_AGG_RESP_t                                controller_aggregation_engine_resp;
+
+// Controller -> Transformation Engine Interface
+logic                                                controller_transformation_engine_req_valid;
+logic                                                controller_transformation_engine_req_ready;
+CONTROLLER_TRANS_REQ_t                               controller_transformation_engine_req;
+logic                                                controller_transformation_engine_resp_valid; // valid only for now
+CONTROLLER_TRANS_RESP_t                              controller_transformation_engine_resp;
+
+// Controller -> Prefetcher Interface
+logic                                                controller_prefetcher_req_valid;
+logic                                                controller_prefetcher_req_ready;
+CONTROLLER_PREF_REQ_t                                controller_prefetcher_req;
+logic                                                controller_prefetcher_resp_valid; // valid only for now
+CONTROLLER_PREF_RESP_t                               controller_prefetcher_resp;
+
+// Controller -> Weight Buffer Interface
+logic                                                controller_weight_buffer_req_valid;
+logic                                                controller_weight_buffer_req_ready;
+CONTROLLER_WBUFF_REQ_t                               controller_weight_buffer_req;
+logic                                                controller_weight_buffer_resp_valid; // valid only for now
+CONTROLLER_WBUFF_RESP_t                              controller_weight_buffer_resp;
+
+// Controller -> Output Buffer Interface
+logic                                                controller_output_buffer_req_valid;
+logic                                                controller_output_buffer_req_ready;
+CONTROLLER_OUT_BUFF_REQ_t                            controller_output_buffer_req;
+logic                                                controller_output_buffer_resp_valid; // valid only for now
+CONTROLLER_OUT_BUFF_RESP_t                           controller_output_buffer_resp;
 // ====================================================================================
 // Controller
 // ====================================================================================
@@ -291,25 +327,60 @@ controller controller_i (
     .resetn                         (!sys_rst),
     
     // Regbank Slave AXI interface
-    .s_axi_awaddr                   (axil_interconnect_m_axi_awaddr     [95:64]),
-    .s_axi_awprot                   (axil_interconnect_m_axi_awprot     [8:6]),
-    .s_axi_awvalid                  (axil_interconnect_m_axi_awvalid    [2:2]),
-    .s_axi_awready                  (axil_interconnect_m_axi_awready    [2:2]),
-    .s_axi_wdata                    (axil_interconnect_m_axi_wdata      [95:64]),
-    .s_axi_wstrb                    (axil_interconnect_m_axi_wstrb      [11:8]),
-    .s_axi_wvalid                   (axil_interconnect_m_axi_wvalid     [2:2]),
-    .s_axi_wready                   (axil_interconnect_m_axi_wready     [2:2]),
-    .s_axi_araddr                   (axil_interconnect_m_axi_bresp      [5:4]),
-    .s_axi_arprot                   (axil_interconnect_m_axi_bvalid     [2:2]),
-    .s_axi_arvalid                  (axil_interconnect_m_axi_bready     [2:2]),
-    .s_axi_arready                  (axil_interconnect_m_axi_araddr     [95:64]),
-    .s_axi_rdata                    (axil_interconnect_m_axi_arprot     [8:6]),
-    .s_axi_rresp                    (axil_interconnect_m_axi_arvalid    [2:2]),
-    .s_axi_rvalid                   (axil_interconnect_m_axi_arready    [2:2]),
-    .s_axi_rready                   (axil_interconnect_m_axi_rdata      [95:64]),
-    .s_axi_bresp                    (axil_interconnect_m_axi_rresp      [5:4]),
-    .s_axi_bvalid                   (axil_interconnect_m_axi_rvalid     [2:2]),
-    .s_axi_bready                   (axil_interconnect_m_axi_rready     [2:2])
+    .s_axi_awaddr                                       (axil_interconnect_m_axi_awaddr     [95:64]),
+    .s_axi_awprot                                       (axil_interconnect_m_axi_awprot     [8:6]),
+    .s_axi_awvalid                                      (axil_interconnect_m_axi_awvalid    [2:2]),
+    .s_axi_awready                                      (axil_interconnect_m_axi_awready    [2:2]),
+    .s_axi_wdata                                        (axil_interconnect_m_axi_wdata      [95:64]),
+    .s_axi_wstrb                                        (axil_interconnect_m_axi_wstrb      [11:8]),
+    .s_axi_wvalid                                       (axil_interconnect_m_axi_wvalid     [2:2]),
+    .s_axi_wready                                       (axil_interconnect_m_axi_wready     [2:2]),
+    .s_axi_araddr                                       (axil_interconnect_m_axi_bresp      [5:4]),
+    .s_axi_arprot                                       (axil_interconnect_m_axi_bvalid     [2:2]),
+    .s_axi_arvalid                                      (axil_interconnect_m_axi_bready     [2:2]),
+    .s_axi_arready                                      (axil_interconnect_m_axi_araddr     [95:64]),
+    .s_axi_rdata                                        (axil_interconnect_m_axi_arprot     [8:6]),
+    .s_axi_rresp                                        (axil_interconnect_m_axi_arvalid    [2:2]),
+    .s_axi_rvalid                                       (axil_interconnect_m_axi_arready    [2:2]),
+    .s_axi_rready                                       (axil_interconnect_m_axi_rdata      [95:64]),
+    .s_axi_bresp                                        (axil_interconnect_m_axi_rresp      [5:4]),
+    .s_axi_bvalid                                       (axil_interconnect_m_axi_rvalid     [2:2]),
+    .s_axi_bready                                       (axil_interconnect_m_axi_rready     [2:2]),
+
+    // Controller -> Aggregation Engine Interface
+    .controller_aggregation_engine_req_valid            (controller_aggregation_engine_req_valid),
+    .controller_aggregation_engine_req_ready            (controller_aggregation_engine_req_ready),
+    .controller_aggregation_engine_req                  (controller_aggregation_engine_req),
+    .controller_aggregation_engine_resp_valid           (controller_aggregation_engine_resp_valid),
+    .controller_aggregation_engine_resp                 (controller_aggregation_engine_resp),
+
+    // Controller -> Transformation Engine Interface
+    .controller_transformation_engine_req_valid         (controller_transformation_engine_req_valid),
+    .controller_transformation_engine_req_ready         (controller_transformation_engine_req_ready),
+    .controller_transformation_engine_req               (controller_transformation_engine_req),
+    .controller_transformation_engine_resp_valid        (controller_transformation_engine_resp_valid),
+    .controller_transformation_engine_resp              (controller_transformation_engine_resp),
+
+    // Controller -> Prefetcher Interface
+    .controller_prefetcher_req_valid                    (controller_prefetcher_req_valid),
+    .controller_prefetcher_req_ready                    (controller_prefetcher_req_ready),
+    .controller_prefetcher_req                          (controller_prefetcher_req),
+    .controller_prefetcher_resp_valid                   (controller_prefetcher_resp_valid),
+    .controller_prefetcher_resp                         (controller_prefetcher_resp),
+
+    // Controller -> Weight Buffer Interface
+    .controller_weight_buffer_req_valid                    (controller_weight_buffer_req_valid),
+    .controller_weight_buffer_req_ready                    (controller_weight_buffer_req_ready),
+    .controller_weight_buffer_req                          (controller_weight_buffer_req),
+    .controller_weight_buffer_resp_valid                   (controller_weight_buffer_resp_valid),
+    .controller_weight_buffer_resp                         (controller_weight_buffer_resp),
+
+    // Controller -> Output Buffer Interface
+    .controller_output_buffer_req_valid                    (controller_output_buffer_req_valid),
+    .controller_output_buffer_req_ready                    (controller_output_buffer_req_ready),
+    .controller_output_buffer_req                          (controller_output_buffer_req),
+    .controller_output_buffer_resp_valid                   (controller_output_buffer_resp_valid),
+    .controller_output_buffer_resp                         (controller_output_buffer_resp)
 );
 
 // ====================================================================================
@@ -319,6 +390,13 @@ controller controller_i (
 prefetcher prefetcher_i (
     .core_clk                                           (sys_clk),
     .resetn                                             (!sys_rst),
+
+    // Controller -> Prefetcher Interface
+    .controller_prefetcher_req_valid                    (controller_prefetcher_req_valid),
+    .controller_prefetcher_req_ready                    (controller_prefetcher_req_ready),
+    .controller_prefetcher_req                          (controller_prefetcher_req),
+    .controller_prefetcher_resp_valid                   (controller_prefetcher_resp_valid),
+    .controller_prefetcher_resp                         (controller_prefetcher_resp),
 
     // Prefetcher -> AXI Memory Interconnect
     .prefetcher_axi_interconnect_axi_araddr             (prefetcher_axi_interconnect_axi_araddr),
@@ -368,6 +446,13 @@ weight_buffer weight_buffer_i (
     .core_clk                                           (sys_clk),
     .resetn                                             (!sys_rst),
 
+    // Controller -> Weight Buffer Interface
+    .controller_weight_buffer_req_valid                    (controller_weight_buffer_req_valid),
+    .controller_weight_buffer_req_ready                    (controller_weight_buffer_req_ready),
+    .controller_weight_buffer_req                          (controller_weight_buffer_req),
+    .controller_weight_buffer_resp_valid                   (controller_weight_buffer_resp_valid),
+    .controller_weight_buffer_resp                         (controller_weight_buffer_resp),
+
     // Prefetcher -> AXI Memory Interconnect
     .weight_buffer_axi_interconnect_axi_araddr             (weight_buffer_axi_interconnect_axi_araddr),
     .weight_buffer_axi_interconnect_axi_arburst            (weight_buffer_axi_interconnect_axi_arburst),
@@ -416,6 +501,13 @@ output_buffer output_buffer_i (
     .core_clk                                           (sys_clk),
     .resetn                                             (!sys_rst),
 
+    // Controller -> Output Buffer Interface
+    .controller_output_buffer_req_valid                    (controller_output_buffer_req_valid),
+    .controller_output_buffer_req_ready                    (controller_output_buffer_req_ready),
+    .controller_output_buffer_req                          (controller_output_buffer_req),
+    .controller_output_buffer_resp_valid                   (controller_output_buffer_resp_valid),
+    .controller_output_buffer_resp                         (controller_output_buffer_resp),
+
     // Prefetcher -> AXI Memory Interconnect
     .output_buffer_axi_interconnect_axi_araddr             (output_buffer_axi_interconnect_axi_araddr),
     .output_buffer_axi_interconnect_axi_arburst            (output_buffer_axi_interconnect_axi_arburst),
@@ -460,7 +552,7 @@ output_buffer output_buffer_i (
 // Aggregation Engine
 // ====================================================================================
 
-fc_base_aggregation_engine fc_base_aggregation_engine_i (
+aggregation_engine aggregation_engine_i (
     .core_clk                           (sys_clk),
     .resetn                             (!sys_rst),
     
@@ -485,7 +577,12 @@ fc_base_aggregation_engine fc_base_aggregation_engine_i (
     .s_axi_rvalid                       (axil_interconnect_m_axi_rvalid     [0]),
     .s_axi_rready                       (axil_interconnect_m_axi_rready     [0]),
 
-    .c0_init_calib_complete             (c0_init_calib_complete)
+    // Controller -> Aggregation Engine Interface
+    .controller_aggregation_engine_req_valid            (controller_aggregation_engine_req_valid),
+    .controller_aggregation_engine_req_ready            (controller_aggregation_engine_req_ready),
+    .controller_aggregation_engine_req                  (controller_aggregation_engine_req),
+    .controller_aggregation_engine_resp_valid           (controller_aggregation_engine_resp_valid),
+    .controller_aggregation_engine_resp                 (controller_aggregation_engine_resp)
 
 );
 
@@ -494,7 +591,7 @@ fc_base_aggregation_engine fc_base_aggregation_engine_i (
 // Transformation Engine
 // ====================================================================================
 
-fc_base_transformation_engine fc_base_transformation_engine_i (
+transformation_engine transformation_engine_i (
     .core_clk                                           (sys_clk),
     .resetn                                             (!sys_rst),
 
@@ -517,7 +614,14 @@ fc_base_transformation_engine fc_base_transformation_engine_i (
     .s_axi_rready                                       (axil_interconnect_m_axi_rdata      [63:32]), // input
     .s_axi_bresp                                        (axil_interconnect_m_axi_rresp      [3:2]), // output
     .s_axi_bvalid                                       (axil_interconnect_m_axi_rvalid     [1:1]), // output
-    .s_axi_bready                                       (axil_interconnect_m_axi_rready     [1:1]) // input
+    .s_axi_bready                                       (axil_interconnect_m_axi_rready     [1:1]), // input
+
+    // Controller -> Transformation Engine Interface
+    .controller_transformation_engine_req_valid         (controller_transformation_engine_req_valid),
+    .controller_transformation_engine_req_ready         (controller_transformation_engine_req_ready),
+    .controller_transformation_engine_req               (controller_transformation_engine_req),
+    .controller_transformation_engine_resp_valid        (controller_transformation_engine_resp_valid),
+    .controller_transformation_engine_resp              (controller_transformation_engine_resp)
 );
 
 // ====================================================================================

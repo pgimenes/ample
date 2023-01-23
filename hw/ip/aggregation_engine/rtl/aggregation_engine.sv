@@ -1,7 +1,7 @@
 
-// import aggregation_engine_regbank_regs_pkg::*;
+import top_pkg::*;
 
-module fc_base_aggregation_engine #(
+module aggregation_engine #(
     parameter AXI_ADDR_WIDTH = 32
 ) (
     input logic core_clk,
@@ -28,7 +28,12 @@ module fc_base_aggregation_engine #(
     output logic                                                s_axi_bvalid,
     input  logic                                                s_axi_bready,
 
-    input logic c0_init_calib_complete
+    // Controller -> Aggregation Engine Interface
+    input  logic                                                controller_aggregation_engine_req_valid,
+    output logic                                                controller_aggregation_engine_req_ready,
+    input  CONTROLLER_AGG_REQ_t                                 controller_aggregation_engine_req,
+    output logic                                                controller_aggregation_engine_resp_valid, // valid only for now
+    output CONTROLLER_AGG_RESP_t                                controller_aggregation_engine_resp
 );
 
 

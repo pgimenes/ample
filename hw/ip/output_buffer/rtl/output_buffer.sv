@@ -1,10 +1,18 @@
 
+import top_pkg::*;
 
 module output_buffer #(
     parameter AXI_ADDR_WIDTH = 34
 ) (
     input logic core_clk,
     input logic resetn,
+
+    // Controller -> Output Buffer Interface
+    input  logic                                                controller_output_buffer_req_valid,
+    output logic                                                controller_output_buffer_req_ready,
+    input  CONTROLLER_OUT_BUFF_REQ_t                            controller_output_buffer_req,
+    output logic                                                controller_output_buffer_resp_valid, // valid only for now
+    output CONTROLLER_OUT_BUFF_RESP_t                           controller_output_buffer_resp,
 
     // Prefetcher -> AXI Memory Interconnect
     output logic [33:0]                       output_buffer_axi_interconnect_axi_araddr,

@@ -1,5 +1,7 @@
 
-module fc_base_transformation_engine #(
+import top_pkg::*;
+
+module transformation_engine #(
     parameter FLOAT_WIDTH = 32,
     parameter AXI_ADDR_WIDTH = 32
 ) (
@@ -25,7 +27,14 @@ module fc_base_transformation_engine #(
     input  logic                                                s_axi_rready,
     output logic [1:0]                                          s_axi_bresp,
     output logic                                                s_axi_bvalid,
-    input  logic                                                s_axi_bready
+    input  logic                                                s_axi_bready,
+
+    // Controller -> Aggregation Engine Interface
+    input  logic                                                controller_transformation_engine_req_valid,
+    output logic                                                controller_transformation_engine_req_ready,
+    input  CONTROLLER_TRANS_REQ_t                               controller_transformation_engine_req,
+    output logic                                                controller_transformation_engine_resp_valid, // valid only for now
+    output CONTROLLER_TRANS_RESP_t                              controller_transformation_engine_resp
 );
 
 parameter MATRIX_N = 4;
