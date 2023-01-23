@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("inc",["Function"],[["increment_beat_index",,[["axi_transaction",,,,0,"File:axi_vip_pkg.sv:axi_transaction.increment_beat_index","SystemVerilogClass:axi_transaction:increment_beat_index"]]]]);

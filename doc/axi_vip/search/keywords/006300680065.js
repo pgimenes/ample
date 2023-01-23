@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("che",["Function"],[["cheap_random",,[["axi4stream_ready_gen",,,,0,"File:axi4stream_vip_pkg.sv:axi4stream_ready_gen.cheap_random","SystemVerilogClass:axi4stream_ready_gen:cheap_random"],["axi4stream_vif_proxy",,,,0,"File:axi4stream_vip_pkg.sv:axi4stream_vif_proxy.cheap_random","SystemVerilogClass:axi4stream_vif_proxy:cheap_random"]]]]);

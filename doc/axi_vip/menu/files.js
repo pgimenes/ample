@@ -1,0 +1,1 @@
+NDMenu.OnSectionLoaded("files.js",[[1,"axi_vip_if.sv"],[1,"axi_vip_pkg.sv"],[1,"axi4stream_vip_if.sv"],[1,"axi4stream_vip_pkg.sv"],[1,"clk_vip_if.sv"],[1,"rst_vip_if.sv"]]);

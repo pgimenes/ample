@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("dea",["Function"],[["deassert_reset",,[[,,,,0,"File:rst_vip_if.sv:deassert_reset"]]]]);
