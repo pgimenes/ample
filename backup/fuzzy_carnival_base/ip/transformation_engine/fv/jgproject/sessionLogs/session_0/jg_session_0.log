@@ -1,0 +1,2316 @@
+#----------------------------------------
+# JasperGold Version Info
+# tool      : JasperGold 2018.06
+# platform  : Linux 3.10.0-957.21.3.el7.x86_64
+# version   : 2018.06p002 64 bits
+# build date: 2018.08.27 18:04:53 PDT
+#----------------------------------------
+# started Thu Dec 29 12:08:00 GMT 2022
+# hostname  : ee-mill3.ee.ic.ac.uk
+# pid       : 29872
+# arguments : '-label' 'session_0' '-console' 'ee-mill3.ee.ic.ac.uk:37784' '-style' 'windows' '-data' 'AQAAADx/////AAAAAAAAA3oBAAAAEABMAE0AUgBFAE0ATwBWAEU=' '-proj' '/home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival_base/ip/transformation_engine/fv/jgproject/sessionLogs/session_0' '-init' '-hidden' '/home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival_base/ip/transformation_engine/fv/jgproject/.tmp/.initCmds.tcl' 'transformation_engine_fv.tcl'
+
+Any disclosure about the Cadence Design Systems software or its use
+model to any third party violates the written Non-Disclosure Agreement
+between Cadence Design Systems, Inc. and the customer.
+
+THIS SOFTWARE CONTAINS CONFIDENTIAL INFORMATION AND TRADE SECRETS OF
+CADENCE DESIGN SYSTEMS, INC. USE, DISCLOSURE, OR REPRODUCTION IS
+PROHIBITED WITHOUT THE PRIOR EXPRESS WRITTEN PERMISSION OF CADENCE
+DESIGN SYSTEMS, INC.
+
+Copyright (C) 2000-2018 Cadence Design Systems, Inc. All Rights
+Reserved.  Unpublished -- rights reserved under the copyright laws of
+the United States.
+
+This product includes software developed by others and redistributed
+according to license agreement. See doc/third_party_readme.txt for
+further details.
+
+RESTRICTED RIGHTS LEGEND
+
+Use, duplication, or disclosure by the Government is subject to
+restrictions as set forth in subparagraph (c) (1) (ii) of the Rights in
+Technical Data and Computer Software clause at DFARS 252.227-7013 or
+subparagraphs (c) (1) and (2) of Commercial Computer Software -- Restricted
+Rights at 48 CFR 52.227-19, as applicable.
+
+
+                          Cadence Design Systems, Inc. 
+                          2655 Seely Avenue
+                          San Jose, CA 95134
+                          Phone: 408.943.1234
+
+For technical assistance visit http://support.cadence.com.
+
+JasperGold Apps Analysis Session - /home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival_base/ip/transformation_engine/fv/jgproject/sessionLogs/session_0
+
+INFO: successfully checked out licenses "jasper_interactive" and "jasper_fao".
+INFO: reading configuration file "/home/pg519/.config/jasper/jaspergold.conf".
+% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+% 
+% analyze -clear
+% 
+% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[ERROR (VERI-1137)] ../include/sys_array_pkg.sv(8): syntax error near }
+[ERROR (VERI-1137)] ../include/sys_array_pkg.sv(12): syntax error near logic
+[ERROR (VERI-2344)] ../include/sys_array_pkg.sv(12): SystemVerilog 2005 keyword logic used in incorrect context
+[ERROR (VERI-1137)] ../include/sys_array_pkg.sv(17): syntax error near }
+[ERROR (VERI-1137)] ../include/sys_array_pkg.sv(19): syntax error near endpackage
+[ERROR (VERI-2344)] ../include/sys_array_pkg.sv(19): SystemVerilog 2005 keyword endpackage used in incorrect context
+Summary of errors detected:
+	[ERROR (VERI-1137)] ../include/sys_array_pkg.sv(8): syntax error near }
+	[ERROR (VERI-1137)] ../include/sys_array_pkg.sv(12): syntax error near logic
+	[ERROR (VERI-2344)] ../include/sys_array_pkg.sv(12): SystemVerilog 2005 keyword logic used in incorrect context
+	[ERROR (VERI-1137)] ../include/sys_array_pkg.sv(17): syntax error near }
+	[ERROR (VERI-1137)] ../include/sys_array_pkg.sv(19): syntax error near endpackage
+	[ERROR (VERI-2344)] ../include/sys_array_pkg.sv(19): SystemVerilog 2005 keyword endpackage used in incorrect context
+ERROR (ENL034): 6 errors detected in the design file(s).
+
+ERROR: problem encountered at line 5 in file transformation_engine_fv.tcl
+
+% include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[ERROR (VERI-1010)] ../rtl/sys_array_pe.sv(48): cannot find port 'a' on this module
+[ERROR (VERI-1010)] ../rtl/sys_array_pe.sv(49): cannot find port 'b' on this module
+[ERROR (VERI-1010)] ../rtl/sys_array_pe.sv(50): cannot find port 'acc' on this module
+[ERROR] Module transformation_engine could not be elaborated
+Summary of errors detected:
+	[ERROR (VERI-1010)] ../rtl/sys_array_pe.sv(48): cannot find port 'a' on this module
+	[ERROR (VERI-1010)] ../rtl/sys_array_pe.sv(49): cannot find port 'b' on this module
+	[ERROR (VERI-1010)] ../rtl/sys_array_pe.sv(50): cannot find port 'acc' on this module
+	[ERROR] Module transformation_engine could not be elaborated
+ERROR at line 13 in file transformation_engine_fv.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 4 errors detected in the design file(s).
+
+% include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[ERROR (VERI-1184)] ../rtl/mac.sv(60): module 'fixed_point_mac' does not have a parameter named FLOAT_WIDTH
+[ERROR] Module transformation_engine could not be elaborated
+Summary of errors detected:
+	[ERROR (VERI-1184)] ../rtl/mac.sv(60): module 'fixed_point_mac' does not have a parameter named FLOAT_WIDTH
+	[ERROR] Module transformation_engine could not be elaborated
+ERROR at line 14 in file transformation_engine_fv.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 2 errors detected in the design file(s).
+
+% include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% resetn -expression !(rstn)
+ERROR at line 18 in file transformation_engine_fv.tcl, more info in Tcl-variable errorInfo
+invalid command name "resetn"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_grows}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+background 0
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 608 of 608 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant}}
+background 0
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1200 of 1200 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+background 0
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1200 of 1200 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+background 0
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1200 of 1200 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[ERROR (VERI-1137)] ../rtl/mac.sv(82): syntax error near #
+[ERROR (VERI-1072)] ../rtl/mac.sv(85): module 'mac' ignored due to previous errors
+Summary of errors detected:
+	[ERROR (VERI-1137)] ../rtl/mac.sv(82): syntax error near #
+	[ERROR (VERI-1072)] ../rtl/mac.sv(85): module 'mac' ignored due to previous errors
+ERROR at line 5 in file transformation_engine_fv.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 2 errors detected in the design file(s).
+
+% include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 704 of 704 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+background 0
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant}}
+background 0
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 624 of 624 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant}}
+background 0
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 688 of 688 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+background 0
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1136 of 1136 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0: Using multistage preprocessing
+0: Starting reduce
+0: Finished reduce in 0s
+0.0.PRE: Performing Proof Simplification...
+0.0.N: clocks: 1, declared: 1, disabling: 0, posedge: 1, negedge: 0, noedge: 0, bothedge: 0
+0.0.N: Proof Simplification Iteration 1	[0.00 s]
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property ":noDeadEnd" was proven in 0.00 s.
+use check_assumptions -show to show this property in the property table
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property ":noConflict" was proven in 0.00 s.
+use check_assumptions -show to show this property in the property table
+0.0.PRE: Proof Simplification completed in 0.00 s
+0: About to start centralized ProofGrid in its own thread with a limit of 10000 pending notifications and a limit of 10 traces.
+0: =============================== ProofGrid start ===============================
+0: ProofGrid usable level: 1
+0: ProofGrid is starting event handling
+0.0.Hp: Proofgrid shell started at 98762@ee-mill3.ee.ic.ac.uk(local) jg_29872_ee-mill3.ee.ic.ac.uk_8
+0.0.Hp: clocks: 1, declared: 1, disabling: 0, posedge: 1, negedge: 0, noedge: 0, bothedge: 0
+0.0.Hp: Trace Attempt  1	[0.00 s]
+0.0.Hp: Requesting engine job to terminate
+INFO (IPF144): 0: Initiating shutdown of proof [0.00]
+0.0.Hp: A trace with 1 cycles was found. [0.00 s]
+INFO (IPF047): 0.0.Hp: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was covered in 1 cycles in 0.04 s.
+0.0.N: Proofgrid shell started at 98761@ee-mill3.ee.ic.ac.uk(local) jg_29872_ee-mill3.ee.ic.ac.uk_8
+0.0.N: Requesting engine job to terminate
+0.0.Hp: All properties determined. [0.00 s]
+0.0.N: Interrupted. [0.00 s]
+0.0.Hp: Exited with Success (@ 0.00 s)
+0: ProofGrid usable level: 0
+0.0.B: Proofgrid shell started at 98776@ee-mill3.ee.ic.ac.uk(local) jg_29872_ee-mill3.ee.ic.ac.uk_8
+0.0.B: Requesting engine job to terminate
+0.0.N: Exited with Success (@ 0.01 s)
+0.0.B: Interrupted. [0.00 s]
+0.0.B: Exited with Success (@ 0.01 s)
+0.0.Ht: Proofgrid shell started at 98775@ee-mill3.ee.ic.ac.uk(local) jg_29872_ee-mill3.ee.ic.ac.uk_8
+0.0.Ht: Requesting engine job to terminate
+0.0.Ht: Interrupted. [0.00 s]
+0.0.Ht: Exited with Success (@ 0.02 s)
+0: --------------------------------------------------------------
+ProofGrid Summary
+--------------------------------------------------------------
+     engines started                               :   4
+     engine jobs started                           :   4
+     times jobs never connected to ProofGrid       :   3
+     jobs where 5 minute load exceeded core count  :   4
+     jobs where 15 minute load exceeded core count :   4
+
+    Average time in state (seconds)
+    ------------------------------------------------------
+    Engine  Pending     Running        Dead    Utilization
+    ------------------------------------------------------
+      N        0.02        0.00        0.00        0.00 %
+     Hp        0.02        0.00        0.00        5.61 %
+     Ht        0.02        0.00        0.00        0.00 %
+      B        0.01        0.00        0.00        0.00 %
+    all        0.02        0.00        0.00        1.34 %
+
+    Data read    : 769.00 B
+    Data written : 589.00 B
+
+0: ProofGrid usable level: 0
+0: All pending notifications were processed.
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % visualize -property {<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant} -new_window
+INFO (IVS015): Setting Visualize task to "<embedded>".
+INFO (IVS008): Expanding analysis region to enable visualization of "<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant".
+covered
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant}}
+background 0
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1200 of 1200 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[ERROR (VERI-1128)] ../rtl/sys_array_pe.sv(75): 'acc' is not declared
+[ERROR (VERI-1128)] ../rtl/sys_array_pe.sv(75): 'acc' is not declared
+[ERROR (VERI-1072)] ../rtl/sys_array_pe.sv(78): module 'sys_array_pe' ignored due to previous errors
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../rtl/sys_array_pe.sv(75): 'acc' is not declared
+	[ERROR (VERI-1128)] ../rtl/sys_array_pe.sv(75): 'acc' is not declared
+	[ERROR (VERI-1072)] ../rtl/sys_array_pe.sv(78): module 'sys_array_pe' ignored due to previous errors
+ERROR at line 5 in file transformation_engine_fv.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 3 errors detected in the design file(s).
+
+% include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[ERROR (VERI-1128)] ../rtl/sys_array_pe.sv(75): 'acc' is not declared
+[ERROR (VERI-1072)] ../rtl/sys_array_pe.sv(78): module 'sys_array_pe' ignored due to previous errors
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../rtl/sys_array_pe.sv(75): 'acc' is not declared
+	[ERROR (VERI-1072)] ../rtl/sys_array_pe.sv(78): module 'sys_array_pe' ignored due to previous errors
+ERROR at line 5 in file transformation_engine_fv.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 2 errors detected in the design file(s).
+
+% include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.rows_gen[2].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+background 0
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1808 of 1808 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0: Using multistage preprocessing
+0: Starting reduce
+0: Finished reduce in 0s
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % prove -bg -all
+INFO (IPF036): Starting proof on task: "<embedded>", 79 properties to prove with 1 already proven/unreachable
+background 1
+INFO (IPF031): Settings used for proof thread 1:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[1].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[1].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[1].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[2].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[2].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[2].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[0].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[0].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[1].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[1].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[1].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[2].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[2].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[2].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[3].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[3].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[3].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[0].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[0].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[1].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[1].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[1].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[2].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[2].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[2].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[3].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[3].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[3].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[1].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[1].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[1].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[2].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[2].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[2].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[3].sys_array_pe_i.mac_i.P_acc_grows" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[3].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was proven unreachable in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 1.0.PRE: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[3].sys_array_pe_i.mac_i.P_acc_constant" was proven unreachable in 0.00 s.
+1: Found proofs for 42 properties in preprocessing
+1: Using multistage preprocessing
+1: Starting reduce
+1: Finished reduce in 0.005s
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.00 s.
+1: Found proofs for 13 properties in preprocessing
+1.0.PRE: Performing Proof Simplification...
+1.0.N: clocks: 1, declared: 1, disabling: 0, posedge: 1, negedge: 0, noedge: 0, bothedge: 0
+1.0.N: Proof Simplification Iteration 1	[0.00 s]
+1.0.N: Proof Simplification Iteration 2	[0.00 s]
+1.0.N: Proof Simplification Iteration 3	[0.01 s]
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property ":noDeadEnd" was proven in 0.00 s.
+use check_assumptions -show to show this property in the property table
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property ":noConflict" was proven in 0.00 s.
+use check_assumptions -show to show this property in the property table
+1.0.PRE: Proof Simplification completed in 0.02 s
+1.0.N: Identified and disabled 13 duplicated targets.
+1: About to start centralized ProofGrid in its own thread with a limit of 10000 pending notifications and a limit of 10 traces.
+1: =============================== ProofGrid start ===============================
+1: ProofGrid usable level: 4
+1: ProofGrid is starting event handling
+1: ProofGrid usable level: 3
+1.0.N: Proofgrid shell started at 164812@ee-mill3.ee.ic.ac.uk(local) jg_29872_ee-mill3.ee.ic.ac.uk_11
+1: ProofGrid usable level: 2
+1.0.N: clocks: 1, declared: 1, disabling: 0, posedge: 1, negedge: 0, noedge: 0, bothedge: 0
+1: ProofGrid usable level: 1
+1.0.N: A trace with 1 cycles was found. [0.01 s]
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+INFO (IPF047): 1.0.N: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid:precondition1" was covered in 1 cycles in 0.00 s.
+1.0.N: Next scan (0) will use per property time limit: 1s * 10 ^ 0 = 1s
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[1].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[2].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[1].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[2].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid:precondition1"	[0.00 s].
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid"	[0.00 s].
+1.0.Hp: Proofgrid shell started at 164813@ee-mill3.ee.ic.ac.uk(local) jg_29872_ee-mill3.ee.ic.ac.uk_11
+1.0.Hp: clocks: 1, declared: 1, disabling: 0, posedge: 1, negedge: 0, noedge: 0, bothedge: 0
+1.0.N: Trace Attempt  1	[0.00 s]
+1.0.N: Trace Attempt  2	[0.00 s]
+1.0.Ht: Proofgrid shell started at 164826@ee-mill3.ee.ic.ac.uk(local) jg_29872_ee-mill3.ee.ic.ac.uk_11
+1.0.Ht: clocks: 1, declared: 1, disabling: 0, posedge: 1, negedge: 0, noedge: 0, bothedge: 0
+1.0.N: Trace Attempt  2	[0.01 s]
+1.0.B: Proofgrid shell started at 164827@ee-mill3.ee.ic.ac.uk(local) jg_29872_ee-mill3.ee.ic.ac.uk_11
+1.0.B: clocks: 1, declared: 1, disabling: 0, posedge: 1, negedge: 0, noedge: 0, bothedge: 0
+1.0.B: Next scan (0) will use per property time limit: 1s * 10 ^ 0 = 1s
+1.0.B: Starting proof for property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid"	[0.00 s].
+1.0.N: Trace Attempt  3	[0.02 s]
+1.0.B: Trace Attempt  1	[0.00 s]
+1.0.N: Trace Attempt  4	[0.02 s]
+1.0.Ht: Trace Attempt  1	[0.01 s]
+1.0.Ht: A trace with 1 cycles was found. [0.01 s]
+INFO (IPF047): 1.0.Ht: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[3].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was covered in 1 cycles in 0.01 s.
+INFO (IPF047): 1.0.Ht: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[0].sys_array_pe_i.mac_i.P_acc_grows:precondition1" was covered in 1 cycles in 0.01 s.
+1.0.N: Trace Attempt  5	[0.02 s]
+1.0.Ht: Trace Attempt  2	[0.01 s]
+1.0.Ht: A trace with 2 cycles was found. [0.01 s]
+INFO (IPF047): 1.0.Ht: The cover property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[3].sys_array_pe_i.mac_i.P_acc_constant" was covered in 2 cycles in 0.02 s.
+1.0.Ht: A trace with 2 cycles was found. [0.02 s]
+INFO (IPF047): 1.0.Ht: The cover property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[0].sys_array_pe_i.mac_i.P_acc_constant" was covered in 2 cycles in 0.03 s.
+1.0.Hp: Trace Attempt  1	[0.03 s]
+1.0.B: Trace Attempt  2	[0.01 s]
+1.0.Ht: Trace Attempt  3	[0.02 s]
+1.0.Ht: A trace with 3 cycles was found. [0.02 s]
+INFO (IPF055): 1.0.Ht: A counterexample (cex) with 3 cycles was found for the property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[3].sys_array_pe_i.mac_i.P_acc_grows" in 0.03 s.
+1.0.B: Trace Attempt  3	[0.03 s]
+1.0.N: Trace Attempt  1	[0.04 s]
+1.0.N: Trace Attempt  2	[0.04 s]
+1: ProofGrid is temporarily paused because there are too many pending traces.
+1: ProofGrid is resuming to work after pausing for 0s. The amount of pending traces decreased.
+1.0.Ht: A trace with 3 cycles was found. [0.04 s]
+INFO (IPF055): 1.0.Ht: A counterexample (cex) with 3 cycles was found for the property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[0].sys_array_pe_i.mac_i.P_acc_grows" in 0.04 s.
+1.0.B: Trace Attempt  4	[0.04 s]
+1.0.N: Validation of fixpoint was successful. Time = 0.00
+1.0.N: A proof was found: No trace exists. [0.05 s]
+INFO (IPF057): 1.0.N: The property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.07 s.
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid"	[0.07 s].
+1.0.Ht: Trace Attempt  4	[0.04 s]
+1.0.N: Starting proof for property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid"	[0.00 s].
+1.0.N: Trace Attempt  1	[0.00 s]
+1.0.N: Trace Attempt  2	[0.00 s]
+1.0.B: Stopped processing property "transformation_engine.sys_array_i.rows_gen[0].cols_gen[3].sys_array_pe_i.P_update_acc_both_valid"	[0.06 s].
+1.0.B: Starting proof for property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid"	[0.00 s].
+1.0.B: Trace Attempt  1	[0.00 s]
+1.0.N: Trace Attempt  2	[0.01 s]
+1.0.N: Trace Attempt  3	[0.01 s]
+1.0.N: Trace Attempt  4	[0.01 s]
+1.0.N: Trace Attempt  5	[0.02 s]
+1.0.B: Trace Attempt  2	[0.01 s]
+1.0.Ht: Trace Attempt  5	[0.07 s]
+1.0.B: Trace Attempt  3	[0.02 s]
+1.0.N: Trace Attempt  1	[0.03 s]
+1.0.N: Trace Attempt  2	[0.03 s]
+1.0.N: Validation of fixpoint was successful. Time = 0.00
+1.0.N: Requesting engine job to stop
+1.0.B: Requesting engine job to stop
+1.0.Hp: Requesting engine job to terminate
+1.0.Ht: Requesting engine job to terminate
+INFO (IPF144): 1: Initiating shutdown of proof [0.10]
+1.0.N: A proof was found: No trace exists. [0.04 s]
+INFO (IPF057): 1.0.N: The property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid" was proven in 0.02 s.
+1.0.N: Stopped processing property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid"	[0.02 s].
+1.0.N: All properties either determined or skipped. [0.10 s]
+1.0.Hp: Interrupted (multi)
+1.0.Ht: Interrupted (multi)
+1.0.Ht: Trace Attempt  7	[0.09 s]
+1.0.Ht: Interrupted. [0.09 s]
+1.0.B: Trace Attempt  4	[0.03 s]
+1.0.Hp: Interrupted. [0.10 s]
+1.0.N: Exited with Success (@ 0.10 s)
+1: ProofGrid usable level: 0
+1.0.Hp: Exited with Success (@ 0.10 s)
+1.0.Ht: Exited with Success (@ 0.10 s)
+1.0.B: Stopped processing property "transformation_engine.sys_array_i.rows_gen[3].cols_gen[0].sys_array_pe_i.P_update_acc_both_valid"	[0.01 s].
+1.0.B: All properties either determined or skipped. [0.09 s]
+1.0.B: Exited with Success (@ 0.11 s)
+1: --------------------------------------------------------------
+ProofGrid Summary
+--------------------------------------------------------------
+     engines started                               :   4
+     engine jobs started                           :   4
+     jobs where 5 minute load exceeded core count  :   4
+     jobs where 15 minute load exceeded core count :   4
+
+    Average time in state (seconds)
+    ------------------------------------------------------
+    Engine  Pending     Running        Dead    Utilization
+    ------------------------------------------------------
+      N        0.05        0.10        0.00       67.17 %
+     Hp        0.03        0.10        0.00       79.03 %
+     Ht        0.02        0.09        0.00       84.49 %
+      B        0.02        0.08        0.00       82.44 %
+    all        0.03        0.09        0.00       77.12 %
+
+    Data read    : 15.06 kiB
+    Data written : 3.05 kiB
+
+1: ProofGrid usable level: 0
+1: All pending notifications were processed.
+INFO (IPF059): Completed proof on task: "<embedded>"
+
+==============================================================
+SUMMARY
+==============================================================
+           Properties Considered              : 80
+                 assertions                   : 32
+                  - proven                    : 30 (93.75%)
+                  - bounded_proven (user)     : 0 (0%)
+                  - bounded_proven (auto)     : 0 (0%)
+                  - marked_proven             : 0 (0%)
+                  - cex                       : 2 (6.25%)
+                  - ar_cex                    : 0 (0%)
+                  - undetermined              : 0 (0%)
+                  - unknown                   : 0 (0%)
+                  - error                     : 0 (0%)
+                 covers                       : 48
+                  - unreachable               : 28 (58.3333%)
+                  - bounded_unreachable (user): 0 (0%)
+                  - covered                   : 20 (41.6667%)
+                  - ar_covered                : 0 (0%)
+                  - undetermined              : 0 (0%)
+                  - unknown                   : 0 (0%)
+                  - error                     : 0 (0%)
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[ERROR (VERI-1216)] ../rtl/sys_array.sv(95): index 4 is out of range [3:0] for 'sys_array_forward_valid'
+[INFO (VERI-1073)] ../rtl/sys_array.sv(21): module 'sys_array' remains a blackbox, due to errors in its contents
+ERROR (ENL058): Unable to elaborate module/entity "sys_array" because this module/entity is missing or it contains errors.
+    Re-analyze it or use "-bbox_m sys_array" if you want to black box this module/entity.
+WARNING (WNL059): If you are analyzing with "-mfcu" or "-sfcu" and "-L", try using "elaborate -L libname", "set_analyze_libunboundsearch" or "analyze +libunboundsearch"
+Summary of errors detected:
+	[ERROR (VERI-1216)] ../rtl/sys_array.sv(95): index 4 is out of range [3:0] for 'sys_array_forward_valid'
+	ERROR (ENL058): Unable to elaborate module/entity "sys_array" because this module/entity is missing or it contains errors.
+    Re-analyze it or use "-bbox_m sys_array" if you want to black box this module/entity.
+ERROR at line 14 in file transformation_engine_fv.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 2 errors detected in the design file(s).
+
+% include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[4][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[4][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[3][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk4[0].P_row_valid_propagates}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+background 0
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1852 of 1852 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0: Using multistage preprocessing
+0: Starting reduce
+0: Finished reduce in 0s
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.genblk4[0].P_row_valid_propagates" was proven in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[4][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[4][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk5[0].P_down_valid_propagates} {<embedded>::transformation_engine.sys_array_i.genblk5[0].P_down_valid_propagates:precondition1} {<embedded>::transformation_engine.sys_array_i.genblk5[1].P_down_valid_propagates} {<embedded>::transformation_engine.sys_array_i.genblk5[1].P_down_valid_propagates:precondition1} {<embedded>::transformation_engine.sys_array_i.genblk5[2].P_down_valid_propagates} {<embedded>::transformation_engine.sys_array_i.genblk5[2].P_down_valid_propagates:precondition1} {<embedded>::transformation_engine.sys_array_i.genblk5[3].P_down_valid_propagates} {<embedded>::transformation_engine.sys_array_i.genblk5[3].P_down_valid_propagates:precondition1}}
+INFO (IPF036): Starting proof on task: "<embedded>", 8 properties to prove with 0 already proven/unreachable
+background 0
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1896 of 1896 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0: Using multistage preprocessing
+0: Starting reduce
+0: Finished reduce in 0s
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.genblk5[0].P_down_valid_propagates" was proven in 0.00 s.
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.genblk5[0].P_down_valid_propagates:precondition1" was proven unreachable in 0.00 s.
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.genblk5[1].P_down_valid_propagates" was proven in 0.00 s.
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.genblk5[1].P_down_valid_propagates:precondition1" was proven unreachable in 0.00 s.
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.genblk5[2].P_down_valid_propagates" was proven in 0.00 s.
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.genblk5[2].P_down_valid_propagates:precondition1" was proven unreachable in 0.00 s.
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.genblk5[3].P_down_valid_propagates" was proven in 0.00 s.
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.genblk5[3].P_down_valid_propagates:precondition1" was proven unreachable in 0.00 s.
+0: Found proofs for 8 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+
+==============================================================
+SUMMARY
+==============================================================
+           Properties Considered              : 8
+                 assertions                   : 4
+                  - proven                    : 4
+                  - bounded_proven (user)     : 0
+                  - bounded_proven (auto)     : 0
+                  - marked_proven             : 0
+                  - cex                       : 0
+                  - ar_cex                    : 0
+                  - undetermined              : 0
+                  - unknown                   : 0
+                  - error                     : 0
+                 covers                       : 4
+                  - unreachable               : 4
+                  - bounded_unreachable (user): 0
+                  - covered                   : 0
+                  - ar_covered                : 0
+                  - undetermined              : 0
+                  - unknown                   : 0
+                  - error                     : 0
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[4][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[4][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk5[0].P_down_valid_propagates}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+background 0
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1896 of 1896 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0: Using multistage preprocessing
+0: Starting reduce
+0: Finished reduce in 0s
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.genblk5[0].P_down_valid_propagates" was proven in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk5[0].P_down_valid_propagates} {<embedded>::transformation_engine.sys_array_i.genblk5[1].P_down_valid_propagates} {<embedded>::transformation_engine.sys_array_i.genblk5[2].P_down_valid_propagates} {<embedded>::transformation_engine.sys_array_i.genblk5[3].P_down_valid_propagates}}
+background 1
+INFO (IPF036): Starting proof on task: "<embedded>", 3 properties to prove with 1 already proven/unreachable
+INFO (IPF031): Settings used for proof thread 1:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+1: Using multistage preprocessing
+1: Starting reduce
+1: Finished reduce in 0s
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.genblk5[1].P_down_valid_propagates" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.genblk5[2].P_down_valid_propagates" was proven in 0.00 s.
+1.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 1.0.PRE: The property "transformation_engine.sys_array_i.genblk5[3].P_down_valid_propagates" was proven in 0.00 s.
+1: Found proofs for 3 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+
+==============================================================
+SUMMARY
+==============================================================
+           Properties Considered              : 3
+                 assertions                   : 3
+                  - proven                    : 3
+                  - bounded_proven (user)     : 0
+                  - bounded_proven (auto)     : 0
+                  - marked_proven             : 0
+                  - cex                       : 0
+                  - ar_cex                    : 0
+                  - undetermined              : 0
+                  - unknown                   : 0
+                  - error                     : 0
+                 covers                       : 0
+                  - unreachable               : 0
+                  - bounded_unreachable (user): 0
+                  - covered                   : 0
+                  - ar_covered                : 0
+                  - undetermined              : 0
+                  - unknown                   : 0
+                  - error                     : 0
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk5[0].P_down_valid_propagates:precondition1}}
+background 2
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IPF031): Settings used for proof thread 2:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+2: Using multistage preprocessing
+2: Starting reduce
+2: Finished reduce in 0s
+2.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 2.0.PRE: The cover property "transformation_engine.sys_array_i.genblk5[0].P_down_valid_propagates:precondition1" was proven unreachable in 0.00 s.
+2: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates} {<embedded>::transformation_engine.sys_array_i.genblk4[1].P_forward_valid_propagates} {<embedded>::transformation_engine.sys_array_i.genblk4[2].P_forward_valid_propagates} {<embedded>::transformation_engine.sys_array_i.genblk4[3].P_forward_valid_propagates}}
+INFO (IPF036): Starting proof on task: "<embedded>", 4 properties to prove with 0 already proven/unreachable
+INFO (IPF031): Settings used for proof thread 3:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+3: Using multistage preprocessing
+3: Starting reduce
+3: Finished reduce in 0s
+3.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 3.0.PRE: The property "transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates" was proven in 0.00 s.
+background 3
+3.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 3.0.PRE: The property "transformation_engine.sys_array_i.genblk4[1].P_forward_valid_propagates" was proven in 0.00 s.
+3.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 3.0.PRE: The property "transformation_engine.sys_array_i.genblk4[2].P_forward_valid_propagates" was proven in 0.00 s.
+3.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 3.0.PRE: The property "transformation_engine.sys_array_i.genblk4[3].P_forward_valid_propagates" was proven in 0.00 s.
+3: Found proofs for 4 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+
+==============================================================
+SUMMARY
+==============================================================
+           Properties Considered              : 4
+                 assertions                   : 4
+                  - proven                    : 4
+                  - bounded_proven (user)     : 0
+                  - bounded_proven (auto)     : 0
+                  - marked_proven             : 0
+                  - cex                       : 0
+                  - ar_cex                    : 0
+                  - undetermined              : 0
+                  - unknown                   : 0
+                  - error                     : 0
+                 covers                       : 0
+                  - unreachable               : 0
+                  - bounded_unreachable (user): 0
+                  - covered                   : 0
+                  - ar_covered                : 0
+                  - undetermined              : 0
+                  - unknown                   : 0
+                  - error                     : 0
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[4][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[4][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates}}
+background 0
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1888 of 1888 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0: Using multistage preprocessing
+0: Starting reduce
+0: Finished reduce in 0s
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates" was proven in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[4][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[4][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+background 0
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1856 of 1856 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates" was proven in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[4][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[4][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+background 0
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1880 of 1880 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates" was proven unreachable in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[4][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates}}
+background 0
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1884 of 1884 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF051): 0.0.PRE: The cover property "transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates" was proven unreachable in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+[<embedded>] % include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../include/sys_array_pkg.sv \
+    ../rtl/transformation_engine.sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    +define+FORMAL_MAC
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../include/sys_array_pkg.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/transformation_engine.sv'
+[WARN (VERI-1199)] ../rtl/transformation_engine.sv(9): parameter declaration becomes local in 'transformation_engine' with formal parameter declaration list
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array_pe.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/sys_array.sv'
+%% 
+%% elaborate -bbox_mul 64 -top transformation_engine
+INFO (ISW003): Top module name is "transformation_engine".
+[INFO (VERI-1018)] ../rtl/transformation_engine.sv(2): compiling module 'transformation_engine'
+[INFO (VERI-1018)] ../rtl/sys_array.sv(21): compiling module 'sys_array'
+[INFO (VERI-1018)] ../rtl/sys_array_pe.sv(21): compiling module 'sys_array_pe'
+[INFO (VERI-1018)] ../rtl/mac.sv(23): compiling module 'mac'
+[INFO (VERI-1018)] ../rtl/fixed_point_mac.sv(21): compiling module 'fixed_point_mac'
+[WARN (VERI-1330)] ../rtl/sys_array.sv(67): actual bit length 1 differs from formal bit length 32 for port 'pe_acc'
+[WARN (VDB-1002)] ../rtl/sys_array.sv(42): net 'sys_array_pe_forward[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(43): net 'sys_array_pe_forward_valid[3][0][0]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(44): net 'sys_array_pe_down[3][0][31]' does not have a driver
+[WARN (VDB-1002)] ../rtl/sys_array.sv(45): net 'sys_array_pe_down_valid[4][0][0]' does not have a driver
+INFO (INL003): Clearing all state information (assumes, stopats, etc.).
+transformation_engine
+%% 
+%% # Setup global clocks and resets
+%% clock core_clk
+%% reset -expression !(rstn)
+INFO (IPM031): Clearing proof results of all properties.
+INFO (IRS006): Current reset condition is "rstn".
+%% 
+%% # Setup current task environment
+%% task -set <embedded>
+<embedded>
+%% set_proofgrid_max_local_jobs 4
+%% set_proofgrid_max_jobs 4
+%% set_reset_max_iterations 2000
+[<embedded>] % prove -bg -property {{<embedded>::transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates}}
+INFO (IPF036): Starting proof on task: "<embedded>", 1 properties to prove with 0 already proven/unreachable
+background 0
+INFO (IRS029): Starting reset analysis: phase 1 of 4.
+INFO (IRS030): Running reset analysis: phase 2 of 4.
+INFO (IRS031): Running reset analysis: phase 3 of 4.
+INFO (IRS020): Starting the reset analysis simulation with a limit of 2000 iterations (phase 4 of 4).
+INFO (IRS024): Reset iterations 0 to 4 analyzed.
+INFO (IRS018): Reset analysis simulation executed for 3 iterations. Assigned values for 1568 of 1568 design flops, 0 of 0 design latches, 1896 of 1896 internal elements.
+INFO (IRS039): Reset analysis complete.
+INFO (IPF031): Settings used for proof thread 0:
+    orchestration                 = on (auto)
+    time_limit                    = 86400s
+    per_property_time_limit       = 1s * 10 ^ scan
+    engine_mode                   = auto
+    proofgrid_per_engine_max_jobs = 1
+    proofgrid_max_jobs            = 4
+    max engine jobs               = auto (max 4)
+    proofgrid_mode                = local
+    proofgrid_restarts            = 10
+0: Using multistage preprocessing
+0: Starting reduce
+0: Finished reduce in 0s
+0.0.PRE: A proof was found: No trace exists. [0.00 s]
+INFO (IPF057): 0.0.PRE: The property "transformation_engine.sys_array_i.genblk4[0].P_forward_valid_propagates" was proven in 0.00 s.
+0: Found proofs for 1 properties in preprocessing
+INFO (IPF059): Completed proof on task: "<embedded>"
+INFO (IPL005): Received request to exit from the console.
+INFO: Waiting for proof threads to stop...
+INFO: Proof threads stopped.

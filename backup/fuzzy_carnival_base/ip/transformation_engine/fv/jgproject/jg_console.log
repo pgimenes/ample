@@ -1,0 +1,145 @@
+2022-12-29 12:07:53.185729 (28392) main____ INFO    ----------------------------------------
+2022-12-29 12:07:53.185869 (28392) main____ INFO    JasperGold version info
+2022-12-29 12:07:53.185884 (28392) main____ INFO      tool      : JasperGold 2018.06
+2022-12-29 12:07:53.185899 (28392) main____ INFO      version   : 2018.06p002 64 bits
+2022-12-29 12:07:53.185911 (28392) main____ INFO      build date: 2018.08.27 18:04:53 PDT
+2022-12-29 12:07:53.185918 (28392) main____ INFO    ----------------------------------------
+2022-12-29 12:07:53.185925 (28392) main____ INFO    Runtime info:
+2022-12-29 12:07:53.185933 (28392) main____ INFO      platform  : Linux 3.10.0-957.21.3.el7.x86_64 x86_64
+2022-12-29 12:07:53.185945 (28392) main____ INFO      hostname  : ee-mill3.ee.ic.ac.uk
+2022-12-29 12:07:53.185952 (28392) main____ INFO      pid       : 28392
+2022-12-29 12:07:53.185959 (28392) main____ INFO      arguments : '-style' 'windows' '-tcl' 'transformation_engine_fv.tcl'
+2022-12-29 12:07:53.185966 (28392) main____ INFO    ----------------------------------------
+2022-12-29 12:07:53.185972 (28392) main____ INFO    System resource limits info:
+2022-12-29 12:07:53.185979 (28392) main____ INFO      virtual memory: unlimited
+2022-12-29 12:07:53.185986 (28392) main____ INFO      cpu time      : unlimited
+2022-12-29 12:07:53.186001 (28392) main____ INFO      stack size    : 8388608 B
+2022-12-29 12:07:53.186011 (28392) main____ INFO      core file size: 0 B
+2022-12-29 12:07:53.186024 (28392) main____ INFO      open files    : 1024
+2022-12-29 12:07:53.186032 (28392) main____ INFO      file size     : unlimited
+2022-12-29 12:07:53.186038 (28392) main____ INFO    ----------------------------------------
+2022-12-29 12:07:53.186044 (28392) main____ INFO    Memory statistics:
+2022-12-29 12:07:53.186051 (28392) main____ INFO      total physical memory  : 395962436 kB
+2022-12-29 12:07:53.186057 (28392) main____ INFO      free physical memory   : 305387320 kB
+2022-12-29 12:07:53.186063 (28392) main____ INFO      committed address space: 72110388 kB
+2022-12-29 12:07:53.186069 (28392) main____ INFO    ----------------------------------------
+2022-12-29 12:07:53.186114 (28392) main____ INFO    Important environment variables:
+2022-12-29 12:07:53.186129 (28392) main____ INFO      DISPLAY        : 'localhost:11.0'
+2022-12-29 12:07:53.186140 (28392) main____ INFO      LM_LICENSE_FILE: '5280@ee-llic01.ee.ic.ac.uk'
+2022-12-29 12:07:53.186147 (28392) main____ INFO    ----------------------------------------
+2022-12-29 12:07:53.186428 (28392) lic_core INFO    Initializing license system ...
+2022-12-29 12:07:53.187293 (28392) lic_core INFO    ... license system initialized.
+2022-12-29 12:07:53.189034 (28392) lic__man INFO    Claim 'main' for <ui>.
+2022-12-29 12:07:53.189097 (28392) lic_core INFO    (1) checking out 'jasper_interactive' ...
+2022-12-29 12:07:53.213518 (28392) lic_core INFO    ... (1) checkout succeeded
+2022-12-29 12:07:53.213668 (28392) lic__man INFO    Claim 'fpv' for <ui>.
+2022-12-29 12:07:53.213712 (28392) lic_core INFO    (2) checking out 'jasper_fpv' ...
+2022-12-29 12:07:53.223936 (28392) lic_core INFO    ... (2) checkout failed (error: -5) ("FLEXnet ERROR(-5, 0, 0): No such feature exists.")
+2022-12-29 12:07:53.224010 (28392) lic_core INFO    (3) checking out 'jasper_fao' ...
+2022-12-29 12:07:53.248203 (28392) lic_core INFO    ... (3) checkout succeeded
+2022-12-29 12:07:59.015906 (28392) lic__man INFO    Claim 'fpv' for <ui>.
+2022-12-29 12:07:59.689816 (28392) lic__man INFO    Unclaim 'fpv' for <ui>.
+2022-12-29 12:07:59.689876 (28392) lic__man INFO    Claim 'fpv' for <ui>.
+2022-12-29 12:07:59.704710 (28392) session_ INFO    Starting analysis session with session id 'session_0' ...
+2022-12-29 12:07:59.706892 (28392) session_ INFO    Analysis session with session id 'session_0' started (pid: 29872)
+2022-12-29 12:08:04.027721 (28392) session_ INFO    Analysis session 'session_0' connected to the console (host: 146.179.44.6:51656)
+2022-12-29 12:08:06.469504 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:08:33.244844 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:09:32.920639 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:10:00.116364 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:10:00.176656 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:10:29.404170 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:10:29.593448 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:13:50.832258 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:13:51.236736 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:14:09.300961 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:14:09.956668 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:14:51.043738 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:14:51.385167 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:14:58.842494 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:14:59.228671 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:16:53.637884 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:16:54.194056 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:17:00.854071 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:17:01.356203 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:17:15.256306 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:17:15.474569 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:17:22.155902 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:17:22.542669 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:19:13.326786 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:19:27.590036 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:19:28.150896 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:19:33.078402 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:19:33.567880 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:20:14.883195 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:20:15.096614 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:20:19.806180 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:20:20.190474 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:21:16.988453 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:21:17.236461 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:21:21.759592 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:21:22.186392 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:21:54.382991 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:21:54.584203 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:21:58.509180 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:21:58.883542 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:22:05.192091 (28392) lic__man INFO    Claim 'fpv' for 'session_0'.
+2022-12-29 12:23:32.559444 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:23:32.780613 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:23:40.973340 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:23:41.418095 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:26:28.689019 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:26:43.010150 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:26:53.056635 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:26:53.065550 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:27:03.944285 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:27:04.640703 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:35:06.094533 (28392) lic__man INFO    Entering idle state.
+2022-12-29 12:35:29.574016 (28392) lic__man INFO    Leaving idle state.
+2022-12-29 12:35:31.919435 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-1'.
+2022-12-29 12:35:32.827778 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-1'.
+2022-12-29 12:42:36.245718 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:42:59.030071 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:42:59.434508 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:43:28.474099 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:43:28.481835 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:43:56.626731 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:43:57.525839 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:44:55.098756 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:44:55.106801 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:45:21.216364 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:45:21.590564 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:45:32.247650 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:45:32.729555 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:45:39.306313 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:45:39.685088 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:45:45.240381 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-1'.
+2022-12-29 12:45:45.636403 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-1'.
+2022-12-29 12:45:49.711458 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-2'.
+2022-12-29 12:45:50.078590 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-2'.
+2022-12-29 12:46:47.861494 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-3'.
+2022-12-29 12:46:48.761809 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-3'.
+2022-12-29 12:47:05.904858 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:47:06.170804 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:47:09.850690 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:47:10.231935 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:47:22.693988 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:47:22.913379 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:47:29.626902 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:47:30.080953 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:48:20.273919 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:48:20.547159 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:48:23.919883 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:48:24.398521 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:50:15.975581 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:50:16.183782 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:50:21.644665 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:50:22.001165 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:50:46.001853 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:50:46.010653 (28392) lic__man INFO    Unclaim everything for 'session_0'.
+2022-12-29 12:50:50.164007 (28392) lic__man INFO    Claim 'fpv' for 'session_0/prove-0'.
+2022-12-29 12:50:50.855358 (28392) lic__man INFO    Unclaim everything for 'session_0/prove-0'.
+2022-12-29 12:59:09.650897 (28392) lic__man INFO    Entering idle state.
+2022-12-29 13:09:52.874864 (28392) main____ INFO    About to exit: requested from GUI
+2022-12-29 13:09:53.094973 (28392) session_ INFO    Analysis session 'session_0' disconnected.
+2022-12-29 13:09:53.100501 (28392) main____ INFO    Exiting with status 0.

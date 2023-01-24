@@ -1,0 +1,132 @@
+#----------------------------------------
+# JasperGold Version Info
+# tool      : JasperGold 2018.06
+# platform  : Linux 3.10.0-957.21.3.el7.x86_64
+# version   : 2018.06p002 64 bits
+# build date: 2018.08.27 18:04:53 PDT
+#----------------------------------------
+# started Thu Dec 29 11:47:59 GMT 2022
+# hostname  : ee-mill3.ee.ic.ac.uk
+# pid       : 127191
+# arguments : '-label' 'session_0' '-console' 'ee-mill3.ee.ic.ac.uk:44410' '-style' 'windows' '-data' 'AQAAADx/////AAAAAAAAA3oBAAAAEABMAE0AUgBFAE0ATwBWAEU=' '-proj' '/home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival_base/ip/transformation_engine/fv/jgproject/sessionLogs/session_0' '-init' '-hidden' '/home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival_base/ip/transformation_engine/fv/jgproject/.tmp/.initCmds.tcl' 'transformation_engine_fv.tcl'
+
+Any disclosure about the Cadence Design Systems software or its use
+model to any third party violates the written Non-Disclosure Agreement
+between Cadence Design Systems, Inc. and the customer.
+
+THIS SOFTWARE CONTAINS CONFIDENTIAL INFORMATION AND TRADE SECRETS OF
+CADENCE DESIGN SYSTEMS, INC. USE, DISCLOSURE, OR REPRODUCTION IS
+PROHIBITED WITHOUT THE PRIOR EXPRESS WRITTEN PERMISSION OF CADENCE
+DESIGN SYSTEMS, INC.
+
+Copyright (C) 2000-2018 Cadence Design Systems, Inc. All Rights
+Reserved.  Unpublished -- rights reserved under the copyright laws of
+the United States.
+
+This product includes software developed by others and redistributed
+according to license agreement. See doc/third_party_readme.txt for
+further details.
+
+RESTRICTED RIGHTS LEGEND
+
+Use, duplication, or disclosure by the Government is subject to
+restrictions as set forth in subparagraph (c) (1) (ii) of the Rights in
+Technical Data and Computer Software clause at DFARS 252.227-7013 or
+subparagraphs (c) (1) and (2) of Commercial Computer Software -- Restricted
+Rights at 48 CFR 52.227-19, as applicable.
+
+
+                          Cadence Design Systems, Inc. 
+                          2655 Seely Avenue
+                          San Jose, CA 95134
+                          Phone: 408.943.1234
+
+For technical assistance visit http://support.cadence.com.
+
+JasperGold Apps Analysis Session - /home/pg519/nfshome/fuzzy_carnival/fuzzy_carnival_base/ip/transformation_engine/fv/jgproject/sessionLogs/session_0
+
+INFO: successfully checked out licenses "jasper_interactive" and "jasper_fao".
+INFO: reading configuration file "/home/pg519/.config/jasper/jaspergold.conf".
+% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+% 
+% analyze -clear
+% 
+% analyze -sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    ../rtl/transformation_engine.sv
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[ERROR (VERI-1128)] ../rtl/fixed_point_mac.sv(28): 'FLOAT_WIDTH' is not declared
+[ERROR (VERI-1952)] ../rtl/fixed_point_mac.sv(28): range must be bounded by constant expressions
+[ERROR (VERI-1128)] ../rtl/fixed_point_mac.sv(29): 'FLOAT_WIDTH' is not declared
+[ERROR (VERI-1952)] ../rtl/fixed_point_mac.sv(29): range must be bounded by constant expressions
+[ERROR (VERI-1128)] ../rtl/fixed_point_mac.sv(31): 'FLOAT_WIDTH' is not declared
+[ERROR (VERI-1952)] ../rtl/fixed_point_mac.sv(31): range must be bounded by constant expressions
+[ERROR (VERI-1128)] ../rtl/fixed_point_mac.sv(34): 'FLOAT_WIDTH' is not declared
+[ERROR (VERI-1952)] ../rtl/fixed_point_mac.sv(34): range must be bounded by constant expressions
+[ERROR (VERI-1072)] ../rtl/fixed_point_mac.sv(47): module 'fixed_point_mac' ignored due to previous errors
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../rtl/fixed_point_mac.sv(28): 'FLOAT_WIDTH' is not declared
+	[ERROR (VERI-1952)] ../rtl/fixed_point_mac.sv(28): range must be bounded by constant expressions
+	[ERROR (VERI-1128)] ../rtl/fixed_point_mac.sv(29): 'FLOAT_WIDTH' is not declared
+	[ERROR (VERI-1952)] ../rtl/fixed_point_mac.sv(29): range must be bounded by constant expressions
+	[ERROR (VERI-1128)] ../rtl/fixed_point_mac.sv(31): 'FLOAT_WIDTH' is not declared
+	[ERROR (VERI-1952)] ../rtl/fixed_point_mac.sv(31): range must be bounded by constant expressions
+	[ERROR (VERI-1128)] ../rtl/fixed_point_mac.sv(34): 'FLOAT_WIDTH' is not declared
+	[ERROR (VERI-1952)] ../rtl/fixed_point_mac.sv(34): range must be bounded by constant expressions
+	[ERROR (VERI-1072)] ../rtl/fixed_point_mac.sv(47): module 'fixed_point_mac' ignored due to previous errors
+ERROR (ENL034): 9 errors detected in the design file(s).
+
+ERROR: problem encountered at line 5 in file transformation_engine_fv.tcl
+
+% include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    ../rtl/transformation_engine.sv
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[ERROR (VERI-1128)] ../rtl/mac.sv(21): 'sys_array_pkg' is not declared
+[ERROR (VERI-1072)] ../rtl/mac.sv(71): module 'mac' ignored due to previous errors
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../rtl/mac.sv(21): 'sys_array_pkg' is not declared
+	[ERROR (VERI-1072)] ../rtl/mac.sv(71): module 'mac' ignored due to previous errors
+ERROR at line 5 in file transformation_engine_fv.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 2 errors detected in the design file(s).
+
+% include {transformation_engine_fv.tcl}
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% analyze -clear
+%% 
+%% analyze -sv \
+    ../rtl/fixed_point_mac.sv \
+    ../rtl/mac.sv \
+    ../rtl/sys_array_pe.sv \
+    ../rtl/sys_array.sv \
+    ../rtl/transformation_engine.sv \
+    ../include/sys_array_pkg.sv
+[-- (VERI-1482)] Analyzing Verilog file '/usr/local/cadence/JASPER_2018.06.002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/fixed_point_mac.sv'
+[-- (VERI-1482)] Analyzing Verilog file '../rtl/mac.sv'
+[ERROR (VERI-1128)] ../rtl/mac.sv(21): 'sys_array_pkg' is not declared
+[ERROR (VERI-1072)] ../rtl/mac.sv(71): module 'mac' ignored due to previous errors
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../rtl/mac.sv(21): 'sys_array_pkg' is not declared
+	[ERROR (VERI-1072)] ../rtl/mac.sv(71): module 'mac' ignored due to previous errors
+ERROR at line 5 in file transformation_engine_fv.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 2 errors detected in the design file(s).
+
