@@ -1,0 +1,12 @@
+{
+    "regbanks": [
+        {
+            "name": "controller_regbank",
+            "ID": 177071
+        },
+        {
+            "name": "aggregation_engine_regbank",
+            "ID": 177050
+        }
+    ]
+}
