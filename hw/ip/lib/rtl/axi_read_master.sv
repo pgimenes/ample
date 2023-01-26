@@ -9,7 +9,7 @@ Return each read burst
 */ 
 
 module axi_read_master #(
-    parameter MAX_BYTE_COUNT = 4096, // cannot cross a 4kb address boundary
+    parameter MAX_BYTE_COUNT = 1000000000, // cannot cross a 4kb address boundary
     parameter ADDRESS_WIDTH = 34,
     parameter DATA_WIDTH = 512
 ) (
@@ -48,14 +48,14 @@ module axi_read_master #(
     input  logic [1:0]                                 axi_rresp
 );
 
-parameter MAX_TOTAL_BURSTS = MAX_BYTE_COUNT/64 + 1; // 64
-parameter MAX_TRANSACTIONS = MAX_TOTAL_BURSTS/256 + 1; // 1 
+parameter MAX_TOTAL_BEATS = MAX_BYTE_COUNT/64 + 1; // 64
+parameter MAX_TRANSACTIONS = MAX_TOTAL_BEATS/256 + 1; // 1 
 
 typedef enum logic [2:0] {
-    3'd0: IDLE,
-    3'd1: AR,
-    3'd2: R,
-    3'd3: RESP
+    IDLE    = 3'd0,
+    AR      = 3'd1,
+    R       = 3'd2,
+    RESP    = 3'd3
 } fetch_fsm_e;
 
 // ==================================================================================================================================================
@@ -71,12 +71,13 @@ logic                                       accepting_fetch_request;
 logic                                       accepting_axi_read_transaction;
 logic                                       accepting_axi_read_response;
 
-logic [$clog2(MAX_TOTAL_BURSTS)-1:0]        required_beat_count;
+logic [$clog2(MAX_TOTAL_BEATS)-1:0]         required_beat_count;
 logic [7:0]                                 burst_length_final_transaction;
 logic [$clog2(MAX_TRANSACTIONS)-1:0]        required_transaction_count;
 
 logic [$clog2(MAX_TRANSACTIONS)-1:0]        sent_transactions;
-logic [$clog2(MAX_TOTAL_BURSTS)-1:0]        beats_requested;
+logic [$clog2(MAX_TOTAL_BEATS)-1:0]         beats_requested;
+logic [$clog2(MAX_TOTAL_BEATS)-1:0]         beats_received;
 logic [7:0]                                 received_read_responses;
 
 logic [ADDRESS_WIDTH-1:0]                   current_transaction_address;
@@ -89,33 +90,27 @@ logic                                       last_read_response_pending;
 // Logic
 // ==================================================================================================================================================
 
-/*
-TO DO
-
-*/
-
 always_comb begin
     
     accepting_fetch_request        = fetch_req_valid && fetch_req_ready;
     accepting_axi_read_transaction = axi_arvalid && axi_arready;
     accepting_axi_read_response    = axi_rvalid && axi_rready;
 
-    // byte_count % 64 since the data bus is 512b - first divide by 64 rounding down by taking bits [MAX:6], then add 1 if there is a remainder
-    required_beat_count = req_fetch_byte_count[$clog2(MAX_BYTE_COUNT)-1:6] + (~req_fetch_byte_count[5:0] ? 1'b0 : 1'b1);
+    // byte_count / 64 since the data bus is 512b - first divide by 64 rounding down by taking bits [MAX:6], then add 1 if there is a remainder
+    required_beat_count = req_fetch_byte_count[$clog2(MAX_BYTE_COUNT)-1:6] + (req_fetch_byte_count[5:0] == '0 ? 1'b0 : 1'b1);
 
     // Max burst length per transaction is 64 such as to not cross a 4kb address boundary, so take modulus 64
     burst_length_final_transaction = required_beat_count[5:0];
     
-    // Number of transactions required with burst length up to 64
-    required_transaction_count = required_beat_count[$clog2(MAX_TRANSACTIONS)-1:6] + (~burst_length_final_transaction ? 1'b0 : 1'b1)
+    required_transaction_count = required_beat_count[$clog2(MAX_TOTAL_BEATS)-1:6] + ((burst_length_final_transaction == '0) ? 1'b0 : 1'b1);
     
     last_transaction_pending = sent_transactions == (required_transaction_count - 1);
     last_read_response_pending = beats_received == required_beat_count;
 end
 
-always_ff @(posedge core_clk or negedge resetn) begin
+always_ff @(posedge clk or negedge resetn) begin
     if (!resetn) begin
-        fetch_state                         <= '0;
+        fetch_state                         <= IDLE;
 
         req_fetch_start_address             <= '0;
         req_fetch_byte_count                <= '0;
@@ -125,7 +120,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         beats_requested                     <= '0;
 
     end else if (fetch_state_n == IDLE) begin
-        fetch_state <= fetch_state_n;
+        fetch_state                         <= fetch_state_n;
         
         req_fetch_start_address             <= '0;
         req_fetch_byte_count                <= '0;
@@ -153,7 +148,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
 
         // Accepting Read response
         if (fetch_state == R && accepting_axi_read_response) begin
-            received_read_responses = received_read_responses + 1'b1;
+            received_read_responses <= received_read_responses + 1'b1;
+            beats_received          <= beats_received + 1'b1;
         end
     end
 end
@@ -183,7 +179,9 @@ always_comb begin
     axi_arburst     = (req_fetch_byte_count > 64) ? 2'b01 : '0;
     axi_arsize      = 3'b110; // = 64 bytes
     // request up to 64 bursts of 64 bytes such as to not cross 4kb address boundary
-    axi_arlen       = last_transaction_pending ? burst_length_final_transaction : 8'd64;
+    axi_arlen       = last_transaction_pending && (burst_length_final_transaction == '0) ? 8'd63 // +1 = 64
+                    : last_transaction_pending && !(burst_length_final_transaction == '0) ? burst_length_final_transaction - 1
+                    : 8'd63; // +1 = 64
     
     // Unused
     axi_arcache     = '0;
