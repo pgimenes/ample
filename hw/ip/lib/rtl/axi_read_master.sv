@@ -4,13 +4,17 @@ Receives number of bytes needed
 Use transaction size of 64 bytes (ARSIZE = 0x6) to saturate 512b data bus
 Calculate required burst length and number of transactions
 When crossing a 4 kb address boundary, issue several transactions with varying ID
-Issue all transactions before asserting rready to receive all read responses
-Return each read burst
+
+
+Currently issuing all read transactions before asserting rready to receive read responses
+This may be bottleneck - in the future, implement two separate state machines
+
+
 */ 
 
 module axi_read_master #(
     parameter MAX_BYTE_COUNT = 1000000000, // cannot cross a 4kb address boundary
-    parameter ADDRESS_WIDTH = 34,
+    parameter AXI_ADDRESS_WIDTH = 34,
     parameter DATA_WIDTH = 512
 ) (
     input logic clk,
@@ -19,7 +23,7 @@ module axi_read_master #(
     // Request interface
     input  logic                                       fetch_req_valid,
     output logic                                       fetch_req_ready,
-    input  logic [31:0]                                fetch_start_address,
+    input  logic [AXI_ADDRESS_WIDTH-1:0]               fetch_start_address,
     input  logic [$clog2(MAX_BYTE_COUNT)-1:0]          fetch_byte_count,
 
     // Response interface
@@ -27,9 +31,10 @@ module axi_read_master #(
     input  logic                                       fetch_resp_ready,
     output logic                                       fetch_resp_last,
     output logic [DATA_WIDTH-1:0]                      fetch_resp_data,
+    output logic [3:0]                                 fetch_resp_axi_id,
 
     // AXI Read-Only Interface
-    output logic [ADDRESS_WIDTH-1:0]                   axi_araddr,
+    output logic [AXI_ADDRESS_WIDTH-1:0]               axi_araddr,
     output logic [1:0]                                 axi_arburst,
     output logic [3:0]                                 axi_arcache,
     output logic [3:0]                                 axi_arid,
@@ -48,8 +53,9 @@ module axi_read_master #(
     input  logic [1:0]                                 axi_rresp
 );
 
-parameter MAX_TOTAL_BEATS = MAX_BYTE_COUNT/64 + 1; // 64
-parameter MAX_TRANSACTIONS = MAX_TOTAL_BEATS/256 + 1; // 1 
+// (WIDTH_X - 1)/WIDTH_Y + 1 = WIDTH_X/WIDTH_Y (rounded up)
+parameter MAX_TOTAL_BEATS = (MAX_BYTE_COUNT-1)/64 + 1; // 64
+parameter MAX_TRANSACTIONS = (MAX_TOTAL_BEATS-1)/256 + 1; // 1 
 
 typedef enum logic [2:0] {
     IDLE    = 3'd0,
@@ -80,7 +86,7 @@ logic [$clog2(MAX_TOTAL_BEATS)-1:0]         beats_requested;
 logic [$clog2(MAX_TOTAL_BEATS)-1:0]         beats_received;
 logic [7:0]                                 received_read_responses;
 
-logic [ADDRESS_WIDTH-1:0]                   current_transaction_address;
+logic [AXI_ADDRESS_WIDTH-1:0]                   current_transaction_address;
 
 logic                                       last_transaction_pending;
 logic                                       last_read_response_pending;
@@ -173,7 +179,8 @@ end
 always_comb begin
     axi_arvalid     = (fetch_state == AR);
     axi_araddr      = current_transaction_address;
-    axi_arid        = sent_transactions[3:0];
+    // axi_arid        = sent_transactions[3:0];
+    axi_arid        = '0;
 
     // use FIXED encoding for when a single burst is enough, otherwise INCR
     axi_arburst     = (req_fetch_byte_count > 64) ? 2'b01 : '0;
@@ -203,6 +210,7 @@ always_comb begin
     fetch_resp_valid    = (fetch_state == R) && axi_rvalid;
     fetch_resp_last     = (fetch_state == R) && axi_rvalid && axi_rlast;
     fetch_resp_data     = axi_rdata;
+    fetch_resp_axi_id   = axi_rid;
 end
 
 endmodule

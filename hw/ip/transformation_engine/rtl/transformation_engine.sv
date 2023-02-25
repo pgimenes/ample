@@ -30,11 +30,11 @@ module transformation_engine #(
     input  logic                                                s_axi_bready,
 
     // Controller -> Aggregation Engine Interface
-    input  logic                                                controller_transformation_engine_req_valid,
-    output logic                                                controller_transformation_engine_req_ready,
-    input  CONTROLLER_TRANS_REQ_t                               controller_transformation_engine_req,
-    output logic                                                controller_transformation_engine_resp_valid, // valid only for now
-    output CONTROLLER_TRANS_RESP_t                              controller_transformation_engine_resp
+    input  logic                                                nsb_fte_req_valid,
+    output logic                                                nsb_fte_req_ready,
+    input  NSB_FTE_REQ_t                                        nsb_fte_req,
+    output logic                                                nsb_fte_resp_valid, // valid only for now
+    output NSB_FTE_RESP_t                                       nsb_fte_resp
 );
 
 parameter MATRIX_N = 4;
@@ -62,5 +62,9 @@ sys_array #(
     .sys_array_down_valid,
     .sys_array_pe_acc
 );
+
+assign nsb_fte_req_ready           = '0;
+assign nsb_fte_resp_valid          = '0;
+assign nsb_fte_resp                = '0;
 
 endmodule

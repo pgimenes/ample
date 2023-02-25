@@ -9,24 +9,26 @@
             <top_module name="arch_package" />
             <top_module name="axi_vip_pkg" />
             <top_module name="glbl" />
+            <top_module name="node_scoreboard_regbank_regs_pkg" />
             <top_module name="proj_package" />
             <top_module name="std" />
             <top_module name="sys_array_pkg" />
+            <top_module name="top_pkg" />
             <top_module name="top_tb" />
             <top_module name="xil_common_vip_pkg" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="24878833fs"></ZoomStartTime>
-      <ZoomEndTime time="25024234fs"></ZoomEndTime>
-      <Cursor1Time time="25000000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="205801fs"></ZoomEndTime>
+      <Cursor1Time time="89965fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="255"></NameColumnWidth>
-      <ValueColumnWidth column_width="122"></ValueColumnWidth>
+      <NameColumnWidth column_width="468"></NameColumnWidth>
+      <ValueColumnWidth column_width="167"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="18" />
+   <WVObjectSize size="24" />
    <wvobject type="logic" fp_name="/top_tb/sys_clk_i">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -38,18 +40,6 @@
    <wvobject type="logic" fp_name="/top_tb/top_i/c0_init_calib_complete">
       <obj_property name="ElementShortName">c0_init_calib_complete</obj_property>
       <obj_property name="ObjectShortName">c0_init_calib_complete</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/top_tb/top_i/fc_base_aggregation_engine_i/state">
-      <obj_property name="ElementShortName">state[31:0]</obj_property>
-      <obj_property name="ObjectShortName">state[31:0]</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/top_tb/top_i/fc_base_aggregation_engine_i/check_pass">
-      <obj_property name="ElementShortName">check_pass</obj_property>
-      <obj_property name="ObjectShortName">check_pass</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/top_tb/top_i/fc_base_aggregation_engine_i/check_fail">
-      <obj_property name="ElementShortName">check_fail</obj_property>
-      <obj_property name="ObjectShortName">check_fail</obj_property>
    </wvobject>
    <wvobject type="group" fp_name="group90">
       <obj_property name="label">AW</obj_property>
@@ -216,10 +206,6 @@
          <obj_property name="ObjectShortName">c0_ddr4_dqs_t[17:0]</obj_property>
       </wvobject>
    </wvobject>
-   <wvobject type="logic" fp_name="/top_tb/top_i/fc_base_aggregation_engine_i/s_axi_awvalid">
-      <obj_property name="ElementShortName">s_axi_awvalid</obj_property>
-      <obj_property name="ObjectShortName">s_axi_awvalid</obj_property>
-   </wvobject>
    <wvobject type="array" fp_name="/top_tb/top_i/host_axil_awvalid">
       <obj_property name="ElementShortName">host_axil_awvalid[0:0]</obj_property>
       <obj_property name="ObjectShortName">host_axil_awvalid[0:0]</obj_property>
@@ -232,12 +218,417 @@
       <obj_property name="ElementShortName">host_axil_wvalid[0:0]</obj_property>
       <obj_property name="ObjectShortName">host_axil_wvalid[0:0]</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/top_tb/top_i/fc_base_aggregation_engine_i/matrix_a_address_value">
-      <obj_property name="ElementShortName">matrix_a_address_value[31:0]</obj_property>
-      <obj_property name="ObjectShortName">matrix_a_address_value[31:0]</obj_property>
+   <wvobject type="array" fp_name="/top_tb/host_axil_awaddr">
+      <obj_property name="ElementShortName">host_axil_awaddr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">host_axil_awaddr[31:0]</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/top_tb/top_i/fc_base_aggregation_engine_i/matrix_b_address_value">
-      <obj_property name="ElementShortName">matrix_b_address_value[31:0]</obj_property>
-      <obj_property name="ObjectShortName">matrix_b_address_value[31:0]</obj_property>
+   <wvobject type="array" fp_name="/top_tb/top_i/host_axil_awvalid">
+      <obj_property name="ElementShortName">host_axil_awvalid[0:0]</obj_property>
+      <obj_property name="ObjectShortName">host_axil_awvalid[0:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/host_axil_wvalid">
+      <obj_property name="ElementShortName">host_axil_wvalid[0:0]</obj_property>
+      <obj_property name="ObjectShortName">host_axil_wvalid[0:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/host_axil_wdata">
+      <obj_property name="ElementShortName">host_axil_wdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">host_axil_wdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/host_axil_bvalid">
+      <obj_property name="ElementShortName">host_axil_bvalid[0:0]</obj_property>
+      <obj_property name="ObjectShortName">host_axil_bvalid[0:0]</obj_property>
+   </wvobject>
+   <wvobject type="group" fp_name="group226">
+      <obj_property name="label">TOP AXI</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_awid">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awid[3:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awid[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_awaddr">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awaddr[33:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awaddr[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_awlen">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awlen[7:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awlen[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_awsize">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awsize[2:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awsize[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_awburst">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awburst[1:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awburst[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_awlock">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awlock[0:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awlock[0:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_awcache">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awcache[3:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awcache[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_awprot">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awprot[2:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awprot[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_awqos">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awqos[3:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awqos[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_axi_interconnect_axi_awvalid">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awvalid</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_axi_interconnect_axi_awready">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_awready</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_awready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_wdata">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_wdata[511:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_wdata[511:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_wstrb">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_wstrb[63:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_wstrb[63:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_axi_interconnect_axi_wlast">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_wlast</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_wlast</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_axi_interconnect_axi_wvalid">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_wvalid</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_wvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_axi_interconnect_axi_wready">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_wready</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_wready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_bid">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_bid[3:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_bid[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_axi_interconnect_axi_bresp">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_bresp[1:0]</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_bresp[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_axi_interconnect_axi_bvalid">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_bvalid</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_bvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_axi_interconnect_axi_bready">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_bready</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_bready</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group225">
+      <obj_property name="label">WBUFF AXI</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_araddr">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_araddr[33:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_araddr[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_arburst">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_arburst[1:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_arburst[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_arcache">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_arcache[3:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_arcache[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_arid">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_arid[3:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_arid[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_arlen">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_arlen[7:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_arlen[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_arlock">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_arlock[0:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_arlock[0:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_arprot">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_arprot[2:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_arprot[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_arqos">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_arqos[3:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_arqos[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_arsize">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_arsize[2:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_arsize[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_arvalid">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_arvalid</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_arvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_arready">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_arready</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_arready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awaddr">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awaddr[33:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awaddr[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awburst">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awburst[1:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awburst[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awcache">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awcache[3:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awcache[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awid">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awid[3:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awid[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awlen">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awlen[7:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awlen[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awlock">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awlock[0:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awlock[0:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awprot">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awprot[2:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awprot[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awqos">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awqos[3:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awqos[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awready">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awready</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awsize">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awsize[2:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awsize[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_awvalid">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_awvalid</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_awvalid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_bid">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_bid[3:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_bid[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_bready">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_bready</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_bready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_bresp">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_bresp[1:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_bresp[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_bvalid">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_bvalid</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_bvalid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_rdata">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_rdata[511:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_rdata[511:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_rid">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_rid[3:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_rid[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_rlast">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_rlast</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_rlast</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_rready">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_rready</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_rready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_rresp">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_rresp[1:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_rresp[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_rvalid">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_rvalid</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_rvalid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_wdata">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_wdata[511:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_wdata[511:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_wlast">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_wlast</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_wlast</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_wready">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_wready</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_wready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_wstrb">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_wstrb[63:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_wstrb[63:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_wvalid">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_wvalid</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_wvalid</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="logic" fp_name="/top_tb/top_i/top_axi_interconnect_axi_awready">
+      <obj_property name="ElementShortName">top_axi_interconnect_axi_awready</obj_property>
+      <obj_property name="ObjectShortName">top_axi_interconnect_axi_awready</obj_property>
+   </wvobject>
+   <wvobject type="group" fp_name="group959">
+      <obj_property name="label">BVALID</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_bvalid">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_bvalid</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_bvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/top_axi_interconnect_axi_bvalid">
+         <obj_property name="ElementShortName">top_axi_interconnect_axi_bvalid</obj_property>
+         <obj_property name="ObjectShortName">top_axi_interconnect_axi_bvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_axi_interconnect_axi_bvalid">
+         <obj_property name="ElementShortName">prefetcher_axi_interconnect_axi_bvalid</obj_property>
+         <obj_property name="ObjectShortName">prefetcher_axi_interconnect_axi_bvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/weight_buffer_axi_interconnect_axi_bvalid">
+         <obj_property name="ElementShortName">weight_buffer_axi_interconnect_axi_bvalid</obj_property>
+         <obj_property name="ObjectShortName">weight_buffer_axi_interconnect_axi_bvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/output_buffer_axi_interconnect_axi_bvalid">
+         <obj_property name="ElementShortName">output_buffer_axi_interconnect_axi_bvalid</obj_property>
+         <obj_property name="ObjectShortName">output_buffer_axi_interconnect_axi_bvalid</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group960">
+      <obj_property name="label">CONTROLLER REGBANK</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="group" fp_name="group958">
+      <obj_property name="label">DDR4 AXI</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awid">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awid[3:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awid[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awaddr">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awaddr[33:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awaddr[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awlen">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awlen[7:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awlen[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awsize">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awsize[2:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awsize[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awburst">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awburst[1:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awburst[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awlock">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awlock[0:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awlock[0:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awcache">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awcache[3:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awcache[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awprot">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awprot[2:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awprot[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awqos">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awqos[3:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awqos[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awvalid">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awvalid</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awready">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_awready</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_awready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_wdata">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_wdata[511:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_wdata[511:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_wstrb">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_wstrb[63:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_wstrb[63:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_wlast">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_wlast</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_wlast</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_wvalid">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_wvalid</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_wvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_wready">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_wready</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_wready</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_bready">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_bready</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_bready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_bid">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_bid[3:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_bid[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_bresp">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_bresp[1:0]</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_bresp[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_bvalid">
+         <obj_property name="ElementShortName">c0_ddr4_s_axi_bvalid</obj_property>
+         <obj_property name="ObjectShortName">c0_ddr4_s_axi_bvalid</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group1110">
+      <obj_property name="label">Nodeslot 0</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/node_scoreboard_regbank_i/nsb_nodeslot_node_id_strobe[0]">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">[0]</obj_property>
+         <obj_property name="label">Node ID Strobe</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/node_scoreboard_regbank_i/nsb_nodeslot_node_id_id[0]">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">[0][19:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][19:0]</obj_property>
+         <obj_property name="label">Node ID</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/node_scoreboard_regbank_i/nsb_nodeslot_precision_strobe[0]">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">[0]</obj_property>
+         <obj_property name="label">Precision strobe</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/node_scoreboard_regbank_i/nsb_nodeslot_precision_precision[0]">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">[0][1:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][1:0]</obj_property>
+         <obj_property name="label">Precision</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/node_scoreboard_regbank_i/nsb_nodeslot_adjacency_list_address_lsb_strobe[0]">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">[0]</obj_property>
+         <obj_property name="label">Adjacency list strobe</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/node_scoreboard_regbank_i/nsb_nodeslot_adjacency_list_address_lsb_lsb[0]">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">[0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+         <obj_property name="label">Adjacency list</obj_property>
+      </wvobject>
    </wvobject>
 </wave_config>

@@ -1,0 +1,159 @@
+sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+"../../hw.srcs/sources_1/ip/axi_memory_master_vip/sim/axi_memory_master_vip_pkg.sv" \
+"../../hw.srcs/sources_1/ip/axi_memory_master_vip/sim/axi_memory_master_vip.sv" \
+"../../hw.srcs/sources_1/ip/axil_master_vip/sim/axil_master_vip_pkg.sv" \
+"../../hw.srcs/sources_1/ip/axil_master_vip/sim/axil_master_vip.sv" \
+
+verilog blk_mem_gen_v8_4_4 --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+"../../hw.ip_user_files/ipstatic/simulation/blk_mem_gen_v8_4.v" \
+
+verilog xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+"../../hw.srcs/sources_1/ip/ddr4_0/bd_0/ip/ip_6/sim/bd_9054_lmb_bram_I_0.v" \
+"../../hw.srcs/sources_1/ip/ddr4_0/bd_0/ip/ip_9/sim/bd_9054_second_lmb_bram_I_0.v" \
+"../../hw.srcs/sources_1/ip/ddr4_0/bd_0/sim/bd_9054.v" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_0/sim/ddr4_0_microblaze_mcs.v" \
+
+sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/phy/ddr4_0_phy_ddr4.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/phy/ddr4_phy_v2_2_xiphy_behav.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/phy/ddr4_phy_v2_2_xiphy.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/iob/ddr4_phy_v2_2_iob_byte.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/iob/ddr4_phy_v2_2_iob.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/clocking/ddr4_phy_v2_2_pll.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/xiphy_files/ddr4_phy_v2_2_xiphy_tristate_wrapper.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/xiphy_files/ddr4_phy_v2_2_xiphy_riuor_wrapper.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/xiphy_files/ddr4_phy_v2_2_xiphy_control_wrapper.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/xiphy_files/ddr4_phy_v2_2_xiphy_byte_wrapper.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/xiphy_files/ddr4_phy_v2_2_xiphy_bitslice_wrapper.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/ip_top/ddr4_0_phy.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_wtr.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_ref.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_rd_wr.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_periodic.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_group.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_ecc_merge_enc.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_ecc_gen.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_ecc_fi_xor.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_ecc_dec_fix.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_ecc_buf.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_ecc.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_ctl.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_cmd_mux_c.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_cmd_mux_ap.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_arb_p.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_arb_mux_p.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_arb_c.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_arb_a.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_act_timer.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc_act_rank.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/controller/ddr4_v2_2_mc.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/ui/ddr4_v2_2_ui_wr_data.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/ui/ddr4_v2_2_ui_rd_data.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/ui/ddr4_v2_2_ui_cmd.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/ui/ddr4_v2_2_ui.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_ar_channel.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_aw_channel.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_b_channel.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_cmd_arbiter.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_cmd_fsm.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_cmd_translator.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_fifo.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_incr_cmd.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_r_channel.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_w_channel.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_wr_cmd_fsm.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_wrap_cmd.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_a_upsizer.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_register_slice.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axi_upsizer.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_axic_register_slice.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_carry_and.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_carry_latch_and.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_carry_latch_or.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_carry_or.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_command_fifo.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_comparator.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_comparator_sel.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_comparator_sel_static.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_r_upsizer.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi/ddr4_v2_2_w_upsizer.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi_ctrl/ddr4_v2_2_axi_ctrl_addr_decode.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi_ctrl/ddr4_v2_2_axi_ctrl_read.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi_ctrl/ddr4_v2_2_axi_ctrl_reg_bank.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi_ctrl/ddr4_v2_2_axi_ctrl_reg.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi_ctrl/ddr4_v2_2_axi_ctrl_top.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/axi_ctrl/ddr4_v2_2_axi_ctrl_write.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/clocking/ddr4_v2_2_infrastructure.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_xsdb_bram.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_write.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_wr_byte.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_wr_bit.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_sync.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_read.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_rd_en.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_pi.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_mc_odt.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_debug_microblaze.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_cplx_data.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_cplx.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_config_rom.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_addr_decode.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_top.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal_xsdb_arbiter.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_cal.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_chipscope_xsdb_slave.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_v2_2_dp_AB9.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top/ddr4_0_ddr4.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top/ddr4_0_ddr4_mem_intfc.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal/ddr4_0_ddr4_cal_riu.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top/ddr4_0.sv" \
+"../../hw.srcs/sources_1/ip/ddr4_0/tb/microblaze_mcs_0.sv" \
+
+verilog xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+"../../hw.srcs/sources_1/ip/axi_memory_interconnect/sim/axi_memory_interconnect.v" \
+"../../hw.srcs/sources_1/ip/axi_L_register_control_crossbar/sim/axi_L_register_control_crossbar.v" \
+"../../ip/lib/verilog-axi/rtl/axi_ram.v" \
+
+sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+"../../ip/include/top_pkg.sv" \
+"../../ip/aggregation_engine/rtl/aggregation_engine.sv" \
+"../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs_pkg.sv" \
+"../../ip/aggregation_engine/regbank/aggregation_engine_regbank_regs_pkg.sv" \
+"../../ip/aggregation_engine/regbank/aggregation_engine_regbank_regs.sv" \
+"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs_pkg.sv" \
+"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs.sv" \
+"../../imports/arch_package.sv" \
+"../../ip/lib/rtl/axi_read_master.sv" \
+"../../imports/ddr4_bi_delay.sv" \
+"../../imports/ddr4_db_delay_model.sv" \
+"../../imports/ddr4_dimm.sv" \
+"../../imports/ddr4_dir_detect.sv" \
+"../../imports/proj_package.sv" \
+"../../imports/ddr4_model.sv" \
+"../../imports/ddr4_rank.sv" \
+"../../imports/ddr4_rcd_model.sv" \
+"../../imports/ddr4_rdimm_wrapper.sv" \
+"../../ip/lib/rtl/float_mac.sv" \
+"../../imports/interface.sv" \
+"../../ip/transformation_engine/include/sys_array_pkg.sv" \
+"../../ip/lib/rtl/mac.sv" \
+"../../ip/node_scoreboard/include/node_scoreboard_pkg.sv" \
+"../../ip/node_scoreboard/rtl/node_scoreboard.sv" \
+"../../ip/node_scoreboard/tb/node_scoreboard_interface.sv" \
+"../../ip/node_scoreboard/tb/node_scoreboard_tb_monitor.sv" \
+"../../ip/node_scoreboard/tb/node_scoreboard_tb_scoreboard.sv" \
+"../../ip/top/tb/top_memory_axi_interface.sv" \
+"../../ip/top/tb/matrix_mult_test.sv" \
+"../../ip/output_buffer/rtl/output_buffer.sv" \
+"../../ip/prefetcher/rtl/prefetcher.sv" \
+"../../imports/sim_tb_top.sv" \
+"../../ip/lib/rtl/sys_array.sv" \
+"../../ip/lib/rtl/sys_array_pe.sv" \
+"../../ip/top/rtl/top.sv" \
+"../../ip/transformation_engine/rtl/transformation_engine.sv" \
+"../../ip/top/tb/top_tb.sv" \
+
+verilog xil_defaultlib "glbl.v"
+
+nosort

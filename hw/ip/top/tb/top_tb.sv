@@ -1,97 +1,87 @@
 
 module top_tb;
 
-  localparam ADDR_WIDTH                    = 17;
-  localparam DQ_WIDTH                      = 72;
-  localparam DQS_WIDTH                     = 18;
-  localparam DM_WIDTH                      = 9;
-  localparam DRAM_WIDTH                    = 4;
-  localparam tCK                           = 833 ; //DDR4 interface clock period in ps
-  localparam real SYSCLK_PERIOD            = tCK; 
-  localparam NUM_PHYSICAL_PARTS = (DQ_WIDTH/DRAM_WIDTH) ;
-  localparam           CLAMSHELL_PARTS = (NUM_PHYSICAL_PARTS/2);
-  localparam           ODD_PARTS = ((CLAMSHELL_PARTS*2) < NUM_PHYSICAL_PARTS) ? 1 : 0;
-  parameter RANK_WIDTH                       = 1;
-  parameter CS_WIDTH                       = 1;
-  parameter ODT_WIDTH                      = 1;
-  parameter CA_MIRROR                      = "OFF";
+    localparam ADDR_WIDTH                    = 17;
+    localparam DQ_WIDTH                      = 72;
+    localparam DQS_WIDTH                     = 18;
+    localparam DM_WIDTH                      = 9;
+    localparam DRAM_WIDTH                    = 4;
+    localparam tCK                           = 833 ; //DDR4 interface clock period in ps
+    localparam real SYSCLK_PERIOD            = tCK; 
+    localparam NUM_PHYSICAL_PARTS = (DQ_WIDTH/DRAM_WIDTH) ;
+    localparam           CLAMSHELL_PARTS = (NUM_PHYSICAL_PARTS/2);
+    localparam           ODD_PARTS = ((CLAMSHELL_PARTS*2) < NUM_PHYSICAL_PARTS) ? 1 : 0;
+    parameter RANK_WIDTH                       = 1;
+    parameter CS_WIDTH                       = 1;
+    parameter ODT_WIDTH                      = 1;
+    parameter CA_MIRROR                      = "OFF";
 
 
-  localparam MRS                           = 3'b000;
-  localparam REF                           = 3'b001;
-  localparam PRE                           = 3'b010;
-  localparam ACT                           = 3'b011;
-  localparam WR                            = 3'b100;
-  localparam RD                            = 3'b101;
-  localparam ZQC                           = 3'b110;
-  localparam NOP                           = 3'b111;
-  //Added to support RDIMM wrapper
-  localparam ODT_WIDTH_RDIMM   = 1;
-  localparam CKE_WIDTH_RDIMM   = 1;
-  localparam CS_WIDTH_RDIMM   = 1;
-  localparam RANK_WIDTH_RDIMM   = 1;
-  localparam RDIMM_SLOTS   = 1;
-  localparam BANK_WIDTH_RDIMM = 2;
-  localparam BANK_GROUP_WIDTH_RDIMM     = 2;
+    localparam MRS                           = 3'b000;
+    localparam REF                           = 3'b001;
+    localparam PRE                           = 3'b010;
+    localparam ACT                           = 3'b011;
+    localparam WR                            = 3'b100;
+    localparam RD                            = 3'b101;
+    localparam ZQC                           = 3'b110;
+    localparam NOP                           = 3'b111;
+    //Added to support RDIMM wrapper
+    localparam ODT_WIDTH_RDIMM   = 1;
+    localparam CKE_WIDTH_RDIMM   = 1;
+    localparam CS_WIDTH_RDIMM   = 1;
+    localparam RANK_WIDTH_RDIMM   = 1;
+    localparam RDIMM_SLOTS   = 1;
+    localparam BANK_WIDTH_RDIMM = 2;
+    localparam BANK_GROUP_WIDTH_RDIMM     = 2;
 
     localparam DM_DBI                        = "NONE";
-  localparam DM_WIDTH_RDIMM                  = 18;
-   
-  localparam MEM_PART_WIDTH       = "x4";
-  localparam REG_CTRL             = "ON";
+    localparam DM_WIDTH_RDIMM                  = 18;
 
-  import arch_package::*;
-  parameter UTYPE_density CONFIGURED_DENSITY = _8G;
+    localparam MEM_PART_WIDTH       = "x4";
+    localparam REG_CTRL             = "ON";
 
-  // Input clock is assumed to be equal to the memory clock frequency
-  // User should change the parameter as necessary if a different input
-  // clock frequency is used
-  localparam real CLKIN_PERIOD_NS = 3332 / 1000.0;
+    import arch_package::*;
+    parameter UTYPE_density CONFIGURED_DENSITY = _8G;
 
-  //initial begin
-  //   $shm_open("waves.shm");
-  //   $shm_probe("ACMTF");
-  //end
+    // Input clock is assumed to be equal to the memory clock frequency
+    // User should change the parameter as necessary if a different input
+    // clock frequency is used
+    localparam real CLKIN_PERIOD_NS = 3332 / 1000.0;
 
-  parameter SIMULATION = "TRUE"; // skip ddr4 calibration
+    // parameter SIMULATION = "TRUE"; // skip ddr4 calibration
 
-  reg                  sys_clk_i;
-  reg                  sys_rst;
+    parameter CLK_PERIOD = (3332);
 
-  wire                 c0_sys_clk_p;
-  wire                 c0_sys_clk_n;
+    // ------------------------
 
-  reg  [16:0]            c0_ddr4_adr_sdram[1:0];
-  reg  [1:0]           c0_ddr4_ba_sdram[1:0];
-  reg  [1:0]           c0_ddr4_bg_sdram[1:0];
+    logic                  sys_clk_i;
+    logic                  sys_rst;
+    logic                  c0_sys_clk_p;
+    logic                  c0_sys_clk_n;
 
+    logic  [16:0]          c0_ddr4_adr_sdram[1:0];
+    logic  [1:0]           c0_ddr4_ba_sdram[1:0];
+    logic  [1:0]           c0_ddr4_bg_sdram[1:0];
+    logic                  c0_ddr4_act_n;
+    logic  [16:0]          c0_ddr4_adr;
+    logic  [1:0]           c0_ddr4_ba;
+    logic  [1:0]           c0_ddr4_bg;
+    logic  [0:0]           c0_ddr4_cke;
+    logic  [0:0]           c0_ddr4_odt;
+    logic  [0:0]           c0_ddr4_cs_n;
+    logic  [0:0]           c0_ddr4_ck_t_int;
+    logic  [0:0]           c0_ddr4_ck_c_int;
+    logic                  c0_ddr4_ck_t;
+    logic                  c0_ddr4_ck_c;
+    logic                  c0_ddr4_reset_n;
+    logic                  c0_ddr4_parity;
+    wire [71:0]            c0_ddr4_dq;
+    wire [17:0]            c0_ddr4_dqs_c;
+    wire [17:0]            c0_ddr4_dqs_t;
+    logic                  c0_init_calib_complete;
 
-  wire                 c0_ddr4_act_n;
-  wire  [16:0]          c0_ddr4_adr;
-  wire  [1:0]          c0_ddr4_ba;
-  wire  [1:0]    c0_ddr4_bg;
-  wire  [0:0]           c0_ddr4_cke;
-  wire  [0:0]           c0_ddr4_odt;
-  wire  [0:0]            c0_ddr4_cs_n;
-
-  wire  [0:0]  c0_ddr4_ck_t_int;
-  wire  [0:0]  c0_ddr4_ck_c_int;
-
-  wire    c0_ddr4_ck_t;
-  wire    c0_ddr4_ck_c;
-
-  wire                 c0_ddr4_reset_n;
-  wire                  c0_ddr4_parity;
-
-  wire  [71:0]          c0_ddr4_dq;
-  wire  [17:0]          c0_ddr4_dqs_c;
-  wire  [17:0]          c0_ddr4_dqs_t;
-  wire                 c0_init_calib_complete;
-
-
-  reg  [31:0] cmdName;
-  bit  en_model;
-  tri        model_enable = en_model;
+    logic  [31:0]          cmdName;
+    logic [ADDR_WIDTH-1:0] DDR4_ADRMOD[RANK_WIDTH-1:0];
 
     // AXI-L interface to Host
     logic [31 : 0]    host_axil_awaddr;
@@ -114,28 +104,63 @@ module top_tb;
     logic [1 : 0]     host_axil_rresp;
     logic [0 : 0]     host_axil_rvalid;
 
-  //**************************************************************************//
+    logic  [3:0]                   axi_interconnect_memory_axi_awid; // output 
+    logic  [33:0]                  axi_interconnect_memory_axi_awaddr; // output 
+    logic  [7:0]                   axi_interconnect_memory_axi_awlen; // output 
+    logic  [2:0]                   axi_interconnect_memory_axi_awsize; // output 
+    logic  [1:0]                   axi_interconnect_memory_axi_awburst; // output 
+    logic  [0:0]                   axi_interconnect_memory_axi_awlock; // output 
+    logic  [3:0]                   axi_interconnect_memory_axi_awcache; // output 
+    logic  [2:0]                   axi_interconnect_memory_axi_awprot; // output 
+    logic  [3:0]                   axi_interconnect_memory_axi_awqos; // output 
+    logic                          axi_interconnect_memory_axi_awvalid; // output 
+    logic                          axi_interconnect_memory_axi_awready; // input  
+    logic  [511:0]                 axi_interconnect_memory_axi_wdata; // output 
+    logic  [63:0]                  axi_interconnect_memory_axi_wstrb; // output 
+    logic                          axi_interconnect_memory_axi_wlast; // output 
+    logic                          axi_interconnect_memory_axi_wvalid; // output 
+    logic                          axi_interconnect_memory_axi_wready; // input  
+    logic [3:0]                    axi_interconnect_memory_axi_bid; // input  
+    logic [1:0]                    axi_interconnect_memory_axi_bresp; // input  
+    logic                          axi_interconnect_memory_axi_bvalid; // input  
+    logic                          axi_interconnect_memory_axi_bready; // output 
+    logic  [3:0]                   axi_interconnect_memory_axi_arid; // output 
+    logic  [33:0]                  axi_interconnect_memory_axi_araddr; // output 
+    logic  [7:0]                   axi_interconnect_memory_axi_arlen; // output 
+    logic  [2:0]                   axi_interconnect_memory_axi_arsize; // output 
+    logic  [1:0]                   axi_interconnect_memory_axi_arburst; // output 
+    logic  [0:0]                   axi_interconnect_memory_axi_arlock; // output 
+    logic  [3:0]                   axi_interconnect_memory_axi_arcache; // output 
+    logic  [2:0]                   axi_interconnect_memory_axi_arprot; // output 
+    logic  [3:0]                   axi_interconnect_memory_axi_arqos; // output 
+    logic                          axi_interconnect_memory_axi_arvalid; // output 
+    logic                          axi_interconnect_memory_axi_arready; // input  
+    logic [3:0]                    axi_interconnect_memory_axi_rid; // input  
+    logic [511:0]                  axi_interconnect_memory_axi_rdata; // input  
+    logic [1:0]                    axi_interconnect_memory_axi_rresp; // input  
+    logic                          axi_interconnect_memory_axi_rlast; // input  
+    logic                          axi_interconnect_memory_axi_rvalid; // input  
+    logic                          axi_interconnect_memory_axi_rready; // output 
+
+  // ============================================================================
   // Reset Generation
-  //**************************************************************************//
+  // ============================================================================
   initial begin
      sys_rst = 1'b0;
-     #200
+     #CLK_PERIOD
      sys_rst = 1'b1;
-     en_model = 1'b0; 
-     #5 en_model = 1'b1;
-     #200;
+     #(CLK_PERIOD*20)
      sys_rst = 1'b0;
-     #100;
   end
 
-  //**************************************************************************//
+  // ============================================================================
   // Clock Generation
-  //**************************************************************************//
+  // ============================================================================
 
   initial
-    sys_clk_i = 1'b0;
+    sys_clk_i = 1'b1;
   always
-    sys_clk_i = #(3332/2.0) ~sys_clk_i;
+    sys_clk_i = #(CLK_PERIOD/2.0) ~sys_clk_i;
 
   assign c0_sys_clk_p = sys_clk_i;
   assign c0_sys_clk_n = ~sys_clk_i;
@@ -196,6 +221,45 @@ top top_i (
     .host_axil_rresp        (host_axil_rresp        ),
     .host_axil_rvalid       (host_axil_rvalid       ),
 
+    // AXI Memory Master
+    .top_axi_interconnect_axi_awid            (memory_intf.top_axi_interconnect_axi_awid),
+    .top_axi_interconnect_axi_awaddr          (memory_intf.top_axi_interconnect_axi_awaddr),
+    .top_axi_interconnect_axi_awlen           (memory_intf.top_axi_interconnect_axi_awlen),
+    .top_axi_interconnect_axi_awsize          (memory_intf.top_axi_interconnect_axi_awsize),
+    .top_axi_interconnect_axi_awburst         (memory_intf.top_axi_interconnect_axi_awburst),
+    .top_axi_interconnect_axi_awlock          (memory_intf.top_axi_interconnect_axi_awlock),
+    .top_axi_interconnect_axi_awcache         (memory_intf.top_axi_interconnect_axi_awcache),
+    .top_axi_interconnect_axi_awprot          (memory_intf.top_axi_interconnect_axi_awprot),
+    .top_axi_interconnect_axi_awqos           (memory_intf.top_axi_interconnect_axi_awqos),
+    .top_axi_interconnect_axi_awvalid         (memory_intf.top_axi_interconnect_axi_awvalid),
+    .top_axi_interconnect_axi_awready         (memory_intf.top_axi_interconnect_axi_awready),
+    .top_axi_interconnect_axi_wdata           (memory_intf.top_axi_interconnect_axi_wdata),
+    .top_axi_interconnect_axi_wstrb           (memory_intf.top_axi_interconnect_axi_wstrb),
+    .top_axi_interconnect_axi_wlast           (memory_intf.top_axi_interconnect_axi_wlast),
+    .top_axi_interconnect_axi_wvalid          (memory_intf.top_axi_interconnect_axi_wvalid),
+    .top_axi_interconnect_axi_wready          (memory_intf.top_axi_interconnect_axi_wready),
+    .top_axi_interconnect_axi_bid             (memory_intf.top_axi_interconnect_axi_bid),
+    .top_axi_interconnect_axi_bresp           (memory_intf.top_axi_interconnect_axi_bresp),
+    .top_axi_interconnect_axi_bvalid          (memory_intf.top_axi_interconnect_axi_bvalid),
+    .top_axi_interconnect_axi_bready          (memory_intf.top_axi_interconnect_axi_bready),
+    .top_axi_interconnect_axi_arid            (memory_intf.top_axi_interconnect_axi_arid),
+    .top_axi_interconnect_axi_araddr          (memory_intf.top_axi_interconnect_axi_araddr),
+    .top_axi_interconnect_axi_arlen           (memory_intf.top_axi_interconnect_axi_arlen),
+    .top_axi_interconnect_axi_arsize          (memory_intf.top_axi_interconnect_axi_arsize),
+    .top_axi_interconnect_axi_arburst         (memory_intf.top_axi_interconnect_axi_arburst),
+    .top_axi_interconnect_axi_arlock          (memory_intf.top_axi_interconnect_axi_arlock),
+    .top_axi_interconnect_axi_arcache         (memory_intf.top_axi_interconnect_axi_arcache),
+    .top_axi_interconnect_axi_arprot          (memory_intf.top_axi_interconnect_axi_arprot),
+    .top_axi_interconnect_axi_arqos           (memory_intf.top_axi_interconnect_axi_arqos),
+    .top_axi_interconnect_axi_arvalid         (memory_intf.top_axi_interconnect_axi_arvalid),
+    .top_axi_interconnect_axi_arready         (memory_intf.top_axi_interconnect_axi_arready),
+    .top_axi_interconnect_axi_rid             (memory_intf.top_axi_interconnect_axi_rid),
+    .top_axi_interconnect_axi_rdata           (memory_intf.top_axi_interconnect_axi_rdata),
+    .top_axi_interconnect_axi_rresp           (memory_intf.top_axi_interconnect_axi_rresp),
+    .top_axi_interconnect_axi_rlast           (memory_intf.top_axi_interconnect_axi_rlast),
+    .top_axi_interconnect_axi_rvalid          (memory_intf.top_axi_interconnect_axi_rvalid),
+    .top_axi_interconnect_axi_rready          (memory_intf.top_axi_interconnect_axi_rready),
+
     // DDR4
     .c0_sys_clk_p           (c0_sys_clk_p),
     .c0_sys_clk_n           (c0_sys_clk_n),
@@ -214,7 +278,50 @@ top top_i (
     .c0_ddr4_dqs_c          (c0_ddr4_dqs_c),
     .c0_ddr4_dqs_t          (c0_ddr4_dqs_t),
 
+    .c0_ddr4_s_axi_awid         (axi_interconnect_memory_axi_awid),
+    .c0_ddr4_s_axi_awaddr       (axi_interconnect_memory_axi_awaddr),
+    .c0_ddr4_s_axi_awlen        (axi_interconnect_memory_axi_awlen),
+    .c0_ddr4_s_axi_awsize       (axi_interconnect_memory_axi_awsize),
+    .c0_ddr4_s_axi_awburst      (axi_interconnect_memory_axi_awburst),
+    .c0_ddr4_s_axi_awlock       (axi_interconnect_memory_axi_awlock),
+    .c0_ddr4_s_axi_awcache      (axi_interconnect_memory_axi_awcache),
+    .c0_ddr4_s_axi_awprot       (axi_interconnect_memory_axi_awprot),
+    .c0_ddr4_s_axi_awqos        (axi_interconnect_memory_axi_awqos),
+    .c0_ddr4_s_axi_awvalid      (axi_interconnect_memory_axi_awvalid),
+    .c0_ddr4_s_axi_awready      (axi_interconnect_memory_axi_awready),
+    .c0_ddr4_s_axi_wdata        (axi_interconnect_memory_axi_wdata),
+    .c0_ddr4_s_axi_wstrb        (axi_interconnect_memory_axi_wstrb),
+    .c0_ddr4_s_axi_wlast        (axi_interconnect_memory_axi_wlast),
+    .c0_ddr4_s_axi_wvalid       (axi_interconnect_memory_axi_wvalid),
+    .c0_ddr4_s_axi_wready       (axi_interconnect_memory_axi_wready),
+    .c0_ddr4_s_axi_bid          (axi_interconnect_memory_axi_bid),
+    .c0_ddr4_s_axi_bresp        (axi_interconnect_memory_axi_bresp),
+    .c0_ddr4_s_axi_bvalid       (axi_interconnect_memory_axi_bvalid),
+    .c0_ddr4_s_axi_bready       (axi_interconnect_memory_axi_bready),
+    .c0_ddr4_s_axi_arid         (axi_interconnect_memory_axi_arid),
+    .c0_ddr4_s_axi_araddr       (axi_interconnect_memory_axi_araddr),
+    .c0_ddr4_s_axi_arlen        (axi_interconnect_memory_axi_arlen),
+    .c0_ddr4_s_axi_arsize       (axi_interconnect_memory_axi_arsize),
+    .c0_ddr4_s_axi_arburst      (axi_interconnect_memory_axi_arburst),
+    .c0_ddr4_s_axi_arlock       (axi_interconnect_memory_axi_arlock),
+    .c0_ddr4_s_axi_arcache      (axi_interconnect_memory_axi_arcache),
+    .c0_ddr4_s_axi_arprot       (axi_interconnect_memory_axi_arprot),
+    .c0_ddr4_s_axi_arqos        (axi_interconnect_memory_axi_arqos),
+    .c0_ddr4_s_axi_arvalid      (axi_interconnect_memory_axi_arvalid),
+    .c0_ddr4_s_axi_arready      (axi_interconnect_memory_axi_arready),
+    .c0_ddr4_s_axi_rid          (axi_interconnect_memory_axi_rid),
+    .c0_ddr4_s_axi_rdata        (axi_interconnect_memory_axi_rdata),
+    .c0_ddr4_s_axi_rresp        (axi_interconnect_memory_axi_rresp),
+    .c0_ddr4_s_axi_rlast        (axi_interconnect_memory_axi_rlast),
+    .c0_ddr4_s_axi_rvalid       (axi_interconnect_memory_axi_rvalid),
+    .c0_ddr4_s_axi_rready       (axi_interconnect_memory_axi_rready),
+
     .c0_init_calib_complete (c0_init_calib_complete)
+);
+
+top_memory_axi_interface memory_intf (
+    .clk                 (sys_clk_i),                    // input wire aclk
+    .resetn              (!sys_rst)              // input wire aresetn
 );
 
 //===========================================================================
@@ -246,130 +353,245 @@ axil_master_vip axil_master_vip_i (
   .m_axi_rready         (host_axil_rready)    // output wire m_axi_rready
 );
 
-axil_master_vip_stimulus axil_master_vip_stimulus_i (
-    .ddr4_c0_init_calib_complete (c0_init_calib_complete)
+//===========================================================================
+// AXI Memory Master VIP
+//===========================================================================
+
+axi_memory_master_vip axi_memory_master_vip_i (
+  .aclk               (sys_clk_i),                    // input wire aclk
+  .aresetn            (!sys_rst),              // input wire aresetn
+
+  .m_axi_awid         (memory_intf.top_axi_interconnect_axi_awid),        // output wire [3 : 0] m_axi_awid
+  .m_axi_awaddr       (memory_intf.top_axi_interconnect_axi_awaddr),    // output wire [33 : 0] m_axi_awaddr
+  .m_axi_awlen        (memory_intf.top_axi_interconnect_axi_awlen),      // output wire [7 : 0] m_axi_awlen
+  .m_axi_awsize       (memory_intf.top_axi_interconnect_axi_awsize),    // output wire [2 : 0] m_axi_awsize
+  .m_axi_awburst      (memory_intf.top_axi_interconnect_axi_awburst),  // output wire [1 : 0] m_axi_awburst
+  .m_axi_awlock       (memory_intf.top_axi_interconnect_axi_awlock),    // output wire [0 : 0] m_axi_awlock
+  .m_axi_awcache      (memory_intf.top_axi_interconnect_axi_awcache),  // output wire [3 : 0] m_axi_awcache
+  .m_axi_awprot       (memory_intf.top_axi_interconnect_axi_awprot),    // output wire [2 : 0] m_axi_awprot
+  .m_axi_awqos        (memory_intf.top_axi_interconnect_axi_awqos),      // output wire [3 : 0] m_axi_awqos
+  .m_axi_awvalid      (memory_intf.top_axi_interconnect_axi_awvalid),  // output wire m_axi_awvalid
+  .m_axi_awready      (memory_intf.top_axi_interconnect_axi_awready),  // input wire m_axi_awready
+  .m_axi_wdata        (memory_intf.top_axi_interconnect_axi_wdata),      // output wire [511 : 0] m_axi_wdata
+  .m_axi_wstrb        (memory_intf.top_axi_interconnect_axi_wstrb),      // output wire [63 : 0] m_axi_wstrb
+  .m_axi_wlast        (memory_intf.top_axi_interconnect_axi_wlast),      // output wire m_axi_wlast
+  .m_axi_wvalid       (memory_intf.top_axi_interconnect_axi_wvalid),    // output wire m_axi_wvalid
+  .m_axi_wready       (memory_intf.top_axi_interconnect_axi_wready),    // input wire m_axi_wready
+  .m_axi_bid          (memory_intf.top_axi_interconnect_axi_bid),          // input wire [3 : 0] m_axi_bid
+  .m_axi_bresp        (memory_intf.top_axi_interconnect_axi_bresp),      // input wire [1 : 0] m_axi_bresp
+  .m_axi_bvalid       (memory_intf.top_axi_interconnect_axi_bvalid),    // input wire m_axi_bvalid
+  .m_axi_bready       (memory_intf.top_axi_interconnect_axi_bready),    // output wire m_axi_bready
+  .m_axi_arid         (memory_intf.top_axi_interconnect_axi_arid),        // output wire [3 : 0] m_axi_arid
+  .m_axi_araddr       (memory_intf.top_axi_interconnect_axi_araddr),    // output wire [33 : 0] m_axi_araddr
+  .m_axi_arlen        (memory_intf.top_axi_interconnect_axi_arlen),      // output wire [7 : 0] m_axi_arlen
+  .m_axi_arsize       (memory_intf.top_axi_interconnect_axi_arsize),    // output wire [2 : 0] m_axi_arsize
+  .m_axi_arburst      (memory_intf.top_axi_interconnect_axi_arburst),  // output wire [1 : 0] m_axi_arburst
+  .m_axi_arlock       (memory_intf.top_axi_interconnect_axi_arlock),    // output wire [0 : 0] m_axi_arlock
+  .m_axi_arcache      (memory_intf.top_axi_interconnect_axi_arcache),  // output wire [3 : 0] m_axi_arcache
+  .m_axi_arprot       (memory_intf.top_axi_interconnect_axi_arprot),    // output wire [2 : 0] m_axi_arprot
+  .m_axi_arqos        (memory_intf.top_axi_interconnect_axi_arqos),      // output wire [3 : 0] m_axi_arqos
+  .m_axi_arvalid      (memory_intf.top_axi_interconnect_axi_arvalid),  // output wire m_axi_arvalid
+  .m_axi_arready      (memory_intf.top_axi_interconnect_axi_arready),  // input wire m_axi_arready
+  .m_axi_rid          (memory_intf.top_axi_interconnect_axi_rid),          // input wire [3 : 0] m_axi_rid
+  .m_axi_rdata        (memory_intf.top_axi_interconnect_axi_rdata),      // input wire [511 : 0] m_axi_rdata
+  .m_axi_rresp        (memory_intf.top_axi_interconnect_axi_rresp),      // input wire [1 : 0] m_axi_rresp
+  .m_axi_rlast        (memory_intf.top_axi_interconnect_axi_rlast),      // input wire m_axi_rlast
+  .m_axi_rvalid       (memory_intf.top_axi_interconnect_axi_rvalid),    // input wire m_axi_rvalid
+  .m_axi_rready       (memory_intf.top_axi_interconnect_axi_rready)    // output wire m_axi_rready
 );
 
-  //===========================================================================
-  //                         Memory Model instantiation
-  //===========================================================================
+//===========================================================================
+// Tests
+//===========================================================================
+
+matrix_mult_test matrix_mult_test_i (
+    // .memory_intf                    (memory_intf),
+    .nsb_intf                       (top_i.node_scoreboard_i.nsb_interface) // binded in this file
+);
+
+//===========================================================================
+//                         DRAM Model
+//===========================================================================
+
+`ifdef DRAM_MODEL
+
 genvar rdimm_x;
 			      
-generate
-  for(rdimm_x=0; rdimm_x<RDIMM_SLOTS; rdimm_x=rdimm_x+1)
-    begin: instance_of_rdimm_slots
-ddr4_rdimm_wrapper #(
-             .MC_DQ_WIDTH(DQ_WIDTH),
-             .MC_DQS_BITS(DQS_WIDTH),
-             .MC_DM_WIDTH(DM_WIDTH_RDIMM),
-             .MC_CKE_NUM(CKE_WIDTH_RDIMM),
-             .MC_ODT_WIDTH(ODT_WIDTH_RDIMM),
-             .MC_ABITS(ADDR_WIDTH),
-             .MC_BANK_WIDTH(BANK_WIDTH_RDIMM),
-             .MC_BANK_GROUP(BANK_GROUP_WIDTH_RDIMM),
-             .MC_CS_NUM(CS_WIDTH_RDIMM),
-             .MC_RANKS_NUM(RANK_WIDTH_RDIMM),
-             .NUM_PHYSICAL_PARTS(NUM_PHYSICAL_PARTS),
-             .CALIB_EN("NO"),
-             .tCK(tCK),
-             .tPDM(),
-             .MIN_TOTAL_R2R_DELAY(),
-             .MAX_TOTAL_R2R_DELAY(),
-             .TOTAL_FBT_DELAY(),
-             .MEM_PART_WIDTH(MEM_PART_WIDTH),
-             .MC_CA_MIRROR(CA_MIRROR),
-            // .SDRAM("DDR4"),
-   `ifdef SAMSUNG
-             .DDR_SIM_MODEL("SAMSUNG"),
+generate    
+    for(rdimm_x=0; rdimm_x<RDIMM_SLOTS; rdimm_x=rdimm_x+1) begin: instance_of_rdimm_slots
+        ddr4_rdimm_wrapper #(
+                    .MC_DQ_WIDTH(DQ_WIDTH),
+                    .MC_DQS_BITS(DQS_WIDTH),
+                    .MC_DM_WIDTH(DM_WIDTH_RDIMM),
+                    .MC_CKE_NUM(CKE_WIDTH_RDIMM),
+                    .MC_ODT_WIDTH(ODT_WIDTH_RDIMM),
+                    .MC_ABITS(ADDR_WIDTH),
+                    .MC_BANK_WIDTH(BANK_WIDTH_RDIMM),
+                    .MC_BANK_GROUP(BANK_GROUP_WIDTH_RDIMM),
+                    .MC_CS_NUM(CS_WIDTH_RDIMM),
+                    .MC_RANKS_NUM(RANK_WIDTH_RDIMM),
+                    .NUM_PHYSICAL_PARTS(NUM_PHYSICAL_PARTS),
+                    .CALIB_EN("NO"),
+                    .tCK(tCK),
+                    .tPDM(),
+                    .MIN_TOTAL_R2R_DELAY(),
+                    .MAX_TOTAL_R2R_DELAY(),
+                    .TOTAL_FBT_DELAY(),
+                    .MEM_PART_WIDTH(MEM_PART_WIDTH),
+                    .MC_CA_MIRROR(CA_MIRROR),
+        `ifdef SAMSUNG
+                    .DDR_SIM_MODEL("SAMSUNG"),
 
-   `else         
-             .DDR_SIM_MODEL("MICRON"),
-   `endif
-             .DM_DBI(DM_DBI),
-             .MC_REG_CTRL(REG_CTRL),
-             .DIMM_MODEL ("RDIMM"),
-             .RDIMM_SLOTS (RDIMM_SLOTS),
-             .CONFIGURED_DENSITY (CONFIGURED_DENSITY)
-                     )
-   u_ddr4_rdimm_wrapper  (
-                .ddr4_act_n(c0_ddr4_act_n), // input
-                .ddr4_addr(c0_ddr4_adr), // input
-                .ddr4_ba(c0_ddr4_ba), // input
-                .ddr4_bg(c0_ddr4_bg), // input
-                .ddr4_par(c0_ddr4_parity), // input
-                .ddr4_cke(c0_ddr4_cke[CKE_WIDTH_RDIMM-1:0]), // input
-                .ddr4_odt(c0_ddr4_odt[ODT_WIDTH_RDIMM-1:0]), // input
-                .ddr4_cs_n(c0_ddr4_cs_n[CS_WIDTH_RDIMM-1:0]), // input
-                .ddr4_ck_t(c0_ddr4_ck_t), // input
-                .ddr4_ck_c(c0_ddr4_ck_c), // input
-                .ddr4_reset_n(c0_ddr4_reset_n), // input
-                .ddr4_dm_dbi_n       (),
-                .ddr4_dq(c0_ddr4_dq), // inout
-                .ddr4_dqs_t(c0_ddr4_dqs_t), // inout
-                .ddr4_dqs_c(c0_ddr4_dqs_c), // inout
-        .ddr4_alert_n(), // inout
-        .initDone(c0_init_calib_complete), // inout
-                .scl(), // input
-        .sa0(), // input
-        .sa1(), // input
-        .sa2(), // input
-                .sda(), // inout
-        .bfunc(), // input
-        .vddspd() // input
+        `else         
+                    .DDR_SIM_MODEL("MICRON"),
+        `endif
+                    .DM_DBI(DM_DBI),
+                    .MC_REG_CTRL(REG_CTRL),
+                    .DIMM_MODEL ("RDIMM"),
+                    .RDIMM_SLOTS (RDIMM_SLOTS),
+                    .CONFIGURED_DENSITY (CONFIGURED_DENSITY)
+        ) u_ddr4_rdimm_wrapper  (
+                    .ddr4_act_n(c0_ddr4_act_n), // input
+                    .ddr4_addr(c0_ddr4_adr), // input
+                    .ddr4_ba(c0_ddr4_ba), // input
+                    .ddr4_bg(c0_ddr4_bg), // input
+                    .ddr4_par(c0_ddr4_parity), // input
+                    .ddr4_cke(c0_ddr4_cke[CKE_WIDTH_RDIMM-1:0]), // input
+                    .ddr4_odt(c0_ddr4_odt[ODT_WIDTH_RDIMM-1:0]), // input
+                    .ddr4_cs_n(c0_ddr4_cs_n[CS_WIDTH_RDIMM-1:0]), // input
+                    .ddr4_ck_t(c0_ddr4_ck_t), // input
+                    .ddr4_ck_c(c0_ddr4_ck_c), // input
+                    .ddr4_reset_n(c0_ddr4_reset_n), // input
+                    .ddr4_dm_dbi_n       (),
+                    .ddr4_dq(c0_ddr4_dq), // inout
+                    .ddr4_dqs_t(c0_ddr4_dqs_t), // inout
+                    .ddr4_dqs_c(c0_ddr4_dqs_c), // inout
+                    .ddr4_alert_n(), // inout
+                    .initDone(c0_init_calib_complete), // inout
+                    .scl(), // input
+                    .sa0(), // input
+                    .sa1(), // input
+                    .sa2(), // input
+                    .sda(), // inout
+                    .bfunc(), // input
+                    .vddspd() // input
         );
     end
-    endgenerate
+endgenerate
 
-      reg [ADDR_WIDTH-1:0] DDR4_ADRMOD[RANK_WIDTH-1:0];
-
-  always @(*)
+always @(*) begin
     if (c0_ddr4_cs_n == 4'b1111)
-      cmdName = "DSEL";
+        cmdName = "DSEL";
     else
     if (c0_ddr4_act_n)
-      casez (DDR4_ADRMOD[0][16:14])
-       MRS:     cmdName = "MRS";
-       REF:     cmdName = "REF";
-       PRE:     cmdName = "PRE";
-       WR:      cmdName = "WR";
-       RD:      cmdName = "RD";
-       ZQC:     cmdName = "ZQC";
-       NOP:     cmdName = "NOP";
-      default:  cmdName = "***";
-      endcase
+        casez (DDR4_ADRMOD[0][16:14])
+        MRS:     cmdName = "MRS";
+        REF:     cmdName = "REF";
+        PRE:     cmdName = "PRE";
+        WR:      cmdName = "WR";
+        RD:      cmdName = "RD";
+        ZQC:     cmdName = "ZQC";
+        NOP:     cmdName = "NOP";
+        default:  cmdName = "***";
+        endcase
     else
-      cmdName = "ACT";
+        cmdName = "ACT";
+end
 
-   reg wr_en ;
-   always@(posedge c0_ddr4_ck_t)begin
-     if(!c0_ddr4_reset_n)begin
-       wr_en <= #100 1'b0 ;
-     end else begin
-       if(cmdName == "WR")begin
-         wr_en <= #100 1'b1 ;
-       end else if (cmdName == "RD")begin
-         wr_en <= #100 1'b0 ;
-       end
-     end
-   end
+reg wr_en ;
+always@(posedge c0_ddr4_ck_t)begin
+    if(!c0_ddr4_reset_n)begin
+    wr_en <= #100 1'b0 ;
+    end else begin
+    if(cmdName == "WR")begin
+        wr_en <= #100 1'b1 ;
+    end else if (cmdName == "RD")begin
+        wr_en <= #100 1'b0 ;
+    end
+    end
+end
 
 genvar rnk;
+
 generate
 for (rnk = 0; rnk < CS_WIDTH; rnk++) begin:rankup
  always @(*)
     if (c0_ddr4_act_n)
-      casez (c0_ddr4_adr_sdram[0][16:14])
-      WR, RD: begin
+        casez (c0_ddr4_adr_sdram[0][16:14])
+        WR, RD: begin
         DDR4_ADRMOD[rnk] = c0_ddr4_adr_sdram[rnk] & 18'h1C7FF;
-      end
-      default: begin
+        end
+        default: begin
         DDR4_ADRMOD[rnk] = c0_ddr4_adr_sdram[rnk];
-      end
-      endcase
+        end
+        endcase
     else begin
-      DDR4_ADRMOD[rnk] = c0_ddr4_adr_sdram[rnk];
+        DDR4_ADRMOD[rnk] = c0_ddr4_adr_sdram[rnk];
     end
 end
 endgenerate
+
+`endif
+
+//===========================================================================
+//                         RAM Model
+//===========================================================================
+
+`ifdef RAM_MODEL
+
+axi_ram #(
+    .DATA_WIDTH(512),
+    .ADDR_WIDTH(34),
+    .ID_WIDTH(4)
+) ram_model (
+    .clk                    (sys_clk_i),
+    .rst                    (sys_rst),
+
+    .s_axi_awid             (axi_interconnect_memory_axi_awid),
+    .s_axi_awaddr           (axi_interconnect_memory_axi_awaddr),
+    .s_axi_awlen            (axi_interconnect_memory_axi_awlen),
+    .s_axi_awsize           (axi_interconnect_memory_axi_awsize),
+    .s_axi_awburst          (axi_interconnect_memory_axi_awburst),
+    .s_axi_awlock           (axi_interconnect_memory_axi_awlock),
+    .s_axi_awcache          (axi_interconnect_memory_axi_awcache),
+    .s_axi_awprot           (axi_interconnect_memory_axi_awprot),
+    .s_axi_awvalid          (axi_interconnect_memory_axi_awvalid),
+    .s_axi_awready          (axi_interconnect_memory_axi_awready),
+    .s_axi_wdata            (axi_interconnect_memory_axi_wdata),
+    .s_axi_wstrb            (axi_interconnect_memory_axi_wstrb),
+    .s_axi_wlast            (axi_interconnect_memory_axi_wlast),
+    .s_axi_wvalid           (axi_interconnect_memory_axi_wvalid),
+    .s_axi_wready           (axi_interconnect_memory_axi_wready),
+    .s_axi_bid              (axi_interconnect_memory_axi_bid),
+    .s_axi_bresp            (axi_interconnect_memory_axi_bresp),
+    .s_axi_bvalid           (axi_interconnect_memory_axi_bvalid),
+    .s_axi_bready           (axi_interconnect_memory_axi_bready),
+    .s_axi_arid             (axi_interconnect_memory_axi_arid),
+    .s_axi_araddr           (axi_interconnect_memory_axi_araddr),
+    .s_axi_arlen            (axi_interconnect_memory_axi_arlen),
+    .s_axi_arsize           (axi_interconnect_memory_axi_arsize),
+    .s_axi_arburst          (axi_interconnect_memory_axi_arburst),
+    .s_axi_arlock           (axi_interconnect_memory_axi_arlock),
+    .s_axi_arcache          (axi_interconnect_memory_axi_arcache),
+    .s_axi_arprot           (axi_interconnect_memory_axi_arprot),
+    .s_axi_arvalid          (axi_interconnect_memory_axi_arvalid),
+    .s_axi_arready          (axi_interconnect_memory_axi_arready),
+    .s_axi_rid              (axi_interconnect_memory_axi_rid),
+    .s_axi_rdata            (axi_interconnect_memory_axi_rdata),
+    .s_axi_rresp            (axi_interconnect_memory_axi_rresp),
+    .s_axi_rlast            (axi_interconnect_memory_axi_rlast),
+    .s_axi_rvalid           (axi_interconnect_memory_axi_rvalid),
+    .s_axi_rready           (axi_interconnect_memory_axi_rready)
+);
+
+`endif
+
+//===========================================================================
+//                         Binds
+//===========================================================================
+
+bind top_i.node_scoreboard_i node_scoreboard_interface nsb_interface (
+    .*
+);
 
 endmodule

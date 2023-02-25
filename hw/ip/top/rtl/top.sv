@@ -45,10 +45,12 @@ module top
     input logic                           top_axi_interconnect_axi_wlast,
     input logic                           top_axi_interconnect_axi_wvalid,
     output logic                          top_axi_interconnect_axi_wready,
+    
     output logic [3:0]                    top_axi_interconnect_axi_bid,
     output logic [1:0]                    top_axi_interconnect_axi_bresp,
     output logic                          top_axi_interconnect_axi_bvalid,
     input logic                           top_axi_interconnect_axi_bready,
+    
     input logic [3:0]                     top_axi_interconnect_axi_arid,
     input logic [33:0]                    top_axi_interconnect_axi_araddr,
     input logic [7:0]                     top_axi_interconnect_axi_arlen,
@@ -67,6 +69,45 @@ module top
     output logic                          top_axi_interconnect_axi_rvalid,
     input logic                           top_axi_interconnect_axi_rready,
     
+    // AXI Memory Interconnect -> Memory (Routed to DRAM Controller if `DRAM_CONTROLLER defined)
+    output logic  [3:0]                   c0_ddr4_s_axi_awid,
+    output logic  [33:0]                  c0_ddr4_s_axi_awaddr,
+    output logic  [7:0]                   c0_ddr4_s_axi_awlen,
+    output logic  [2:0]                   c0_ddr4_s_axi_awsize,
+    output logic  [1:0]                   c0_ddr4_s_axi_awburst,
+    output logic  [0:0]                   c0_ddr4_s_axi_awlock,
+    output logic  [3:0]                   c0_ddr4_s_axi_awcache,
+    output logic  [2:0]                   c0_ddr4_s_axi_awprot,
+    output logic  [3:0]                   c0_ddr4_s_axi_awqos,
+    output logic                          c0_ddr4_s_axi_awvalid,
+    input  logic                          c0_ddr4_s_axi_awready,
+    output logic  [511:0]                 c0_ddr4_s_axi_wdata,
+    output logic  [63:0]                  c0_ddr4_s_axi_wstrb,
+    output logic                          c0_ddr4_s_axi_wlast,
+    output logic                          c0_ddr4_s_axi_wvalid,
+    input  logic                          c0_ddr4_s_axi_wready,
+    input  logic [3:0]                    c0_ddr4_s_axi_bid,
+    input  logic [1:0]                    c0_ddr4_s_axi_bresp,
+    input  logic                          c0_ddr4_s_axi_bvalid,
+    output logic                          c0_ddr4_s_axi_bready,
+    output logic  [3:0]                   c0_ddr4_s_axi_arid,
+    output logic  [33:0]                  c0_ddr4_s_axi_araddr,
+    output logic  [7:0]                   c0_ddr4_s_axi_arlen,
+    output logic  [2:0]                   c0_ddr4_s_axi_arsize,
+    output logic  [1:0]                   c0_ddr4_s_axi_arburst,
+    output logic  [0:0]                   c0_ddr4_s_axi_arlock,
+    output logic  [3:0]                   c0_ddr4_s_axi_arcache,
+    output logic  [2:0]                   c0_ddr4_s_axi_arprot,
+    output logic  [3:0]                   c0_ddr4_s_axi_arqos,
+    output logic                          c0_ddr4_s_axi_arvalid,
+    input  logic                          c0_ddr4_s_axi_arready,
+    input  logic [3:0]                    c0_ddr4_s_axi_rid,
+    input  logic [511:0]                  c0_ddr4_s_axi_rdata,
+    input  logic [1:0]                    c0_ddr4_s_axi_rresp,
+    input  logic                          c0_ddr4_s_axi_rlast,
+    input  logic                          c0_ddr4_s_axi_rvalid,
+    output logic                          c0_ddr4_s_axi_rready,
+
     // DDR4
     input                                 c0_sys_clk_p,
     input                                 c0_sys_clk_n,
@@ -84,7 +125,6 @@ module top
     inout  [71:0]                         c0_ddr4_dq,
     inout  [17:0]                         c0_ddr4_dqs_t,
     inout  [17:0]                         c0_ddr4_dqs_c,
-    
     output                                c0_init_calib_complete,
     output                                c0_data_compare_error
 );
@@ -121,44 +161,6 @@ logic [7 : 0]                     axil_interconnect_m_axi_rresp;
 logic [3 : 0]                     axil_interconnect_m_axi_rvalid;
 logic [3 : 0]                     axil_interconnect_m_axi_rready;
 
-// AXI Memory Interconnect -> DDR4
-logic  [3:0]                       c0_ddr4_s_axi_awid;
-logic  [33:0]                      c0_ddr4_s_axi_awaddr;
-logic  [7:0]                       c0_ddr4_s_axi_awlen;
-logic  [2:0]                       c0_ddr4_s_axi_awsize;
-logic  [1:0]                       c0_ddr4_s_axi_awburst;
-logic  [0:0]                       c0_ddr4_s_axi_awlock;
-logic  [3:0]                       c0_ddr4_s_axi_awcache;
-logic  [2:0]                       c0_ddr4_s_axi_awprot;
-logic  [3:0]                       c0_ddr4_s_axi_awqos;
-logic                              c0_ddr4_s_axi_awvalid;
-logic                              c0_ddr4_s_axi_awready;
-logic  [511:0]                     c0_ddr4_s_axi_wdata;
-logic  [63:0]                      c0_ddr4_s_axi_wstrb;
-logic                              c0_ddr4_s_axi_wlast;
-logic                              c0_ddr4_s_axi_wvalid;
-logic                              c0_ddr4_s_axi_wready;
-logic                              c0_ddr4_s_axi_bready;
-logic [3:0]                        c0_ddr4_s_axi_bid;
-logic [1:0]                        c0_ddr4_s_axi_bresp;
-logic                              c0_ddr4_s_axi_bvalid;
-logic  [3:0]                       c0_ddr4_s_axi_arid;
-logic  [33:0]                      c0_ddr4_s_axi_araddr;
-logic  [7:0]                       c0_ddr4_s_axi_arlen;
-logic  [2:0]                       c0_ddr4_s_axi_arsize;
-logic  [1:0]                       c0_ddr4_s_axi_arburst;
-logic  [0:0]                       c0_ddr4_s_axi_arlock;
-logic  [3:0]                       c0_ddr4_s_axi_arcache;
-logic  [2:0]                       c0_ddr4_s_axi_arprot;
-logic  [3:0]                       c0_ddr4_s_axi_arqos;
-logic                              c0_ddr4_s_axi_arvalid;
-logic                              c0_ddr4_s_axi_arready;
-logic                              c0_ddr4_s_axi_rready;
-logic [3:0]                        c0_ddr4_s_axi_rid;
-logic [511:0]                      c0_ddr4_s_axi_rdata;
-logic [1:0]                        c0_ddr4_s_axi_rresp;
-logic                              c0_ddr4_s_axi_rlast;
-logic                              c0_ddr4_s_axi_rvalid;
 
 // Debug Bus
 logic [511:0]                         dbg_bus;
@@ -284,45 +286,45 @@ logic                              output_buffer_axi_interconnect_axi_wready;
 logic [63:0]                       output_buffer_axi_interconnect_axi_wstrb;
 logic                              output_buffer_axi_interconnect_axi_wvalid;
 
+
+logic S00_AXI_ARESET_OUT_N;
+logic S01_AXI_ARESET_OUT_N;
+logic S02_AXI_ARESET_OUT_N;
+logic S03_AXI_ARESET_OUT_N;
+logic M00_AXI_ARESET_OUT_N;
+
 // Controller -> Aggregation Engine Interface
-logic                                                controller_aggregation_engine_req_valid;
-logic                                                controller_aggregation_engine_req_ready;
-CONTROLLER_AGG_REQ_t                                 controller_aggregation_engine_req;
-logic                                                controller_aggregation_engine_resp_valid; // valid only for now
-CONTROLLER_AGG_RESP_t                                controller_aggregation_engine_resp;
+logic                                                nsb_age_req_valid;
+logic                                                nsb_age_req_ready;
+NSB_AGE_REQ_t                                        nsb_age_req;
+logic                                                nsb_age_resp_valid; // valid only for now
+NSB_AGE_RESP_t                                       nsb_age_resp;
 
 // Controller -> Transformation Engine Interface
-logic                                                controller_transformation_engine_req_valid;
-logic                                                controller_transformation_engine_req_ready;
-CONTROLLER_TRANS_REQ_t                               controller_transformation_engine_req;
-logic                                                controller_transformation_engine_resp_valid; // valid only for now
-CONTROLLER_TRANS_RESP_t                              controller_transformation_engine_resp;
+logic                                                nsb_fte_req_valid;
+logic                                                nsb_fte_req_ready;
+NSB_FTE_REQ_t                                        nsb_fte_req;
+logic                                                nsb_fte_resp_valid; // valid only for now
+NSB_FTE_RESP_t                                       nsb_fte_resp;
 
 // Controller -> Prefetcher Interface
-logic                                                controller_prefetcher_req_valid;
-logic                                                controller_prefetcher_req_ready;
-CONTROLLER_PREF_REQ_t                                controller_prefetcher_req;
-logic                                                controller_prefetcher_resp_valid; // valid only for now
-CONTROLLER_PREF_RESP_t                               controller_prefetcher_resp;
-
-// Controller -> Weight Buffer Interface
-logic                                                controller_weight_buffer_req_valid;
-logic                                                controller_weight_buffer_req_ready;
-CONTROLLER_WBUFF_REQ_t                               controller_weight_buffer_req;
-logic                                                controller_weight_buffer_resp_valid; // valid only for now
-CONTROLLER_WBUFF_RESP_t                              controller_weight_buffer_resp;
+logic                                                nsb_prefetcher_req_valid;
+logic                                                nsb_prefetcher_req_ready;
+NSB_PREF_REQ_t                                       nsb_prefetcher_req;
+logic                                                nsb_prefetcher_resp_valid; // valid only for now
+NSB_PREF_RESP_t                                      nsb_prefetcher_resp;
 
 // Controller -> Output Buffer Interface
-logic                                                controller_output_buffer_req_valid;
-logic                                                controller_output_buffer_req_ready;
-CONTROLLER_OUT_BUFF_REQ_t                            controller_output_buffer_req;
-logic                                                controller_output_buffer_resp_valid; // valid only for now
-CONTROLLER_OUT_BUFF_RESP_t                           controller_output_buffer_resp;
+logic                                                nsb_output_buffer_req_valid;
+logic                                                nsb_output_buffer_req_ready;
+NSB_OUT_BUFF_REQ_t                                   nsb_output_buffer_req;
+logic                                                nsb_output_buffer_resp_valid; // valid only for now
+NSB_OUT_BUFF_RESP_t                                  nsb_output_buffer_resp;
 // ====================================================================================
 // Controller
 // ====================================================================================
 
-controller controller_i (
+node_scoreboard node_scoreboard_i (
     .core_clk                       (sys_clk),
     .resetn                         (!sys_rst),
     
@@ -335,52 +337,45 @@ controller controller_i (
     .s_axi_wstrb                                        (axil_interconnect_m_axi_wstrb      [11:8]),
     .s_axi_wvalid                                       (axil_interconnect_m_axi_wvalid     [2:2]),
     .s_axi_wready                                       (axil_interconnect_m_axi_wready     [2:2]),
-    .s_axi_araddr                                       (axil_interconnect_m_axi_bresp      [5:4]),
-    .s_axi_arprot                                       (axil_interconnect_m_axi_bvalid     [2:2]),
-    .s_axi_arvalid                                      (axil_interconnect_m_axi_bready     [2:2]),
-    .s_axi_arready                                      (axil_interconnect_m_axi_araddr     [95:64]),
-    .s_axi_rdata                                        (axil_interconnect_m_axi_arprot     [8:6]),
-    .s_axi_rresp                                        (axil_interconnect_m_axi_arvalid    [2:2]),
-    .s_axi_rvalid                                       (axil_interconnect_m_axi_arready    [2:2]),
-    .s_axi_rready                                       (axil_interconnect_m_axi_rdata      [95:64]),
-    .s_axi_bresp                                        (axil_interconnect_m_axi_rresp      [5:4]),
-    .s_axi_bvalid                                       (axil_interconnect_m_axi_rvalid     [2:2]),
-    .s_axi_bready                                       (axil_interconnect_m_axi_rready     [2:2]),
+    .s_axi_bresp                                        (axil_interconnect_m_axi_bresp      [5:4]),
+    .s_axi_bvalid                                       (axil_interconnect_m_axi_bvalid     [2:2]),
+    .s_axi_bready                                       (axil_interconnect_m_axi_bready     [2:2]),
+    .s_axi_araddr                                       (axil_interconnect_m_axi_araddr     [95:64]),
+    .s_axi_arprot                                       (axil_interconnect_m_axi_arprot     [8:6]),
+    .s_axi_arvalid                                      (axil_interconnect_m_axi_arvalid    [2:2]),
+    .s_axi_arready                                      (axil_interconnect_m_axi_arready    [2:2]),
+    .s_axi_rdata                                        (axil_interconnect_m_axi_rdata      [95:64]),
+    .s_axi_rresp                                        (axil_interconnect_m_axi_rresp      [5:4]),
+    .s_axi_rvalid                                       (axil_interconnect_m_axi_rvalid     [2:2]),
+    .s_axi_rready                                       (axil_interconnect_m_axi_rready     [2:2]),
 
     // Controller -> Aggregation Engine Interface
-    .controller_aggregation_engine_req_valid            (controller_aggregation_engine_req_valid),
-    .controller_aggregation_engine_req_ready            (controller_aggregation_engine_req_ready),
-    .controller_aggregation_engine_req                  (controller_aggregation_engine_req),
-    .controller_aggregation_engine_resp_valid           (controller_aggregation_engine_resp_valid),
-    .controller_aggregation_engine_resp                 (controller_aggregation_engine_resp),
+    .nsb_age_req_valid            (nsb_age_req_valid),
+    .nsb_age_req_ready            (nsb_age_req_ready),
+    .nsb_age_req                  (nsb_age_req),
+    .nsb_age_resp_valid           (nsb_age_resp_valid),
+    .nsb_age_resp                 (nsb_age_resp),
 
     // Controller -> Transformation Engine Interface
-    .controller_transformation_engine_req_valid         (controller_transformation_engine_req_valid),
-    .controller_transformation_engine_req_ready         (controller_transformation_engine_req_ready),
-    .controller_transformation_engine_req               (controller_transformation_engine_req),
-    .controller_transformation_engine_resp_valid        (controller_transformation_engine_resp_valid),
-    .controller_transformation_engine_resp              (controller_transformation_engine_resp),
+    .nsb_fte_req_valid         (nsb_fte_req_valid),
+    .nsb_fte_req_ready         (nsb_fte_req_ready),
+    .nsb_fte_req               (nsb_fte_req),
+    .nsb_fte_resp_valid        (nsb_fte_resp_valid),
+    .nsb_fte_resp              (nsb_fte_resp),
 
     // Controller -> Prefetcher Interface
-    .controller_prefetcher_req_valid                    (controller_prefetcher_req_valid),
-    .controller_prefetcher_req_ready                    (controller_prefetcher_req_ready),
-    .controller_prefetcher_req                          (controller_prefetcher_req),
-    .controller_prefetcher_resp_valid                   (controller_prefetcher_resp_valid),
-    .controller_prefetcher_resp                         (controller_prefetcher_resp),
-
-    // Controller -> Weight Buffer Interface
-    .controller_weight_buffer_req_valid                    (controller_weight_buffer_req_valid),
-    .controller_weight_buffer_req_ready                    (controller_weight_buffer_req_ready),
-    .controller_weight_buffer_req                          (controller_weight_buffer_req),
-    .controller_weight_buffer_resp_valid                   (controller_weight_buffer_resp_valid),
-    .controller_weight_buffer_resp                         (controller_weight_buffer_resp),
+    .nsb_prefetcher_req_valid                    (nsb_prefetcher_req_valid),
+    .nsb_prefetcher_req_ready                    (nsb_prefetcher_req_ready),
+    .nsb_prefetcher_req                          (nsb_prefetcher_req),
+    .nsb_prefetcher_resp_valid                   (nsb_prefetcher_resp_valid),
+    .nsb_prefetcher_resp                         (nsb_prefetcher_resp),
 
     // Controller -> Output Buffer Interface
-    .controller_output_buffer_req_valid                    (controller_output_buffer_req_valid),
-    .controller_output_buffer_req_ready                    (controller_output_buffer_req_ready),
-    .controller_output_buffer_req                          (controller_output_buffer_req),
-    .controller_output_buffer_resp_valid                   (controller_output_buffer_resp_valid),
-    .controller_output_buffer_resp                         (controller_output_buffer_resp)
+    .nsb_output_buffer_req_valid                    (nsb_output_buffer_req_valid),
+    .nsb_output_buffer_req_ready                    (nsb_output_buffer_req_ready),
+    .nsb_output_buffer_req                          (nsb_output_buffer_req),
+    .nsb_output_buffer_resp_valid                   (nsb_output_buffer_resp_valid),
+    .nsb_output_buffer_resp                         (nsb_output_buffer_resp)
 );
 
 // ====================================================================================
@@ -392,11 +387,11 @@ prefetcher prefetcher_i (
     .resetn                                             (!sys_rst),
 
     // Controller -> Prefetcher Interface
-    .controller_prefetcher_req_valid                    (controller_prefetcher_req_valid),
-    .controller_prefetcher_req_ready                    (controller_prefetcher_req_ready),
-    .controller_prefetcher_req                          (controller_prefetcher_req),
-    .controller_prefetcher_resp_valid                   (controller_prefetcher_resp_valid),
-    .controller_prefetcher_resp                         (controller_prefetcher_resp),
+    .nsb_prefetcher_req_valid                    (nsb_prefetcher_req_valid),
+    .nsb_prefetcher_req_ready                    (nsb_prefetcher_req_ready),
+    .nsb_prefetcher_req                          (nsb_prefetcher_req),
+    .nsb_prefetcher_resp_valid                   (nsb_prefetcher_resp_valid),
+    .nsb_prefetcher_resp                         (nsb_prefetcher_resp),
 
     // Prefetcher -> AXI Memory Interconnect
     .prefetcher_axi_interconnect_axi_araddr             (prefetcher_axi_interconnect_axi_araddr),
@@ -442,56 +437,57 @@ prefetcher prefetcher_i (
 // Weight Buffer
 // ====================================================================================
 
-weight_buffer weight_buffer_i (
-    .core_clk                                           (sys_clk),
-    .resetn                                             (!sys_rst),
+// weight_buffer weight_buffer_i (
+//     .core_clk                                           (sys_clk),
+//     .resetn                                             (!sys_rst),
 
-    // Controller -> Weight Buffer Interface
-    .controller_weight_buffer_req_valid                    (controller_weight_buffer_req_valid),
-    .controller_weight_buffer_req_ready                    (controller_weight_buffer_req_ready),
-    .controller_weight_buffer_req                          (controller_weight_buffer_req),
-    .controller_weight_buffer_resp_valid                   (controller_weight_buffer_resp_valid),
-    .controller_weight_buffer_resp                         (controller_weight_buffer_resp),
+//     // Controller -> Weight Buffer Interface
+//     .nsb_weight_buffer_req_valid                    (nsb_weight_buffer_req_valid),
+//     .nsb_weight_buffer_req_ready                    (nsb_weight_buffer_req_ready),
+//     .nsb_weight_buffer_req                          (nsb_weight_buffer_req),
+//     .nsb_weight_buffer_resp_valid                   (nsb_weight_buffer_resp_valid),
+//     .nsb_weight_buffer_resp                         (nsb_weight_buffer_resp),
 
-    // Prefetcher -> AXI Memory Interconnect
-    .weight_buffer_axi_interconnect_axi_araddr             (weight_buffer_axi_interconnect_axi_araddr),
-    .weight_buffer_axi_interconnect_axi_arburst            (weight_buffer_axi_interconnect_axi_arburst),
-    .weight_buffer_axi_interconnect_axi_arcache            (weight_buffer_axi_interconnect_axi_arcache),
-    .weight_buffer_axi_interconnect_axi_arid               (weight_buffer_axi_interconnect_axi_arid),
-    .weight_buffer_axi_interconnect_axi_arlen              (weight_buffer_axi_interconnect_axi_arlen),
-    .weight_buffer_axi_interconnect_axi_arlock             (weight_buffer_axi_interconnect_axi_arlock),
-    .weight_buffer_axi_interconnect_axi_arprot             (weight_buffer_axi_interconnect_axi_arprot),
-    .weight_buffer_axi_interconnect_axi_arqos              (weight_buffer_axi_interconnect_axi_arqos),
-    .weight_buffer_axi_interconnect_axi_arsize             (weight_buffer_axi_interconnect_axi_arsize),
-    .weight_buffer_axi_interconnect_axi_arvalid            (weight_buffer_axi_interconnect_axi_arvalid),
-    .weight_buffer_axi_interconnect_axi_arready            (weight_buffer_axi_interconnect_axi_arready),
-    .weight_buffer_axi_interconnect_axi_awaddr             (weight_buffer_axi_interconnect_axi_awaddr),
-    .weight_buffer_axi_interconnect_axi_awburst            (weight_buffer_axi_interconnect_axi_awburst),
-    .weight_buffer_axi_interconnect_axi_awcache            (weight_buffer_axi_interconnect_axi_awcache),
-    .weight_buffer_axi_interconnect_axi_awid               (weight_buffer_axi_interconnect_axi_awid),
-    .weight_buffer_axi_interconnect_axi_awlen              (weight_buffer_axi_interconnect_axi_awlen),
-    .weight_buffer_axi_interconnect_axi_awlock             (weight_buffer_axi_interconnect_axi_awlock),
-    .weight_buffer_axi_interconnect_axi_awprot             (weight_buffer_axi_interconnect_axi_awprot),
-    .weight_buffer_axi_interconnect_axi_awqos              (weight_buffer_axi_interconnect_axi_awqos),
-    .weight_buffer_axi_interconnect_axi_awready            (weight_buffer_axi_interconnect_axi_awready),
-    .weight_buffer_axi_interconnect_axi_awsize             (weight_buffer_axi_interconnect_axi_awsize),
-    .weight_buffer_axi_interconnect_axi_awvalid            (weight_buffer_axi_interconnect_axi_awvalid),
-    .weight_buffer_axi_interconnect_axi_bid                (weight_buffer_axi_interconnect_axi_bid),
-    .weight_buffer_axi_interconnect_axi_bready             (weight_buffer_axi_interconnect_axi_bready),
-    .weight_buffer_axi_interconnect_axi_bresp              (weight_buffer_axi_interconnect_axi_bresp),
-    .weight_buffer_axi_interconnect_axi_bvalid             (weight_buffer_axi_interconnect_axi_bvalid),
-    .weight_buffer_axi_interconnect_axi_rdata              (weight_buffer_axi_interconnect_axi_rdata),
-    .weight_buffer_axi_interconnect_axi_rid                (weight_buffer_axi_interconnect_axi_rid),
-    .weight_buffer_axi_interconnect_axi_rlast              (weight_buffer_axi_interconnect_axi_rlast),
-    .weight_buffer_axi_interconnect_axi_rready             (weight_buffer_axi_interconnect_axi_rready),
-    .weight_buffer_axi_interconnect_axi_rresp              (weight_buffer_axi_interconnect_axi_rresp),
-    .weight_buffer_axi_interconnect_axi_rvalid             (weight_buffer_axi_interconnect_axi_rvalid),
-    .weight_buffer_axi_interconnect_axi_wdata              (weight_buffer_axi_interconnect_axi_wdata),
-    .weight_buffer_axi_interconnect_axi_wlast              (weight_buffer_axi_interconnect_axi_wlast),
-    .weight_buffer_axi_interconnect_axi_wready             (weight_buffer_axi_interconnect_axi_wready),
-    .weight_buffer_axi_interconnect_axi_wstrb              (weight_buffer_axi_interconnect_axi_wstrb),
-    .weight_buffer_axi_interconnect_axi_wvalid             (weight_buffer_axi_interconnect_axi_wvalid)
-);
+//     // Prefetcher -> AXI Memory Interconnect
+//     .weight_buffer_axi_interconnect_axi_araddr             (weight_buffer_axi_interconnect_axi_araddr),
+//     .weight_buffer_axi_interconnect_axi_arburst            (weight_buffer_axi_interconnect_axi_arburst),
+//     .weight_buffer_axi_interconnect_axi_arcache            (weight_buffer_axi_interconnect_axi_arcache),
+//     .weight_buffer_axi_interconnect_axi_arid               (weight_buffer_axi_interconnect_axi_arid),
+//     .weight_buffer_axi_interconnect_axi_arlen              (weight_buffer_axi_interconnect_axi_arlen),
+//     .weight_buffer_axi_interconnect_axi_arlock             (weight_buffer_axi_interconnect_axi_arlock),
+//     .weight_buffer_axi_interconnect_axi_arprot             (weight_buffer_axi_interconnect_axi_arprot),
+//     .weight_buffer_axi_interconnect_axi_arqos              (weight_buffer_axi_interconnect_axi_arqos),
+//     .weight_buffer_axi_interconnect_axi_arsize             (weight_buffer_axi_interconnect_axi_arsize),
+//     .weight_buffer_axi_interconnect_axi_arvalid            (weight_buffer_axi_interconnect_axi_arvalid),
+//     .weight_buffer_axi_interconnect_axi_arready            (weight_buffer_axi_interconnect_axi_arready),
+//     .weight_buffer_axi_interconnect_axi_rdata              (weight_buffer_axi_interconnect_axi_rdata),
+//     .weight_buffer_axi_interconnect_axi_rid                (weight_buffer_axi_interconnect_axi_rid),
+//     .weight_buffer_axi_interconnect_axi_rlast              (weight_buffer_axi_interconnect_axi_rlast),
+//     .weight_buffer_axi_interconnect_axi_rready             (weight_buffer_axi_interconnect_axi_rready),
+//     .weight_buffer_axi_interconnect_axi_rresp              (weight_buffer_axi_interconnect_axi_rresp),
+//     .weight_buffer_axi_interconnect_axi_rvalid             (weight_buffer_axi_interconnect_axi_rvalid),
+    
+//     .weight_buffer_axi_interconnect_axi_awaddr             (weight_buffer_axi_interconnect_axi_awaddr),
+//     .weight_buffer_axi_interconnect_axi_awburst            (weight_buffer_axi_interconnect_axi_awburst),
+//     .weight_buffer_axi_interconnect_axi_awcache            (weight_buffer_axi_interconnect_axi_awcache),
+//     .weight_buffer_axi_interconnect_axi_awid               (weight_buffer_axi_interconnect_axi_awid),
+//     .weight_buffer_axi_interconnect_axi_awlen              (weight_buffer_axi_interconnect_axi_awlen),
+//     .weight_buffer_axi_interconnect_axi_awlock             (weight_buffer_axi_interconnect_axi_awlock),
+//     .weight_buffer_axi_interconnect_axi_awprot             (weight_buffer_axi_interconnect_axi_awprot),
+//     .weight_buffer_axi_interconnect_axi_awqos              (weight_buffer_axi_interconnect_axi_awqos),
+//     .weight_buffer_axi_interconnect_axi_awready            (weight_buffer_axi_interconnect_axi_awready),
+//     .weight_buffer_axi_interconnect_axi_awsize             (weight_buffer_axi_interconnect_axi_awsize),
+//     .weight_buffer_axi_interconnect_axi_awvalid            (weight_buffer_axi_interconnect_axi_awvalid),
+//     .weight_buffer_axi_interconnect_axi_bid                (weight_buffer_axi_interconnect_axi_bid),
+//     .weight_buffer_axi_interconnect_axi_bready             (weight_buffer_axi_interconnect_axi_bready),
+//     .weight_buffer_axi_interconnect_axi_bresp              (weight_buffer_axi_interconnect_axi_bresp),
+//     .weight_buffer_axi_interconnect_axi_bvalid             (weight_buffer_axi_interconnect_axi_bvalid),
+//     .weight_buffer_axi_interconnect_axi_wdata              (weight_buffer_axi_interconnect_axi_wdata),
+//     .weight_buffer_axi_interconnect_axi_wlast              (weight_buffer_axi_interconnect_axi_wlast),
+//     .weight_buffer_axi_interconnect_axi_wready             (weight_buffer_axi_interconnect_axi_wready),
+//     .weight_buffer_axi_interconnect_axi_wstrb              (weight_buffer_axi_interconnect_axi_wstrb),
+//     .weight_buffer_axi_interconnect_axi_wvalid             (weight_buffer_axi_interconnect_axi_wvalid)
+// );
 
 // ====================================================================================
 // Output Buffer
@@ -502,11 +498,11 @@ output_buffer output_buffer_i (
     .resetn                                             (!sys_rst),
 
     // Controller -> Output Buffer Interface
-    .controller_output_buffer_req_valid                    (controller_output_buffer_req_valid),
-    .controller_output_buffer_req_ready                    (controller_output_buffer_req_ready),
-    .controller_output_buffer_req                          (controller_output_buffer_req),
-    .controller_output_buffer_resp_valid                   (controller_output_buffer_resp_valid),
-    .controller_output_buffer_resp                         (controller_output_buffer_resp),
+    .nsb_output_buffer_req_valid                    (nsb_output_buffer_req_valid),
+    .nsb_output_buffer_req_ready                    (nsb_output_buffer_req_ready),
+    .nsb_output_buffer_req                          (nsb_output_buffer_req),
+    .nsb_output_buffer_resp_valid                   (nsb_output_buffer_resp_valid),
+    .nsb_output_buffer_resp                         (nsb_output_buffer_resp),
 
     // Prefetcher -> AXI Memory Interconnect
     .output_buffer_axi_interconnect_axi_araddr             (output_buffer_axi_interconnect_axi_araddr),
@@ -578,11 +574,11 @@ aggregation_engine aggregation_engine_i (
     .s_axi_rready                       (axil_interconnect_m_axi_rready     [0]),
 
     // Controller -> Aggregation Engine Interface
-    .controller_aggregation_engine_req_valid            (controller_aggregation_engine_req_valid),
-    .controller_aggregation_engine_req_ready            (controller_aggregation_engine_req_ready),
-    .controller_aggregation_engine_req                  (controller_aggregation_engine_req),
-    .controller_aggregation_engine_resp_valid           (controller_aggregation_engine_resp_valid),
-    .controller_aggregation_engine_resp                 (controller_aggregation_engine_resp)
+    .nsb_age_req_valid            (nsb_age_req_valid),
+    .nsb_age_req_ready            (nsb_age_req_ready),
+    .nsb_age_req                  (nsb_age_req),
+    .nsb_age_resp_valid           (nsb_age_resp_valid),
+    .nsb_age_resp                 (nsb_age_resp)
 
 );
 
@@ -604,24 +600,24 @@ transformation_engine transformation_engine_i (
     .s_axi_wstrb                                        (axil_interconnect_m_axi_wstrb      [7:4]), // input
     .s_axi_wvalid                                       (axil_interconnect_m_axi_wvalid     [1:1]), // input
     .s_axi_wready                                       (axil_interconnect_m_axi_wready     [1:1]), // output
-    .s_axi_araddr                                       (axil_interconnect_m_axi_bresp      [3:2]), // input
-    .s_axi_arprot                                       (axil_interconnect_m_axi_bvalid     [1:1]), // input
-    .s_axi_arvalid                                      (axil_interconnect_m_axi_bready     [1:1]), // input
-    .s_axi_arready                                      (axil_interconnect_m_axi_araddr     [63:32]), // output
-    .s_axi_rdata                                        (axil_interconnect_m_axi_arprot     [5:3]), // output
-    .s_axi_rresp                                        (axil_interconnect_m_axi_arvalid    [1:1]), // output
-    .s_axi_rvalid                                       (axil_interconnect_m_axi_arready    [1:1]), // output
-    .s_axi_rready                                       (axil_interconnect_m_axi_rdata      [63:32]), // input
-    .s_axi_bresp                                        (axil_interconnect_m_axi_rresp      [3:2]), // output
-    .s_axi_bvalid                                       (axil_interconnect_m_axi_rvalid     [1:1]), // output
-    .s_axi_bready                                       (axil_interconnect_m_axi_rready     [1:1]), // input
+    .s_axi_araddr                                       (axil_interconnect_m_axi_araddr     [63:32]), // input
+    .s_axi_arprot                                       (axil_interconnect_m_axi_arprot     [5:3]), // input
+    .s_axi_arvalid                                      (axil_interconnect_m_axi_arvalid    [1:1]), // input
+    .s_axi_arready                                      (axil_interconnect_m_axi_arready    [1:1]), // output
+    .s_axi_rdata                                        (axil_interconnect_m_axi_rdata      [63:32]), // output
+    .s_axi_rresp                                        (axil_interconnect_m_axi_rresp      [3:2]), // output
+    .s_axi_rvalid                                       (axil_interconnect_m_axi_rvalid     [1:1]), // output
+    .s_axi_rready                                       (axil_interconnect_m_axi_rready     [1:1]), // input
+    .s_axi_bresp                                        (axil_interconnect_m_axi_bresp      [3:2]), // output
+    .s_axi_bvalid                                       (axil_interconnect_m_axi_bvalid     [1:1]), // output
+    .s_axi_bready                                       (axil_interconnect_m_axi_bready     [1:1]), // input
 
     // Controller -> Transformation Engine Interface
-    .controller_transformation_engine_req_valid         (controller_transformation_engine_req_valid),
-    .controller_transformation_engine_req_ready         (controller_transformation_engine_req_ready),
-    .controller_transformation_engine_req               (controller_transformation_engine_req),
-    .controller_transformation_engine_resp_valid        (controller_transformation_engine_resp_valid),
-    .controller_transformation_engine_resp              (controller_transformation_engine_resp)
+    .nsb_fte_req_valid         (nsb_fte_req_valid),
+    .nsb_fte_req_ready         (nsb_fte_req_ready),
+    .nsb_fte_req               (nsb_fte_req),
+    .nsb_fte_resp_valid        (nsb_fte_resp_valid),
+    .nsb_fte_resp              (nsb_fte_resp)
 );
 
 // ====================================================================================
@@ -687,7 +683,7 @@ axi_memory_interconnect axi_memory_interconnect_i (
   .INTERCONNECT_ARESETN         (!sys_rst),  // input wire INTERCONNECT_ARESETN
 
   .S00_AXI_ACLK                 (sys_clk),                  // input wire S00_AXI_ACLK
-  .S00_AXI_ARESET_OUT_N         (),  // output wire S00_AXI_ARESET_OUT_N
+  .S00_AXI_ARESET_OUT_N         (S00_AXI_ARESET_OUT_N),  // output wire S00_AXI_ARESET_OUT_N
   
   .S00_AXI_ARADDR               (prefetcher_axi_interconnect_axi_araddr     ),              // input wire [33 : 0] S00_AXI_ARADDR
   .S00_AXI_ARBURST              (prefetcher_axi_interconnect_axi_arburst        ),            // input wire [1 : 0] S00_AXI_ARBURST
@@ -728,7 +724,7 @@ axi_memory_interconnect axi_memory_interconnect_i (
   .S00_AXI_WVALID               (prefetcher_axi_interconnect_axi_wvalid     ),              // input wire S00_AXI_WVALID
 
   .S01_AXI_ACLK                 (sys_clk),                  // input wire S01_AXI_ACLK
-  .S01_AXI_ARESET_OUT_N         (),  // output wire S01_AXI_ARESET_OUT_N
+  .S01_AXI_ARESET_OUT_N         (S01_AXI_ARESET_OUT_N),  // output wire S01_AXI_ARESET_OUT_N
   
   .S01_AXI_AWID                 (weight_buffer_axi_interconnect_axi_awid),                  // input wire [0 : 0] S01_AXI_AWID
   .S01_AXI_AWADDR               (weight_buffer_axi_interconnect_axi_awaddr),              // input wire [33 : 0] S01_AXI_AWADDR
@@ -769,7 +765,7 @@ axi_memory_interconnect axi_memory_interconnect_i (
   .S01_AXI_RREADY               (weight_buffer_axi_interconnect_axi_rready),              // input wire S01_AXI_RREADY
   
   .S02_AXI_ACLK                 (sys_clk),                  // input wire S02_AXI_ACLK
-  .S02_AXI_ARESET_OUT_N         (),  // output wire S02_AXI_ARESET_OUT_N
+  .S02_AXI_ARESET_OUT_N         (S02_AXI_ARESET_OUT_N),  // output wire S02_AXI_ARESET_OUT_N
 
   .S02_AXI_AWID                 (top_axi_interconnect_axi_awid),                  // input wire [0 : 0] S02_AXI_AWID
   .S02_AXI_AWADDR               (top_axi_interconnect_axi_awaddr),              // input wire [33 : 0] S02_AXI_AWADDR
@@ -810,7 +806,7 @@ axi_memory_interconnect axi_memory_interconnect_i (
   .S02_AXI_RREADY               (top_axi_interconnect_axi_rready),              // input wire S02_AXI_RREADY
   
   .S03_AXI_ACLK                 (sys_clk),                  // input wire S02_AXI_ACLK
-  .S03_AXI_ARESET_OUT_N         (),  // output wire S02_AXI_ARESET_OUT_N
+  .S03_AXI_ARESET_OUT_N         (S03_AXI_ARESET_OUT_N),  // output wire S02_AXI_ARESET_OUT_N
 
   .S03_AXI_AWID                 (output_buffer_axi_interconnect_axi_awid),                  // input wire [0 : 0] S02_AXI_AWID
   .S03_AXI_AWADDR               (output_buffer_axi_interconnect_axi_awaddr),              // input wire [33 : 0] S02_AXI_AWADDR
@@ -851,7 +847,7 @@ axi_memory_interconnect axi_memory_interconnect_i (
   .S03_AXI_RREADY               (output_buffer_axi_interconnect_axi_rready),              // input wire S02_AXI_RREADY
   
   .M00_AXI_ACLK                 (sys_clk),                  // input wire M00_AXI_ACLK
-  .M00_AXI_ARESET_OUT_N         (),  // output wire M00_AXI_ARESET_OUT_N
+  .M00_AXI_ARESET_OUT_N         (M00_AXI_ARESET_OUT_N),  // output wire M00_AXI_ARESET_OUT_N
 
   .M00_AXI_AWID                 (c0_ddr4_s_axi_awid),                  // output wire [3 : 0] M00_AXI_AWID
   .M00_AXI_AWADDR               (c0_ddr4_s_axi_awaddr),              // output wire [33 : 0] M00_AXI_AWADDR
@@ -895,6 +891,8 @@ axi_memory_interconnect axi_memory_interconnect_i (
 // ====================================================================================
 // DDR4 Controller
 // ====================================================================================
+
+`ifdef DRAM_CONTROLLER
 
 ddr4_0 u_ddr4_0
 (
@@ -994,8 +992,57 @@ ddr4_0 u_ddr4_0
     // Debug Port
     .dbg_bus         (dbg_bus)                                             
 
-    );
+);
 
+// Deactivate AXI interface to RAM model since this is routed internally to DRAM controller
+assign c0_ddr4_s_axi_awid       = '0;
+assign c0_ddr4_s_axi_awaddr     = '0;
+assign c0_ddr4_s_axi_awlen      = '0;
+assign c0_ddr4_s_axi_awsize     = '0;
+assign c0_ddr4_s_axi_awburst    = '0;
+assign c0_ddr4_s_axi_awlock     = '0;
+assign c0_ddr4_s_axi_awcache    = '0;
+assign c0_ddr4_s_axi_awprot     = '0;
+assign c0_ddr4_s_axi_awqos      = '0;
+assign c0_ddr4_s_axi_awvalid    = '0;
+assign c0_ddr4_s_axi_wdata      = '0;
+assign c0_ddr4_s_axi_wstrb      = '0;
+assign c0_ddr4_s_axi_wlast      = '0;
+assign c0_ddr4_s_axi_wvalid     = '0;
+assign c0_ddr4_s_axi_bready     = '0;
+assign c0_ddr4_s_axi_arid       = '0;
+assign c0_ddr4_s_axi_araddr     = '0;
+assign c0_ddr4_s_axi_arlen      = '0;
+assign c0_ddr4_s_axi_arsize     = '0;
+assign c0_ddr4_s_axi_arburst    = '0;
+assign c0_ddr4_s_axi_arlock     = '0;
+assign c0_ddr4_s_axi_arcache    = '0;
+assign c0_ddr4_s_axi_arprot     = '0;
+assign c0_ddr4_s_axi_arqos      = '0;
+assign c0_ddr4_s_axi_arvalid    = '0;
+assign c0_ddr4_s_axi_rready     = '0;
+
+`else
+
+// Drive DDR4 interface low since DRAM model is not used
+assign c0_ddr4_act_n            = '0;
+assign c0_ddr4_adr              = '0;
+assign c0_ddr4_ba               = '0;
+assign c0_ddr4_bg               = '0;
+assign c0_ddr4_cke              = '0;
+assign c0_ddr4_odt              = '0;
+assign c0_ddr4_cs_n             = '0;
+assign c0_ddr4_ck_t             = '0;
+assign c0_ddr4_ck_c             = '0;
+assign c0_ddr4_reset_n          = '0;
+assign c0_ddr4_parity           = '0;
+assign c0_ddr4_dq               = '0;
+assign c0_ddr4_dqs_t            = '0;
+assign c0_ddr4_dqs_c            = '0;
+assign c0_init_calib_complete   = '0;
+assign c0_data_compare_error    = '0;
+
+`endif
 
 always @(posedge c0_ddr4_clk) begin
   c0_ddr4_aresetn <= ~c0_ddr4_rst;
