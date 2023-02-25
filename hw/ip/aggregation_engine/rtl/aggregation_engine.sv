@@ -29,11 +29,11 @@ module aggregation_engine #(
     input  logic                                                s_axi_bready,
 
     // Controller -> Aggregation Engine Interface
-    input  logic                                                controller_aggregation_engine_req_valid,
-    output logic                                                controller_aggregation_engine_req_ready,
-    input  CONTROLLER_AGG_REQ_t                                 controller_aggregation_engine_req,
-    output logic                                                controller_aggregation_engine_resp_valid, // valid only for now
-    output CONTROLLER_AGG_RESP_t                                controller_aggregation_engine_resp
+    input  logic                                                nsb_age_req_valid,
+    output logic                                                nsb_age_req_ready,
+    input  NSB_AGE_REQ_t                                        nsb_age_req,
+    output logic                                                nsb_age_resp_valid, // valid only for now
+    output NSB_AGE_RESP_t                                       nsb_age_resp
 );
 
 
@@ -118,6 +118,9 @@ aggregation_engine_regbank_regs #(
 // Logic
 // ==================================================================================================================================================
 
+assign nsb_age_req_ready = '0;
+assign nsb_age_resp_valid = '0;
+assign nsb_age_resp = '0;
 
 // ==================================================================================================================================================
 // Assertions

@@ -59,7 +59,7 @@ axi_memory_interconnect your_instance_name (
   .INTERCONNECT_ARESETN(INTERCONNECT_ARESETN),  // input wire INTERCONNECT_ARESETN
   .S00_AXI_ARESET_OUT_N(S00_AXI_ARESET_OUT_N),  // output wire S00_AXI_ARESET_OUT_N
   .S00_AXI_ACLK(S00_AXI_ACLK),                  // input wire S00_AXI_ACLK
-  .S00_AXI_AWID(S00_AXI_AWID),                  // input wire [0 : 0] S00_AXI_AWID
+  .S00_AXI_AWID(S00_AXI_AWID),                  // input wire [3 : 0] S00_AXI_AWID
   .S00_AXI_AWADDR(S00_AXI_AWADDR),              // input wire [33 : 0] S00_AXI_AWADDR
   .S00_AXI_AWLEN(S00_AXI_AWLEN),                // input wire [7 : 0] S00_AXI_AWLEN
   .S00_AXI_AWSIZE(S00_AXI_AWSIZE),              // input wire [2 : 0] S00_AXI_AWSIZE
@@ -75,11 +75,11 @@ axi_memory_interconnect your_instance_name (
   .S00_AXI_WLAST(S00_AXI_WLAST),                // input wire S00_AXI_WLAST
   .S00_AXI_WVALID(S00_AXI_WVALID),              // input wire S00_AXI_WVALID
   .S00_AXI_WREADY(S00_AXI_WREADY),              // output wire S00_AXI_WREADY
-  .S00_AXI_BID(S00_AXI_BID),                    // output wire [0 : 0] S00_AXI_BID
+  .S00_AXI_BID(S00_AXI_BID),                    // output wire [3 : 0] S00_AXI_BID
   .S00_AXI_BRESP(S00_AXI_BRESP),                // output wire [1 : 0] S00_AXI_BRESP
   .S00_AXI_BVALID(S00_AXI_BVALID),              // output wire S00_AXI_BVALID
   .S00_AXI_BREADY(S00_AXI_BREADY),              // input wire S00_AXI_BREADY
-  .S00_AXI_ARID(S00_AXI_ARID),                  // input wire [0 : 0] S00_AXI_ARID
+  .S00_AXI_ARID(S00_AXI_ARID),                  // input wire [3 : 0] S00_AXI_ARID
   .S00_AXI_ARADDR(S00_AXI_ARADDR),              // input wire [33 : 0] S00_AXI_ARADDR
   .S00_AXI_ARLEN(S00_AXI_ARLEN),                // input wire [7 : 0] S00_AXI_ARLEN
   .S00_AXI_ARSIZE(S00_AXI_ARSIZE),              // input wire [2 : 0] S00_AXI_ARSIZE
@@ -90,7 +90,7 @@ axi_memory_interconnect your_instance_name (
   .S00_AXI_ARQOS(S00_AXI_ARQOS),                // input wire [3 : 0] S00_AXI_ARQOS
   .S00_AXI_ARVALID(S00_AXI_ARVALID),            // input wire S00_AXI_ARVALID
   .S00_AXI_ARREADY(S00_AXI_ARREADY),            // output wire S00_AXI_ARREADY
-  .S00_AXI_RID(S00_AXI_RID),                    // output wire [0 : 0] S00_AXI_RID
+  .S00_AXI_RID(S00_AXI_RID),                    // output wire [3 : 0] S00_AXI_RID
   .S00_AXI_RDATA(S00_AXI_RDATA),                // output wire [511 : 0] S00_AXI_RDATA
   .S00_AXI_RRESP(S00_AXI_RRESP),                // output wire [1 : 0] S00_AXI_RRESP
   .S00_AXI_RLAST(S00_AXI_RLAST),                // output wire S00_AXI_RLAST
@@ -98,7 +98,7 @@ axi_memory_interconnect your_instance_name (
   .S00_AXI_RREADY(S00_AXI_RREADY),              // input wire S00_AXI_RREADY
   .S01_AXI_ARESET_OUT_N(S01_AXI_ARESET_OUT_N),  // output wire S01_AXI_ARESET_OUT_N
   .S01_AXI_ACLK(S01_AXI_ACLK),                  // input wire S01_AXI_ACLK
-  .S01_AXI_AWID(S01_AXI_AWID),                  // input wire [0 : 0] S01_AXI_AWID
+  .S01_AXI_AWID(S01_AXI_AWID),                  // input wire [3 : 0] S01_AXI_AWID
   .S01_AXI_AWADDR(S01_AXI_AWADDR),              // input wire [33 : 0] S01_AXI_AWADDR
   .S01_AXI_AWLEN(S01_AXI_AWLEN),                // input wire [7 : 0] S01_AXI_AWLEN
   .S01_AXI_AWSIZE(S01_AXI_AWSIZE),              // input wire [2 : 0] S01_AXI_AWSIZE
@@ -114,11 +114,11 @@ axi_memory_interconnect your_instance_name (
   .S01_AXI_WLAST(S01_AXI_WLAST),                // input wire S01_AXI_WLAST
   .S01_AXI_WVALID(S01_AXI_WVALID),              // input wire S01_AXI_WVALID
   .S01_AXI_WREADY(S01_AXI_WREADY),              // output wire S01_AXI_WREADY
-  .S01_AXI_BID(S01_AXI_BID),                    // output wire [0 : 0] S01_AXI_BID
+  .S01_AXI_BID(S01_AXI_BID),                    // output wire [3 : 0] S01_AXI_BID
   .S01_AXI_BRESP(S01_AXI_BRESP),                // output wire [1 : 0] S01_AXI_BRESP
   .S01_AXI_BVALID(S01_AXI_BVALID),              // output wire S01_AXI_BVALID
   .S01_AXI_BREADY(S01_AXI_BREADY),              // input wire S01_AXI_BREADY
-  .S01_AXI_ARID(S01_AXI_ARID),                  // input wire [0 : 0] S01_AXI_ARID
+  .S01_AXI_ARID(S01_AXI_ARID),                  // input wire [3 : 0] S01_AXI_ARID
   .S01_AXI_ARADDR(S01_AXI_ARADDR),              // input wire [33 : 0] S01_AXI_ARADDR
   .S01_AXI_ARLEN(S01_AXI_ARLEN),                // input wire [7 : 0] S01_AXI_ARLEN
   .S01_AXI_ARSIZE(S01_AXI_ARSIZE),              // input wire [2 : 0] S01_AXI_ARSIZE
@@ -129,7 +129,7 @@ axi_memory_interconnect your_instance_name (
   .S01_AXI_ARQOS(S01_AXI_ARQOS),                // input wire [3 : 0] S01_AXI_ARQOS
   .S01_AXI_ARVALID(S01_AXI_ARVALID),            // input wire S01_AXI_ARVALID
   .S01_AXI_ARREADY(S01_AXI_ARREADY),            // output wire S01_AXI_ARREADY
-  .S01_AXI_RID(S01_AXI_RID),                    // output wire [0 : 0] S01_AXI_RID
+  .S01_AXI_RID(S01_AXI_RID),                    // output wire [3 : 0] S01_AXI_RID
   .S01_AXI_RDATA(S01_AXI_RDATA),                // output wire [511 : 0] S01_AXI_RDATA
   .S01_AXI_RRESP(S01_AXI_RRESP),                // output wire [1 : 0] S01_AXI_RRESP
   .S01_AXI_RLAST(S01_AXI_RLAST),                // output wire S01_AXI_RLAST
@@ -137,7 +137,7 @@ axi_memory_interconnect your_instance_name (
   .S01_AXI_RREADY(S01_AXI_RREADY),              // input wire S01_AXI_RREADY
   .S02_AXI_ARESET_OUT_N(S02_AXI_ARESET_OUT_N),  // output wire S02_AXI_ARESET_OUT_N
   .S02_AXI_ACLK(S02_AXI_ACLK),                  // input wire S02_AXI_ACLK
-  .S02_AXI_AWID(S02_AXI_AWID),                  // input wire [0 : 0] S02_AXI_AWID
+  .S02_AXI_AWID(S02_AXI_AWID),                  // input wire [3 : 0] S02_AXI_AWID
   .S02_AXI_AWADDR(S02_AXI_AWADDR),              // input wire [33 : 0] S02_AXI_AWADDR
   .S02_AXI_AWLEN(S02_AXI_AWLEN),                // input wire [7 : 0] S02_AXI_AWLEN
   .S02_AXI_AWSIZE(S02_AXI_AWSIZE),              // input wire [2 : 0] S02_AXI_AWSIZE
@@ -153,11 +153,11 @@ axi_memory_interconnect your_instance_name (
   .S02_AXI_WLAST(S02_AXI_WLAST),                // input wire S02_AXI_WLAST
   .S02_AXI_WVALID(S02_AXI_WVALID),              // input wire S02_AXI_WVALID
   .S02_AXI_WREADY(S02_AXI_WREADY),              // output wire S02_AXI_WREADY
-  .S02_AXI_BID(S02_AXI_BID),                    // output wire [0 : 0] S02_AXI_BID
+  .S02_AXI_BID(S02_AXI_BID),                    // output wire [3 : 0] S02_AXI_BID
   .S02_AXI_BRESP(S02_AXI_BRESP),                // output wire [1 : 0] S02_AXI_BRESP
   .S02_AXI_BVALID(S02_AXI_BVALID),              // output wire S02_AXI_BVALID
   .S02_AXI_BREADY(S02_AXI_BREADY),              // input wire S02_AXI_BREADY
-  .S02_AXI_ARID(S02_AXI_ARID),                  // input wire [0 : 0] S02_AXI_ARID
+  .S02_AXI_ARID(S02_AXI_ARID),                  // input wire [3 : 0] S02_AXI_ARID
   .S02_AXI_ARADDR(S02_AXI_ARADDR),              // input wire [33 : 0] S02_AXI_ARADDR
   .S02_AXI_ARLEN(S02_AXI_ARLEN),                // input wire [7 : 0] S02_AXI_ARLEN
   .S02_AXI_ARSIZE(S02_AXI_ARSIZE),              // input wire [2 : 0] S02_AXI_ARSIZE
@@ -168,7 +168,7 @@ axi_memory_interconnect your_instance_name (
   .S02_AXI_ARQOS(S02_AXI_ARQOS),                // input wire [3 : 0] S02_AXI_ARQOS
   .S02_AXI_ARVALID(S02_AXI_ARVALID),            // input wire S02_AXI_ARVALID
   .S02_AXI_ARREADY(S02_AXI_ARREADY),            // output wire S02_AXI_ARREADY
-  .S02_AXI_RID(S02_AXI_RID),                    // output wire [0 : 0] S02_AXI_RID
+  .S02_AXI_RID(S02_AXI_RID),                    // output wire [3 : 0] S02_AXI_RID
   .S02_AXI_RDATA(S02_AXI_RDATA),                // output wire [511 : 0] S02_AXI_RDATA
   .S02_AXI_RRESP(S02_AXI_RRESP),                // output wire [1 : 0] S02_AXI_RRESP
   .S02_AXI_RLAST(S02_AXI_RLAST),                // output wire S02_AXI_RLAST
@@ -176,7 +176,7 @@ axi_memory_interconnect your_instance_name (
   .S02_AXI_RREADY(S02_AXI_RREADY),              // input wire S02_AXI_RREADY
   .S03_AXI_ARESET_OUT_N(S03_AXI_ARESET_OUT_N),  // output wire S03_AXI_ARESET_OUT_N
   .S03_AXI_ACLK(S03_AXI_ACLK),                  // input wire S03_AXI_ACLK
-  .S03_AXI_AWID(S03_AXI_AWID),                  // input wire [0 : 0] S03_AXI_AWID
+  .S03_AXI_AWID(S03_AXI_AWID),                  // input wire [3 : 0] S03_AXI_AWID
   .S03_AXI_AWADDR(S03_AXI_AWADDR),              // input wire [33 : 0] S03_AXI_AWADDR
   .S03_AXI_AWLEN(S03_AXI_AWLEN),                // input wire [7 : 0] S03_AXI_AWLEN
   .S03_AXI_AWSIZE(S03_AXI_AWSIZE),              // input wire [2 : 0] S03_AXI_AWSIZE
@@ -192,11 +192,11 @@ axi_memory_interconnect your_instance_name (
   .S03_AXI_WLAST(S03_AXI_WLAST),                // input wire S03_AXI_WLAST
   .S03_AXI_WVALID(S03_AXI_WVALID),              // input wire S03_AXI_WVALID
   .S03_AXI_WREADY(S03_AXI_WREADY),              // output wire S03_AXI_WREADY
-  .S03_AXI_BID(S03_AXI_BID),                    // output wire [0 : 0] S03_AXI_BID
+  .S03_AXI_BID(S03_AXI_BID),                    // output wire [3 : 0] S03_AXI_BID
   .S03_AXI_BRESP(S03_AXI_BRESP),                // output wire [1 : 0] S03_AXI_BRESP
   .S03_AXI_BVALID(S03_AXI_BVALID),              // output wire S03_AXI_BVALID
   .S03_AXI_BREADY(S03_AXI_BREADY),              // input wire S03_AXI_BREADY
-  .S03_AXI_ARID(S03_AXI_ARID),                  // input wire [0 : 0] S03_AXI_ARID
+  .S03_AXI_ARID(S03_AXI_ARID),                  // input wire [3 : 0] S03_AXI_ARID
   .S03_AXI_ARADDR(S03_AXI_ARADDR),              // input wire [33 : 0] S03_AXI_ARADDR
   .S03_AXI_ARLEN(S03_AXI_ARLEN),                // input wire [7 : 0] S03_AXI_ARLEN
   .S03_AXI_ARSIZE(S03_AXI_ARSIZE),              // input wire [2 : 0] S03_AXI_ARSIZE
@@ -207,7 +207,7 @@ axi_memory_interconnect your_instance_name (
   .S03_AXI_ARQOS(S03_AXI_ARQOS),                // input wire [3 : 0] S03_AXI_ARQOS
   .S03_AXI_ARVALID(S03_AXI_ARVALID),            // input wire S03_AXI_ARVALID
   .S03_AXI_ARREADY(S03_AXI_ARREADY),            // output wire S03_AXI_ARREADY
-  .S03_AXI_RID(S03_AXI_RID),                    // output wire [0 : 0] S03_AXI_RID
+  .S03_AXI_RID(S03_AXI_RID),                    // output wire [3 : 0] S03_AXI_RID
   .S03_AXI_RDATA(S03_AXI_RDATA),                // output wire [511 : 0] S03_AXI_RDATA
   .S03_AXI_RRESP(S03_AXI_RRESP),                // output wire [1 : 0] S03_AXI_RRESP
   .S03_AXI_RLAST(S03_AXI_RLAST),                // output wire S03_AXI_RLAST
@@ -215,7 +215,7 @@ axi_memory_interconnect your_instance_name (
   .S03_AXI_RREADY(S03_AXI_RREADY),              // input wire S03_AXI_RREADY
   .M00_AXI_ARESET_OUT_N(M00_AXI_ARESET_OUT_N),  // output wire M00_AXI_ARESET_OUT_N
   .M00_AXI_ACLK(M00_AXI_ACLK),                  // input wire M00_AXI_ACLK
-  .M00_AXI_AWID(M00_AXI_AWID),                  // output wire [3 : 0] M00_AXI_AWID
+  .M00_AXI_AWID(M00_AXI_AWID),                  // output wire [7 : 0] M00_AXI_AWID
   .M00_AXI_AWADDR(M00_AXI_AWADDR),              // output wire [33 : 0] M00_AXI_AWADDR
   .M00_AXI_AWLEN(M00_AXI_AWLEN),                // output wire [7 : 0] M00_AXI_AWLEN
   .M00_AXI_AWSIZE(M00_AXI_AWSIZE),              // output wire [2 : 0] M00_AXI_AWSIZE
@@ -231,11 +231,11 @@ axi_memory_interconnect your_instance_name (
   .M00_AXI_WLAST(M00_AXI_WLAST),                // output wire M00_AXI_WLAST
   .M00_AXI_WVALID(M00_AXI_WVALID),              // output wire M00_AXI_WVALID
   .M00_AXI_WREADY(M00_AXI_WREADY),              // input wire M00_AXI_WREADY
-  .M00_AXI_BID(M00_AXI_BID),                    // input wire [3 : 0] M00_AXI_BID
+  .M00_AXI_BID(M00_AXI_BID),                    // input wire [7 : 0] M00_AXI_BID
   .M00_AXI_BRESP(M00_AXI_BRESP),                // input wire [1 : 0] M00_AXI_BRESP
   .M00_AXI_BVALID(M00_AXI_BVALID),              // input wire M00_AXI_BVALID
   .M00_AXI_BREADY(M00_AXI_BREADY),              // output wire M00_AXI_BREADY
-  .M00_AXI_ARID(M00_AXI_ARID),                  // output wire [3 : 0] M00_AXI_ARID
+  .M00_AXI_ARID(M00_AXI_ARID),                  // output wire [7 : 0] M00_AXI_ARID
   .M00_AXI_ARADDR(M00_AXI_ARADDR),              // output wire [33 : 0] M00_AXI_ARADDR
   .M00_AXI_ARLEN(M00_AXI_ARLEN),                // output wire [7 : 0] M00_AXI_ARLEN
   .M00_AXI_ARSIZE(M00_AXI_ARSIZE),              // output wire [2 : 0] M00_AXI_ARSIZE
@@ -246,7 +246,7 @@ axi_memory_interconnect your_instance_name (
   .M00_AXI_ARQOS(M00_AXI_ARQOS),                // output wire [3 : 0] M00_AXI_ARQOS
   .M00_AXI_ARVALID(M00_AXI_ARVALID),            // output wire M00_AXI_ARVALID
   .M00_AXI_ARREADY(M00_AXI_ARREADY),            // input wire M00_AXI_ARREADY
-  .M00_AXI_RID(M00_AXI_RID),                    // input wire [3 : 0] M00_AXI_RID
+  .M00_AXI_RID(M00_AXI_RID),                    // input wire [7 : 0] M00_AXI_RID
   .M00_AXI_RDATA(M00_AXI_RDATA),                // input wire [511 : 0] M00_AXI_RDATA
   .M00_AXI_RRESP(M00_AXI_RRESP),                // input wire [1 : 0] M00_AXI_RRESP
   .M00_AXI_RLAST(M00_AXI_RLAST),                // input wire M00_AXI_RLAST

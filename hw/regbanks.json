@@ -1,7 +1,7 @@
 {
     "regbanks": [
         {
-            "name": "controller_regbank",
+            "name": "node_scoreboard_regbank",
             "ID": 177071
         },
         {

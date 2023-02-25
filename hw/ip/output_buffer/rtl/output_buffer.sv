@@ -8,11 +8,11 @@ module output_buffer #(
     input logic resetn,
 
     // Controller -> Output Buffer Interface
-    input  logic                                                controller_output_buffer_req_valid,
-    output logic                                                controller_output_buffer_req_ready,
-    input  CONTROLLER_OUT_BUFF_REQ_t                            controller_output_buffer_req,
-    output logic                                                controller_output_buffer_resp_valid, // valid only for now
-    output CONTROLLER_OUT_BUFF_RESP_t                           controller_output_buffer_resp,
+    input  logic                                                nsb_output_buffer_req_valid,
+    output logic                                                nsb_output_buffer_req_ready,
+    input  NSB_OUT_BUFF_REQ_t                                   nsb_output_buffer_req,
+    output logic                                                nsb_output_buffer_resp_valid, // valid only for now
+    output NSB_OUT_BUFF_RESP_t                                  nsb_output_buffer_resp,
 
     // Prefetcher -> AXI Memory Interconnect
     output logic [33:0]                       output_buffer_axi_interconnect_axi_araddr,
@@ -97,6 +97,10 @@ always_comb begin
     output_buffer_axi_interconnect_axi_wlast       = '0;
     output_buffer_axi_interconnect_axi_wstrb       = '0;
     output_buffer_axi_interconnect_axi_wvalid      = '0;
+
+    nsb_output_buffer_req_ready     = '0;
+    nsb_output_buffer_resp_valid    = '0;
+    nsb_output_buffer_resp          = '0;
 end
 
 // ==================================================================================================================================================
