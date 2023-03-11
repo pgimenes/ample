@@ -12,7 +12,14 @@ interface register_staller_simple_intf (
     input logic                  out_ready
 );
 
+C_both_full: cover property (
+    @(posedge core_clk) disable iff (!resetn)
+    register_staller_simple.out_full && register_staller_simple.hld_full );
 
+P_eventual_drain: assert property (
+    @(posedge core_clk) disable iff (!resetn)
+    !(register_staller_simple.accept_upstream && register_staller_simple.write_out && register_staller_simple.write_hld)
+    );
 
 endinterface
 
