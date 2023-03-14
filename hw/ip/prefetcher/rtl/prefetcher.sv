@@ -15,6 +15,15 @@ module prefetcher #(
     output logic                              nsb_prefetcher_resp_valid, // valid only for now
     output NSB_PREF_RESP_t                    nsb_prefetcher_resp,
 
+    // // Message Channels: AGE -> Prefetcher
+    // input  logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_req_valid,
+    // output logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_req_ready,
+    // input  MESSAGE_CHANNEL_REQ_t [MESSAGE_CHANNEL_COUNT-1:0]  message_channel_req,
+
+    // output logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_resp_valid,
+    // input  logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_resp_ready,
+    // output MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp,
+
     // Prefetcher -> AXI Memory Interconnect
     output logic [33:0]                       prefetcher_axi_interconnect_axi_araddr,
     output logic [1:0]                        prefetcher_axi_interconnect_axi_arburst,
@@ -218,6 +227,14 @@ axi_read_master #(
 // Logic
 // ==================================================================================================================================================
 
+// Fetch tag allocation
+// ----------------------------------------------------------------------------------
+
+assign nsb_prefetcher_fetch_tag_req_valid  [0] = nsb_prefetcher_req_valid;
+assign nsb_prefetcher_fetch_tag_req_ready  [0] = nsb_prefetcher_req_ready;
+assign nsb_prefetcher_fetch_tag_req        [0] = nsb_prefetcher_req;
+assign nsb_prefetcher_fetch_tag_resp_valid [0] = nsb_prefetcher_resp_valid;
+assign nsb_prefetcher_fetch_tag_resp       [0] = nsb_prefetcher_resp;
 
 always_comb begin
     // Read-only interface

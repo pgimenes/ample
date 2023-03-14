@@ -1,0 +1,4 @@
+vhdl xil_defaultlib  \
+"../../../../hw.srcs/sources_1/ip/int32_to_float32/sim/int32_to_float32.vhd" \
+
+nosort
