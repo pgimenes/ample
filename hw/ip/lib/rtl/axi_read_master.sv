@@ -17,7 +17,7 @@ module axi_read_master #(
     parameter AXI_ADDRESS_WIDTH = 34,
     parameter DATA_WIDTH = 512
 ) (
-    input logic clk,
+    input logic core_clk,
     input logic resetn,
 
     // Request interface
@@ -114,7 +114,7 @@ always_comb begin
     last_read_response_pending = beats_received == required_beat_count;
 end
 
-always_ff @(posedge clk or negedge resetn) begin
+always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         fetch_state                         <= IDLE;
 
