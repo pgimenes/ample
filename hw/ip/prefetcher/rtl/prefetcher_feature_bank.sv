@@ -317,74 +317,83 @@ axi_read_master #(
 // Logic
 // ==================================================================================================================================================
 
+// Fetch tag allocation
+// ----------------------------------------------------------------------------------
+
+assign nsb_prefetcher_fetch_tag_req_valid  [0] = nsb_prefetcher_feature_bank_req_valid;
+assign nsb_prefetcher_fetch_tag_req_ready  [0] = nsb_prefetcher_feature_bank_req_ready;
+assign nsb_prefetcher_fetch_tag_req        [0] = nsb_prefetcher_feature_bank_req;
+assign nsb_prefetcher_fetch_tag_resp_valid [0] = nsb_prefetcher_feature_bank_resp_valid;
+assign nsb_prefetcher_fetch_tag_resp       [0] = nsb_prefetcher_feature_bank_resp;
+
 // Tie requests to adjacency read master from first fetch tag
 always_comb begin
-    adj_rm_fetch_req_valid      = fetch_tag_adj_rm_req_valid[0];
-    adj_rm_fetch_req_ready      = fetch_tag_adj_rm_req_ready[0];
-    adj_rm_fetch_start_address  = fetch_tag_adj_rm_start_address[0];
-    adj_rm_fetch_byte_count     = fetch_tag_adj_rm_byte_count[0];
+    adj_rm_fetch_req_valid              = fetch_tag_adj_rm_req_valid[0];
+    adj_rm_fetch_start_address          = fetch_tag_adj_rm_start_address[0];
+    adj_rm_fetch_byte_count             = fetch_tag_adj_rm_byte_count[0];
+    fetch_tag_adj_rm_req_ready[0]       = adj_rm_fetch_req_ready;
 
-    adj_rm_fetch_resp_valid  = fetch_tag_adj_rm_resp_valid [0];
-    adj_rm_fetch_resp_ready  = fetch_tag_adj_rm_resp_ready [0];
-    adj_rm_fetch_resp_last   = fetch_tag_adj_rm_resp_last [0];
-    adj_rm_fetch_resp_data   = fetch_tag_adj_rm_resp_data [0];
-    adj_rm_fetch_resp_axi_id = fetch_tag_adj_rm_resp_axi_id [0];
+    adj_rm_fetch_resp_ready             = fetch_tag_adj_rm_resp_ready [0];
+    fetch_tag_adj_rm_resp_valid [0]     = adj_rm_fetch_resp_valid;
+    fetch_tag_adj_rm_resp_last [0]      = adj_rm_fetch_resp_last;
+    fetch_tag_adj_rm_resp_data [0]      = adj_rm_fetch_resp_data;
+    fetch_tag_adj_rm_resp_axi_id [0]    = adj_rm_fetch_resp_axi_id;
 end
 
 // Tie requests to message read master from first fetch tag
 always_comb begin
     msg_rm_fetch_req_valid     = fetch_tag_msg_rm_req_valid[0];
-    msg_rm_fetch_req_ready     = fetch_tag_msg_rm_req_ready[0];
     msg_rm_fetch_start_address = fetch_tag_msg_rm_start_address[0];
     msg_rm_fetch_byte_count    = fetch_tag_msg_rm_byte_count[0];
+    fetch_tag_msg_rm_req_ready[0] = msg_rm_fetch_req_ready;
 
-    msg_rm_fetch_resp_valid  = fetch_tag_msg_rm_resp_valid [0];
     msg_rm_fetch_resp_ready  = fetch_tag_msg_rm_resp_ready [0];
-    msg_rm_fetch_resp_last   = fetch_tag_msg_rm_resp_last [0];
-    msg_rm_fetch_resp_data   = fetch_tag_msg_rm_resp_data [0];
-    msg_rm_fetch_resp_axi_id = fetch_tag_msg_rm_resp_axi_id [0];
+    fetch_tag_msg_rm_resp_valid [0] = msg_rm_fetch_resp_valid;
+    fetch_tag_msg_rm_resp_last [0] = msg_rm_fetch_resp_last;
+    fetch_tag_msg_rm_resp_data [0] = msg_rm_fetch_resp_data;
+    fetch_tag_msg_rm_resp_axi_id [0] = msg_rm_fetch_resp_axi_id;
 end
 
 
 
 always_comb begin
     // Read-only interfaces
-    prefetcher_adj_axi_interconnect_axi_awaddr      = '0;
-    prefetcher_adj_axi_interconnect_axi_awburst     = '0;
-    prefetcher_adj_axi_interconnect_axi_awcache     = '0;
-    prefetcher_adj_axi_interconnect_axi_awid        = '0;
-    prefetcher_adj_axi_interconnect_axi_awlen       = '0;
-    prefetcher_adj_axi_interconnect_axi_awlock      = '0;
-    prefetcher_adj_axi_interconnect_axi_awprot      = '0;
-    prefetcher_adj_axi_interconnect_axi_awqos       = '0;
-    prefetcher_adj_axi_interconnect_axi_awsize      = '0;
-    prefetcher_adj_axi_interconnect_axi_awvalid     = '0;
-    prefetcher_adj_axi_interconnect_axi_bready      = '0;
-    prefetcher_adj_axi_interconnect_axi_wdata       = '0;
-    prefetcher_adj_axi_interconnect_axi_wlast       = '0;
-    prefetcher_adj_axi_interconnect_axi_wstrb       = '0;
-    prefetcher_adj_axi_interconnect_axi_wvalid      = '0;
-    
-    prefetcher_msg_axi_interconnect_axi_awaddr      = '0;
-    prefetcher_msg_axi_interconnect_axi_awburst     = '0;
-    prefetcher_msg_axi_interconnect_axi_awcache     = '0;
-    prefetcher_msg_axi_interconnect_axi_awid        = '0;
-    prefetcher_msg_axi_interconnect_axi_awlen       = '0;
-    prefetcher_msg_axi_interconnect_axi_awlock      = '0;
-    prefetcher_msg_axi_interconnect_axi_awprot      = '0;
-    prefetcher_msg_axi_interconnect_axi_awqos       = '0;
-    prefetcher_msg_axi_interconnect_axi_awsize      = '0;
-    prefetcher_msg_axi_interconnect_axi_awvalid     = '0;
-    prefetcher_msg_axi_interconnect_axi_bready      = '0;
-    prefetcher_msg_axi_interconnect_axi_wdata       = '0;
-    prefetcher_msg_axi_interconnect_axi_wlast       = '0;
-    prefetcher_msg_axi_interconnect_axi_wstrb       = '0;
-    prefetcher_msg_axi_interconnect_axi_wvalid      = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awaddr      = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awburst     = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awcache     = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awid        = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awlen       = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awlock      = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awprot      = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awqos       = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awsize      = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awvalid     = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_bready      = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wdata       = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wlast       = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wstrb       = '0;
+    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wvalid      = '0;
+
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awaddr      = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awburst     = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awcache     = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awid        = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awlen       = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awlock      = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awprot      = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awqos       = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awsize      = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awvalid     = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_bready      = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wdata       = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wlast       = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wstrb       = '0;
+    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wvalid      = '0;
 
     // NSB interface
-    nsb_prefetcher_req_ready                    = '1; // drop all requests
-    nsb_prefetcher_resp_valid                   = '0;
-    nsb_prefetcher_resp                         = '0;
+    nsb_prefetcher_feature_bank_req_ready                    = '1; // drop all requests
+    nsb_prefetcher_feature_bank_resp_valid                   = '0;
+    nsb_prefetcher_feature_bank_resp                         = '0;
 end
 
 // ==================================================================================================================================================

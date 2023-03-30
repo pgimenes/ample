@@ -36,6 +36,8 @@ logic [31:0] acc_cnt_inc_padded;
 logic [31:0] acc_cnt_inc_float;
 
 logic in_feature_valid_q;
+logic in_feature_valid_q2;
+logic in_feature_valid_q3;
 
 // ==================================================================================================================================================
 // Instantiations

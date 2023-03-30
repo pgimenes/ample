@@ -6,13 +6,13 @@ module passthrough_aggregator #(
     input  logic core_clk,
     input  logic resetn,
 
-    input  logic [DATA_WIDTH-1:0] in_feature,
     input  logic                  in_feature_valid,
-    output logic [DATA_WIDTH-1:0] out_feature,
-    output logic [DATA_WIDTH-1:0] out_feature_valid
+    input  logic [DATA_WIDTH-1:0] in_feature,
+    output logic                  out_feature_valid,
+    output logic [DATA_WIDTH-1:0] out_feature
 );
 
-assign out_feature       <= in_feature;
-assign out_feature_valid <= in_feature_valid;
+assign out_feature       = in_feature;
+assign out_feature_valid = in_feature_valid;
 
 endmodule

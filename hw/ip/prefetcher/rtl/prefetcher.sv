@@ -207,39 +207,6 @@ prefetcher_feature_bank feature_bank_i (
 // Logic
 // ==================================================================================================================================================
 
-// Fetch tag allocation
-// ----------------------------------------------------------------------------------
-
-assign nsb_prefetcher_fetch_tag_req_valid  [0] = nsb_prefetcher_req_valid;
-assign nsb_prefetcher_fetch_tag_req_ready  [0] = nsb_prefetcher_req_ready;
-assign nsb_prefetcher_fetch_tag_req        [0] = nsb_prefetcher_req;
-assign nsb_prefetcher_fetch_tag_resp_valid [0] = nsb_prefetcher_resp_valid;
-assign nsb_prefetcher_fetch_tag_resp       [0] = nsb_prefetcher_resp;
-
-always_comb begin
-    // Read-only interface
-    prefetcher_axi_interconnect_axi_awaddr      = '0;
-    prefetcher_axi_interconnect_axi_awburst     = '0;
-    prefetcher_axi_interconnect_axi_awcache     = '0;
-    prefetcher_axi_interconnect_axi_awid        = '0;
-    prefetcher_axi_interconnect_axi_awlen       = '0;
-    prefetcher_axi_interconnect_axi_awlock      = '0;
-    prefetcher_axi_interconnect_axi_awprot      = '0;
-    prefetcher_axi_interconnect_axi_awqos       = '0;
-    prefetcher_axi_interconnect_axi_awsize      = '0;
-    prefetcher_axi_interconnect_axi_awvalid     = '0;
-    prefetcher_axi_interconnect_axi_bready      = '0;
-    prefetcher_axi_interconnect_axi_wdata       = '0;
-    prefetcher_axi_interconnect_axi_wlast       = '0;
-    prefetcher_axi_interconnect_axi_wstrb       = '0;
-    prefetcher_axi_interconnect_axi_wvalid      = '0;
-
-    // NSB interface
-    nsb_prefetcher_req_ready                    = '1; // drop all requests
-    nsb_prefetcher_resp_valid                   = '0;
-    nsb_prefetcher_resp                         = '0;
-end
-
 // ==================================================================================================================================================
 // Assertions
 // ==================================================================================================================================================

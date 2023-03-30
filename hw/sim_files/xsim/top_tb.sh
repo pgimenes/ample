@@ -37,7 +37,7 @@ compile()
 {
   # Compile design files
   xvlog $xvlog_opts -prj vlog.prj 2>&1 | tee compile.log
-  # xvhdl $xvhdl_opts -prj vhdl.prj 2>&1 | tee compile.log
+  xvhdl $xvhdl_opts -prj vhdl.prj 2>&1 | tee compile.log
 
 }
 

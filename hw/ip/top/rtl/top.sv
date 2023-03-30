@@ -169,44 +169,83 @@ logic c0_ddr4_reset_n_int;
 
 assign c0_ddr4_reset_n = c0_ddr4_reset_n_int;
 
-// Prefetcher -> AXI Memory Interconnect (Read Only)
-logic [33:0]                       prefetcher_axi_interconnect_axi_araddr;
-logic [1:0]                        prefetcher_axi_interconnect_axi_arburst;
-logic [3:0]                        prefetcher_axi_interconnect_axi_arcache;
-logic [3:0]                        prefetcher_axi_interconnect_axi_arid;
-logic [7:0]                        prefetcher_axi_interconnect_axi_arlen;
-logic [0:0]                        prefetcher_axi_interconnect_axi_arlock;
-logic [2:0]                        prefetcher_axi_interconnect_axi_arprot;
-logic [3:0]                        prefetcher_axi_interconnect_axi_arqos;
-logic [2:0]                        prefetcher_axi_interconnect_axi_arsize;
-logic                              prefetcher_axi_interconnect_axi_arvalid;
-logic                              prefetcher_axi_interconnect_axi_arready;
-logic [33:0]                       prefetcher_axi_interconnect_axi_awaddr;
-logic [1:0]                        prefetcher_axi_interconnect_axi_awburst;
-logic [3:0]                        prefetcher_axi_interconnect_axi_awcache;
-logic [3:0]                        prefetcher_axi_interconnect_axi_awid;
-logic [7:0]                        prefetcher_axi_interconnect_axi_awlen;
-logic [0:0]                        prefetcher_axi_interconnect_axi_awlock;
-logic [2:0]                        prefetcher_axi_interconnect_axi_awprot;
-logic [3:0]                        prefetcher_axi_interconnect_axi_awqos;
-logic                              prefetcher_axi_interconnect_axi_awready;
-logic [2:0]                        prefetcher_axi_interconnect_axi_awsize;
-logic                              prefetcher_axi_interconnect_axi_awvalid;
-logic [3:0]                        prefetcher_axi_interconnect_axi_bid;
-logic                              prefetcher_axi_interconnect_axi_bready;
-logic [1:0]                        prefetcher_axi_interconnect_axi_bresp;
-logic                              prefetcher_axi_interconnect_axi_bvalid;
-logic [511:0]                      prefetcher_axi_interconnect_axi_rdata;
-logic [3:0]                        prefetcher_axi_interconnect_axi_rid;
-logic                              prefetcher_axi_interconnect_axi_rlast;
-logic                              prefetcher_axi_interconnect_axi_rready;
-logic [1:0]                        prefetcher_axi_interconnect_axi_rresp;
-logic                              prefetcher_axi_interconnect_axi_rvalid;
-logic [511:0]                      prefetcher_axi_interconnect_axi_wdata;
-logic                              prefetcher_axi_interconnect_axi_wlast;
-logic                              prefetcher_axi_interconnect_axi_wready;
-logic [63:0]                       prefetcher_axi_interconnect_axi_wstrb;
-logic                              prefetcher_axi_interconnect_axi_wvalid;
+// Prefetcher Adj RM -> AXI Memory Interconnect (Read Only)
+logic [33:0]                       prefetcher_adj_rm_axi_interconnect_axi_araddr;
+logic [1:0]                        prefetcher_adj_rm_axi_interconnect_axi_arburst;
+logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_arcache;
+logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_arid;
+logic [7:0]                        prefetcher_adj_rm_axi_interconnect_axi_arlen;
+logic [0:0]                        prefetcher_adj_rm_axi_interconnect_axi_arlock;
+logic [2:0]                        prefetcher_adj_rm_axi_interconnect_axi_arprot;
+logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_arqos;
+logic [2:0]                        prefetcher_adj_rm_axi_interconnect_axi_arsize;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_arvalid;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_arready;
+logic [33:0]                       prefetcher_adj_rm_axi_interconnect_axi_awaddr;
+logic [1:0]                        prefetcher_adj_rm_axi_interconnect_axi_awburst;
+logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_awcache;
+logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_awid;
+logic [7:0]                        prefetcher_adj_rm_axi_interconnect_axi_awlen;
+logic [0:0]                        prefetcher_adj_rm_axi_interconnect_axi_awlock;
+logic [2:0]                        prefetcher_adj_rm_axi_interconnect_axi_awprot;
+logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_awqos;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_awready;
+logic [2:0]                        prefetcher_adj_rm_axi_interconnect_axi_awsize;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_awvalid;
+logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_bid;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_bready;
+logic [1:0]                        prefetcher_adj_rm_axi_interconnect_axi_bresp;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_bvalid;
+logic [511:0]                      prefetcher_adj_rm_axi_interconnect_axi_rdata;
+logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_rid;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_rlast;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_rready;
+logic [1:0]                        prefetcher_adj_rm_axi_interconnect_axi_rresp;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_rvalid;
+logic [511:0]                      prefetcher_adj_rm_axi_interconnect_axi_wdata;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_wlast;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_wready;
+logic [63:0]                       prefetcher_adj_rm_axi_interconnect_axi_wstrb;
+logic                              prefetcher_adj_rm_axi_interconnect_axi_wvalid;
+
+// Prefetcher Msg RM -> AXI Memory Interconnect (Read Only)
+logic [33:0]                       prefetcher_msg_rm_axi_interconnect_axi_araddr;
+logic [1:0]                        prefetcher_msg_rm_axi_interconnect_axi_arburst;
+logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_arcache;
+logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_arid;
+logic [7:0]                        prefetcher_msg_rm_axi_interconnect_axi_arlen;
+logic [0:0]                        prefetcher_msg_rm_axi_interconnect_axi_arlock;
+logic [2:0]                        prefetcher_msg_rm_axi_interconnect_axi_arprot;
+logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_arqos;
+logic [2:0]                        prefetcher_msg_rm_axi_interconnect_axi_arsize;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_arvalid;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_arready;
+logic [33:0]                       prefetcher_msg_rm_axi_interconnect_axi_awaddr;
+logic [1:0]                        prefetcher_msg_rm_axi_interconnect_axi_awburst;
+logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_awcache;
+logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_awid;
+logic [7:0]                        prefetcher_msg_rm_axi_interconnect_axi_awlen;
+logic [0:0]                        prefetcher_msg_rm_axi_interconnect_axi_awlock;
+logic [2:0]                        prefetcher_msg_rm_axi_interconnect_axi_awprot;
+logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_awqos;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_awready;
+logic [2:0]                        prefetcher_msg_rm_axi_interconnect_axi_awsize;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_awvalid;
+logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_bid;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_bready;
+logic [1:0]                        prefetcher_msg_rm_axi_interconnect_axi_bresp;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_bvalid;
+logic [511:0]                      prefetcher_msg_rm_axi_interconnect_axi_rdata;
+logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_rid;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_rlast;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_rready;
+logic [1:0]                        prefetcher_msg_rm_axi_interconnect_axi_rresp;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_rvalid;
+logic [511:0]                      prefetcher_msg_rm_axi_interconnect_axi_wdata;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_wlast;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_wready;
+logic [63:0]                       prefetcher_msg_rm_axi_interconnect_axi_wstrb;
+logic                              prefetcher_msg_rm_axi_interconnect_axi_wvalid;
 
 // Weight Buffer -> AXI Memory Interconnect (Read Only)
 logic [33:0]                       weight_buffer_axi_interconnect_axi_araddr;
@@ -293,35 +332,45 @@ logic S02_AXI_ARESET_OUT_N;
 logic S03_AXI_ARESET_OUT_N;
 logic M00_AXI_ARESET_OUT_N;
 
-// Controller -> Aggregation Engine Interface
+// NSB -> Aggregation Engine Interface
 logic                                                nsb_age_req_valid;
 logic                                                nsb_age_req_ready;
 NSB_AGE_REQ_t                                        nsb_age_req;
 logic                                                nsb_age_resp_valid; // valid only for now
 NSB_AGE_RESP_t                                       nsb_age_resp;
 
-// Controller -> Transformation Engine Interface
+// NSB -> Transformation Engine Interface
 logic                                                nsb_fte_req_valid;
 logic                                                nsb_fte_req_ready;
 NSB_FTE_REQ_t                                        nsb_fte_req;
 logic                                                nsb_fte_resp_valid; // valid only for now
 NSB_FTE_RESP_t                                       nsb_fte_resp;
 
-// Controller -> Prefetcher Interface
+// NSB -> Prefetcher Interface
 logic                                                nsb_prefetcher_req_valid;
 logic                                                nsb_prefetcher_req_ready;
 NSB_PREF_REQ_t                                       nsb_prefetcher_req;
 logic                                                nsb_prefetcher_resp_valid; // valid only for now
 NSB_PREF_RESP_t                                      nsb_prefetcher_resp;
 
-// Controller -> Output Buffer Interface
+// NSB -> Output Buffer Interface
 logic                                                nsb_output_buffer_req_valid;
 logic                                                nsb_output_buffer_req_ready;
 NSB_OUT_BUFF_REQ_t                                   nsb_output_buffer_req;
 logic                                                nsb_output_buffer_resp_valid; // valid only for now
 NSB_OUT_BUFF_RESP_t                                  nsb_output_buffer_resp;
+
+// Message Channels: AGE -> Prefetcher
+logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_req_valid;
+logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_req_ready;
+MESSAGE_CHANNEL_REQ_t [MESSAGE_CHANNEL_COUNT-1:0]  message_channel_req;
+
+logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_resp_valid;
+logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_resp_ready;
+MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp;
+
 // ====================================================================================
-// Controller
+// Node Scoreboard
 // ====================================================================================
 
 node_scoreboard node_scoreboard_i (
@@ -349,28 +398,28 @@ node_scoreboard node_scoreboard_i (
     .s_axi_rvalid                                       (axil_interconnect_m_axi_rvalid     [2:2]),
     .s_axi_rready                                       (axil_interconnect_m_axi_rready     [2:2]),
 
-    // Controller -> Aggregation Engine Interface
+    // Node Scoreboard -> Aggregation Engine Interface
     .nsb_age_req_valid            (nsb_age_req_valid),
     .nsb_age_req_ready            (nsb_age_req_ready),
     .nsb_age_req                  (nsb_age_req),
     .nsb_age_resp_valid           (nsb_age_resp_valid),
     .nsb_age_resp                 (nsb_age_resp),
 
-    // Controller -> Transformation Engine Interface
+    // Node Scoreboard -> Transformation Engine Interface
     .nsb_fte_req_valid         (nsb_fte_req_valid),
     .nsb_fte_req_ready         (nsb_fte_req_ready),
     .nsb_fte_req               (nsb_fte_req),
     .nsb_fte_resp_valid        (nsb_fte_resp_valid),
     .nsb_fte_resp              (nsb_fte_resp),
 
-    // Controller -> Prefetcher Interface
+    // Node Scoreboard -> Prefetcher Interface
     .nsb_prefetcher_req_valid                    (nsb_prefetcher_req_valid),
     .nsb_prefetcher_req_ready                    (nsb_prefetcher_req_ready),
     .nsb_prefetcher_req                          (nsb_prefetcher_req),
     .nsb_prefetcher_resp_valid                   (nsb_prefetcher_resp_valid),
     .nsb_prefetcher_resp                         (nsb_prefetcher_resp),
 
-    // Controller -> Output Buffer Interface
+    // Node Scoreboard -> Output Buffer Interface
     .nsb_output_buffer_req_valid                    (nsb_output_buffer_req_valid),
     .nsb_output_buffer_req_ready                    (nsb_output_buffer_req_ready),
     .nsb_output_buffer_req                          (nsb_output_buffer_req),
@@ -388,108 +437,99 @@ prefetcher #(
     .core_clk                                           (sys_clk),
     .resetn                                             (!sys_rst),
 
-    // Controller -> Prefetcher Interface
+    // Node Scoreboard -> Prefetcher Interface
     .nsb_prefetcher_req_valid                    (nsb_prefetcher_req_valid),
     .nsb_prefetcher_req_ready                    (nsb_prefetcher_req_ready),
     .nsb_prefetcher_req                          (nsb_prefetcher_req),
     .nsb_prefetcher_resp_valid                   (nsb_prefetcher_resp_valid),
     .nsb_prefetcher_resp                         (nsb_prefetcher_resp),
 
-    // Prefetcher -> AXI Memory Interconnect
-    .prefetcher_axi_interconnect_axi_araddr             (prefetcher_axi_interconnect_axi_araddr),
-    .prefetcher_axi_interconnect_axi_arburst            (prefetcher_axi_interconnect_axi_arburst),
-    .prefetcher_axi_interconnect_axi_arcache            (prefetcher_axi_interconnect_axi_arcache),
-    .prefetcher_axi_interconnect_axi_arid               (prefetcher_axi_interconnect_axi_arid),
-    .prefetcher_axi_interconnect_axi_arlen              (prefetcher_axi_interconnect_axi_arlen),
-    .prefetcher_axi_interconnect_axi_arlock             (prefetcher_axi_interconnect_axi_arlock),
-    .prefetcher_axi_interconnect_axi_arprot             (prefetcher_axi_interconnect_axi_arprot),
-    .prefetcher_axi_interconnect_axi_arqos              (prefetcher_axi_interconnect_axi_arqos),
-    .prefetcher_axi_interconnect_axi_arsize             (prefetcher_axi_interconnect_axi_arsize),
-    .prefetcher_axi_interconnect_axi_arvalid            (prefetcher_axi_interconnect_axi_arvalid),
-    .prefetcher_axi_interconnect_axi_arready            (prefetcher_axi_interconnect_axi_arready),
-    .prefetcher_axi_interconnect_axi_awaddr             (prefetcher_axi_interconnect_axi_awaddr),
-    .prefetcher_axi_interconnect_axi_awburst            (prefetcher_axi_interconnect_axi_awburst),
-    .prefetcher_axi_interconnect_axi_awcache            (prefetcher_axi_interconnect_axi_awcache),
-    .prefetcher_axi_interconnect_axi_awid               (prefetcher_axi_interconnect_axi_awid),
-    .prefetcher_axi_interconnect_axi_awlen              (prefetcher_axi_interconnect_axi_awlen),
-    .prefetcher_axi_interconnect_axi_awlock             (prefetcher_axi_interconnect_axi_awlock),
-    .prefetcher_axi_interconnect_axi_awprot             (prefetcher_axi_interconnect_axi_awprot),
-    .prefetcher_axi_interconnect_axi_awqos              (prefetcher_axi_interconnect_axi_awqos),
-    .prefetcher_axi_interconnect_axi_awready            (prefetcher_axi_interconnect_axi_awready),
-    .prefetcher_axi_interconnect_axi_awsize             (prefetcher_axi_interconnect_axi_awsize),
-    .prefetcher_axi_interconnect_axi_awvalid            (prefetcher_axi_interconnect_axi_awvalid),
-    .prefetcher_axi_interconnect_axi_bid                (prefetcher_axi_interconnect_axi_bid),
-    .prefetcher_axi_interconnect_axi_bready             (prefetcher_axi_interconnect_axi_bready),
-    .prefetcher_axi_interconnect_axi_bresp              (prefetcher_axi_interconnect_axi_bresp),
-    .prefetcher_axi_interconnect_axi_bvalid             (prefetcher_axi_interconnect_axi_bvalid),
-    .prefetcher_axi_interconnect_axi_rdata              (prefetcher_axi_interconnect_axi_rdata),
-    .prefetcher_axi_interconnect_axi_rid                (prefetcher_axi_interconnect_axi_rid),
-    .prefetcher_axi_interconnect_axi_rlast              (prefetcher_axi_interconnect_axi_rlast),
-    .prefetcher_axi_interconnect_axi_rready             (prefetcher_axi_interconnect_axi_rready),
-    .prefetcher_axi_interconnect_axi_rresp              (prefetcher_axi_interconnect_axi_rresp),
-    .prefetcher_axi_interconnect_axi_rvalid             (prefetcher_axi_interconnect_axi_rvalid),
-    .prefetcher_axi_interconnect_axi_wdata              (prefetcher_axi_interconnect_axi_wdata),
-    .prefetcher_axi_interconnect_axi_wlast              (prefetcher_axi_interconnect_axi_wlast),
-    .prefetcher_axi_interconnect_axi_wready             (prefetcher_axi_interconnect_axi_wready),
-    .prefetcher_axi_interconnect_axi_wstrb              (prefetcher_axi_interconnect_axi_wstrb),
-    .prefetcher_axi_interconnect_axi_wvalid             (prefetcher_axi_interconnect_axi_wvalid)
+    // Prefetcher Adj RM -> AXI Memory Interconnect
+    .prefetcher_adj_rm_axi_interconnect_axi_araddr             (prefetcher_adj_rm_axi_interconnect_axi_araddr),
+    .prefetcher_adj_rm_axi_interconnect_axi_arburst            (prefetcher_adj_rm_axi_interconnect_axi_arburst),
+    .prefetcher_adj_rm_axi_interconnect_axi_arcache            (prefetcher_adj_rm_axi_interconnect_axi_arcache),
+    .prefetcher_adj_rm_axi_interconnect_axi_arid               (prefetcher_adj_rm_axi_interconnect_axi_arid),
+    .prefetcher_adj_rm_axi_interconnect_axi_arlen              (prefetcher_adj_rm_axi_interconnect_axi_arlen),
+    .prefetcher_adj_rm_axi_interconnect_axi_arlock             (prefetcher_adj_rm_axi_interconnect_axi_arlock),
+    .prefetcher_adj_rm_axi_interconnect_axi_arprot             (prefetcher_adj_rm_axi_interconnect_axi_arprot),
+    .prefetcher_adj_rm_axi_interconnect_axi_arqos              (prefetcher_adj_rm_axi_interconnect_axi_arqos),
+    .prefetcher_adj_rm_axi_interconnect_axi_arsize             (prefetcher_adj_rm_axi_interconnect_axi_arsize),
+    .prefetcher_adj_rm_axi_interconnect_axi_arvalid            (prefetcher_adj_rm_axi_interconnect_axi_arvalid),
+    .prefetcher_adj_rm_axi_interconnect_axi_arready            (prefetcher_adj_rm_axi_interconnect_axi_arready),
+    .prefetcher_adj_rm_axi_interconnect_axi_awaddr             (prefetcher_adj_rm_axi_interconnect_axi_awaddr),
+    .prefetcher_adj_rm_axi_interconnect_axi_awburst            (prefetcher_adj_rm_axi_interconnect_axi_awburst),
+    .prefetcher_adj_rm_axi_interconnect_axi_awcache            (prefetcher_adj_rm_axi_interconnect_axi_awcache),
+    .prefetcher_adj_rm_axi_interconnect_axi_awid               (prefetcher_adj_rm_axi_interconnect_axi_awid),
+    .prefetcher_adj_rm_axi_interconnect_axi_awlen              (prefetcher_adj_rm_axi_interconnect_axi_awlen),
+    .prefetcher_adj_rm_axi_interconnect_axi_awlock             (prefetcher_adj_rm_axi_interconnect_axi_awlock),
+    .prefetcher_adj_rm_axi_interconnect_axi_awprot             (prefetcher_adj_rm_axi_interconnect_axi_awprot),
+    .prefetcher_adj_rm_axi_interconnect_axi_awqos              (prefetcher_adj_rm_axi_interconnect_axi_awqos),
+    .prefetcher_adj_rm_axi_interconnect_axi_awready            (prefetcher_adj_rm_axi_interconnect_axi_awready),
+    .prefetcher_adj_rm_axi_interconnect_axi_awsize             (prefetcher_adj_rm_axi_interconnect_axi_awsize),
+    .prefetcher_adj_rm_axi_interconnect_axi_awvalid            (prefetcher_adj_rm_axi_interconnect_axi_awvalid),
+    .prefetcher_adj_rm_axi_interconnect_axi_bid                (prefetcher_adj_rm_axi_interconnect_axi_bid),
+    .prefetcher_adj_rm_axi_interconnect_axi_bready             (prefetcher_adj_rm_axi_interconnect_axi_bready),
+    .prefetcher_adj_rm_axi_interconnect_axi_bresp              (prefetcher_adj_rm_axi_interconnect_axi_bresp),
+    .prefetcher_adj_rm_axi_interconnect_axi_bvalid             (prefetcher_adj_rm_axi_interconnect_axi_bvalid),
+    .prefetcher_adj_rm_axi_interconnect_axi_rdata              (prefetcher_adj_rm_axi_interconnect_axi_rdata),
+    .prefetcher_adj_rm_axi_interconnect_axi_rid                (prefetcher_adj_rm_axi_interconnect_axi_rid),
+    .prefetcher_adj_rm_axi_interconnect_axi_rlast              (prefetcher_adj_rm_axi_interconnect_axi_rlast),
+    .prefetcher_adj_rm_axi_interconnect_axi_rready             (prefetcher_adj_rm_axi_interconnect_axi_rready),
+    .prefetcher_adj_rm_axi_interconnect_axi_rresp              (prefetcher_adj_rm_axi_interconnect_axi_rresp),
+    .prefetcher_adj_rm_axi_interconnect_axi_rvalid             (prefetcher_adj_rm_axi_interconnect_axi_rvalid),
+    .prefetcher_adj_rm_axi_interconnect_axi_wdata              (prefetcher_adj_rm_axi_interconnect_axi_wdata),
+    .prefetcher_adj_rm_axi_interconnect_axi_wlast              (prefetcher_adj_rm_axi_interconnect_axi_wlast),
+    .prefetcher_adj_rm_axi_interconnect_axi_wready             (prefetcher_adj_rm_axi_interconnect_axi_wready),
+    .prefetcher_adj_rm_axi_interconnect_axi_wstrb              (prefetcher_adj_rm_axi_interconnect_axi_wstrb),
+    .prefetcher_adj_rm_axi_interconnect_axi_wvalid             (prefetcher_adj_rm_axi_interconnect_axi_wvalid),
+
+    // Prefetcher Msg RM -> AXI Memory Interconnect
+    .prefetcher_msg_rm_axi_interconnect_axi_araddr             (prefetcher_msg_rm_axi_interconnect_axi_araddr),
+    .prefetcher_msg_rm_axi_interconnect_axi_arburst            (prefetcher_msg_rm_axi_interconnect_axi_arburst),
+    .prefetcher_msg_rm_axi_interconnect_axi_arcache            (prefetcher_msg_rm_axi_interconnect_axi_arcache),
+    .prefetcher_msg_rm_axi_interconnect_axi_arid               (prefetcher_msg_rm_axi_interconnect_axi_arid),
+    .prefetcher_msg_rm_axi_interconnect_axi_arlen              (prefetcher_msg_rm_axi_interconnect_axi_arlen),
+    .prefetcher_msg_rm_axi_interconnect_axi_arlock             (prefetcher_msg_rm_axi_interconnect_axi_arlock),
+    .prefetcher_msg_rm_axi_interconnect_axi_arprot             (prefetcher_msg_rm_axi_interconnect_axi_arprot),
+    .prefetcher_msg_rm_axi_interconnect_axi_arqos              (prefetcher_msg_rm_axi_interconnect_axi_arqos),
+    .prefetcher_msg_rm_axi_interconnect_axi_arsize             (prefetcher_msg_rm_axi_interconnect_axi_arsize),
+    .prefetcher_msg_rm_axi_interconnect_axi_arvalid            (prefetcher_msg_rm_axi_interconnect_axi_arvalid),
+    .prefetcher_msg_rm_axi_interconnect_axi_arready            (prefetcher_msg_rm_axi_interconnect_axi_arready),
+    .prefetcher_msg_rm_axi_interconnect_axi_awaddr             (prefetcher_msg_rm_axi_interconnect_axi_awaddr),
+    .prefetcher_msg_rm_axi_interconnect_axi_awburst            (prefetcher_msg_rm_axi_interconnect_axi_awburst),
+    .prefetcher_msg_rm_axi_interconnect_axi_awcache            (prefetcher_msg_rm_axi_interconnect_axi_awcache),
+    .prefetcher_msg_rm_axi_interconnect_axi_awid               (prefetcher_msg_rm_axi_interconnect_axi_awid),
+    .prefetcher_msg_rm_axi_interconnect_axi_awlen              (prefetcher_msg_rm_axi_interconnect_axi_awlen),
+    .prefetcher_msg_rm_axi_interconnect_axi_awlock             (prefetcher_msg_rm_axi_interconnect_axi_awlock),
+    .prefetcher_msg_rm_axi_interconnect_axi_awprot             (prefetcher_msg_rm_axi_interconnect_axi_awprot),
+    .prefetcher_msg_rm_axi_interconnect_axi_awqos              (prefetcher_msg_rm_axi_interconnect_axi_awqos),
+    .prefetcher_msg_rm_axi_interconnect_axi_awready            (prefetcher_msg_rm_axi_interconnect_axi_awready),
+    .prefetcher_msg_rm_axi_interconnect_axi_awsize             (prefetcher_msg_rm_axi_interconnect_axi_awsize),
+    .prefetcher_msg_rm_axi_interconnect_axi_awvalid            (prefetcher_msg_rm_axi_interconnect_axi_awvalid),
+    .prefetcher_msg_rm_axi_interconnect_axi_bid                (prefetcher_msg_rm_axi_interconnect_axi_bid),
+    .prefetcher_msg_rm_axi_interconnect_axi_bready             (prefetcher_msg_rm_axi_interconnect_axi_bready),
+    .prefetcher_msg_rm_axi_interconnect_axi_bresp              (prefetcher_msg_rm_axi_interconnect_axi_bresp),
+    .prefetcher_msg_rm_axi_interconnect_axi_bvalid             (prefetcher_msg_rm_axi_interconnect_axi_bvalid),
+    .prefetcher_msg_rm_axi_interconnect_axi_rdata              (prefetcher_msg_rm_axi_interconnect_axi_rdata),
+    .prefetcher_msg_rm_axi_interconnect_axi_rid                (prefetcher_msg_rm_axi_interconnect_axi_rid),
+    .prefetcher_msg_rm_axi_interconnect_axi_rlast              (prefetcher_msg_rm_axi_interconnect_axi_rlast),
+    .prefetcher_msg_rm_axi_interconnect_axi_rready             (prefetcher_msg_rm_axi_interconnect_axi_rready),
+    .prefetcher_msg_rm_axi_interconnect_axi_rresp              (prefetcher_msg_rm_axi_interconnect_axi_rresp),
+    .prefetcher_msg_rm_axi_interconnect_axi_rvalid             (prefetcher_msg_rm_axi_interconnect_axi_rvalid),
+    .prefetcher_msg_rm_axi_interconnect_axi_wdata              (prefetcher_msg_rm_axi_interconnect_axi_wdata),
+    .prefetcher_msg_rm_axi_interconnect_axi_wlast              (prefetcher_msg_rm_axi_interconnect_axi_wlast),
+    .prefetcher_msg_rm_axi_interconnect_axi_wready             (prefetcher_msg_rm_axi_interconnect_axi_wready),
+    .prefetcher_msg_rm_axi_interconnect_axi_wstrb              (prefetcher_msg_rm_axi_interconnect_axi_wstrb),
+    .prefetcher_msg_rm_axi_interconnect_axi_wvalid             (prefetcher_msg_rm_axi_interconnect_axi_wvalid),
+
+    // Message Channels: AGE -> Prefetcher
+    .message_channel_req_valid                                 (message_channel_req_valid),
+    .message_channel_req_ready                                 (message_channel_req_ready),
+    .message_channel_req                                       (message_channel_req),
+    .message_channel_resp_valid                                (message_channel_resp_valid),
+    .message_channel_resp_ready                                (message_channel_resp_ready),
+    .message_channel_resp                                      (message_channel_resp)
 );
-
-// ====================================================================================
-// Weight Buffer
-// ====================================================================================
-
-// weight_buffer weight_buffer_i (
-//     .core_clk                                           (sys_clk),
-//     .resetn                                             (!sys_rst),
-
-//     // Controller -> Weight Buffer Interface
-//     .nsb_weight_buffer_req_valid                    (nsb_weight_buffer_req_valid),
-//     .nsb_weight_buffer_req_ready                    (nsb_weight_buffer_req_ready),
-//     .nsb_weight_buffer_req                          (nsb_weight_buffer_req),
-//     .nsb_weight_buffer_resp_valid                   (nsb_weight_buffer_resp_valid),
-//     .nsb_weight_buffer_resp                         (nsb_weight_buffer_resp),
-
-//     // Prefetcher -> AXI Memory Interconnect
-//     .weight_buffer_axi_interconnect_axi_araddr             (weight_buffer_axi_interconnect_axi_araddr),
-//     .weight_buffer_axi_interconnect_axi_arburst            (weight_buffer_axi_interconnect_axi_arburst),
-//     .weight_buffer_axi_interconnect_axi_arcache            (weight_buffer_axi_interconnect_axi_arcache),
-//     .weight_buffer_axi_interconnect_axi_arid               (weight_buffer_axi_interconnect_axi_arid),
-//     .weight_buffer_axi_interconnect_axi_arlen              (weight_buffer_axi_interconnect_axi_arlen),
-//     .weight_buffer_axi_interconnect_axi_arlock             (weight_buffer_axi_interconnect_axi_arlock),
-//     .weight_buffer_axi_interconnect_axi_arprot             (weight_buffer_axi_interconnect_axi_arprot),
-//     .weight_buffer_axi_interconnect_axi_arqos              (weight_buffer_axi_interconnect_axi_arqos),
-//     .weight_buffer_axi_interconnect_axi_arsize             (weight_buffer_axi_interconnect_axi_arsize),
-//     .weight_buffer_axi_interconnect_axi_arvalid            (weight_buffer_axi_interconnect_axi_arvalid),
-//     .weight_buffer_axi_interconnect_axi_arready            (weight_buffer_axi_interconnect_axi_arready),
-//     .weight_buffer_axi_interconnect_axi_rdata              (weight_buffer_axi_interconnect_axi_rdata),
-//     .weight_buffer_axi_interconnect_axi_rid                (weight_buffer_axi_interconnect_axi_rid),
-//     .weight_buffer_axi_interconnect_axi_rlast              (weight_buffer_axi_interconnect_axi_rlast),
-//     .weight_buffer_axi_interconnect_axi_rready             (weight_buffer_axi_interconnect_axi_rready),
-//     .weight_buffer_axi_interconnect_axi_rresp              (weight_buffer_axi_interconnect_axi_rresp),
-//     .weight_buffer_axi_interconnect_axi_rvalid             (weight_buffer_axi_interconnect_axi_rvalid),
-    
-//     .weight_buffer_axi_interconnect_axi_awaddr             (weight_buffer_axi_interconnect_axi_awaddr),
-//     .weight_buffer_axi_interconnect_axi_awburst            (weight_buffer_axi_interconnect_axi_awburst),
-//     .weight_buffer_axi_interconnect_axi_awcache            (weight_buffer_axi_interconnect_axi_awcache),
-//     .weight_buffer_axi_interconnect_axi_awid               (weight_buffer_axi_interconnect_axi_awid),
-//     .weight_buffer_axi_interconnect_axi_awlen              (weight_buffer_axi_interconnect_axi_awlen),
-//     .weight_buffer_axi_interconnect_axi_awlock             (weight_buffer_axi_interconnect_axi_awlock),
-//     .weight_buffer_axi_interconnect_axi_awprot             (weight_buffer_axi_interconnect_axi_awprot),
-//     .weight_buffer_axi_interconnect_axi_awqos              (weight_buffer_axi_interconnect_axi_awqos),
-//     .weight_buffer_axi_interconnect_axi_awready            (weight_buffer_axi_interconnect_axi_awready),
-//     .weight_buffer_axi_interconnect_axi_awsize             (weight_buffer_axi_interconnect_axi_awsize),
-//     .weight_buffer_axi_interconnect_axi_awvalid            (weight_buffer_axi_interconnect_axi_awvalid),
-//     .weight_buffer_axi_interconnect_axi_bid                (weight_buffer_axi_interconnect_axi_bid),
-//     .weight_buffer_axi_interconnect_axi_bready             (weight_buffer_axi_interconnect_axi_bready),
-//     .weight_buffer_axi_interconnect_axi_bresp              (weight_buffer_axi_interconnect_axi_bresp),
-//     .weight_buffer_axi_interconnect_axi_bvalid             (weight_buffer_axi_interconnect_axi_bvalid),
-//     .weight_buffer_axi_interconnect_axi_wdata              (weight_buffer_axi_interconnect_axi_wdata),
-//     .weight_buffer_axi_interconnect_axi_wlast              (weight_buffer_axi_interconnect_axi_wlast),
-//     .weight_buffer_axi_interconnect_axi_wready             (weight_buffer_axi_interconnect_axi_wready),
-//     .weight_buffer_axi_interconnect_axi_wstrb              (weight_buffer_axi_interconnect_axi_wstrb),
-//     .weight_buffer_axi_interconnect_axi_wvalid             (weight_buffer_axi_interconnect_axi_wvalid)
-// );
 
 // ====================================================================================
 // Output Buffer
@@ -499,7 +539,7 @@ output_buffer output_buffer_i (
     .core_clk                                           (sys_clk),
     .resetn                                             (!sys_rst),
 
-    // Controller -> Output Buffer Interface
+    // Node Scoreboard -> Output Buffer Interface
     .nsb_output_buffer_req_valid                    (nsb_output_buffer_req_valid),
     .nsb_output_buffer_req_ready                    (nsb_output_buffer_req_ready),
     .nsb_output_buffer_req                          (nsb_output_buffer_req),
@@ -554,6 +594,13 @@ aggregation_engine aggregation_engine_i (
     .core_clk                           (sys_clk),
     .resetn                             (!sys_rst),
     
+    // Node Scoreboard -> Aggregation Engine Interface
+    .nsb_age_req_valid            (nsb_age_req_valid),
+    .nsb_age_req_ready            (nsb_age_req_ready),
+    .nsb_age_req                  (nsb_age_req),
+    .nsb_age_resp_valid           (nsb_age_resp_valid),
+    .nsb_age_resp                 (nsb_age_resp),
+
     // Regbank Slave AXI interface
     .s_axi_awaddr                       (axil_interconnect_m_axi_awaddr     [31:0]),
     .s_axi_awprot                       (axil_interconnect_m_axi_awprot     [2:0]),
@@ -575,13 +622,12 @@ aggregation_engine aggregation_engine_i (
     .s_axi_rvalid                       (axil_interconnect_m_axi_rvalid     [0]),
     .s_axi_rready                       (axil_interconnect_m_axi_rready     [0]),
 
-    // Controller -> Aggregation Engine Interface
-    .nsb_age_req_valid            (nsb_age_req_valid),
-    .nsb_age_req_ready            (nsb_age_req_ready),
-    .nsb_age_req                  (nsb_age_req),
-    .nsb_age_resp_valid           (nsb_age_resp_valid),
-    .nsb_age_resp                 (nsb_age_resp)
-
+    .message_channel_req_valid          (message_channel_req_valid),
+    .message_channel_req_ready          (message_channel_req_ready),
+    .message_channel_req                (message_channel_req),
+    .message_channel_resp_valid         (message_channel_resp_valid),
+    .message_channel_resp_ready         (message_channel_resp_ready),
+    .message_channel_resp               (message_channel_resp)
 );
 
 
@@ -614,7 +660,7 @@ transformation_engine transformation_engine_i (
     .s_axi_bvalid                                       (axil_interconnect_m_axi_bvalid     [1:1]), // output
     .s_axi_bready                                       (axil_interconnect_m_axi_bready     [1:1]), // input
 
-    // Controller -> Transformation Engine Interface
+    // Node Scoreboard -> Transformation Engine Interface
     .nsb_fte_req_valid         (nsb_fte_req_valid),
     .nsb_fte_req_ready         (nsb_fte_req_ready),
     .nsb_fte_req               (nsb_fte_req),
@@ -677,8 +723,8 @@ axi_L_register_control_crossbar axi_L_register_control_crossbar_i (
 
 // S00: Prefetcher
 // S01: weight buffer
-// S02: top
-// S03: weight buffer?
+// S02: top (TB)
+// S03: output buffer
 
 axi_memory_interconnect axi_memory_interconnect_i (
   .INTERCONNECT_ACLK            (sys_clk),        // input wire INTERCONNECT_ACLK
@@ -687,43 +733,43 @@ axi_memory_interconnect axi_memory_interconnect_i (
   .S00_AXI_ACLK                 (sys_clk),                  // input wire S00_AXI_ACLK
   .S00_AXI_ARESET_OUT_N         (S00_AXI_ARESET_OUT_N),  // output wire S00_AXI_ARESET_OUT_N
   
-  .S00_AXI_ARADDR               (prefetcher_axi_interconnect_axi_araddr     ),              // input wire [33 : 0] S00_AXI_ARADDR
-  .S00_AXI_ARBURST              (prefetcher_axi_interconnect_axi_arburst        ),            // input wire [1 : 0] S00_AXI_ARBURST
-  .S00_AXI_ARCACHE              (prefetcher_axi_interconnect_axi_arcache        ),            // input wire [3 : 0] S00_AXI_ARCACHE
-  .S00_AXI_ARID                 (prefetcher_axi_interconnect_axi_arid       ),                  // input wire [0 : 0] S00_AXI_ARID
-  .S00_AXI_ARLEN                (prefetcher_axi_interconnect_axi_arlen      ),                // input wire [7 : 0] S00_AXI_ARLEN
-  .S00_AXI_ARLOCK               (prefetcher_axi_interconnect_axi_arlock     ),                               // input wire S00_AXI_ARLOCK
-  .S00_AXI_ARPROT               (prefetcher_axi_interconnect_axi_arprot     ),                               // input wire [2 : 0] S00_AXI_ARPROT
-  .S00_AXI_ARQOS                (prefetcher_axi_interconnect_axi_arqos      ),                               // input wire [3 : 0] S00_AXI_ARQOS
-  .S00_AXI_ARSIZE               (prefetcher_axi_interconnect_axi_arsize     ),              // input wire [2 : 0] S00_AXI_ARSIZE
-  .S00_AXI_ARVALID              (prefetcher_axi_interconnect_axi_arvalid        ),            // input wire S00_AXI_ARVALID
-  .S00_AXI_ARREADY              (prefetcher_axi_interconnect_axi_arready        ),            // output wire S00_AXI_ARREADY
-  .S00_AXI_AWADDR               (prefetcher_axi_interconnect_axi_awaddr     ),              // input wire [33 : 0] S00_AXI_AWADDR
-  .S00_AXI_AWBURST              (prefetcher_axi_interconnect_axi_awburst        ),            // input wire [1 : 0] S00_AXI_AWBURST
-  .S00_AXI_AWCACHE              (prefetcher_axi_interconnect_axi_awcache        ),            // input wire [3 : 0] S00_AXI_AWCACHE
-  .S00_AXI_AWID                 (prefetcher_axi_interconnect_axi_awid       ),                  // input wire [0 : 0] S00_AXI_AWID
-  .S00_AXI_AWLEN                (prefetcher_axi_interconnect_axi_awlen      ),                // input wire [7 : 0] S00_AXI_AWLEN
-  .S00_AXI_AWLOCK               (prefetcher_axi_interconnect_axi_awlock     ),                               // input wire S00_AXI_AWLOCK
-  .S00_AXI_AWPROT               (prefetcher_axi_interconnect_axi_awprot     ),              // input wire [2 : 0] S00_AXI_AWPROT
-  .S00_AXI_AWQOS                (prefetcher_axi_interconnect_axi_awqos      ),                               // input wire [3 : 0] S00_AXI_AWQOS
-  .S00_AXI_AWREADY              (prefetcher_axi_interconnect_axi_awready        ),            // output wire S00_AXI_AWREADY
-  .S00_AXI_AWSIZE               (prefetcher_axi_interconnect_axi_awsize     ),              // input wire [2 : 0] S00_AXI_AWSIZE
-  .S00_AXI_AWVALID              (prefetcher_axi_interconnect_axi_awvalid        ),            // input wire S00_AXI_AWVALID
-  .S00_AXI_BID                  (prefetcher_axi_interconnect_axi_bid        ),                    // output wire [0 : 0] S00_AXI_BID
-  .S00_AXI_BREADY               (prefetcher_axi_interconnect_axi_bready     ),              // input wire S00_AXI_BREADY
-  .S00_AXI_BRESP                (prefetcher_axi_interconnect_axi_bresp      ),                // output wire [1 : 0] S00_AXI_BRESP
-  .S00_AXI_BVALID               (prefetcher_axi_interconnect_axi_bvalid     ),              // output wire S00_AXI_BVALID
-  .S00_AXI_RDATA                (prefetcher_axi_interconnect_axi_rdata      ),                // output wire [511 : 0] S00_AXI_RDATA
-  .S00_AXI_RID                  (prefetcher_axi_interconnect_axi_rid        ),                    // output wire [0 : 0] S00_AXI_RID
-  .S00_AXI_RLAST                (prefetcher_axi_interconnect_axi_rlast      ),                // output wire S00_AXI_RLAST
-  .S00_AXI_RREADY               (prefetcher_axi_interconnect_axi_rready     ),              // input wire S00_AXI_RREADY
-  .S00_AXI_RRESP                (prefetcher_axi_interconnect_axi_rresp      ),                // output wire [1 : 0] S00_AXI_RRESP
-  .S00_AXI_RVALID               (prefetcher_axi_interconnect_axi_rvalid     ),              // output wire S00_AXI_RVALID
-  .S00_AXI_WDATA                (prefetcher_axi_interconnect_axi_wdata      ),                // input wire [511 : 0] S00_AXI_WDATA
-  .S00_AXI_WLAST                (prefetcher_axi_interconnect_axi_wlast      ),                // input wire S00_AXI_WLAST
-  .S00_AXI_WREADY               (prefetcher_axi_interconnect_axi_wready     ),              // output wire S00_AXI_WREADY
-  .S00_AXI_WSTRB                (prefetcher_axi_interconnect_axi_wstrb      ),                // input wire [63 : 0] S00_AXI_WSTRB
-  .S00_AXI_WVALID               (prefetcher_axi_interconnect_axi_wvalid     ),              // input wire S00_AXI_WVALID
+  .S00_AXI_ARADDR               (prefetcher_adj_rm_axi_interconnect_axi_araddr     ),              // input wire [33 : 0] S00_AXI_ARADDR
+  .S00_AXI_ARBURST              (prefetcher_adj_rm_axi_interconnect_axi_arburst        ),            // input wire [1 : 0] S00_AXI_ARBURST
+  .S00_AXI_ARCACHE              (prefetcher_adj_rm_axi_interconnect_axi_arcache        ),            // input wire [3 : 0] S00_AXI_ARCACHE
+  .S00_AXI_ARID                 (prefetcher_adj_rm_axi_interconnect_axi_arid       ),                  // input wire [0 : 0] S00_AXI_ARID
+  .S00_AXI_ARLEN                (prefetcher_adj_rm_axi_interconnect_axi_arlen      ),                // input wire [7 : 0] S00_AXI_ARLEN
+  .S00_AXI_ARLOCK               (prefetcher_adj_rm_axi_interconnect_axi_arlock     ),                               // input wire S00_AXI_ARLOCK
+  .S00_AXI_ARPROT               (prefetcher_adj_rm_axi_interconnect_axi_arprot     ),                               // input wire [2 : 0] S00_AXI_ARPROT
+  .S00_AXI_ARQOS                (prefetcher_adj_rm_axi_interconnect_axi_arqos      ),                               // input wire [3 : 0] S00_AXI_ARQOS
+  .S00_AXI_ARSIZE               (prefetcher_adj_rm_axi_interconnect_axi_arsize     ),              // input wire [2 : 0] S00_AXI_ARSIZE
+  .S00_AXI_ARVALID              (prefetcher_adj_rm_axi_interconnect_axi_arvalid        ),            // input wire S00_AXI_ARVALID
+  .S00_AXI_ARREADY              (prefetcher_adj_rm_axi_interconnect_axi_arready        ),            // output wire S00_AXI_ARREADY
+  .S00_AXI_AWADDR               (prefetcher_adj_rm_axi_interconnect_axi_awaddr     ),              // input wire [33 : 0] S00_AXI_AWADDR
+  .S00_AXI_AWBURST              (prefetcher_adj_rm_axi_interconnect_axi_awburst        ),            // input wire [1 : 0] S00_AXI_AWBURST
+  .S00_AXI_AWCACHE              (prefetcher_adj_rm_axi_interconnect_axi_awcache        ),            // input wire [3 : 0] S00_AXI_AWCACHE
+  .S00_AXI_AWID                 (prefetcher_adj_rm_axi_interconnect_axi_awid       ),                  // input wire [0 : 0] S00_AXI_AWID
+  .S00_AXI_AWLEN                (prefetcher_adj_rm_axi_interconnect_axi_awlen      ),                // input wire [7 : 0] S00_AXI_AWLEN
+  .S00_AXI_AWLOCK               (prefetcher_adj_rm_axi_interconnect_axi_awlock     ),                               // input wire S00_AXI_AWLOCK
+  .S00_AXI_AWPROT               (prefetcher_adj_rm_axi_interconnect_axi_awprot     ),              // input wire [2 : 0] S00_AXI_AWPROT
+  .S00_AXI_AWQOS                (prefetcher_adj_rm_axi_interconnect_axi_awqos      ),                               // input wire [3 : 0] S00_AXI_AWQOS
+  .S00_AXI_AWREADY              (prefetcher_adj_rm_axi_interconnect_axi_awready        ),            // output wire S00_AXI_AWREADY
+  .S00_AXI_AWSIZE               (prefetcher_adj_rm_axi_interconnect_axi_awsize     ),              // input wire [2 : 0] S00_AXI_AWSIZE
+  .S00_AXI_AWVALID              (prefetcher_adj_rm_axi_interconnect_axi_awvalid        ),            // input wire S00_AXI_AWVALID
+  .S00_AXI_BID                  (prefetcher_adj_rm_axi_interconnect_axi_bid        ),                    // output wire [0 : 0] S00_AXI_BID
+  .S00_AXI_BREADY               (prefetcher_adj_rm_axi_interconnect_axi_bready     ),              // input wire S00_AXI_BREADY
+  .S00_AXI_BRESP                (prefetcher_adj_rm_axi_interconnect_axi_bresp      ),                // output wire [1 : 0] S00_AXI_BRESP
+  .S00_AXI_BVALID               (prefetcher_adj_rm_axi_interconnect_axi_bvalid     ),              // output wire S00_AXI_BVALID
+  .S00_AXI_RDATA                (prefetcher_adj_rm_axi_interconnect_axi_rdata      ),                // output wire [511 : 0] S00_AXI_RDATA
+  .S00_AXI_RID                  (prefetcher_adj_rm_axi_interconnect_axi_rid        ),                    // output wire [0 : 0] S00_AXI_RID
+  .S00_AXI_RLAST                (prefetcher_adj_rm_axi_interconnect_axi_rlast      ),                // output wire S00_AXI_RLAST
+  .S00_AXI_RREADY               (prefetcher_adj_rm_axi_interconnect_axi_rready     ),              // input wire S00_AXI_RREADY
+  .S00_AXI_RRESP                (prefetcher_adj_rm_axi_interconnect_axi_rresp      ),                // output wire [1 : 0] S00_AXI_RRESP
+  .S00_AXI_RVALID               (prefetcher_adj_rm_axi_interconnect_axi_rvalid     ),              // output wire S00_AXI_RVALID
+  .S00_AXI_WDATA                (prefetcher_adj_rm_axi_interconnect_axi_wdata      ),                // input wire [511 : 0] S00_AXI_WDATA
+  .S00_AXI_WLAST                (prefetcher_adj_rm_axi_interconnect_axi_wlast      ),                // input wire S00_AXI_WLAST
+  .S00_AXI_WREADY               (prefetcher_adj_rm_axi_interconnect_axi_wready     ),              // output wire S00_AXI_WREADY
+  .S00_AXI_WSTRB                (prefetcher_adj_rm_axi_interconnect_axi_wstrb      ),                // input wire [63 : 0] S00_AXI_WSTRB
+  .S00_AXI_WVALID               (prefetcher_adj_rm_axi_interconnect_axi_wvalid     ),              // input wire S00_AXI_WVALID
 
   .S01_AXI_ACLK                 (sys_clk),                  // input wire S01_AXI_ACLK
   .S01_AXI_ARESET_OUT_N         (S01_AXI_ARESET_OUT_N),  // output wire S01_AXI_ARESET_OUT_N
@@ -847,6 +893,166 @@ axi_memory_interconnect axi_memory_interconnect_i (
   .S03_AXI_RLAST                (output_buffer_axi_interconnect_axi_rlast),                // output wire S02_AXI_RLAST
   .S03_AXI_RVALID               (output_buffer_axi_interconnect_axi_rvalid),              // output wire S02_AXI_RVALID
   .S03_AXI_RREADY               (output_buffer_axi_interconnect_axi_rready),              // input wire S02_AXI_RREADY
+
+  .S04_AXI_ACLK                 (sys_clk),         // input wire S00_AXI_ACLK
+  .S04_AXI_ARESET_OUT_N         (S00_AXI_ARESET_OUT_N),  // outpmsg_rm_ut wire S00_AXI_ARESET_OUT_N
+  .S04_AXI_ARADDR               (prefetcher_msg_rm_axi_interconnect_axi_araddr     ),              // input wire [33 : 0] S00_AXI_ARADDR
+  .S04_AXI_ARBURST              (prefetcher_msg_rm_axi_interconnect_axi_arburst        ),            // input wire [1 : 0] S00_AXI_ARBURST
+  .S04_AXI_ARCACHE              (prefetcher_msg_rm_axi_interconnect_axi_arcache        ),            // input wire [3 : 0] S00_AXI_ARCACHE
+  .S04_AXI_ARID                 (prefetcher_msg_rm_axi_interconnect_axi_arid       ),                  // input wire [0 : 0] S00_AXI_ARID
+  .S04_AXI_ARLEN                (prefetcher_msg_rm_axi_interconnect_axi_arlen      ),                // input wire [7 : 0] S00_AXI_ARLEN
+  .S04_AXI_ARLOCK               (prefetcher_msg_rm_axi_interconnect_axi_arlock     ),                               // input wire S00_AXI_ARLOCK
+  .S04_AXI_ARPROT               (prefetcher_msg_rm_axi_interconnect_axi_arprot     ),                               // input wire [2 : 0] S00_AXI_ARPROT
+  .S04_AXI_ARQOS                (prefetcher_msg_rm_axi_interconnect_axi_arqos      ),                               // input wire [3 : 0] S00_AXI_ARQOS
+  .S04_AXI_ARSIZE               (prefetcher_msg_rm_axi_interconnect_axi_arsize     ),              // input wire [2 : 0] S00_AXI_ARSIZE
+  .S04_AXI_ARVALID              (prefetcher_msg_rm_axi_interconnect_axi_arvalid        ),            // input wire S00_AXI_ARVALID
+  .S04_AXI_ARREADY              (prefetcher_msg_rm_axi_interconnect_axi_arready        ),            // output wire S00_AXI_ARREADY
+  .S04_AXI_AWADDR               (prefetcher_msg_rm_axi_interconnect_axi_awaddr     ),              // input wire [33 : 0] S00_AXI_AWADDR
+  .S04_AXI_AWBURST              (prefetcher_msg_rm_axi_interconnect_axi_awburst        ),            // input wire [1 : 0] S00_AXI_AWBURST
+  .S04_AXI_AWCACHE              (prefetcher_msg_rm_axi_interconnect_axi_awcache        ),            // input wire [3 : 0] S00_AXI_AWCACHE
+  .S04_AXI_AWID                 (prefetcher_msg_rm_axi_interconnect_axi_awid       ),                  // input wire [0 : 0] S00_AXI_AWID
+  .S04_AXI_AWLEN                (prefetcher_msg_rm_axi_interconnect_axi_awlen      ),                // input wire [7 : 0] S00_AXI_AWLEN
+  .S04_AXI_AWLOCK               (prefetcher_msg_rm_axi_interconnect_axi_awlock     ),                               // input wire S00_AXI_AWLOCK
+  .S04_AXI_AWPROT               (prefetcher_msg_rm_axi_interconnect_axi_awprot     ),              // input wire [2 : 0] S00_AXI_AWPROT
+  .S04_AXI_AWQOS                (prefetcher_msg_rm_axi_interconnect_axi_awqos      ),                               // input wire [3 : 0] S00_AXI_AWQOS
+  .S04_AXI_AWREADY              (prefetcher_msg_rm_axi_interconnect_axi_awready        ),            // output wire S00_AXI_AWREADY
+  .S04_AXI_AWSIZE               (prefetcher_msg_rm_axi_interconnect_axi_awsize     ),              // input wire [2 : 0] S00_AXI_AWSIZE
+  .S04_AXI_AWVALID              (prefetcher_msg_rm_axi_interconnect_axi_awvalid        ),            // input wire S00_AXI_AWVALID
+  .S04_AXI_BID                  (prefetcher_msg_rm_axi_interconnect_axi_bid        ),                    // output wire [0 : 0] S00_AXI_BID
+  .S04_AXI_BREADY               (prefetcher_msg_rm_axi_interconnect_axi_bready     ),              // input wire S00_AXI_BREADY
+  .S04_AXI_BRESP                (prefetcher_msg_rm_axi_interconnect_axi_bresp      ),                // output wire [1 : 0] S00_AXI_BRESP
+  .S04_AXI_BVALID               (prefetcher_msg_rm_axi_interconnect_axi_bvalid     ),              // output wire S00_AXI_BVALID
+  .S04_AXI_RDATA                (prefetcher_msg_rm_axi_interconnect_axi_rdata      ),                // output wire [511 : 0] S00_AXI_RDATA
+  .S04_AXI_RID                  (prefetcher_msg_rm_axi_interconnect_axi_rid        ),                    // output wire [0 : 0] S00_AXI_RID
+  .S04_AXI_RLAST                (prefetcher_msg_rm_axi_interconnect_axi_rlast      ),                // output wire S00_AXI_RLAST
+  .S04_AXI_RREADY               (prefetcher_msg_rm_axi_interconnect_axi_rready     ),              // input wire S00_AXI_RREADY
+  .S04_AXI_RRESP                (prefetcher_msg_rm_axi_interconnect_axi_rresp      ),                // output wire [1 : 0] S00_AXI_RRESP
+  .S04_AXI_RVALID               (prefetcher_msg_rm_axi_interconnect_axi_rvalid     ),              // output wire S00_AXI_RVALID
+  .S04_AXI_WDATA                (prefetcher_msg_rm_axi_interconnect_axi_wdata      ),                // input wire [511 : 0] S00_AXI_WDATA
+  .S04_AXI_WLAST                (prefetcher_msg_rm_axi_interconnect_axi_wlast      ),                // input wire S00_AXI_WLAST
+  .S04_AXI_WREADY               (prefetcher_msg_rm_axi_interconnect_axi_wready     ),              // output wire S00_AXI_WREADY
+  .S04_AXI_WSTRB                (prefetcher_msg_rm_axi_interconnect_axi_wstrb      ),                // input wire [63 : 0] S00_AXI_WSTRB
+  .S04_AXI_WVALID               (prefetcher_msg_rm_axi_interconnect_axi_wvalid     ),              // input wire S00_AXI_WVALID
+
+  .S05_AXI_ACLK                 ('0), // input wire S00_AXI_ACLK
+  .S05_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
+  .S05_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
+  .S05_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
+  .S05_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
+  .S05_AXI_ARID                 ('0), // input wire [0 : 0] S00_AXI_ARID
+  .S05_AXI_ARLEN                ('0), // input wire [7 : 0] S00_AXI_ARLEN
+  .S05_AXI_ARLOCK               ('0), // input wire S00_AXI_ARLOCK
+  .S05_AXI_ARPROT               ('0), // input wire [2 : 0] S00_AXI_ARPROT
+  .S05_AXI_ARQOS                ('0), // input wire [3 : 0] S00_AXI_ARQOS
+  .S05_AXI_ARSIZE               ('0), // input wire [2 : 0] S00_AXI_ARSIZE
+  .S05_AXI_ARVALID              ('0), // input wire S00_AXI_ARVALID
+  .S05_AXI_ARREADY              (),   // output wire S00_AXI_ARREADY
+  .S05_AXI_AWADDR               ('0), // input wire [33 : 0] S00_AXI_AWADDR
+  .S05_AXI_AWBURST              ('0), // input wire [1 : 0] S00_AXI_AWBURST
+  .S05_AXI_AWCACHE              ('0), // input wire [3 : 0] S00_AXI_AWCACHE
+  .S05_AXI_AWID                 ('0), // input wire [0 : 0] S00_AXI_AWID
+  .S05_AXI_AWLEN                ('0), // input wire [7 : 0] S00_AXI_AWLEN
+  .S05_AXI_AWLOCK               ('0), // input wire S00_AXI_AWLOCK
+  .S05_AXI_AWPROT               ('0), // input wire [2 : 0] S00_AXI_AWPROT
+  .S05_AXI_AWQOS                ('0), // input wire [3 : 0] S00_AXI_AWQOS
+  .S05_AXI_AWREADY              (),   // output wire S00_AXI_AWREADY
+  .S05_AXI_AWSIZE               ('0), // input wire [2 : 0] S00_AXI_AWSIZE
+  .S05_AXI_AWVALID              ('0), // input wire S00_AXI_AWVALID
+  .S05_AXI_BID                  (),   // output wire [0 : 0] S00_AXI_BID
+  .S05_AXI_BREADY               ('0), // input wire S00_AXI_BREADY
+  .S05_AXI_BRESP                (),   // output wire [1 : 0] S00_AXI_BRESP
+  .S05_AXI_BVALID               (),   // output wire S00_AXI_BVALID
+  .S05_AXI_RDATA                (),   // output wire [511 : 0] S00_AXI_RDATA
+  .S05_AXI_RID                  (),   // output wire [0 : 0] S00_AXI_RID
+  .S05_AXI_RLAST                (),   // output wire S00_AXI_RLAST
+  .S05_AXI_RREADY               ('0), // input wire S00_AXI_RREADY
+  .S05_AXI_RRESP                (),   // output wire [1 : 0] S00_AXI_RRESP
+  .S05_AXI_RVALID               (),   // output wire S00_AXI_RVALID
+  .S05_AXI_WDATA                ('0), // input wire [511 : 0] S00_AXI_WDATA
+  .S05_AXI_WLAST                ('0), // input wire S00_AXI_WLAST
+  .S05_AXI_WREADY               (),   // output wire S00_AXI_WREADY
+  .S05_AXI_WSTRB                ('0), // input wire [63 : 0] S00_AXI_WSTRB
+  .S05_AXI_WVALID               ('0), // input wire S00_AXI_WVALID
+
+  .S06_AXI_ACLK                 ('0), // input wire S00_AXI_ACLK
+  .S06_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
+  .S06_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
+  .S06_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
+  .S06_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
+  .S06_AXI_ARID                 ('0), // input wire [0 : 0] S00_AXI_ARID
+  .S06_AXI_ARLEN                ('0), // input wire [7 : 0] S00_AXI_ARLEN
+  .S06_AXI_ARLOCK               ('0), // input wire S00_AXI_ARLOCK
+  .S06_AXI_ARPROT               ('0), // input wire [2 : 0] S00_AXI_ARPROT
+  .S06_AXI_ARQOS                ('0), // input wire [3 : 0] S00_AXI_ARQOS
+  .S06_AXI_ARSIZE               ('0), // input wire [2 : 0] S00_AXI_ARSIZE
+  .S06_AXI_ARVALID              ('0), // input wire S00_AXI_ARVALID
+  .S06_AXI_ARREADY              (),   // output wire S00_AXI_ARREADY
+  .S06_AXI_AWADDR               ('0), // input wire [33 : 0] S00_AXI_AWADDR
+  .S06_AXI_AWBURST              ('0), // input wire [1 : 0] S00_AXI_AWBURST
+  .S06_AXI_AWCACHE              ('0), // input wire [3 : 0] S00_AXI_AWCACHE
+  .S06_AXI_AWID                 ('0), // input wire [0 : 0] S00_AXI_AWID
+  .S06_AXI_AWLEN                ('0), // input wire [7 : 0] S00_AXI_AWLEN
+  .S06_AXI_AWLOCK               ('0), // input wire S00_AXI_AWLOCK
+  .S06_AXI_AWPROT               ('0), // input wire [2 : 0] S00_AXI_AWPROT
+  .S06_AXI_AWQOS                ('0), // input wire [3 : 0] S00_AXI_AWQOS
+  .S06_AXI_AWREADY              (),   // output wire S00_AXI_AWREADY
+  .S06_AXI_AWSIZE               ('0), // input wire [2 : 0] S00_AXI_AWSIZE
+  .S06_AXI_AWVALID              ('0), // input wire S00_AXI_AWVALID
+  .S06_AXI_BID                  (),   // output wire [0 : 0] S00_AXI_BID
+  .S06_AXI_BREADY               ('0), // input wire S00_AXI_BREADY
+  .S06_AXI_BRESP                (),   // output wire [1 : 0] S00_AXI_BRESP
+  .S06_AXI_BVALID               (),   // output wire S00_AXI_BVALID
+  .S06_AXI_RDATA                (),   // output wire [511 : 0] S00_AXI_RDATA
+  .S06_AXI_RID                  (),   // output wire [0 : 0] S00_AXI_RID
+  .S06_AXI_RLAST                (),   // output wire S00_AXI_RLAST
+  .S06_AXI_RREADY               ('0), // input wire S00_AXI_RREADY
+  .S06_AXI_RRESP                (),   // output wire [1 : 0] S00_AXI_RRESP
+  .S06_AXI_RVALID               (),   // output wire S00_AXI_RVALID
+  .S06_AXI_WDATA                ('0), // input wire [511 : 0] S00_AXI_WDATA
+  .S06_AXI_WLAST                ('0), // input wire S00_AXI_WLAST
+  .S06_AXI_WREADY               (),   // output wire S00_AXI_WREADY
+  .S06_AXI_WSTRB                ('0), // input wire [63 : 0] S00_AXI_WSTRB
+  .S06_AXI_WVALID               ('0), // input wire S00_AXI_WVALID
+
+  .S07_AXI_ACLK                 ('0), // input wire S00_AXI_ACLK
+  .S07_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
+  .S07_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
+  .S07_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
+  .S07_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
+  .S07_AXI_ARID                 ('0), // input wire [0 : 0] S00_AXI_ARID
+  .S07_AXI_ARLEN                ('0), // input wire [7 : 0] S00_AXI_ARLEN
+  .S07_AXI_ARLOCK               ('0), // input wire S00_AXI_ARLOCK
+  .S07_AXI_ARPROT               ('0), // input wire [2 : 0] S00_AXI_ARPROT
+  .S07_AXI_ARQOS                ('0), // input wire [3 : 0] S00_AXI_ARQOS
+  .S07_AXI_ARSIZE               ('0), // input wire [2 : 0] S00_AXI_ARSIZE
+  .S07_AXI_ARVALID              ('0), // input wire S00_AXI_ARVALID
+  .S07_AXI_ARREADY              (),   // output wire S00_AXI_ARREADY
+  .S07_AXI_AWADDR               ('0), // input wire [33 : 0] S00_AXI_AWADDR
+  .S07_AXI_AWBURST              ('0), // input wire [1 : 0] S00_AXI_AWBURST
+  .S07_AXI_AWCACHE              ('0), // input wire [3 : 0] S00_AXI_AWCACHE
+  .S07_AXI_AWID                 ('0), // input wire [0 : 0] S00_AXI_AWID
+  .S07_AXI_AWLEN                ('0), // input wire [7 : 0] S00_AXI_AWLEN
+  .S07_AXI_AWLOCK               ('0), // input wire S00_AXI_AWLOCK
+  .S07_AXI_AWPROT               ('0), // input wire [2 : 0] S00_AXI_AWPROT
+  .S07_AXI_AWQOS                ('0), // input wire [3 : 0] S00_AXI_AWQOS
+  .S07_AXI_AWREADY              (),   // output wire S00_AXI_AWREADY
+  .S07_AXI_AWSIZE               ('0), // input wire [2 : 0] S00_AXI_AWSIZE
+  .S07_AXI_AWVALID              ('0), // input wire S00_AXI_AWVALID
+  .S07_AXI_BID                  (),   // output wire [0 : 0] S00_AXI_BID
+  .S07_AXI_BREADY               ('0), // input wire S00_AXI_BREADY
+  .S07_AXI_BRESP                (),   // output wire [1 : 0] S00_AXI_BRESP
+  .S07_AXI_BVALID               (),   // output wire S00_AXI_BVALID
+  .S07_AXI_RDATA                (),   // output wire [511 : 0] S00_AXI_RDATA
+  .S07_AXI_RID                  (),   // output wire [0 : 0] S00_AXI_RID
+  .S07_AXI_RLAST                (),   // output wire S00_AXI_RLAST
+  .S07_AXI_RREADY               ('0), // input wire S00_AXI_RREADY
+  .S07_AXI_RRESP                (),   // output wire [1 : 0] S00_AXI_RRESP
+  .S07_AXI_RVALID               (),   // output wire S00_AXI_RVALID
+  .S07_AXI_WDATA                ('0), // input wire [511 : 0] S00_AXI_WDATA
+  .S07_AXI_WLAST                ('0), // input wire S00_AXI_WLAST
+  .S07_AXI_WREADY               (),   // output wire S00_AXI_WREADY
+  .S07_AXI_WSTRB                ('0), // input wire [63 : 0] S00_AXI_WSTRB
+  .S07_AXI_WVALID               ('0), // input wire S00_AXI_WVALID
   
   .M00_AXI_ACLK                 (sys_clk),                  // input wire M00_AXI_ACLK
   .M00_AXI_ARESET_OUT_N         (M00_AXI_ARESET_OUT_N),  // output wire M00_AXI_ARESET_OUT_N
