@@ -382,7 +382,9 @@ node_scoreboard node_scoreboard_i (
 // Prefetcher
 // ====================================================================================
 
-prefetcher prefetcher_i (
+prefetcher #(
+    .FETCH_TAG_COUNT (top_pkg::FETCH_TAG_COUNT)
+) prefetcher_i (
     .core_clk                                           (sys_clk),
     .resetn                                             (!sys_rst),
 

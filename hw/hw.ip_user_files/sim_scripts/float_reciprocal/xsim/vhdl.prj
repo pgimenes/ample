@@ -1,0 +1,4 @@
+vhdl xil_defaultlib  \
+"../../../ip/float_reciprocal/sim/float_reciprocal.vhd" \
+
+nosort
