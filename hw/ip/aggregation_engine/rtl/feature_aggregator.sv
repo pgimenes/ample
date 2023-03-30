@@ -39,12 +39,12 @@ logic updated_feature_ready;
 passthrough_aggregator #(
     .DATA_WIDTH (DATA_WIDTH)
 ) passthrough_aggregator_i (
-    .core_clk,
-    .resetn,
+    .core_clk          (core_clk),
+    .resetn            (resetn),
     .in_feature        (in_feature),
     .in_feature_valid  (passthrough_aggregator_in_feature_valid),
     .out_feature       (passthrough_aggregator_out_feature),
-    .out_feature_valid (passthrough_aggregator_out_valid),
+    .out_feature_valid (passthrough_aggregator_out_valid)
 );
 
 
@@ -57,7 +57,7 @@ sum_aggregator #(
     .in_feature_valid  (sum_aggregator_in_feature_valid),
     .acc_feature       (accumulator),
     .out_feature       (sum_aggregator_out_feature),
-    .out_feature_valid (sum_aggregator_out_valid),
+    .out_feature_valid (sum_aggregator_out_valid)
 );
 
 mean_aggregator #(

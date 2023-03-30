@@ -64,7 +64,7 @@ end
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
-        agc_state <= AG;
+        agc_state <= AGC_FSM_IDLE;
     end else begin
         agc_state <= agc_state_n;
     end
