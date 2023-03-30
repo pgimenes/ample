@@ -19,8 +19,10 @@ module ultraram #(
     output reg [DWIDTH-1:0] doutb      // Data Output
 );
 
-
+`ifndef FORMAL
 (* ram_style = "ultra" *)
+`endif
+
 reg [DWIDTH-1:0] mem [(1<<AWIDTH)-1:0];        // Memory Declaration
 reg [DWIDTH-1:0] memreg;              
 reg [DWIDTH-1:0] mem_pipe_reg [NBPIPE-1:0];    // Pipelines for memory

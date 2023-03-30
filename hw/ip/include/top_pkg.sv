@@ -4,9 +4,9 @@ package top_pkg;
 // Utilities
 // ----------------------------------------------------
 
-`define max(a,b) (a > b) ? a : b;
-`define min(a,b) (a > b) ? b : a;
-`define divide_round_up(a,b) (a - 1)/b + 1;
+`define max(a,b) ((a > b) ? a : b)
+`define min(a,b) ((a > b) ? b : a)
+`define divide_round_up(a,b) (a - 1)/b + 1
 
 // Global parameters
 // ----------------------------------------------------
@@ -62,8 +62,8 @@ typedef enum logic [1:0] {
 
 typedef struct packed {
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
-    NODE_PRECISION_e node_precision;
-    AGGREGATION_FUNCTION_e aggregation_function;
+    NODE_PRECISION_e                       node_precision;
+    AGGREGATION_FUNCTION_e                 aggregation_function;
 } NSB_AGE_REQ_t;
 
 typedef struct packed {
@@ -86,7 +86,7 @@ typedef enum logic [1:0] {
 } NSB_PREF_OPCODE_e;
 
 typedef struct packed {
-    NSB_PREF_OPCODE_e [3:0]                req_opcode;
+    NSB_PREF_OPCODE_e                      req_opcode;
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
     NODE_PRECISION_e                       nodeslot_precision;
 
@@ -97,12 +97,12 @@ typedef struct packed {
 
 typedef struct packed {
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
-    NSB_PREF_OPCODE_e [3:0] response_type;
-    logic partial;
+    NSB_PREF_OPCODE_e [3:0]                response_type;
+    logic                                  partial;
 } NSB_PREF_RESP_t;
 
 typedef struct packed {
-    logic [MAX_NODESLOT_COUNT-1:0] nodeslots;
+    logic [MAX_NODESLOT_COUNT-1:0]         nodeslots;
 } NSB_OUT_BUFF_REQ_t;
 
 typedef struct packed {
