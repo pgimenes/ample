@@ -118,15 +118,6 @@ task automatic nsb_nodeslot_programming_test();
     busy_nodeslots_mask = '0;
     delay(10); // wait reset done
 
-    // Read memory contents to check initialization
-    // read_transaction(.rd_trans(mem_init_check_read));
-    // send_wait_rd(
-    //     .rd_trans           (mem_init_check_read),
-    //     .return_trans       (mem_init_check_read_resp)
-    // );
-
-    // $display("[TIMESTAMP]: %d, Memory Initialization Check read: %h", $time, mem_init_check_read_resp.get_data_beat(0));
-
     // Program random nodeslots
     repeat (10) begin
         while( (busy_nodeslots_mask != '1) && (busy_nodeslots_mask[chosen_nodeslot] == '1)) chosen_nodeslot = $urandom_range(0, 63);

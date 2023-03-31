@@ -14,13 +14,21 @@ function new(virtual node_scoreboard_interface nsb_intf);
 endfunction
 
 task main();
+    logic [31:0] msb_addr;
+    logic [31:0] lsb_addr;
+
     $display("Checking for writes");
+
+    msb_addr = NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + NSB_NODESLOT_CONFIG_MAKE_VALID_MSB_OFFSET;
+    msb_addr = NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + NSB_NODESLOT_CONFIG_MAKE_VALID_LSB_OFFSET;
+
     forever begin
         @(posedge nsb_vif.core_clk) begin
-            if (nsb_vif.s_axi_awvalid && nsb_vif.s_axi_awready && (nsb_vif.s_axi_awaddr == node_scoreboard_regbank_regs_pkg::NSB_NODESLOT_CONFIG_MAKE_VALID_MSB_OFFSET || nsb_vif.s_axi_awaddr == node_scoreboard_regbank_regs_pkg::NSB_NODESLOT_CONFIG_MAKE_VALID_LSB_OFFSET)) begin
+
+            if (nsb_vif.s_axi_awvalid && nsb_vif.s_axi_awready && (nsb_vif.s_axi_awaddr inside {msb_addr, lsb_addr})) begin
                 $display("[TIMESTAMP]: %d, Observed Host write to MAKE_VALID", $time);
-                expecting_make_valid_msb <= (nsb_vif.s_axi_awaddr == node_scoreboard_regbank_regs_pkg::NSB_NODESLOT_CONFIG_MAKE_VALID_MSB_OFFSET);
-                expecting_make_valid_lsb <= (nsb_vif.s_axi_awaddr == node_scoreboard_regbank_regs_pkg::NSB_NODESLOT_CONFIG_MAKE_VALID_LSB_OFFSET);
+                expecting_make_valid_msb <= (nsb_vif.s_axi_awaddr == msb_addr);
+                expecting_make_valid_lsb <= (nsb_vif.s_axi_awaddr == lsb_addr);
             end
 
             if (nsb_vif.s_axi_wvalid && nsb_vif.s_axi_wready && (expecting_make_valid_msb || expecting_make_valid_lsb)) begin

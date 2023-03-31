@@ -8,5 +8,4 @@ if { [string length $curr_wave] == 0 } {
   }
 }
 
-run -all
-quit
+run 2us
