@@ -320,11 +320,30 @@ axi_read_master #(
 // Fetch tag allocation
 // ----------------------------------------------------------------------------------
 
-assign nsb_prefetcher_fetch_tag_req_valid  [0] = nsb_prefetcher_feature_bank_req_valid;
-assign nsb_prefetcher_fetch_tag_req_ready  [0] = nsb_prefetcher_feature_bank_req_ready;
-assign nsb_prefetcher_fetch_tag_req        [0] = nsb_prefetcher_feature_bank_req;
-assign nsb_prefetcher_fetch_tag_resp_valid [0] = nsb_prefetcher_feature_bank_resp_valid;
-assign nsb_prefetcher_fetch_tag_resp       [0] = nsb_prefetcher_feature_bank_resp;
+// TO DO: parametrize feature count
+
+always_comb begin
+    allocation_valid = (nsb_prefetcher_feature_bank_req_valid && (nsb_prefetcher_feature_bank_req.req_opcode == top_pkg::ADJACENCY_LIST));
+    allocation_nodeslot = nsb_prefetcher_feature_bank_req.nodeslot;
+    allocation_feature_count = 10'd4; // to support MS2
+end
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        deallocation_valid <= '0;
+    end else begin
+        // If last beat sent to AGE, deallocate fetch tag
+        deallocation_valid <= message_channel_resp_valid[0] && message_channel_resp_ready[0] && message_channel_resp[0].last ? '1
+                            : '0;
+    end
+end
+
+assign nsb_prefetcher_fetch_tag_req_valid  [0]  = nsb_prefetcher_feature_bank_req_valid;
+assign nsb_prefetcher_fetch_tag_req        [0]  = nsb_prefetcher_feature_bank_req;
+
+assign nsb_prefetcher_feature_bank_req_ready    = nsb_prefetcher_fetch_tag_req_ready [0];
+assign nsb_prefetcher_feature_bank_resp_valid   = nsb_prefetcher_fetch_tag_resp_valid [0];
+assign nsb_prefetcher_feature_bank_resp         = nsb_prefetcher_fetch_tag_resp [0];
 
 // Tie requests to adjacency read master from first fetch tag
 always_comb begin
@@ -356,8 +375,8 @@ end
 
 
 
+// Read-only interfaces
 always_comb begin
-    // Read-only interfaces
     prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awaddr      = '0;
     prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awburst     = '0;
     prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awcache     = '0;
@@ -389,11 +408,6 @@ always_comb begin
     prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wlast       = '0;
     prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wstrb       = '0;
     prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wvalid      = '0;
-
-    // NSB interface
-    nsb_prefetcher_feature_bank_req_ready                    = '1; // drop all requests
-    nsb_prefetcher_feature_bank_resp_valid                   = '0;
-    nsb_prefetcher_feature_bank_resp                         = '0;
 end
 
 // ==================================================================================================================================================

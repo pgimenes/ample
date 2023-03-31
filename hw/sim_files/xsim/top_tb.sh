@@ -35,10 +35,18 @@ run()
 # RUN_STEP: <compile>
 compile()
 {
-  # Compile design files
-  xvlog $xvlog_opts -prj vlog.prj 2>&1 | tee compile.log
-  xvhdl $xvhdl_opts -prj vhdl.prj 2>&1 | tee compile.log
+  
+  # Compile verilog (flag raised by default in bashrc)
+  if [[ "$COMPILE_VLOG" -eq 1 ]]; then
+    echo "Compiling verilog..."
+    xvlog $xvlog_opts -prj vlog.prj 2>&1 | tee compile.log
+  fi
 
+  # compile VHDL if flag raised
+  if [[ "$COMPILE_VHDL" -eq 1 ]]; then
+    echo "Compiling VHDL..."
+    xvhdl $xvhdl_opts -prj vhdl.prj 2>&1 | tee compile.log
+  fi
 }
 
 # RUN_STEP: <elaborate>
