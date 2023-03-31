@@ -49,13 +49,16 @@ typedef enum logic [1:0] {
     FIXED_4 = 3
 } NODE_PRECISION_e;
 
-function logic [2:0] bits_per_precision (input NODE_PRECISION_e precision);
+automatic function logic [5:0] bits_per_precision (input NODE_PRECISION_e precision);
+    logic [5:0] bits;
     case(precision)
-        top_pkg::FLOAT_32: bits_per_precision = 3'd32;
-        top_pkg::FIXED_16: bits_per_precision = 3'd16;
-        top_pkg::FIXED_8:  bits_per_precision = 3'd8;
-        top_pkg::FIXED_4:  bits_per_precision = 3'd4;
+        top_pkg::FLOAT_32: bits = 6'd32;
+        top_pkg::FIXED_16: bits = 6'd16;
+        top_pkg::FIXED_8:  bits = 6'd8;
+        top_pkg::FIXED_4:  bits = 6'd4;
+        default:           bits = 6'd0;
     endcase
+    return bits;
 endfunction
 
 typedef enum logic [1:0] {

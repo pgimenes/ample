@@ -62,7 +62,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
 
         pop1      <= '0;
         pop2      <= '0;
-        out_valid <= '0;
+        out_valid <= '1;
 
         wr_wrap   <= '0;
         rd_wrap   <= '0;
@@ -75,7 +75,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         end
         
         if (pop) begin
-            wr_ptr <= wr_ptr + 1'b1;
+            rd_ptr <= rd_ptr + 1'b1;
             count <= count - 1'b1;
         end
 
