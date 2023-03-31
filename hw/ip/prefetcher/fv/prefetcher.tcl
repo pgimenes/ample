@@ -32,5 +32,8 @@ set_proofgrid_max_local_jobs 4
 assume {nsb_prefetcher_req.req_opcode == 1 || nsb_prefetcher_req.req_opcode == 2}
 assume {deallocation_valid == 0}
 
+# To support MS2: drop this assumption for later milestones
+assume {nsb_prefetcher_req.neighbour_count < 10'd65}
+
 # Launch proof
 # prove -all

@@ -56,7 +56,7 @@ P_one: assert property (
 
 /*
 
-PROPERTIES
+PROPERTIES TO DO
 
 Deadlock:
 - If receive NSB fetch req, eventually response with same type
@@ -67,7 +67,6 @@ Deadlock:
 
 Allocation
 - If fetch tag not allocated, will stay idle forever (free and !ready)
-
 */
 
 parameter AXI_DATA_WIDTH = 512;
@@ -76,11 +75,15 @@ parameter FEATURE_COUNT = top_pkg::MAX_FEATURE_COUNT;
 parameter ADJ_QUEUE_MAX_BYTES = 64*4;
 parameter MSG_QUEUE_DEPTH = 4096;
 
+// Declarations
+// --------------------------------------------------------
+
 logic accepting_nsb_fetch_req;
 logic accepted_adj_axi_req, accepted_msg_axi_req;
 
 integer adj_axi_req_cnt, adj_axi_received_responses;
 integer adj_req_expected_bytes, adj_req_requested_bytes, adj_req_received_bytes;
+integer adj_req_neighbour_count;
 integer adj_resp_count, adj_partial_resp_count;
 
 integer msg_fetch_expected_axi_reqs, msg_fetch_expected_responses, msg_axi_req_cnt, msg_axi_received_responses;
@@ -89,11 +92,17 @@ integer msg_queue_neighbour_capacity;
 
 integer msg_queue_beats_per_message;
 
+integer nsb_adj_req_cnt;
+integer nsb_msg_req_cnt;
+
 always_comb begin
     accepting_nsb_fetch_req = nsb_prefetcher_req_valid && nsb_prefetcher_req_ready;
     
     msg_queue_beats_per_message = `divide_round_up(FEATURE_COUNT * top_pkg::bits_per_precision(nsb_prefetcher_req.nodeslot_precision), AXI_DATA_WIDTH);
 end
+
+// Counters
+// --------------------------------------------------------
 
 always_ff @( posedge core_clk or negedge resetn ) begin
     if(!resetn) begin
@@ -107,6 +116,8 @@ always_ff @( posedge core_clk or negedge resetn ) begin
         adj_req_received_bytes        <= 0;
         adj_resp_count                <= 0;
         adj_partial_resp_count        <= 0;
+        nsb_adj_req_cnt               <= 0;
+        adj_req_neighbour_count       <= '0;
         
         msg_fetch_expected_axi_reqs   <= 0;
         msg_fetch_expected_responses  <= 0;
@@ -114,14 +125,17 @@ always_ff @( posedge core_clk or negedge resetn ) begin
         msg_axi_received_responses    <= 0;
         msg_resp_count                <= 0;
         msg_partial_resp_count        <= 0;
+        nsb_msg_req_cnt               <= 0;
 
     end else begin
     
         // Accepting NSB request for adjacency list
         if (!accepted_adj_axi_req && accepting_nsb_fetch_req && nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST) begin
+            nsb_adj_req_cnt <= nsb_adj_req_cnt + 1;
             accepted_adj_axi_req <= '1;
 
             adj_req_expected_bytes <= nsb_prefetcher_req.neighbour_count * 4;
+            adj_req_neighbour_count <= nsb_prefetcher_req.neighbour_count;
 
             adj_axi_req_cnt               <= 0;
             adj_req_requested_bytes       <= 0;
@@ -133,9 +147,10 @@ always_ff @( posedge core_clk or negedge resetn ) begin
 
         // Accepting NSB request for message queue
         if (!accepted_msg_axi_req && accepting_nsb_fetch_req && nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) begin
+            nsb_msg_req_cnt <= nsb_msg_req_cnt + 1;
             accepted_msg_axi_req <= '1;
 
-            msg_fetch_expected_axi_reqs       <= nsb_prefetcher_req.neighbour_count;
+            msg_fetch_expected_axi_reqs       <= adj_req_neighbour_count; // instead of nsb_prefetcher_req.neighbour_count
             msg_fetch_expected_responses      <= msg_queue_beats_per_message;
 
             msg_axi_req_cnt              <= 0;
@@ -153,6 +168,11 @@ always_ff @( posedge core_clk or negedge resetn ) begin
             adj_req_requested_bytes <= adj_req_requested_bytes + fetch_tag_adj_rm_byte_count;
         end
 
+        // Receiving response beat from ADJ read master
+        if (fetch_tag_adj_rm_resp_valid && fetch_tag_adj_rm_resp_ready) begin
+            adj_req_received_bytes <= adj_req_received_bytes + 64;
+        end
+
         // Accepting request to message read master
         if (fetch_tag_msg_rm_req_valid && fetch_tag_msg_rm_req_ready) begin
             msg_axi_req_cnt         <= msg_axi_req_cnt + 1;
@@ -164,31 +184,61 @@ always_ff @( posedge core_clk or negedge resetn ) begin
                 top_pkg::ADJACENCY_LIST: begin
                     adj_resp_count <= adj_resp_count + 1;
                     if (nsb_prefetcher_resp.partial) adj_partial_resp_count <= adj_partial_resp_count + 1;
+                    else begin
+                        accepted_adj_axi_req <= '0;
+                    end
                 end
 
                 top_pkg::MESSAGES: begin
                     msg_resp_count <= msg_resp_count + 1;
                     if (nsb_prefetcher_resp.partial) msg_partial_resp_count <= msg_partial_resp_count + 1;
+                    else begin
+                        accepted_msg_axi_req <= '0;
+                    end
                 end
             endcase
         end
     end
 end
 
-// Liveness
+// Assumptions
 // ----------------------------------------------------
 
-// P_NSB_adj_req_eventual_resp: assert property (
-//     @(posedge core_clk) disable iff (!resetn)
-//         !tag_free && accepting_nsb_fetch_req && (nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST) |-> s_eventually(nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST))
-// );
+A_single_adj_req: assume property (
+    @(posedge core_clk) disable iff (!resetn)
+        nsb_prefetcher_req_valid && (nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST)
+        |-> (nsb_adj_req_cnt == 0) // received at least a partial response
+);
 
-// P_NSB_msg_req_eventual_resp: assert property (
-//     @(posedge core_clk) disable iff (!resetn)
-//         !tag_free && accepting_nsb_fetch_req && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) |-> s_eventually(nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == top_pkg::MESSAGES))
-// );
+A_single_msg_req: assume property (
+    @(posedge core_clk) disable iff (!resetn)
+        nsb_prefetcher_req_valid && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES)
+        |-> (nsb_msg_req_cnt == 0) // received at least a partial response
+);
 
-// ----------------------------------------------------
+A_msg_req_after_adj_resp: assume property (
+    @(posedge core_clk) disable iff (!resetn)
+        nsb_prefetcher_req_valid && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES)
+        |-> adj_resp_count > 0 // received at least a partial response
+);
+
+// Assertions
+// --------------------------------------------------------
+
+// MS2: consider only normal responses (no streaming)
+
+// NON-PARTIAL RESPONSE: may take place if required_bytes < queue capacity, or partial response has previously been sent
+P_adj_normal_resp: assert property (
+    @(posedge core_clk) disable iff (!resetn)
+        nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST) && !nsb_prefetcher_resp.partial
+        |-> (adj_req_requested_bytes == adj_req_expected_bytes) && (adj_req_received_bytes >= adj_req_expected_bytes)
+);
+
+P_msg_normal_resp: assert property (
+    @(posedge core_clk) disable iff (!resetn)
+        nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == top_pkg::MESSAGES) && !nsb_prefetcher_resp.partial
+        |-> (msg_fetch_expected_axi_reqs == msg_axi_req_cnt)
+);
 
 // PARTIAL RESPONSE: should only be sent when adj queue is full and expected bytes is greater than 4*64
 // TO DO: add assumption that message fetch request will not arrive until response sent to NSB
@@ -214,18 +264,18 @@ P_single_msg_partial_response: assert property (
         !(msg_partial_resp_count > 1)
 );
 
-// NON-PARTIAL RESPONSE: may take place if required_bytes < queue capacity, or partial response has previously been sent
-P_adj_normal_resp: assert property (
-    @(posedge core_clk) disable iff (!resetn)
-        nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST) && !nsb_prefetcher_resp.partial
-        |-> (adj_req_requested_bytes == adj_req_expected_bytes)
-);
+// Liveness (need to use symbiosis?)
+// ----------------------------------------------------
 
-P_msg_normal_resp: assert property (
-    @(posedge core_clk) disable iff (!resetn)
-        nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST) && !nsb_prefetcher_resp.partial
-        |-> (msg_fetch_expected_axi_reqs == msg_axi_req_cnt)
-);
+// P_NSB_adj_req_eventual_resp: assert property (
+//     @(posedge core_clk) disable iff (!resetn)
+//         !tag_free && accepting_nsb_fetch_req && (nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST) |-> s_eventually(nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST))
+// );
+
+// P_NSB_msg_req_eventual_resp: assert property (
+//     @(posedge core_clk) disable iff (!resetn)
+//         !tag_free && accepting_nsb_fetch_req && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) |-> s_eventually(nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == top_pkg::MESSAGES))
+// );
 
 // Coverage
 // ----------------------------------------------------
@@ -236,11 +286,6 @@ C_fill_adj_queue: cover property (
         && (adj_req_requested_bytes == adj_req_expected_bytes)
         && (adj_req_expected_bytes == 256)
 );
-
-// C_debug: cover property (
-//     @(posedge core_clk) disable iff (!resetn)
-//         nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST) && nsb_prefetcher_resp.partial
-// );
 
 endinterface
 
