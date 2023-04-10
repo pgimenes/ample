@@ -70,7 +70,7 @@ module top
     input logic                           top_axi_interconnect_axi_rready,
     
     // AXI Memory Interconnect -> Memory (Routed to DRAM Controller if `DRAM_CONTROLLER defined)
-    output logic  [3:0]                   c0_ddr4_s_axi_awid,
+    output logic  [7:0]                   c0_ddr4_s_axi_awid,
     output logic  [33:0]                  c0_ddr4_s_axi_awaddr,
     output logic  [7:0]                   c0_ddr4_s_axi_awlen,
     output logic  [2:0]                   c0_ddr4_s_axi_awsize,
@@ -81,16 +81,19 @@ module top
     output logic  [3:0]                   c0_ddr4_s_axi_awqos,
     output logic                          c0_ddr4_s_axi_awvalid,
     input  logic                          c0_ddr4_s_axi_awready,
+
     output logic  [511:0]                 c0_ddr4_s_axi_wdata,
     output logic  [63:0]                  c0_ddr4_s_axi_wstrb,
     output logic                          c0_ddr4_s_axi_wlast,
     output logic                          c0_ddr4_s_axi_wvalid,
     input  logic                          c0_ddr4_s_axi_wready,
-    input  logic [3:0]                    c0_ddr4_s_axi_bid,
+    
+    input  logic [7:0]                    c0_ddr4_s_axi_bid,
     input  logic [1:0]                    c0_ddr4_s_axi_bresp,
     input  logic                          c0_ddr4_s_axi_bvalid,
     output logic                          c0_ddr4_s_axi_bready,
-    output logic  [3:0]                   c0_ddr4_s_axi_arid,
+    
+    output logic  [7:0]                   c0_ddr4_s_axi_arid,
     output logic  [33:0]                  c0_ddr4_s_axi_araddr,
     output logic  [7:0]                   c0_ddr4_s_axi_arlen,
     output logic  [2:0]                   c0_ddr4_s_axi_arsize,
@@ -101,7 +104,8 @@ module top
     output logic  [3:0]                   c0_ddr4_s_axi_arqos,
     output logic                          c0_ddr4_s_axi_arvalid,
     input  logic                          c0_ddr4_s_axi_arready,
-    input  logic [3:0]                    c0_ddr4_s_axi_rid,
+    
+    input  logic [7:0]                    c0_ddr4_s_axi_rid,
     input  logic [511:0]                  c0_ddr4_s_axi_rdata,
     input  logic [1:0]                    c0_ddr4_s_axi_rresp,
     input  logic                          c0_ddr4_s_axi_rlast,
@@ -431,9 +435,7 @@ node_scoreboard node_scoreboard_i (
 // Prefetcher
 // ====================================================================================
 
-prefetcher #(
-    .FETCH_TAG_COUNT (top_pkg::FETCH_TAG_COUNT)
-) prefetcher_i (
+prefetcher prefetcher_i (
     .core_clk                                           (sys_clk),
     .resetn                                             (!sys_rst),
 
@@ -721,380 +723,429 @@ axi_L_register_control_crossbar axi_L_register_control_crossbar_i (
 // AXI Memory Interconnect
 // ====================================================================================
 
-// S00: Prefetcher
-// S01: weight buffer
-// S02: top (TB)
-// S03: output buffer
+// S00: Prefetcher (adj rm) ---------------- / read-only
+// S01: Prefetcher (weight buffer) --------- / read-only
+// S02: top (TB) --------------------------- / read-write
+// S03: output buffer ---------------------- / write-only
+// S04: Prefetcher (message read master) --- / read-only
+
+// S05: unused ----------------------------- / read-write
+// S06: unused ----------------------------- / read-write
+// S07: unused ----------------------------- / read-write
 
 axi_memory_interconnect axi_memory_interconnect_i (
-  .INTERCONNECT_ACLK            (sys_clk),        // input wire INTERCONNECT_ACLK
-  .INTERCONNECT_ARESETN         (!sys_rst),  // input wire INTERCONNECT_ARESETN
+    .INTERCONNECT_ACLK            (sys_clk),        // input wire INTERCONNECT_ACLK
+    .INTERCONNECT_ARESETN         (!sys_rst),  // input wire INTERCONNECT_ARESETN
 
-  .S00_AXI_ACLK                 (sys_clk),                  // input wire S00_AXI_ACLK
-  .S00_AXI_ARESET_OUT_N         (S00_AXI_ARESET_OUT_N),  // output wire S00_AXI_ARESET_OUT_N
-  
-  .S00_AXI_ARADDR               (prefetcher_adj_rm_axi_interconnect_axi_araddr     ),              // input wire [33 : 0] S00_AXI_ARADDR
-  .S00_AXI_ARBURST              (prefetcher_adj_rm_axi_interconnect_axi_arburst        ),            // input wire [1 : 0] S00_AXI_ARBURST
-  .S00_AXI_ARCACHE              (prefetcher_adj_rm_axi_interconnect_axi_arcache        ),            // input wire [3 : 0] S00_AXI_ARCACHE
-  .S00_AXI_ARID                 (prefetcher_adj_rm_axi_interconnect_axi_arid       ),                  // input wire [0 : 0] S00_AXI_ARID
-  .S00_AXI_ARLEN                (prefetcher_adj_rm_axi_interconnect_axi_arlen      ),                // input wire [7 : 0] S00_AXI_ARLEN
-  .S00_AXI_ARLOCK               (prefetcher_adj_rm_axi_interconnect_axi_arlock     ),                               // input wire S00_AXI_ARLOCK
-  .S00_AXI_ARPROT               (prefetcher_adj_rm_axi_interconnect_axi_arprot     ),                               // input wire [2 : 0] S00_AXI_ARPROT
-  .S00_AXI_ARQOS                (prefetcher_adj_rm_axi_interconnect_axi_arqos      ),                               // input wire [3 : 0] S00_AXI_ARQOS
-  .S00_AXI_ARSIZE               (prefetcher_adj_rm_axi_interconnect_axi_arsize     ),              // input wire [2 : 0] S00_AXI_ARSIZE
-  .S00_AXI_ARVALID              (prefetcher_adj_rm_axi_interconnect_axi_arvalid        ),            // input wire S00_AXI_ARVALID
-  .S00_AXI_ARREADY              (prefetcher_adj_rm_axi_interconnect_axi_arready        ),            // output wire S00_AXI_ARREADY
-  .S00_AXI_AWADDR               (prefetcher_adj_rm_axi_interconnect_axi_awaddr     ),              // input wire [33 : 0] S00_AXI_AWADDR
-  .S00_AXI_AWBURST              (prefetcher_adj_rm_axi_interconnect_axi_awburst        ),            // input wire [1 : 0] S00_AXI_AWBURST
-  .S00_AXI_AWCACHE              (prefetcher_adj_rm_axi_interconnect_axi_awcache        ),            // input wire [3 : 0] S00_AXI_AWCACHE
-  .S00_AXI_AWID                 (prefetcher_adj_rm_axi_interconnect_axi_awid       ),                  // input wire [0 : 0] S00_AXI_AWID
-  .S00_AXI_AWLEN                (prefetcher_adj_rm_axi_interconnect_axi_awlen      ),                // input wire [7 : 0] S00_AXI_AWLEN
-  .S00_AXI_AWLOCK               (prefetcher_adj_rm_axi_interconnect_axi_awlock     ),                               // input wire S00_AXI_AWLOCK
-  .S00_AXI_AWPROT               (prefetcher_adj_rm_axi_interconnect_axi_awprot     ),              // input wire [2 : 0] S00_AXI_AWPROT
-  .S00_AXI_AWQOS                (prefetcher_adj_rm_axi_interconnect_axi_awqos      ),                               // input wire [3 : 0] S00_AXI_AWQOS
-  .S00_AXI_AWREADY              (prefetcher_adj_rm_axi_interconnect_axi_awready        ),            // output wire S00_AXI_AWREADY
-  .S00_AXI_AWSIZE               (prefetcher_adj_rm_axi_interconnect_axi_awsize     ),              // input wire [2 : 0] S00_AXI_AWSIZE
-  .S00_AXI_AWVALID              (prefetcher_adj_rm_axi_interconnect_axi_awvalid        ),            // input wire S00_AXI_AWVALID
-  .S00_AXI_BID                  (prefetcher_adj_rm_axi_interconnect_axi_bid        ),                    // output wire [0 : 0] S00_AXI_BID
-  .S00_AXI_BREADY               (prefetcher_adj_rm_axi_interconnect_axi_bready     ),              // input wire S00_AXI_BREADY
-  .S00_AXI_BRESP                (prefetcher_adj_rm_axi_interconnect_axi_bresp      ),                // output wire [1 : 0] S00_AXI_BRESP
-  .S00_AXI_BVALID               (prefetcher_adj_rm_axi_interconnect_axi_bvalid     ),              // output wire S00_AXI_BVALID
-  .S00_AXI_RDATA                (prefetcher_adj_rm_axi_interconnect_axi_rdata      ),                // output wire [511 : 0] S00_AXI_RDATA
-  .S00_AXI_RID                  (prefetcher_adj_rm_axi_interconnect_axi_rid        ),                    // output wire [0 : 0] S00_AXI_RID
-  .S00_AXI_RLAST                (prefetcher_adj_rm_axi_interconnect_axi_rlast      ),                // output wire S00_AXI_RLAST
-  .S00_AXI_RREADY               (prefetcher_adj_rm_axi_interconnect_axi_rready     ),              // input wire S00_AXI_RREADY
-  .S00_AXI_RRESP                (prefetcher_adj_rm_axi_interconnect_axi_rresp      ),                // output wire [1 : 0] S00_AXI_RRESP
-  .S00_AXI_RVALID               (prefetcher_adj_rm_axi_interconnect_axi_rvalid     ),              // output wire S00_AXI_RVALID
-  .S00_AXI_WDATA                (prefetcher_adj_rm_axi_interconnect_axi_wdata      ),                // input wire [511 : 0] S00_AXI_WDATA
-  .S00_AXI_WLAST                (prefetcher_adj_rm_axi_interconnect_axi_wlast      ),                // input wire S00_AXI_WLAST
-  .S00_AXI_WREADY               (prefetcher_adj_rm_axi_interconnect_axi_wready     ),              // output wire S00_AXI_WREADY
-  .S00_AXI_WSTRB                (prefetcher_adj_rm_axi_interconnect_axi_wstrb      ),                // input wire [63 : 0] S00_AXI_WSTRB
-  .S00_AXI_WVALID               (prefetcher_adj_rm_axi_interconnect_axi_wvalid     ),              // input wire S00_AXI_WVALID
+    // S00: Prefetcher (ADJ RM)
+    .S00_AXI_ACLK                 (sys_clk),                  // input wire S00_AXI_ACLK
+    .S00_AXI_ARESET_OUT_N         (S00_AXI_ARESET_OUT_N),  // output wire S00_AXI_ARESET_OUT_N
 
-  .S01_AXI_ACLK                 (sys_clk),                  // input wire S01_AXI_ACLK
-  .S01_AXI_ARESET_OUT_N         (S01_AXI_ARESET_OUT_N),  // output wire S01_AXI_ARESET_OUT_N
-  
-  .S01_AXI_AWID                 (weight_buffer_axi_interconnect_axi_awid),                  // input wire [0 : 0] S01_AXI_AWID
-  .S01_AXI_AWADDR               (weight_buffer_axi_interconnect_axi_awaddr),              // input wire [33 : 0] S01_AXI_AWADDR
-  .S01_AXI_AWLEN                (weight_buffer_axi_interconnect_axi_awlen),                // input wire [7 : 0] S01_AXI_AWLEN
-  .S01_AXI_AWSIZE               (weight_buffer_axi_interconnect_axi_awsize),              // input wire [2 : 0] S01_AXI_AWSIZE
-  .S01_AXI_AWBURST              (weight_buffer_axi_interconnect_axi_awburst),            // input wire [1 : 0] S01_AXI_AWBURST
-  .S01_AXI_AWLOCK               (weight_buffer_axi_interconnect_axi_awlock),              // input wire S01_AXI_AWLOCK
-  .S01_AXI_AWCACHE              (weight_buffer_axi_interconnect_axi_awcache),            // input wire [3 : 0] S01_AXI_AWCACHE
-  .S01_AXI_AWPROT               (weight_buffer_axi_interconnect_axi_awprot),              // input wire [2 : 0] S01_AXI_AWPROT
-  .S01_AXI_AWQOS                (weight_buffer_axi_interconnect_axi_awqos),                // input wire [3 : 0] S01_AXI_AWQOS
-  .S01_AXI_AWVALID              (weight_buffer_axi_interconnect_axi_awvalid),            // input wire S01_AXI_AWVALID
-  .S01_AXI_AWREADY              (weight_buffer_axi_interconnect_axi_awready),            // output wire S01_AXI_AWREADY
-  .S01_AXI_WDATA                (weight_buffer_axi_interconnect_axi_wdata),                // input wire [511 : 0] S01_AXI_WDATA
-  .S01_AXI_WSTRB                (weight_buffer_axi_interconnect_axi_wstrb),                // input wire [63 : 0] S01_AXI_WSTRB
-  .S01_AXI_WLAST                (weight_buffer_axi_interconnect_axi_wlast),                // input wire S01_AXI_WLAST
-  .S01_AXI_WVALID               (weight_buffer_axi_interconnect_axi_wvalid),              // input wire S01_AXI_WVALID
-  .S01_AXI_WREADY               (weight_buffer_axi_interconnect_axi_wready),              // output wire S01_AXI_WREADY
-  .S01_AXI_BID                  (weight_buffer_axi_interconnect_axi_bid),                    // output wire [0 : 0] S01_AXI_BID
-  .S01_AXI_BRESP                (weight_buffer_axi_interconnect_axi_bresp),                // output wire [1 : 0] S01_AXI_BRESP
-  .S01_AXI_BVALID               (weight_buffer_axi_interconnect_axi_bvalid),              // output wire S01_AXI_BVALID
-  .S01_AXI_BREADY               (weight_buffer_axi_interconnect_axi_bready),              // input wire S01_AXI_BREADY
-  .S01_AXI_ARID                 (weight_buffer_axi_interconnect_axi_arid),                  // input wire [0 : 0] S01_AXI_ARID
-  .S01_AXI_ARADDR               (weight_buffer_axi_interconnect_axi_araddr),              // input wire [33 : 0] S01_AXI_ARADDR
-  .S01_AXI_ARLEN                (weight_buffer_axi_interconnect_axi_arlen),                // input wire [7 : 0] S01_AXI_ARLEN
-  .S01_AXI_ARSIZE               (weight_buffer_axi_interconnect_axi_arsize),              // input wire [2 : 0] S01_AXI_ARSIZE
-  .S01_AXI_ARBURST              (weight_buffer_axi_interconnect_axi_arburst),            // input wire [1 : 0] S01_AXI_ARBURST
-  .S01_AXI_ARLOCK               (weight_buffer_axi_interconnect_axi_arlock),              // input wire S01_AXI_ARLOCK
-  .S01_AXI_ARCACHE              (weight_buffer_axi_interconnect_axi_arcache),            // input wire [3 : 0] S01_AXI_ARCACHE
-  .S01_AXI_ARPROT               (weight_buffer_axi_interconnect_axi_arprot),              // input wire [2 : 0] S01_AXI_ARPROT
-  .S01_AXI_ARQOS                (weight_buffer_axi_interconnect_axi_arqos),                // input wire [3 : 0] S01_AXI_ARQOS
-  .S01_AXI_ARVALID              (weight_buffer_axi_interconnect_axi_arvalid),            // input wire S01_AXI_ARVALID
-  .S01_AXI_ARREADY              (weight_buffer_axi_interconnect_axi_arready),            // output wire S01_AXI_ARREADY
-  .S01_AXI_RID                  (weight_buffer_axi_interconnect_axi_rid),                    // output wire [0 : 0] S01_AXI_RID
-  .S01_AXI_RDATA                (weight_buffer_axi_interconnect_axi_rdata),                // output wire [511 : 0] S01_AXI_RDATA
-  .S01_AXI_RRESP                (weight_buffer_axi_interconnect_axi_rresp),                // output wire [1 : 0] S01_AXI_RRESP
-  .S01_AXI_RLAST                (weight_buffer_axi_interconnect_axi_rlast),                // output wire S01_AXI_RLAST
-  .S01_AXI_RVALID               (weight_buffer_axi_interconnect_axi_rvalid),              // output wire S01_AXI_RVALID
-  .S01_AXI_RREADY               (weight_buffer_axi_interconnect_axi_rready),              // input wire S01_AXI_RREADY
-  
-  .S02_AXI_ACLK                 (sys_clk),                  // input wire S02_AXI_ACLK
-  .S02_AXI_ARESET_OUT_N         (S02_AXI_ARESET_OUT_N),  // output wire S02_AXI_ARESET_OUT_N
+    .S00_AXI_ARADDR               (prefetcher_adj_rm_axi_interconnect_axi_araddr     ),              // input wire [33 : 0] S00_AXI_ARADDR
+    .S00_AXI_ARBURST              (prefetcher_adj_rm_axi_interconnect_axi_arburst        ),            // input wire [1 : 0] S00_AXI_ARBURST
+    .S00_AXI_ARCACHE              (prefetcher_adj_rm_axi_interconnect_axi_arcache        ),            // input wire [3 : 0] S00_AXI_ARCACHE
+    .S00_AXI_ARID                 (prefetcher_adj_rm_axi_interconnect_axi_arid       ),                  // input wire [0 : 0] S00_AXI_ARID
+    .S00_AXI_ARLEN                (prefetcher_adj_rm_axi_interconnect_axi_arlen      ),                // input wire [7 : 0] S00_AXI_ARLEN
+    .S00_AXI_ARLOCK               (prefetcher_adj_rm_axi_interconnect_axi_arlock     ),                               // input wire S00_AXI_ARLOCK
+    .S00_AXI_ARPROT               (prefetcher_adj_rm_axi_interconnect_axi_arprot     ),                               // input wire [2 : 0] S00_AXI_ARPROT
+    .S00_AXI_ARQOS                (prefetcher_adj_rm_axi_interconnect_axi_arqos      ),                               // input wire [3 : 0] S00_AXI_ARQOS
+    .S00_AXI_ARSIZE               (prefetcher_adj_rm_axi_interconnect_axi_arsize     ),              // input wire [2 : 0] S00_AXI_ARSIZE
+    .S00_AXI_ARVALID              (prefetcher_adj_rm_axi_interconnect_axi_arvalid        ),            // input wire S00_AXI_ARVALID
+    .S00_AXI_ARREADY              (prefetcher_adj_rm_axi_interconnect_axi_arready        ),            // output wire S00_AXI_ARREADY
 
-  .S02_AXI_AWID                 (top_axi_interconnect_axi_awid),                  // input wire [0 : 0] S02_AXI_AWID
-  .S02_AXI_AWADDR               (top_axi_interconnect_axi_awaddr),              // input wire [33 : 0] S02_AXI_AWADDR
-  .S02_AXI_AWLEN                (top_axi_interconnect_axi_awlen),                // input wire [7 : 0] S02_AXI_AWLEN
-  .S02_AXI_AWSIZE               (top_axi_interconnect_axi_awsize),              // input wire [2 : 0] S02_AXI_AWSIZE
-  .S02_AXI_AWBURST              (top_axi_interconnect_axi_awburst),            // input wire [1 : 0] S02_AXI_AWBURST
-  .S02_AXI_AWLOCK               (top_axi_interconnect_axi_awlock),              // input wire S02_AXI_AWLOCK
-  .S02_AXI_AWCACHE              (top_axi_interconnect_axi_awcache),            // input wire [3 : 0] S02_AXI_AWCACHE
-  .S02_AXI_AWPROT               (top_axi_interconnect_axi_awprot),              // input wire [2 : 0] S02_AXI_AWPROT
-  .S02_AXI_AWQOS                (top_axi_interconnect_axi_awqos),                // input wire [3 : 0] S02_AXI_AWQOS
-  .S02_AXI_AWVALID              (top_axi_interconnect_axi_awvalid),            // input wire S02_AXI_AWVALID
-  .S02_AXI_AWREADY              (top_axi_interconnect_axi_awready),            // output wire S02_AXI_AWREADY
-  .S02_AXI_WDATA                (top_axi_interconnect_axi_wdata),                // input wire [511 : 0] S02_AXI_WDATA
-  .S02_AXI_WSTRB                (top_axi_interconnect_axi_wstrb),                // input wire [63 : 0] S02_AXI_WSTRB
-  .S02_AXI_WLAST                (top_axi_interconnect_axi_wlast),                // input wire S02_AXI_WLAST
-  .S02_AXI_WVALID               (top_axi_interconnect_axi_wvalid),              // input wire S02_AXI_WVALID
-  .S02_AXI_WREADY               (top_axi_interconnect_axi_wready),              // output wire S02_AXI_WREADY
-  .S02_AXI_BID                  (top_axi_interconnect_axi_bid),                    // output wire [0 : 0] S02_AXI_BID
-  .S02_AXI_BRESP                (top_axi_interconnect_axi_bresp),                // output wire [1 : 0] S02_AXI_BRESP
-  .S02_AXI_BVALID               (top_axi_interconnect_axi_bvalid),              // output wire S02_AXI_BVALID
-  .S02_AXI_BREADY               (top_axi_interconnect_axi_bready),              // input wire S02_AXI_BREADY
-  .S02_AXI_ARID                 (top_axi_interconnect_axi_arid),                  // input wire [0 : 0] S02_AXI_ARID
-  .S02_AXI_ARADDR               (top_axi_interconnect_axi_araddr),              // input wire [33 : 0] S02_AXI_ARADDR
-  .S02_AXI_ARLEN                (top_axi_interconnect_axi_arlen),                // input wire [7 : 0] S02_AXI_ARLEN
-  .S02_AXI_ARSIZE               (top_axi_interconnect_axi_arsize),              // input wire [2 : 0] S02_AXI_ARSIZE
-  .S02_AXI_ARBURST              (top_axi_interconnect_axi_arburst),            // input wire [1 : 0] S02_AXI_ARBURST
-  .S02_AXI_ARLOCK               (top_axi_interconnect_axi_arlock),              // input wire S02_AXI_ARLOCK
-  .S02_AXI_ARCACHE              (top_axi_interconnect_axi_arcache),            // input wire [3 : 0] S02_AXI_ARCACHE
-  .S02_AXI_ARPROT               (top_axi_interconnect_axi_arprot),              // input wire [2 : 0] S02_AXI_ARPROT
-  .S02_AXI_ARQOS                (top_axi_interconnect_axi_arqos),                // input wire [3 : 0] S02_AXI_ARQOS
-  .S02_AXI_ARVALID              (top_axi_interconnect_axi_arvalid),            // input wire S02_AXI_ARVALID
-  .S02_AXI_ARREADY              (top_axi_interconnect_axi_arready),            // output wire S02_AXI_ARREADY
-  .S02_AXI_RID                  (top_axi_interconnect_axi_rid),                    // output wire [0 : 0] S02_AXI_RID
-  .S02_AXI_RDATA                (top_axi_interconnect_axi_rdata),                // output wire [511 : 0] S02_AXI_RDATA
-  .S02_AXI_RRESP                (top_axi_interconnect_axi_rresp),                // output wire [1 : 0] S02_AXI_RRESP
-  .S02_AXI_RLAST                (top_axi_interconnect_axi_rlast),                // output wire S02_AXI_RLAST
-  .S02_AXI_RVALID               (top_axi_interconnect_axi_rvalid),              // output wire S02_AXI_RVALID
-  .S02_AXI_RREADY               (top_axi_interconnect_axi_rready),              // input wire S02_AXI_RREADY
-  
-  .S03_AXI_ACLK                 (sys_clk),                  // input wire S02_AXI_ACLK
-  .S03_AXI_ARESET_OUT_N         (S03_AXI_ARESET_OUT_N),  // output wire S02_AXI_ARESET_OUT_N
+    .S00_AXI_AWADDR               (prefetcher_adj_rm_axi_interconnect_axi_awaddr     ),              // input wire [33 : 0] S00_AXI_AWADDR
+    .S00_AXI_AWBURST              (prefetcher_adj_rm_axi_interconnect_axi_awburst        ),            // input wire [1 : 0] S00_AXI_AWBURST
+    .S00_AXI_AWCACHE              (prefetcher_adj_rm_axi_interconnect_axi_awcache        ),            // input wire [3 : 0] S00_AXI_AWCACHE
+    .S00_AXI_AWID                 (prefetcher_adj_rm_axi_interconnect_axi_awid       ),                  // input wire [0 : 0] S00_AXI_AWID
+    .S00_AXI_AWLEN                (prefetcher_adj_rm_axi_interconnect_axi_awlen      ),                // input wire [7 : 0] S00_AXI_AWLEN
+    .S00_AXI_AWLOCK               (prefetcher_adj_rm_axi_interconnect_axi_awlock     ),                               // input wire S00_AXI_AWLOCK
+    .S00_AXI_AWPROT               (prefetcher_adj_rm_axi_interconnect_axi_awprot     ),              // input wire [2 : 0] S00_AXI_AWPROT
+    .S00_AXI_AWQOS                (prefetcher_adj_rm_axi_interconnect_axi_awqos      ),                               // input wire [3 : 0] S00_AXI_AWQOS
+    .S00_AXI_AWREADY              (prefetcher_adj_rm_axi_interconnect_axi_awready        ),            // output wire S00_AXI_AWREADY
+    .S00_AXI_AWSIZE               (prefetcher_adj_rm_axi_interconnect_axi_awsize     ),              // input wire [2 : 0] S00_AXI_AWSIZE
+    .S00_AXI_AWVALID              (prefetcher_adj_rm_axi_interconnect_axi_awvalid        ),            // input wire S00_AXI_AWVALID
 
-  .S03_AXI_AWID                 (output_buffer_axi_interconnect_axi_awid),                  // input wire [0 : 0] S02_AXI_AWID
-  .S03_AXI_AWADDR               (output_buffer_axi_interconnect_axi_awaddr),              // input wire [33 : 0] S02_AXI_AWADDR
-  .S03_AXI_AWLEN                (output_buffer_axi_interconnect_axi_awlen),                // input wire [7 : 0] S02_AXI_AWLEN
-  .S03_AXI_AWSIZE               (output_buffer_axi_interconnect_axi_awsize),              // input wire [2 : 0] S02_AXI_AWSIZE
-  .S03_AXI_AWBURST              (output_buffer_axi_interconnect_axi_awburst),            // input wire [1 : 0] S02_AXI_AWBURST
-  .S03_AXI_AWLOCK               (output_buffer_axi_interconnect_axi_awlock),              // input wire S02_AXI_AWLOCK
-  .S03_AXI_AWCACHE              (output_buffer_axi_interconnect_axi_awcache),            // input wire [3 : 0] S02_AXI_AWCACHE
-  .S03_AXI_AWPROT               (output_buffer_axi_interconnect_axi_awprot),              // input wire [2 : 0] S02_AXI_AWPROT
-  .S03_AXI_AWQOS                (output_buffer_axi_interconnect_axi_awqos),                // input wire [3 : 0] S02_AXI_AWQOS
-  .S03_AXI_AWVALID              (output_buffer_axi_interconnect_axi_awvalid),            // input wire S02_AXI_AWVALID
-  .S03_AXI_AWREADY              (output_buffer_axi_interconnect_axi_awready),            // output wire S02_AXI_AWREADY
-  .S03_AXI_WDATA                (output_buffer_axi_interconnect_axi_wdata),                // input wire [511 : 0] S02_AXI_WDATA
-  .S03_AXI_WSTRB                (output_buffer_axi_interconnect_axi_wstrb),                // input wire [63 : 0] S02_AXI_WSTRB
-  .S03_AXI_WLAST                (output_buffer_axi_interconnect_axi_wlast),                // input wire S02_AXI_WLAST
-  .S03_AXI_WVALID               (output_buffer_axi_interconnect_axi_wvalid),              // input wire S02_AXI_WVALID
-  .S03_AXI_WREADY               (output_buffer_axi_interconnect_axi_wready),              // output wire S02_AXI_WREADY
-  .S03_AXI_BID                  (output_buffer_axi_interconnect_axi_bid),                    // output wire [0 : 0] S02_AXI_BID
-  .S03_AXI_BRESP                (output_buffer_axi_interconnect_axi_bresp),                // output wire [1 : 0] S02_AXI_BRESP
-  .S03_AXI_BVALID               (output_buffer_axi_interconnect_axi_bvalid),              // output wire S02_AXI_BVALID
-  .S03_AXI_BREADY               (output_buffer_axi_interconnect_axi_bready),              // input wire S02_AXI_BREADY
-  .S03_AXI_ARID                 (output_buffer_axi_interconnect_axi_arid),                  // input wire [0 : 0] S02_AXI_ARID
-  .S03_AXI_ARADDR               (output_buffer_axi_interconnect_axi_araddr),              // input wire [33 : 0] S02_AXI_ARADDR
-  .S03_AXI_ARLEN                (output_buffer_axi_interconnect_axi_arlen),                // input wire [7 : 0] S02_AXI_ARLEN
-  .S03_AXI_ARSIZE               (output_buffer_axi_interconnect_axi_arsize),              // input wire [2 : 0] S02_AXI_ARSIZE
-  .S03_AXI_ARBURST              (output_buffer_axi_interconnect_axi_arburst),            // input wire [1 : 0] S02_AXI_ARBURST
-  .S03_AXI_ARLOCK               (output_buffer_axi_interconnect_axi_arlock),              // input wire S02_AXI_ARLOCK
-  .S03_AXI_ARCACHE              (output_buffer_axi_interconnect_axi_arcache),            // input wire [3 : 0] S02_AXI_ARCACHE
-  .S03_AXI_ARPROT               (output_buffer_axi_interconnect_axi_arprot),              // input wire [2 : 0] S02_AXI_ARPROT
-  .S03_AXI_ARQOS                (output_buffer_axi_interconnect_axi_arqos),                // input wire [3 : 0] S02_AXI_ARQOS
-  .S03_AXI_ARVALID              (output_buffer_axi_interconnect_axi_arvalid),            // input wire S02_AXI_ARVALID
-  .S03_AXI_ARREADY              (output_buffer_axi_interconnect_axi_arready),            // output wire S02_AXI_ARREADY
-  .S03_AXI_RID                  (output_buffer_axi_interconnect_axi_rid),                    // output wire [0 : 0] S02_AXI_RID
-  .S03_AXI_RDATA                (output_buffer_axi_interconnect_axi_rdata),                // output wire [511 : 0] S02_AXI_RDATA
-  .S03_AXI_RRESP                (output_buffer_axi_interconnect_axi_rresp),                // output wire [1 : 0] S02_AXI_RRESP
-  .S03_AXI_RLAST                (output_buffer_axi_interconnect_axi_rlast),                // output wire S02_AXI_RLAST
-  .S03_AXI_RVALID               (output_buffer_axi_interconnect_axi_rvalid),              // output wire S02_AXI_RVALID
-  .S03_AXI_RREADY               (output_buffer_axi_interconnect_axi_rready),              // input wire S02_AXI_RREADY
+    .S00_AXI_BID                  (prefetcher_adj_rm_axi_interconnect_axi_bid        ),                    // output wire [0 : 0] S00_AXI_BID
+    .S00_AXI_BREADY               (prefetcher_adj_rm_axi_interconnect_axi_bready     ),              // input wire S00_AXI_BREADY
+    .S00_AXI_BRESP                (prefetcher_adj_rm_axi_interconnect_axi_bresp      ),                // output wire [1 : 0] S00_AXI_BRESP
+    .S00_AXI_BVALID               (prefetcher_adj_rm_axi_interconnect_axi_bvalid     ),              // output wire S00_AXI_BVALID
 
-  .S04_AXI_ACLK                 (sys_clk),         // input wire S00_AXI_ACLK
-  .S04_AXI_ARESET_OUT_N         (S00_AXI_ARESET_OUT_N),  // outpmsg_rm_ut wire S00_AXI_ARESET_OUT_N
-  .S04_AXI_ARADDR               (prefetcher_msg_rm_axi_interconnect_axi_araddr     ),              // input wire [33 : 0] S00_AXI_ARADDR
-  .S04_AXI_ARBURST              (prefetcher_msg_rm_axi_interconnect_axi_arburst        ),            // input wire [1 : 0] S00_AXI_ARBURST
-  .S04_AXI_ARCACHE              (prefetcher_msg_rm_axi_interconnect_axi_arcache        ),            // input wire [3 : 0] S00_AXI_ARCACHE
-  .S04_AXI_ARID                 (prefetcher_msg_rm_axi_interconnect_axi_arid       ),                  // input wire [0 : 0] S00_AXI_ARID
-  .S04_AXI_ARLEN                (prefetcher_msg_rm_axi_interconnect_axi_arlen      ),                // input wire [7 : 0] S00_AXI_ARLEN
-  .S04_AXI_ARLOCK               (prefetcher_msg_rm_axi_interconnect_axi_arlock     ),                               // input wire S00_AXI_ARLOCK
-  .S04_AXI_ARPROT               (prefetcher_msg_rm_axi_interconnect_axi_arprot     ),                               // input wire [2 : 0] S00_AXI_ARPROT
-  .S04_AXI_ARQOS                (prefetcher_msg_rm_axi_interconnect_axi_arqos      ),                               // input wire [3 : 0] S00_AXI_ARQOS
-  .S04_AXI_ARSIZE               (prefetcher_msg_rm_axi_interconnect_axi_arsize     ),              // input wire [2 : 0] S00_AXI_ARSIZE
-  .S04_AXI_ARVALID              (prefetcher_msg_rm_axi_interconnect_axi_arvalid        ),            // input wire S00_AXI_ARVALID
-  .S04_AXI_ARREADY              (prefetcher_msg_rm_axi_interconnect_axi_arready        ),            // output wire S00_AXI_ARREADY
-  .S04_AXI_AWADDR               (prefetcher_msg_rm_axi_interconnect_axi_awaddr     ),              // input wire [33 : 0] S00_AXI_AWADDR
-  .S04_AXI_AWBURST              (prefetcher_msg_rm_axi_interconnect_axi_awburst        ),            // input wire [1 : 0] S00_AXI_AWBURST
-  .S04_AXI_AWCACHE              (prefetcher_msg_rm_axi_interconnect_axi_awcache        ),            // input wire [3 : 0] S00_AXI_AWCACHE
-  .S04_AXI_AWID                 (prefetcher_msg_rm_axi_interconnect_axi_awid       ),                  // input wire [0 : 0] S00_AXI_AWID
-  .S04_AXI_AWLEN                (prefetcher_msg_rm_axi_interconnect_axi_awlen      ),                // input wire [7 : 0] S00_AXI_AWLEN
-  .S04_AXI_AWLOCK               (prefetcher_msg_rm_axi_interconnect_axi_awlock     ),                               // input wire S00_AXI_AWLOCK
-  .S04_AXI_AWPROT               (prefetcher_msg_rm_axi_interconnect_axi_awprot     ),              // input wire [2 : 0] S00_AXI_AWPROT
-  .S04_AXI_AWQOS                (prefetcher_msg_rm_axi_interconnect_axi_awqos      ),                               // input wire [3 : 0] S00_AXI_AWQOS
-  .S04_AXI_AWREADY              (prefetcher_msg_rm_axi_interconnect_axi_awready        ),            // output wire S00_AXI_AWREADY
-  .S04_AXI_AWSIZE               (prefetcher_msg_rm_axi_interconnect_axi_awsize     ),              // input wire [2 : 0] S00_AXI_AWSIZE
-  .S04_AXI_AWVALID              (prefetcher_msg_rm_axi_interconnect_axi_awvalid        ),            // input wire S00_AXI_AWVALID
-  .S04_AXI_BID                  (prefetcher_msg_rm_axi_interconnect_axi_bid        ),                    // output wire [0 : 0] S00_AXI_BID
-  .S04_AXI_BREADY               (prefetcher_msg_rm_axi_interconnect_axi_bready     ),              // input wire S00_AXI_BREADY
-  .S04_AXI_BRESP                (prefetcher_msg_rm_axi_interconnect_axi_bresp      ),                // output wire [1 : 0] S00_AXI_BRESP
-  .S04_AXI_BVALID               (prefetcher_msg_rm_axi_interconnect_axi_bvalid     ),              // output wire S00_AXI_BVALID
-  .S04_AXI_RDATA                (prefetcher_msg_rm_axi_interconnect_axi_rdata      ),                // output wire [511 : 0] S00_AXI_RDATA
-  .S04_AXI_RID                  (prefetcher_msg_rm_axi_interconnect_axi_rid        ),                    // output wire [0 : 0] S00_AXI_RID
-  .S04_AXI_RLAST                (prefetcher_msg_rm_axi_interconnect_axi_rlast      ),                // output wire S00_AXI_RLAST
-  .S04_AXI_RREADY               (prefetcher_msg_rm_axi_interconnect_axi_rready     ),              // input wire S00_AXI_RREADY
-  .S04_AXI_RRESP                (prefetcher_msg_rm_axi_interconnect_axi_rresp      ),                // output wire [1 : 0] S00_AXI_RRESP
-  .S04_AXI_RVALID               (prefetcher_msg_rm_axi_interconnect_axi_rvalid     ),              // output wire S00_AXI_RVALID
-  .S04_AXI_WDATA                (prefetcher_msg_rm_axi_interconnect_axi_wdata      ),                // input wire [511 : 0] S00_AXI_WDATA
-  .S04_AXI_WLAST                (prefetcher_msg_rm_axi_interconnect_axi_wlast      ),                // input wire S00_AXI_WLAST
-  .S04_AXI_WREADY               (prefetcher_msg_rm_axi_interconnect_axi_wready     ),              // output wire S00_AXI_WREADY
-  .S04_AXI_WSTRB                (prefetcher_msg_rm_axi_interconnect_axi_wstrb      ),                // input wire [63 : 0] S00_AXI_WSTRB
-  .S04_AXI_WVALID               (prefetcher_msg_rm_axi_interconnect_axi_wvalid     ),              // input wire S00_AXI_WVALID
+    .S00_AXI_RDATA                (prefetcher_adj_rm_axi_interconnect_axi_rdata      ),                // output wire [511 : 0] S00_AXI_RDATA
+    .S00_AXI_RID                  (prefetcher_adj_rm_axi_interconnect_axi_rid        ),                    // output wire [0 : 0] S00_AXI_RID
+    .S00_AXI_RLAST                (prefetcher_adj_rm_axi_interconnect_axi_rlast      ),                // output wire S00_AXI_RLAST
+    .S00_AXI_RREADY               (prefetcher_adj_rm_axi_interconnect_axi_rready     ),              // input wire S00_AXI_RREADY
+    .S00_AXI_RRESP                (prefetcher_adj_rm_axi_interconnect_axi_rresp      ),                // output wire [1 : 0] S00_AXI_RRESP
+    .S00_AXI_RVALID               (prefetcher_adj_rm_axi_interconnect_axi_rvalid     ),              // output wire S00_AXI_RVALID
 
-  .S05_AXI_ACLK                 ('0), // input wire S00_AXI_ACLK
-  .S05_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
-  .S05_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
-  .S05_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
-  .S05_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
-  .S05_AXI_ARID                 ('0), // input wire [0 : 0] S00_AXI_ARID
-  .S05_AXI_ARLEN                ('0), // input wire [7 : 0] S00_AXI_ARLEN
-  .S05_AXI_ARLOCK               ('0), // input wire S00_AXI_ARLOCK
-  .S05_AXI_ARPROT               ('0), // input wire [2 : 0] S00_AXI_ARPROT
-  .S05_AXI_ARQOS                ('0), // input wire [3 : 0] S00_AXI_ARQOS
-  .S05_AXI_ARSIZE               ('0), // input wire [2 : 0] S00_AXI_ARSIZE
-  .S05_AXI_ARVALID              ('0), // input wire S00_AXI_ARVALID
-  .S05_AXI_ARREADY              (),   // output wire S00_AXI_ARREADY
-  .S05_AXI_AWADDR               ('0), // input wire [33 : 0] S00_AXI_AWADDR
-  .S05_AXI_AWBURST              ('0), // input wire [1 : 0] S00_AXI_AWBURST
-  .S05_AXI_AWCACHE              ('0), // input wire [3 : 0] S00_AXI_AWCACHE
-  .S05_AXI_AWID                 ('0), // input wire [0 : 0] S00_AXI_AWID
-  .S05_AXI_AWLEN                ('0), // input wire [7 : 0] S00_AXI_AWLEN
-  .S05_AXI_AWLOCK               ('0), // input wire S00_AXI_AWLOCK
-  .S05_AXI_AWPROT               ('0), // input wire [2 : 0] S00_AXI_AWPROT
-  .S05_AXI_AWQOS                ('0), // input wire [3 : 0] S00_AXI_AWQOS
-  .S05_AXI_AWREADY              (),   // output wire S00_AXI_AWREADY
-  .S05_AXI_AWSIZE               ('0), // input wire [2 : 0] S00_AXI_AWSIZE
-  .S05_AXI_AWVALID              ('0), // input wire S00_AXI_AWVALID
-  .S05_AXI_BID                  (),   // output wire [0 : 0] S00_AXI_BID
-  .S05_AXI_BREADY               ('0), // input wire S00_AXI_BREADY
-  .S05_AXI_BRESP                (),   // output wire [1 : 0] S00_AXI_BRESP
-  .S05_AXI_BVALID               (),   // output wire S00_AXI_BVALID
-  .S05_AXI_RDATA                (),   // output wire [511 : 0] S00_AXI_RDATA
-  .S05_AXI_RID                  (),   // output wire [0 : 0] S00_AXI_RID
-  .S05_AXI_RLAST                (),   // output wire S00_AXI_RLAST
-  .S05_AXI_RREADY               ('0), // input wire S00_AXI_RREADY
-  .S05_AXI_RRESP                (),   // output wire [1 : 0] S00_AXI_RRESP
-  .S05_AXI_RVALID               (),   // output wire S00_AXI_RVALID
-  .S05_AXI_WDATA                ('0), // input wire [511 : 0] S00_AXI_WDATA
-  .S05_AXI_WLAST                ('0), // input wire S00_AXI_WLAST
-  .S05_AXI_WREADY               (),   // output wire S00_AXI_WREADY
-  .S05_AXI_WSTRB                ('0), // input wire [63 : 0] S00_AXI_WSTRB
-  .S05_AXI_WVALID               ('0), // input wire S00_AXI_WVALID
+    .S00_AXI_WDATA                (prefetcher_adj_rm_axi_interconnect_axi_wdata      ),                // input wire [511 : 0] S00_AXI_WDATA
+    .S00_AXI_WLAST                (prefetcher_adj_rm_axi_interconnect_axi_wlast      ),                // input wire S00_AXI_WLAST
+    .S00_AXI_WREADY               (prefetcher_adj_rm_axi_interconnect_axi_wready     ),              // output wire S00_AXI_WREADY
+    .S00_AXI_WSTRB                (prefetcher_adj_rm_axi_interconnect_axi_wstrb      ),                // input wire [63 : 0] S00_AXI_WSTRB
+    .S00_AXI_WVALID               (prefetcher_adj_rm_axi_interconnect_axi_wvalid     ),              // input wire S00_AXI_WVALID
 
-  .S06_AXI_ACLK                 ('0), // input wire S00_AXI_ACLK
-  .S06_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
-  .S06_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
-  .S06_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
-  .S06_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
-  .S06_AXI_ARID                 ('0), // input wire [0 : 0] S00_AXI_ARID
-  .S06_AXI_ARLEN                ('0), // input wire [7 : 0] S00_AXI_ARLEN
-  .S06_AXI_ARLOCK               ('0), // input wire S00_AXI_ARLOCK
-  .S06_AXI_ARPROT               ('0), // input wire [2 : 0] S00_AXI_ARPROT
-  .S06_AXI_ARQOS                ('0), // input wire [3 : 0] S00_AXI_ARQOS
-  .S06_AXI_ARSIZE               ('0), // input wire [2 : 0] S00_AXI_ARSIZE
-  .S06_AXI_ARVALID              ('0), // input wire S00_AXI_ARVALID
-  .S06_AXI_ARREADY              (),   // output wire S00_AXI_ARREADY
-  .S06_AXI_AWADDR               ('0), // input wire [33 : 0] S00_AXI_AWADDR
-  .S06_AXI_AWBURST              ('0), // input wire [1 : 0] S00_AXI_AWBURST
-  .S06_AXI_AWCACHE              ('0), // input wire [3 : 0] S00_AXI_AWCACHE
-  .S06_AXI_AWID                 ('0), // input wire [0 : 0] S00_AXI_AWID
-  .S06_AXI_AWLEN                ('0), // input wire [7 : 0] S00_AXI_AWLEN
-  .S06_AXI_AWLOCK               ('0), // input wire S00_AXI_AWLOCK
-  .S06_AXI_AWPROT               ('0), // input wire [2 : 0] S00_AXI_AWPROT
-  .S06_AXI_AWQOS                ('0), // input wire [3 : 0] S00_AXI_AWQOS
-  .S06_AXI_AWREADY              (),   // output wire S00_AXI_AWREADY
-  .S06_AXI_AWSIZE               ('0), // input wire [2 : 0] S00_AXI_AWSIZE
-  .S06_AXI_AWVALID              ('0), // input wire S00_AXI_AWVALID
-  .S06_AXI_BID                  (),   // output wire [0 : 0] S00_AXI_BID
-  .S06_AXI_BREADY               ('0), // input wire S00_AXI_BREADY
-  .S06_AXI_BRESP                (),   // output wire [1 : 0] S00_AXI_BRESP
-  .S06_AXI_BVALID               (),   // output wire S00_AXI_BVALID
-  .S06_AXI_RDATA                (),   // output wire [511 : 0] S00_AXI_RDATA
-  .S06_AXI_RID                  (),   // output wire [0 : 0] S00_AXI_RID
-  .S06_AXI_RLAST                (),   // output wire S00_AXI_RLAST
-  .S06_AXI_RREADY               ('0), // input wire S00_AXI_RREADY
-  .S06_AXI_RRESP                (),   // output wire [1 : 0] S00_AXI_RRESP
-  .S06_AXI_RVALID               (),   // output wire S00_AXI_RVALID
-  .S06_AXI_WDATA                ('0), // input wire [511 : 0] S00_AXI_WDATA
-  .S06_AXI_WLAST                ('0), // input wire S00_AXI_WLAST
-  .S06_AXI_WREADY               (),   // output wire S00_AXI_WREADY
-  .S06_AXI_WSTRB                ('0), // input wire [63 : 0] S00_AXI_WSTRB
-  .S06_AXI_WVALID               ('0), // input wire S00_AXI_WVALID
 
-  .S07_AXI_ACLK                 ('0), // input wire S00_AXI_ACLK
-  .S07_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
-  .S07_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
-  .S07_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
-  .S07_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
-  .S07_AXI_ARID                 ('0), // input wire [0 : 0] S00_AXI_ARID
-  .S07_AXI_ARLEN                ('0), // input wire [7 : 0] S00_AXI_ARLEN
-  .S07_AXI_ARLOCK               ('0), // input wire S00_AXI_ARLOCK
-  .S07_AXI_ARPROT               ('0), // input wire [2 : 0] S00_AXI_ARPROT
-  .S07_AXI_ARQOS                ('0), // input wire [3 : 0] S00_AXI_ARQOS
-  .S07_AXI_ARSIZE               ('0), // input wire [2 : 0] S00_AXI_ARSIZE
-  .S07_AXI_ARVALID              ('0), // input wire S00_AXI_ARVALID
-  .S07_AXI_ARREADY              (),   // output wire S00_AXI_ARREADY
-  .S07_AXI_AWADDR               ('0), // input wire [33 : 0] S00_AXI_AWADDR
-  .S07_AXI_AWBURST              ('0), // input wire [1 : 0] S00_AXI_AWBURST
-  .S07_AXI_AWCACHE              ('0), // input wire [3 : 0] S00_AXI_AWCACHE
-  .S07_AXI_AWID                 ('0), // input wire [0 : 0] S00_AXI_AWID
-  .S07_AXI_AWLEN                ('0), // input wire [7 : 0] S00_AXI_AWLEN
-  .S07_AXI_AWLOCK               ('0), // input wire S00_AXI_AWLOCK
-  .S07_AXI_AWPROT               ('0), // input wire [2 : 0] S00_AXI_AWPROT
-  .S07_AXI_AWQOS                ('0), // input wire [3 : 0] S00_AXI_AWQOS
-  .S07_AXI_AWREADY              (),   // output wire S00_AXI_AWREADY
-  .S07_AXI_AWSIZE               ('0), // input wire [2 : 0] S00_AXI_AWSIZE
-  .S07_AXI_AWVALID              ('0), // input wire S00_AXI_AWVALID
-  .S07_AXI_BID                  (),   // output wire [0 : 0] S00_AXI_BID
-  .S07_AXI_BREADY               ('0), // input wire S00_AXI_BREADY
-  .S07_AXI_BRESP                (),   // output wire [1 : 0] S00_AXI_BRESP
-  .S07_AXI_BVALID               (),   // output wire S00_AXI_BVALID
-  .S07_AXI_RDATA                (),   // output wire [511 : 0] S00_AXI_RDATA
-  .S07_AXI_RID                  (),   // output wire [0 : 0] S00_AXI_RID
-  .S07_AXI_RLAST                (),   // output wire S00_AXI_RLAST
-  .S07_AXI_RREADY               ('0), // input wire S00_AXI_RREADY
-  .S07_AXI_RRESP                (),   // output wire [1 : 0] S00_AXI_RRESP
-  .S07_AXI_RVALID               (),   // output wire S00_AXI_RVALID
-  .S07_AXI_WDATA                ('0), // input wire [511 : 0] S00_AXI_WDATA
-  .S07_AXI_WLAST                ('0), // input wire S00_AXI_WLAST
-  .S07_AXI_WREADY               (),   // output wire S00_AXI_WREADY
-  .S07_AXI_WSTRB                ('0), // input wire [63 : 0] S00_AXI_WSTRB
-  .S07_AXI_WVALID               ('0), // input wire S00_AXI_WVALID
-  
-  .M00_AXI_ACLK                 (sys_clk),                  // input wire M00_AXI_ACLK
-  .M00_AXI_ARESET_OUT_N         (M00_AXI_ARESET_OUT_N),  // output wire M00_AXI_ARESET_OUT_N
+    // S01: Weight Buffer
+    .S01_AXI_ACLK                 (sys_clk),                  // input wire S01_AXI_ACLK
+    .S01_AXI_ARESET_OUT_N         (S01_AXI_ARESET_OUT_N),  // output wire S01_AXI_ARESET_OUT_N
 
-  .M00_AXI_AWID                 (c0_ddr4_s_axi_awid),                  // output wire [3 : 0] M00_AXI_AWID
-  .M00_AXI_AWADDR               (c0_ddr4_s_axi_awaddr),              // output wire [33 : 0] M00_AXI_AWADDR
-  .M00_AXI_AWLEN                (c0_ddr4_s_axi_awlen),                // output wire [7 : 0] M00_AXI_AWLEN
-  .M00_AXI_AWSIZE               (c0_ddr4_s_axi_awsize),              // output wire [2 : 0] M00_AXI_AWSIZE
-  .M00_AXI_AWBURST              (c0_ddr4_s_axi_awburst),            // output wire [1 : 0] M00_AXI_AWBURST
-  .M00_AXI_AWLOCK               (c0_ddr4_s_axi_awlock),              // output wire M00_AXI_AWLOCK
-  .M00_AXI_AWCACHE              (c0_ddr4_s_axi_awcache),            // output wire [3 : 0] M00_AXI_AWCACHE
-  .M00_AXI_AWPROT               (c0_ddr4_s_axi_awprot),              // output wire [2 : 0] M00_AXI_AWPROT
-  .M00_AXI_AWQOS                (c0_ddr4_s_axi_awqos),                // output wire [3 : 0] M00_AXI_AWQOS
-  .M00_AXI_AWVALID              (c0_ddr4_s_axi_awvalid),            // output wire M00_AXI_AWVALID
-  .M00_AXI_AWREADY              (c0_ddr4_s_axi_awready),            // input wire M00_AXI_AWREADY
-  .M00_AXI_WDATA                (c0_ddr4_s_axi_wdata),                // output wire [511 : 0] M00_AXI_WDATA
-  .M00_AXI_WSTRB                (c0_ddr4_s_axi_wstrb),                // output wire [63 : 0] M00_AXI_WSTRB
-  .M00_AXI_WLAST                (c0_ddr4_s_axi_wlast),                // output wire M00_AXI_WLAST
-  .M00_AXI_WVALID               (c0_ddr4_s_axi_wvalid),              // output wire M00_AXI_WVALID
-  .M00_AXI_WREADY               (c0_ddr4_s_axi_wready),              // input wire M00_AXI_WREADY
-  .M00_AXI_BREADY               (c0_ddr4_s_axi_bready),              // output wire M00_AXI_BREADY
-  .M00_AXI_BID                  (c0_ddr4_s_axi_bid),                    // input wire [3 : 0] M00_AXI_BID
-  .M00_AXI_BRESP                (c0_ddr4_s_axi_bresp),                // input wire [1 : 0] M00_AXI_BRESP
-  .M00_AXI_BVALID               (c0_ddr4_s_axi_bvalid),              // input wire M00_AXI_BVALID
-  .M00_AXI_ARID                 (c0_ddr4_s_axi_arid),                  // output wire [3 : 0] M00_AXI_ARID
-  .M00_AXI_ARADDR               (c0_ddr4_s_axi_araddr),              // output wire [33 : 0] M00_AXI_ARADDR
-  .M00_AXI_ARLEN                (c0_ddr4_s_axi_arlen),                // output wire [7 : 0] M00_AXI_ARLEN
-  .M00_AXI_ARSIZE               (c0_ddr4_s_axi_arsize),              // output wire [2 : 0] M00_AXI_ARSIZE
-  .M00_AXI_ARBURST              (c0_ddr4_s_axi_arburst),            // output wire [1 : 0] M00_AXI_ARBURST
-  .M00_AXI_ARLOCK               (c0_ddr4_s_axi_arlock),              // output wire M00_AXI_ARLOCK
-  .M00_AXI_ARCACHE              (c0_ddr4_s_axi_arcache),            // output wire [3 : 0] M00_AXI_ARCACHE
-  .M00_AXI_ARPROT               (c0_ddr4_s_axi_arprot),              // output wire [2 : 0] M00_AXI_ARPROT
-  .M00_AXI_ARQOS                (c0_ddr4_s_axi_arqos),                // output wire [3 : 0] M00_AXI_ARQOS
-  .M00_AXI_ARVALID              (c0_ddr4_s_axi_arvalid),            // output wire M00_AXI_ARVALID
-  .M00_AXI_ARREADY              (c0_ddr4_s_axi_arready),            // input wire M00_AXI_ARREADY
-  .M00_AXI_RREADY               (c0_ddr4_s_axi_rready),              // output wire M00_AXI_RREADY
-  .M00_AXI_RID                  (c0_ddr4_s_axi_rid),                    // input wire [3 : 0] M00_AXI_RID
-  .M00_AXI_RDATA                (c0_ddr4_s_axi_rdata),                // input wire [511 : 0] M00_AXI_RDATA
-  .M00_AXI_RRESP                (c0_ddr4_s_axi_rresp),                // input wire [1 : 0] M00_AXI_RRESP
-  .M00_AXI_RLAST                (c0_ddr4_s_axi_rlast),                // input wire M00_AXI_RLAST
-  .M00_AXI_RVALID               (c0_ddr4_s_axi_rvalid)              // input wire M00_AXI_RVALID
+    .S01_AXI_AWID                 (weight_buffer_axi_interconnect_axi_awid),                  // input wire [0 : 0] S01_AXI_AWID
+    .S01_AXI_AWADDR               (weight_buffer_axi_interconnect_axi_awaddr),              // input wire [33 : 0] S01_AXI_AWADDR
+    .S01_AXI_AWLEN                (weight_buffer_axi_interconnect_axi_awlen),                // input wire [7 : 0] S01_AXI_AWLEN
+    .S01_AXI_AWSIZE               (weight_buffer_axi_interconnect_axi_awsize),              // input wire [2 : 0] S01_AXI_AWSIZE
+    .S01_AXI_AWBURST              (weight_buffer_axi_interconnect_axi_awburst),            // input wire [1 : 0] S01_AXI_AWBURST
+    .S01_AXI_AWLOCK               (weight_buffer_axi_interconnect_axi_awlock),              // input wire S01_AXI_AWLOCK
+    .S01_AXI_AWCACHE              (weight_buffer_axi_interconnect_axi_awcache),            // input wire [3 : 0] S01_AXI_AWCACHE
+    .S01_AXI_AWPROT               (weight_buffer_axi_interconnect_axi_awprot),              // input wire [2 : 0] S01_AXI_AWPROT
+    .S01_AXI_AWQOS                (weight_buffer_axi_interconnect_axi_awqos),                // input wire [3 : 0] S01_AXI_AWQOS
+    .S01_AXI_AWVALID              (weight_buffer_axi_interconnect_axi_awvalid),            // input wire S01_AXI_AWVALID
+    .S01_AXI_AWREADY              (weight_buffer_axi_interconnect_axi_awready),            // output wire S01_AXI_AWREADY
+    .S01_AXI_WDATA                (weight_buffer_axi_interconnect_axi_wdata),                // input wire [511 : 0] S01_AXI_WDATA
+    .S01_AXI_WSTRB                (weight_buffer_axi_interconnect_axi_wstrb),                // input wire [63 : 0] S01_AXI_WSTRB
+    .S01_AXI_WLAST                (weight_buffer_axi_interconnect_axi_wlast),                // input wire S01_AXI_WLAST
+    .S01_AXI_WVALID               (weight_buffer_axi_interconnect_axi_wvalid),              // input wire S01_AXI_WVALID
+    .S01_AXI_WREADY               (weight_buffer_axi_interconnect_axi_wready),              // output wire S01_AXI_WREADY
+    .S01_AXI_BID                  (weight_buffer_axi_interconnect_axi_bid),                    // output wire [0 : 0] S01_AXI_BID
+    .S01_AXI_BRESP                (weight_buffer_axi_interconnect_axi_bresp),                // output wire [1 : 0] S01_AXI_BRESP
+    .S01_AXI_BVALID               (weight_buffer_axi_interconnect_axi_bvalid),              // output wire S01_AXI_BVALID
+    .S01_AXI_BREADY               (weight_buffer_axi_interconnect_axi_bready),              // input wire S01_AXI_BREADY
+    .S01_AXI_ARID                 (weight_buffer_axi_interconnect_axi_arid),                  // input wire [0 : 0] S01_AXI_ARID
+    .S01_AXI_ARADDR               (weight_buffer_axi_interconnect_axi_araddr),              // input wire [33 : 0] S01_AXI_ARADDR
+    .S01_AXI_ARLEN                (weight_buffer_axi_interconnect_axi_arlen),                // input wire [7 : 0] S01_AXI_ARLEN
+    .S01_AXI_ARSIZE               (weight_buffer_axi_interconnect_axi_arsize),              // input wire [2 : 0] S01_AXI_ARSIZE
+    .S01_AXI_ARBURST              (weight_buffer_axi_interconnect_axi_arburst),            // input wire [1 : 0] S01_AXI_ARBURST
+    .S01_AXI_ARLOCK               (weight_buffer_axi_interconnect_axi_arlock),              // input wire S01_AXI_ARLOCK
+    .S01_AXI_ARCACHE              (weight_buffer_axi_interconnect_axi_arcache),            // input wire [3 : 0] S01_AXI_ARCACHE
+    .S01_AXI_ARPROT               (weight_buffer_axi_interconnect_axi_arprot),              // input wire [2 : 0] S01_AXI_ARPROT
+    .S01_AXI_ARQOS                (weight_buffer_axi_interconnect_axi_arqos),                // input wire [3 : 0] S01_AXI_ARQOS
+    .S01_AXI_ARVALID              (weight_buffer_axi_interconnect_axi_arvalid),            // input wire S01_AXI_ARVALID
+    .S01_AXI_ARREADY              (weight_buffer_axi_interconnect_axi_arready),            // output wire S01_AXI_ARREADY
+    .S01_AXI_RID                  (weight_buffer_axi_interconnect_axi_rid),                    // output wire [0 : 0] S01_AXI_RID
+    .S01_AXI_RDATA                (weight_buffer_axi_interconnect_axi_rdata),                // output wire [511 : 0] S01_AXI_RDATA
+    .S01_AXI_RRESP                (weight_buffer_axi_interconnect_axi_rresp),                // output wire [1 : 0] S01_AXI_RRESP
+    .S01_AXI_RLAST                (weight_buffer_axi_interconnect_axi_rlast),                // output wire S01_AXI_RLAST
+    .S01_AXI_RVALID               (weight_buffer_axi_interconnect_axi_rvalid),              // output wire S01_AXI_RVALID
+    .S01_AXI_RREADY               (weight_buffer_axi_interconnect_axi_rready),              // input wire S01_AXI_RREADY
+
+    // S02: TOP TB
+    .S02_AXI_ACLK                 (sys_clk),                  // input wire S02_AXI_ACLK
+    .S02_AXI_ARESET_OUT_N         (S02_AXI_ARESET_OUT_N),  // output wire S02_AXI_ARESET_OUT_N
+
+    .S02_AXI_AWID                 (top_axi_interconnect_axi_awid),                  // input wire [0 : 0] S02_AXI_AWID
+    .S02_AXI_AWADDR               (top_axi_interconnect_axi_awaddr),              // input wire [33 : 0] S02_AXI_AWADDR
+    .S02_AXI_AWLEN                (top_axi_interconnect_axi_awlen),                // input wire [7 : 0] S02_AXI_AWLEN
+    .S02_AXI_AWSIZE               (top_axi_interconnect_axi_awsize),              // input wire [2 : 0] S02_AXI_AWSIZE
+    .S02_AXI_AWBURST              (top_axi_interconnect_axi_awburst),            // input wire [1 : 0] S02_AXI_AWBURST
+    .S02_AXI_AWLOCK               (top_axi_interconnect_axi_awlock),              // input wire S02_AXI_AWLOCK
+    .S02_AXI_AWCACHE              (top_axi_interconnect_axi_awcache),            // input wire [3 : 0] S02_AXI_AWCACHE
+    .S02_AXI_AWPROT               (top_axi_interconnect_axi_awprot),              // input wire [2 : 0] S02_AXI_AWPROT
+    .S02_AXI_AWQOS                (top_axi_interconnect_axi_awqos),                // input wire [3 : 0] S02_AXI_AWQOS
+    .S02_AXI_AWVALID              (top_axi_interconnect_axi_awvalid),            // input wire S02_AXI_AWVALID
+    .S02_AXI_AWREADY              (top_axi_interconnect_axi_awready),            // output wire S02_AXI_AWREADY
+    .S02_AXI_WDATA                (top_axi_interconnect_axi_wdata),                // input wire [511 : 0] S02_AXI_WDATA
+    .S02_AXI_WSTRB                (top_axi_interconnect_axi_wstrb),                // input wire [63 : 0] S02_AXI_WSTRB
+    .S02_AXI_WLAST                (top_axi_interconnect_axi_wlast),                // input wire S02_AXI_WLAST
+    .S02_AXI_WVALID               (top_axi_interconnect_axi_wvalid),              // input wire S02_AXI_WVALID
+    .S02_AXI_WREADY               (top_axi_interconnect_axi_wready),              // output wire S02_AXI_WREADY
+    .S02_AXI_BID                  (top_axi_interconnect_axi_bid),                    // output wire [0 : 0] S02_AXI_BID
+    .S02_AXI_BRESP                (top_axi_interconnect_axi_bresp),                // output wire [1 : 0] S02_AXI_BRESP
+    .S02_AXI_BVALID               (top_axi_interconnect_axi_bvalid),              // output wire S02_AXI_BVALID
+    .S02_AXI_BREADY               (top_axi_interconnect_axi_bready),              // input wire S02_AXI_BREADY
+    .S02_AXI_ARID                 (top_axi_interconnect_axi_arid),                  // input wire [0 : 0] S02_AXI_ARID
+    .S02_AXI_ARADDR               (top_axi_interconnect_axi_araddr),              // input wire [33 : 0] S02_AXI_ARADDR
+    .S02_AXI_ARLEN                (top_axi_interconnect_axi_arlen),                // input wire [7 : 0] S02_AXI_ARLEN
+    .S02_AXI_ARSIZE               (top_axi_interconnect_axi_arsize),              // input wire [2 : 0] S02_AXI_ARSIZE
+    .S02_AXI_ARBURST              (top_axi_interconnect_axi_arburst),            // input wire [1 : 0] S02_AXI_ARBURST
+    .S02_AXI_ARLOCK               (top_axi_interconnect_axi_arlock),              // input wire S02_AXI_ARLOCK
+    .S02_AXI_ARCACHE              (top_axi_interconnect_axi_arcache),            // input wire [3 : 0] S02_AXI_ARCACHE
+    .S02_AXI_ARPROT               (top_axi_interconnect_axi_arprot),              // input wire [2 : 0] S02_AXI_ARPROT
+    .S02_AXI_ARQOS                (top_axi_interconnect_axi_arqos),                // input wire [3 : 0] S02_AXI_ARQOS
+    .S02_AXI_ARVALID              (top_axi_interconnect_axi_arvalid),            // input wire S02_AXI_ARVALID
+    .S02_AXI_ARREADY              (top_axi_interconnect_axi_arready),            // output wire S02_AXI_ARREADY
+    .S02_AXI_RID                  (top_axi_interconnect_axi_rid),                    // output wire [0 : 0] S02_AXI_RID
+    .S02_AXI_RDATA                (top_axi_interconnect_axi_rdata),                // output wire [511 : 0] S02_AXI_RDATA
+    .S02_AXI_RRESP                (top_axi_interconnect_axi_rresp),                // output wire [1 : 0] S02_AXI_RRESP
+    .S02_AXI_RLAST                (top_axi_interconnect_axi_rlast),                // output wire S02_AXI_RLAST
+    .S02_AXI_RVALID               (top_axi_interconnect_axi_rvalid),              // output wire S02_AXI_RVALID
+    .S02_AXI_RREADY               (top_axi_interconnect_axi_rready),              // input wire S02_AXI_RREADY
+
+    // S03: OUTPUT BUFFER
+    .S03_AXI_ACLK                 (sys_clk),                  // input wire S02_AXI_ACLK
+    .S03_AXI_ARESET_OUT_N         (S03_AXI_ARESET_OUT_N),  // output wire S02_AXI_ARESET_OUT_N
+
+    .S03_AXI_AWID                 (output_buffer_axi_interconnect_axi_awid),                  // input wire [0 : 0] S02_AXI_AWID
+    .S03_AXI_AWADDR               (output_buffer_axi_interconnect_axi_awaddr),              // input wire [33 : 0] S02_AXI_AWADDR
+    .S03_AXI_AWLEN                (output_buffer_axi_interconnect_axi_awlen),                // input wire [7 : 0] S02_AXI_AWLEN
+    .S03_AXI_AWSIZE               (output_buffer_axi_interconnect_axi_awsize),              // input wire [2 : 0] S02_AXI_AWSIZE
+    .S03_AXI_AWBURST              (output_buffer_axi_interconnect_axi_awburst),            // input wire [1 : 0] S02_AXI_AWBURST
+    .S03_AXI_AWLOCK               (output_buffer_axi_interconnect_axi_awlock),              // input wire S02_AXI_AWLOCK
+    .S03_AXI_AWCACHE              (output_buffer_axi_interconnect_axi_awcache),            // input wire [3 : 0] S02_AXI_AWCACHE
+    .S03_AXI_AWPROT               (output_buffer_axi_interconnect_axi_awprot),              // input wire [2 : 0] S02_AXI_AWPROT
+    .S03_AXI_AWQOS                (output_buffer_axi_interconnect_axi_awqos),                // input wire [3 : 0] S02_AXI_AWQOS
+    .S03_AXI_AWVALID              (output_buffer_axi_interconnect_axi_awvalid),            // input wire S02_AXI_AWVALID
+    .S03_AXI_AWREADY              (output_buffer_axi_interconnect_axi_awready),            // output wire S02_AXI_AWREADY
+    .S03_AXI_WDATA                (output_buffer_axi_interconnect_axi_wdata),                // input wire [511 : 0] S02_AXI_WDATA
+    .S03_AXI_WSTRB                (output_buffer_axi_interconnect_axi_wstrb),                // input wire [63 : 0] S02_AXI_WSTRB
+    .S03_AXI_WLAST                (output_buffer_axi_interconnect_axi_wlast),                // input wire S02_AXI_WLAST
+    .S03_AXI_WVALID               (output_buffer_axi_interconnect_axi_wvalid),              // input wire S02_AXI_WVALID
+    .S03_AXI_WREADY               (output_buffer_axi_interconnect_axi_wready),              // output wire S02_AXI_WREADY
+    .S03_AXI_BID                  (output_buffer_axi_interconnect_axi_bid),                    // output wire [0 : 0] S02_AXI_BID
+    .S03_AXI_BRESP                (output_buffer_axi_interconnect_axi_bresp),                // output wire [1 : 0] S02_AXI_BRESP
+    .S03_AXI_BVALID               (output_buffer_axi_interconnect_axi_bvalid),              // output wire S02_AXI_BVALID
+    .S03_AXI_BREADY               (output_buffer_axi_interconnect_axi_bready),              // input wire S02_AXI_BREADY
+    .S03_AXI_ARID                 (output_buffer_axi_interconnect_axi_arid),                  // input wire [0 : 0] S02_AXI_ARID
+    .S03_AXI_ARADDR               (output_buffer_axi_interconnect_axi_araddr),              // input wire [33 : 0] S02_AXI_ARADDR
+    .S03_AXI_ARLEN                (output_buffer_axi_interconnect_axi_arlen),                // input wire [7 : 0] S02_AXI_ARLEN
+    .S03_AXI_ARSIZE               (output_buffer_axi_interconnect_axi_arsize),              // input wire [2 : 0] S02_AXI_ARSIZE
+    .S03_AXI_ARBURST              (output_buffer_axi_interconnect_axi_arburst),            // input wire [1 : 0] S02_AXI_ARBURST
+    .S03_AXI_ARLOCK               (output_buffer_axi_interconnect_axi_arlock),              // input wire S02_AXI_ARLOCK
+    .S03_AXI_ARCACHE              (output_buffer_axi_interconnect_axi_arcache),            // input wire [3 : 0] S02_AXI_ARCACHE
+    .S03_AXI_ARPROT               (output_buffer_axi_interconnect_axi_arprot),              // input wire [2 : 0] S02_AXI_ARPROT
+    .S03_AXI_ARQOS                (output_buffer_axi_interconnect_axi_arqos),                // input wire [3 : 0] S02_AXI_ARQOS
+    .S03_AXI_ARVALID              (output_buffer_axi_interconnect_axi_arvalid),            // input wire S02_AXI_ARVALID
+    .S03_AXI_ARREADY              (output_buffer_axi_interconnect_axi_arready),            // output wire S02_AXI_ARREADY
+    .S03_AXI_RID                  (output_buffer_axi_interconnect_axi_rid),                    // output wire [0 : 0] S02_AXI_RID
+    .S03_AXI_RDATA                (output_buffer_axi_interconnect_axi_rdata),                // output wire [511 : 0] S02_AXI_RDATA
+    .S03_AXI_RRESP                (output_buffer_axi_interconnect_axi_rresp),                // output wire [1 : 0] S02_AXI_RRESP
+    .S03_AXI_RLAST                (output_buffer_axi_interconnect_axi_rlast),                // output wire S02_AXI_RLAST
+    .S03_AXI_RVALID               (output_buffer_axi_interconnect_axi_rvalid),              // output wire S02_AXI_RVALID
+    .S03_AXI_RREADY               (output_buffer_axi_interconnect_axi_rready),              // input wire S02_AXI_RREADY
+
+    // S04: PREFETCHER (MSG RM)
+    .S04_AXI_ACLK                 (sys_clk),         // input wire S00_AXI_ACLK
+    .S04_AXI_ARESET_OUT_N         (S00_AXI_ARESET_OUT_N),  // outpmsg_rm_ut wire S00_AXI_ARESET_OUT_N
+    .S04_AXI_ARADDR               (prefetcher_msg_rm_axi_interconnect_axi_araddr     ),              // input wire [33 : 0] S00_AXI_ARADDR
+    .S04_AXI_ARBURST              (prefetcher_msg_rm_axi_interconnect_axi_arburst        ),            // input wire [1 : 0] S00_AXI_ARBURST
+    .S04_AXI_ARCACHE              (prefetcher_msg_rm_axi_interconnect_axi_arcache        ),            // input wire [3 : 0] S00_AXI_ARCACHE
+    .S04_AXI_ARID                 (prefetcher_msg_rm_axi_interconnect_axi_arid       ),                  // input wire [0 : 0] S00_AXI_ARID
+    .S04_AXI_ARLEN                (prefetcher_msg_rm_axi_interconnect_axi_arlen      ),                // input wire [7 : 0] S00_AXI_ARLEN
+    .S04_AXI_ARLOCK               (prefetcher_msg_rm_axi_interconnect_axi_arlock     ),                               // input wire S00_AXI_ARLOCK
+    .S04_AXI_ARPROT               (prefetcher_msg_rm_axi_interconnect_axi_arprot     ),                               // input wire [2 : 0] S00_AXI_ARPROT
+    .S04_AXI_ARQOS                (prefetcher_msg_rm_axi_interconnect_axi_arqos      ),                               // input wire [3 : 0] S00_AXI_ARQOS
+    .S04_AXI_ARSIZE               (prefetcher_msg_rm_axi_interconnect_axi_arsize     ),              // input wire [2 : 0] S00_AXI_ARSIZE
+    .S04_AXI_ARVALID              (prefetcher_msg_rm_axi_interconnect_axi_arvalid        ),            // input wire S00_AXI_ARVALID
+    .S04_AXI_ARREADY              (prefetcher_msg_rm_axi_interconnect_axi_arready        ),            // output wire S00_AXI_ARREADY
+    .S04_AXI_AWADDR               (prefetcher_msg_rm_axi_interconnect_axi_awaddr     ),              // input wire [33 : 0] S00_AXI_AWADDR
+    .S04_AXI_AWBURST              (prefetcher_msg_rm_axi_interconnect_axi_awburst        ),            // input wire [1 : 0] S00_AXI_AWBURST
+    .S04_AXI_AWCACHE              (prefetcher_msg_rm_axi_interconnect_axi_awcache        ),            // input wire [3 : 0] S00_AXI_AWCACHE
+    .S04_AXI_AWID                 (prefetcher_msg_rm_axi_interconnect_axi_awid       ),                  // input wire [0 : 0] S00_AXI_AWID
+    .S04_AXI_AWLEN                (prefetcher_msg_rm_axi_interconnect_axi_awlen      ),                // input wire [7 : 0] S00_AXI_AWLEN
+    .S04_AXI_AWLOCK               (prefetcher_msg_rm_axi_interconnect_axi_awlock     ),                               // input wire S00_AXI_AWLOCK
+    .S04_AXI_AWPROT               (prefetcher_msg_rm_axi_interconnect_axi_awprot     ),              // input wire [2 : 0] S00_AXI_AWPROT
+    .S04_AXI_AWQOS                (prefetcher_msg_rm_axi_interconnect_axi_awqos      ),                               // input wire [3 : 0] S00_AXI_AWQOS
+    .S04_AXI_AWREADY              (prefetcher_msg_rm_axi_interconnect_axi_awready        ),            // output wire S00_AXI_AWREADY
+    .S04_AXI_AWSIZE               (prefetcher_msg_rm_axi_interconnect_axi_awsize     ),              // input wire [2 : 0] S00_AXI_AWSIZE
+    .S04_AXI_AWVALID              (prefetcher_msg_rm_axi_interconnect_axi_awvalid        ),            // input wire S00_AXI_AWVALID
+    .S04_AXI_BID                  (prefetcher_msg_rm_axi_interconnect_axi_bid        ),                    // output wire [0 : 0] S00_AXI_BID
+    .S04_AXI_BREADY               (prefetcher_msg_rm_axi_interconnect_axi_bready     ),              // input wire S00_AXI_BREADY
+    .S04_AXI_BRESP                (prefetcher_msg_rm_axi_interconnect_axi_bresp      ),                // output wire [1 : 0] S00_AXI_BRESP
+    .S04_AXI_BVALID               (prefetcher_msg_rm_axi_interconnect_axi_bvalid     ),              // output wire S00_AXI_BVALID
+    .S04_AXI_RDATA                (prefetcher_msg_rm_axi_interconnect_axi_rdata      ),                // output wire [511 : 0] S00_AXI_RDATA
+    .S04_AXI_RID                  (prefetcher_msg_rm_axi_interconnect_axi_rid        ),                    // output wire [0 : 0] S00_AXI_RID
+    .S04_AXI_RLAST                (prefetcher_msg_rm_axi_interconnect_axi_rlast      ),                // output wire S00_AXI_RLAST
+    .S04_AXI_RREADY               (prefetcher_msg_rm_axi_interconnect_axi_rready     ),              // input wire S00_AXI_RREADY
+    .S04_AXI_RRESP                (prefetcher_msg_rm_axi_interconnect_axi_rresp      ),                // output wire [1 : 0] S00_AXI_RRESP
+    .S04_AXI_RVALID               (prefetcher_msg_rm_axi_interconnect_axi_rvalid     ),              // output wire S00_AXI_RVALID
+    .S04_AXI_WDATA                (prefetcher_msg_rm_axi_interconnect_axi_wdata      ),                // input wire [511 : 0] S00_AXI_WDATA
+    .S04_AXI_WLAST                (prefetcher_msg_rm_axi_interconnect_axi_wlast      ),                // input wire S00_AXI_WLAST
+    .S04_AXI_WREADY               (prefetcher_msg_rm_axi_interconnect_axi_wready     ),              // output wire S00_AXI_WREADY
+    .S04_AXI_WSTRB                (prefetcher_msg_rm_axi_interconnect_axi_wstrb      ),                // input wire [63 : 0] S00_AXI_WSTRB
+    .S04_AXI_WVALID               (prefetcher_msg_rm_axi_interconnect_axi_wvalid     ),              // input wire S00_AXI_WVALID
+
+    // S05: unused
+    .S05_AXI_ACLK                 (sys_clk), // input wire S00_AXI_ACLK
+    .S05_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
+    .S05_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
+    .S05_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
+    .S05_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
+    .S05_AXI_ARID                 ('0), // input wire [0 : 0] S00_AXI_ARID
+    .S05_AXI_ARLEN                ('0), // input wire [7 : 0] S00_AXI_ARLEN
+    .S05_AXI_ARLOCK               ('0), // input wire S00_AXI_ARLOCK
+    .S05_AXI_ARPROT               ('0), // input wire [2 : 0] S00_AXI_ARPROT
+    .S05_AXI_ARQOS                ('0), // input wire [3 : 0] S00_AXI_ARQOS
+    .S05_AXI_ARSIZE               ('0), // input wire [2 : 0] S00_AXI_ARSIZE
+    .S05_AXI_ARVALID              ('0), // input wire S00_AXI_ARVALID
+    .S05_AXI_ARREADY              (),   // output wire S00_AXI_ARREADY
+    .S05_AXI_AWADDR               ('0), // input wire [33 : 0] S00_AXI_AWADDR
+    .S05_AXI_AWBURST              ('0), // input wire [1 : 0] S00_AXI_AWBURST
+    .S05_AXI_AWCACHE              ('0), // input wire [3 : 0] S00_AXI_AWCACHE
+    .S05_AXI_AWID                 ('0), // input wire [0 : 0] S00_AXI_AWID
+    .S05_AXI_AWLEN                ('0), // input wire [7 : 0] S00_AXI_AWLEN
+    .S05_AXI_AWLOCK               ('0), // input wire S00_AXI_AWLOCK
+    .S05_AXI_AWPROT               ('0), // input wire [2 : 0] S00_AXI_AWPROT
+    .S05_AXI_AWQOS                ('0), // input wire [3 : 0] S00_AXI_AWQOS
+    .S05_AXI_AWREADY              (),   // output wire S00_AXI_AWREADY
+    .S05_AXI_AWSIZE               ('0), // input wire [2 : 0] S00_AXI_AWSIZE
+    .S05_AXI_AWVALID              ('0), // input wire S00_AXI_AWVALID
+    .S05_AXI_BID                  (),   // output wire [0 : 0] S00_AXI_BID
+    .S05_AXI_BREADY               ('0), // input wire S00_AXI_BREADY
+    .S05_AXI_BRESP                (),   // output wire [1 : 0] S00_AXI_BRESP
+    .S05_AXI_BVALID               (),   // output wire S00_AXI_BVALID
+    .S05_AXI_RDATA                (),   // output wire [511 : 0] S00_AXI_RDATA
+    .S05_AXI_RID                  (),   // output wire [0 : 0] S00_AXI_RID
+    .S05_AXI_RLAST                (),   // output wire S00_AXI_RLAST
+    .S05_AXI_RREADY               ('0), // input wire S00_AXI_RREADY
+    .S05_AXI_RRESP                (),   // output wire [1 : 0] S00_AXI_RRESP
+    .S05_AXI_RVALID               (),   // output wire S00_AXI_RVALID
+    .S05_AXI_WDATA                ('0), // input wire [511 : 0] S00_AXI_WDATA
+    .S05_AXI_WLAST                ('0), // input wire S00_AXI_WLAST
+    .S05_AXI_WREADY               (),   // output wire S00_AXI_WREADY
+    .S05_AXI_WSTRB                ('0), // input wire [63 : 0] S00_AXI_WSTRB
+    .S05_AXI_WVALID               ('0), // input wire S00_AXI_WVALID
+
+    // S06: unused
+    .S06_AXI_ACLK                 (sys_clk), // input wire S00_AXI_ACLK
+    .S06_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
+    .S06_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
+    .S06_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
+    .S06_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
+    .S06_AXI_ARID                 ('0), // input wire [0 : 0] S00_AXI_ARID
+    .S06_AXI_ARLEN                ('0), // input wire [7 : 0] S00_AXI_ARLEN
+    .S06_AXI_ARLOCK               ('0), // input wire S00_AXI_ARLOCK
+    .S06_AXI_ARPROT               ('0), // input wire [2 : 0] S00_AXI_ARPROT
+    .S06_AXI_ARQOS                ('0), // input wire [3 : 0] S00_AXI_ARQOS
+    .S06_AXI_ARSIZE               ('0), // input wire [2 : 0] S00_AXI_ARSIZE
+    .S06_AXI_ARVALID              ('0), // input wire S00_AXI_ARVALID
+    .S06_AXI_ARREADY              (),   // output wire S00_AXI_ARREADY
+    .S06_AXI_AWADDR               ('0), // input wire [33 : 0] S00_AXI_AWADDR
+    .S06_AXI_AWBURST              ('0), // input wire [1 : 0] S00_AXI_AWBURST
+    .S06_AXI_AWCACHE              ('0), // input wire [3 : 0] S00_AXI_AWCACHE
+    .S06_AXI_AWID                 ('0), // input wire [0 : 0] S00_AXI_AWID
+    .S06_AXI_AWLEN                ('0), // input wire [7 : 0] S00_AXI_AWLEN
+    .S06_AXI_AWLOCK               ('0), // input wire S00_AXI_AWLOCK
+    .S06_AXI_AWPROT               ('0), // input wire [2 : 0] S00_AXI_AWPROT
+    .S06_AXI_AWQOS                ('0), // input wire [3 : 0] S00_AXI_AWQOS
+    .S06_AXI_AWREADY              (),   // output wire S00_AXI_AWREADY
+    .S06_AXI_AWSIZE               ('0), // input wire [2 : 0] S00_AXI_AWSIZE
+    .S06_AXI_AWVALID              ('0), // input wire S00_AXI_AWVALID
+    .S06_AXI_BID                  (),   // output wire [0 : 0] S00_AXI_BID
+    .S06_AXI_BREADY               ('0), // input wire S00_AXI_BREADY
+    .S06_AXI_BRESP                (),   // output wire [1 : 0] S00_AXI_BRESP
+    .S06_AXI_BVALID               (),   // output wire S00_AXI_BVALID
+    .S06_AXI_RDATA                (),   // output wire [511 : 0] S00_AXI_RDATA
+    .S06_AXI_RID                  (),   // output wire [0 : 0] S00_AXI_RID
+    .S06_AXI_RLAST                (),   // output wire S00_AXI_RLAST
+    .S06_AXI_RREADY               ('0), // input wire S00_AXI_RREADY
+    .S06_AXI_RRESP                (),   // output wire [1 : 0] S00_AXI_RRESP
+    .S06_AXI_RVALID               (),   // output wire S00_AXI_RVALID
+    .S06_AXI_WDATA                ('0), // input wire [511 : 0] S00_AXI_WDATA
+    .S06_AXI_WLAST                ('0), // input wire S00_AXI_WLAST
+    .S06_AXI_WREADY               (),   // output wire S00_AXI_WREADY
+    .S06_AXI_WSTRB                ('0), // input wire [63 : 0] S00_AXI_WSTRB
+    .S06_AXI_WVALID               ('0), // input wire S00_AXI_WVALID
+
+    // S07: unused
+    .S07_AXI_ACLK                 (sys_clk), // input wire S00_AXI_ACLK
+    .S07_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
+    .S07_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
+    .S07_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
+    .S07_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
+    .S07_AXI_ARID                 ('0), // input wire [0 : 0] S00_AXI_ARID
+    .S07_AXI_ARLEN                ('0), // input wire [7 : 0] S00_AXI_ARLEN
+    .S07_AXI_ARLOCK               ('0), // input wire S00_AXI_ARLOCK
+    .S07_AXI_ARPROT               ('0), // input wire [2 : 0] S00_AXI_ARPROT
+    .S07_AXI_ARQOS                ('0), // input wire [3 : 0] S00_AXI_ARQOS
+    .S07_AXI_ARSIZE               ('0), // input wire [2 : 0] S00_AXI_ARSIZE
+    .S07_AXI_ARVALID              ('0), // input wire S00_AXI_ARVALID
+    .S07_AXI_ARREADY              (),   // output wire S00_AXI_ARREADY
+    .S07_AXI_AWADDR               ('0), // input wire [33 : 0] S00_AXI_AWADDR
+    .S07_AXI_AWBURST              ('0), // input wire [1 : 0] S00_AXI_AWBURST
+    .S07_AXI_AWCACHE              ('0), // input wire [3 : 0] S00_AXI_AWCACHE
+    .S07_AXI_AWID                 ('0), // input wire [0 : 0] S00_AXI_AWID
+    .S07_AXI_AWLEN                ('0), // input wire [7 : 0] S00_AXI_AWLEN
+    .S07_AXI_AWLOCK               ('0), // input wire S00_AXI_AWLOCK
+    .S07_AXI_AWPROT               ('0), // input wire [2 : 0] S00_AXI_AWPROT
+    .S07_AXI_AWQOS                ('0), // input wire [3 : 0] S00_AXI_AWQOS
+    .S07_AXI_AWREADY              (),   // output wire S00_AXI_AWREADY
+    .S07_AXI_AWSIZE               ('0), // input wire [2 : 0] S00_AXI_AWSIZE
+    .S07_AXI_AWVALID              ('0), // input wire S00_AXI_AWVALID
+    .S07_AXI_BID                  (),   // output wire [0 : 0] S00_AXI_BID
+    .S07_AXI_BREADY               ('0), // input wire S00_AXI_BREADY
+    .S07_AXI_BRESP                (),   // output wire [1 : 0] S00_AXI_BRESP
+    .S07_AXI_BVALID               (),   // output wire S00_AXI_BVALID
+    .S07_AXI_RDATA                (),   // output wire [511 : 0] S00_AXI_RDATA
+    .S07_AXI_RID                  (),   // output wire [0 : 0] S00_AXI_RID
+    .S07_AXI_RLAST                (),   // output wire S00_AXI_RLAST
+    .S07_AXI_RREADY               ('0), // input wire S00_AXI_RREADY
+    .S07_AXI_RRESP                (),   // output wire [1 : 0] S00_AXI_RRESP
+    .S07_AXI_RVALID               (),   // output wire S00_AXI_RVALID
+    .S07_AXI_WDATA                ('0), // input wire [511 : 0] S00_AXI_WDATA
+    .S07_AXI_WLAST                ('0), // input wire S00_AXI_WLAST
+    .S07_AXI_WREADY               (),   // output wire S00_AXI_WREADY
+    .S07_AXI_WSTRB                ('0), // input wire [63 : 0] S00_AXI_WSTRB
+    .S07_AXI_WVALID               ('0), // input wire S00_AXI_WVALID
+
+    // M00: DDR4 controller or RAM model (depending on DRAM_CONTROLLER and RAM_MODEL macros)
+    .M00_AXI_ACLK                 (sys_clk),                  // input wire M00_AXI_ACLK
+    .M00_AXI_ARESET_OUT_N         (M00_AXI_ARESET_OUT_N),  // output wire M00_AXI_ARESET_OUT_N
+
+    .M00_AXI_AWID                 (c0_ddr4_s_axi_awid),                  // output wire [3 : 0] M00_AXI_AWID
+    .M00_AXI_AWADDR               (c0_ddr4_s_axi_awaddr),              // output wire [33 : 0] M00_AXI_AWADDR
+    .M00_AXI_AWLEN                (c0_ddr4_s_axi_awlen),                // output wire [7 : 0] M00_AXI_AWLEN
+    .M00_AXI_AWSIZE               (c0_ddr4_s_axi_awsize),              // output wire [2 : 0] M00_AXI_AWSIZE
+    .M00_AXI_AWBURST              (c0_ddr4_s_axi_awburst),            // output wire [1 : 0] M00_AXI_AWBURST
+    .M00_AXI_AWLOCK               (c0_ddr4_s_axi_awlock),              // output wire M00_AXI_AWLOCK
+    .M00_AXI_AWCACHE              (c0_ddr4_s_axi_awcache),            // output wire [3 : 0] M00_AXI_AWCACHE
+    .M00_AXI_AWPROT               (c0_ddr4_s_axi_awprot),              // output wire [2 : 0] M00_AXI_AWPROT
+    .M00_AXI_AWQOS                (c0_ddr4_s_axi_awqos),                // output wire [3 : 0] M00_AXI_AWQOS
+    .M00_AXI_AWVALID              (c0_ddr4_s_axi_awvalid),            // output wire M00_AXI_AWVALID
+    .M00_AXI_AWREADY              (c0_ddr4_s_axi_awready),            // input wire M00_AXI_AWREADY
+    .M00_AXI_WDATA                (c0_ddr4_s_axi_wdata),                // output wire [511 : 0] M00_AXI_WDATA
+    .M00_AXI_WSTRB                (c0_ddr4_s_axi_wstrb),                // output wire [63 : 0] M00_AXI_WSTRB
+    .M00_AXI_WLAST                (c0_ddr4_s_axi_wlast),                // output wire M00_AXI_WLAST
+    .M00_AXI_WVALID               (c0_ddr4_s_axi_wvalid),              // output wire M00_AXI_WVALID
+    .M00_AXI_WREADY               (c0_ddr4_s_axi_wready),              // input wire M00_AXI_WREADY
+    .M00_AXI_BREADY               (c0_ddr4_s_axi_bready),              // output wire M00_AXI_BREADY
+    .M00_AXI_BID                  (c0_ddr4_s_axi_bid),                    // input wire [3 : 0] M00_AXI_BID
+    .M00_AXI_BRESP                (c0_ddr4_s_axi_bresp),                // input wire [1 : 0] M00_AXI_BRESP
+    .M00_AXI_BVALID               (c0_ddr4_s_axi_bvalid),              // input wire M00_AXI_BVALID
+    .M00_AXI_ARID                 (c0_ddr4_s_axi_arid),                  // output wire [3 : 0] M00_AXI_ARID
+    .M00_AXI_ARADDR               (c0_ddr4_s_axi_araddr),              // output wire [33 : 0] M00_AXI_ARADDR
+    .M00_AXI_ARLEN                (c0_ddr4_s_axi_arlen),                // output wire [7 : 0] M00_AXI_ARLEN
+    .M00_AXI_ARSIZE               (c0_ddr4_s_axi_arsize),              // output wire [2 : 0] M00_AXI_ARSIZE
+    .M00_AXI_ARBURST              (c0_ddr4_s_axi_arburst),            // output wire [1 : 0] M00_AXI_ARBURST
+    .M00_AXI_ARLOCK               (c0_ddr4_s_axi_arlock),              // output wire M00_AXI_ARLOCK
+    .M00_AXI_ARCACHE              (c0_ddr4_s_axi_arcache),            // output wire [3 : 0] M00_AXI_ARCACHE
+    .M00_AXI_ARPROT               (c0_ddr4_s_axi_arprot),              // output wire [2 : 0] M00_AXI_ARPROT
+    .M00_AXI_ARQOS                (c0_ddr4_s_axi_arqos),                // output wire [3 : 0] M00_AXI_ARQOS
+    .M00_AXI_ARVALID              (c0_ddr4_s_axi_arvalid),            // output wire M00_AXI_ARVALID
+    .M00_AXI_ARREADY              (c0_ddr4_s_axi_arready),            // input wire M00_AXI_ARREADY
+    .M00_AXI_RREADY               (c0_ddr4_s_axi_rready),              // output wire M00_AXI_RREADY
+    .M00_AXI_RID                  (c0_ddr4_s_axi_rid),                    // input wire [3 : 0] M00_AXI_RID
+    .M00_AXI_RDATA                (c0_ddr4_s_axi_rdata),                // input wire [511 : 0] M00_AXI_RDATA
+    .M00_AXI_RRESP                (c0_ddr4_s_axi_rresp),                // input wire [1 : 0] M00_AXI_RRESP
+    .M00_AXI_RLAST                (c0_ddr4_s_axi_rlast),                // input wire M00_AXI_RLAST
+    .M00_AXI_RVALID               (c0_ddr4_s_axi_rvalid)              // input wire M00_AXI_RVALID
 );
+
+// TO DO: remove after implementing weight bank (prefetcher)
+always_comb begin
+    weight_buffer_axi_interconnect_axi_awid     = '0;
+    weight_buffer_axi_interconnect_axi_awaddr   = '0;
+    weight_buffer_axi_interconnect_axi_awlen    = '0;
+    weight_buffer_axi_interconnect_axi_awsize   = '0;
+    weight_buffer_axi_interconnect_axi_awburst  = '0;
+    weight_buffer_axi_interconnect_axi_awlock   = '0;
+    weight_buffer_axi_interconnect_axi_awcache  = '0;
+    weight_buffer_axi_interconnect_axi_awprot   = '0;
+    weight_buffer_axi_interconnect_axi_awqos    = '0;
+    weight_buffer_axi_interconnect_axi_awvalid  = '0;
+    weight_buffer_axi_interconnect_axi_wdata    = '0;
+    weight_buffer_axi_interconnect_axi_wstrb    = '0;
+    weight_buffer_axi_interconnect_axi_wlast    = '0;
+    weight_buffer_axi_interconnect_axi_wvalid   = '0;
+    weight_buffer_axi_interconnect_axi_bready   = '0;
+    weight_buffer_axi_interconnect_axi_arid     = '0;
+    weight_buffer_axi_interconnect_axi_araddr   = '0;
+    weight_buffer_axi_interconnect_axi_arlen    = '0;
+    weight_buffer_axi_interconnect_axi_arsize   = '0;
+    weight_buffer_axi_interconnect_axi_arburst  = '0;
+    weight_buffer_axi_interconnect_axi_arlock   = '0;
+    weight_buffer_axi_interconnect_axi_arcache  = '0;
+    weight_buffer_axi_interconnect_axi_arprot   = '0;
+    weight_buffer_axi_interconnect_axi_arqos    = '0;
+    weight_buffer_axi_interconnect_axi_arvalid  = '0;
+    weight_buffer_axi_interconnect_axi_rready   = '0;
+end
 
 // ====================================================================================
 // DDR4 Controller

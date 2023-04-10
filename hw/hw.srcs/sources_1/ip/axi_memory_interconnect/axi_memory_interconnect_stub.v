@@ -1,10 +1,10 @@
 // Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2019.2 (lin64) Build 2708876 Wed Nov  6 21:39:14 MST 2019
-// Date        : Thu Mar 30 23:05:18 2023
+// Date        : Thu Mar 30 23:05:07 2023
 // Host        : ee-beholder0.ee.ic.ac.uk running 64-bit CentOS Linux release 7.9.2009 (Core)
-// Command     : write_verilog -force -mode synth_stub
-//               /scratch/pg519/fuzzy_carnival/hw/hw.srcs/sources_1/ip/axi_memory_interconnect/axi_memory_interconnect_stub.v
+// Command     : write_verilog -force -mode synth_stub -rename_top axi_memory_interconnect -prefix
+//               axi_memory_interconnect_ axi_memory_interconnect_stub.v
 // Design      : axi_memory_interconnect
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xcu250-figd2104-2L-e

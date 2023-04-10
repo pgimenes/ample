@@ -17,7 +17,7 @@ module ultraram_fifo #(
     input  logic                      pop,
     output logic                      out_valid,
     output logic [WIDTH-1:0]          out_data,
-    output logic [$clog2(DEPTH)-1:0]  count,
+    output logic [$clog2(DEPTH):0]    count,
     output logic                      empty,
     output logic                      full
 );

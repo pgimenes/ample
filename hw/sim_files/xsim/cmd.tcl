@@ -8,4 +8,7 @@ if { [string length $curr_wave] == 0 } {
   }
 }
 
-run 2us
+# Log all signals
+log_wave -r *
+
+run 16 us

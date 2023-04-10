@@ -1,5 +1,7 @@
 
-module prefetcher (
+module prefetcher #(
+    parameter FETCH_TAG_COUNT = 1
+) (
     input logic                               core_clk,
     input logic                               resetn,
 
@@ -107,16 +109,17 @@ module prefetcher (
 // Instances
 // ==================================================================================================================================================
 
-
-prefetcher_feature_bank feature_bank_i (
+prefetcher_feature_bank #(
+    .FETCH_TAG_COUNT(FETCH_TAG_COUNT)
+) feature_bank_i (
     .core_clk,
     .resetn,
 
-    .nsb_prefetcher_feature_bank_req_valid    (nsb_prefetcher_req_valid),
-    .nsb_prefetcher_feature_bank_req_ready    (nsb_prefetcher_req_ready),
-    .nsb_prefetcher_feature_bank_req          (nsb_prefetcher_req),
-    .nsb_prefetcher_feature_bank_resp_valid   (nsb_prefetcher_resp_valid),
-    .nsb_prefetcher_feature_bank_resp         (nsb_prefetcher_resp),
+    .nsb_prefetcher_feature_bank_req_valid                              (nsb_prefetcher_req_valid),
+    .nsb_prefetcher_feature_bank_req_ready                              (nsb_prefetcher_req_ready),
+    .nsb_prefetcher_feature_bank_req                                    (nsb_prefetcher_req),
+    .nsb_prefetcher_feature_bank_resp_valid                             (nsb_prefetcher_resp_valid),
+    .nsb_prefetcher_feature_bank_resp                                   (nsb_prefetcher_resp),
 
     .prefetcher_feature_bank_adj_rm_axi_interconnect_axi_araddr         (prefetcher_adj_rm_axi_interconnect_axi_araddr),
     .prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arburst        (prefetcher_adj_rm_axi_interconnect_axi_arburst),
@@ -197,6 +200,7 @@ prefetcher_feature_bank feature_bank_i (
     .message_channel_req_valid                                          (message_channel_req_valid),
     .message_channel_req_ready                                          (message_channel_req_ready),
     .message_channel_req                                                (message_channel_req),
+
     .message_channel_resp_valid                                         (message_channel_resp_valid),
     .message_channel_resp_ready                                         (message_channel_resp_ready),
     .message_channel_resp                                               (message_channel_resp)

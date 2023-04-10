@@ -49,7 +49,7 @@ typedef enum logic [1:0] {
     FIXED_4 = 3
 } NODE_PRECISION_e;
 
-automatic function logic [5:0] bits_per_precision (input NODE_PRECISION_e precision);
+function logic [5:0] bits_per_precision (input NODE_PRECISION_e precision);
     logic [5:0] bits;
     case(precision)
         top_pkg::FLOAT_32: bits = 6'd32;
@@ -110,7 +110,7 @@ typedef struct packed {
 
 typedef struct packed {
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
-    NSB_PREF_OPCODE_e [3:0]                response_type;
+    NSB_PREF_OPCODE_e                      response_type;
     logic                                  partial;
 } NSB_PREF_RESP_t;
 
