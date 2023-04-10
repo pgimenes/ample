@@ -116,7 +116,7 @@ task automatic nsb_nodeslot_programming_test();
     $display("[TIMESTAMP]: %d, Starting Nodeslot Programming Test", $time);
     chosen_nodeslot = 0;
     busy_nodeslots_mask = '0;
-    delay(10); // wait reset done
+    delay(30); // wait reset done (lasts 20 cycles)
 
     // Program random nodeslots
     repeat (10) begin
@@ -130,9 +130,12 @@ endtask
 
 task program_random_nodeslot (integer nodeslot_id);
     write_nsb_regbank("Define Node ID", NSB_NODESLOT_NODE_ID_OFFSET + nodeslot_id, $urandom);
-    write_nsb_regbank("Define Precision", NSB_NODESLOT_PRECISION_OFFSET + nodeslot_id, $urandom);
-    write_nsb_regbank("Define Adjacency List LSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB_OFFSET + nodeslot_id, $urandom);
-    write_nsb_regbank("Define Adjacency List MSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB_OFFSET + nodeslot_id, $urandom);
+    write_nsb_regbank("Define Neighbour count", NSB_NODESLOT_NEIGHBOUR_COUNT_OFFSET + nodeslot_id, $urandom_range(0, 64)); // TO DO: test neighbour counts higher than 64 for MS3 onwards
+    write_nsb_regbank("Define Precision", NSB_NODESLOT_PRECISION_OFFSET + nodeslot_id, '0); // 0 for float (MS2)
+
+    // Only supporting memory initialization up to 1024 words of 512 bits for now (64kB) - MS2
+    write_nsb_regbank("Define Adjacency List LSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB_OFFSET + nodeslot_id, $urandom_range(0, 1024));
+    write_nsb_regbank("Define Adjacency List MSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB_OFFSET + nodeslot_id, '0);
     write_nsb_regbank("Define Out Messages LSB", NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB_OFFSET + nodeslot_id, $urandom);
     write_nsb_regbank("Define Out Messages MSB", NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB_OFFSET + nodeslot_id, $urandom);
     

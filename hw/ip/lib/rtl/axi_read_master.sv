@@ -48,7 +48,7 @@ module axi_read_master #(
     input  logic [DATA_WIDTH-1:0]                      axi_rdata,
     input  logic [3:0]                                 axi_rid,
     input  logic                                       axi_rlast,
-    output logic                                       axi_rvalid,
+    input  logic                                       axi_rvalid,
     output logic                                       axi_rready,
     input  logic [1:0]                                 axi_rresp
 );
@@ -105,13 +105,13 @@ always_comb begin
     // byte_count / 64 since the data bus is 512b - first divide by 64 rounding down by taking bits [MAX:6], then add 1 if there is a remainder
     required_beat_count = req_fetch_byte_count[$clog2(MAX_BYTE_COUNT)-1:6] + (req_fetch_byte_count[5:0] == '0 ? 1'b0 : 1'b1);
 
+    
     // Max burst length per transaction is 64 such as to not cross a 4kb address boundary, so take modulus 64
+    required_transaction_count = required_beat_count[$clog2(MAX_TOTAL_BEATS)-1:6] + ((burst_length_final_transaction == '0) ? 1'b0 : 1'b1);
     burst_length_final_transaction = required_beat_count[5:0];
     
-    required_transaction_count = required_beat_count[$clog2(MAX_TOTAL_BEATS)-1:6] + ((burst_length_final_transaction == '0) ? 1'b0 : 1'b1);
-    
-    last_transaction_pending = sent_transactions == (required_transaction_count - 1);
-    last_read_response_pending = beats_received == required_beat_count;
+    last_transaction_pending = sent_transactions == (required_transaction_count - 1'b1);
+    last_read_response_pending = beats_received == (required_beat_count - 1'b1);
 end
 
 always_ff @(posedge core_clk or negedge resetn) begin
@@ -125,6 +125,9 @@ always_ff @(posedge core_clk or negedge resetn) begin
         sent_transactions                   <= '0;
         beats_requested                     <= '0;
 
+        received_read_responses             <= '0;
+        beats_received                      <= '0;
+
     end else if (fetch_state_n == IDLE) begin
         fetch_state                         <= fetch_state_n;
         
@@ -134,6 +137,9 @@ always_ff @(posedge core_clk or negedge resetn) begin
 
         sent_transactions                   <= '0;
         beats_requested                     <= '0;
+
+        received_read_responses             <= '0;
+        beats_received                      <= '0;
         
     end
     else begin
@@ -149,7 +155,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         if (fetch_state == AR && accepting_axi_read_transaction) begin
             sent_transactions           <= sent_transactions + 1'b1;
             beats_requested             <= beats_requested + axi_arlen;
-            current_transaction_address <= current_transaction_address + 13'd4096;
+            current_transaction_address <= current_transaction_address + 13'd4096; // increment address by 64 beats * 64 bytes
         end 
 
         // Accepting Read response
@@ -197,7 +203,7 @@ always_comb begin
     axi_arqos       = '0;
 
     // How to handle responses?
-    axi_rready      = (fetch_state == R);
+    axi_rready      = (fetch_state == R) && fetch_resp_ready;
 end
 
 // Fetch REQ/RESP interface

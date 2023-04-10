@@ -2,28 +2,16 @@
 import top_pkg::*;
 import prefetcher_pkg::*;
 
-/*
-
-issue requests based on how many words can be stored in adjacency queue
-In each iteration, determine how many neighbours left
-
-// ROUND UP: (WIDTH_X - 1)/WIDTH_Y + 1 = WIDTH_X/WIDTH_Y
-
-TO DO:
-- In the event of NSB request with neighbour_count = 0, drop packet? send response?
-
-*/
-
 module prefetcher_fetch_tag #(
     parameter AXI_ADDRESS_WIDTH = 34,
     parameter AXI_DATA_WIDTH    = 512,
 
-    parameter ADJ_QUEUE_WIDTH   = 32,
-    parameter ADJ_QUEUE_DEPTH   = 64,
-    parameter MESSAGE_QUEUE_WIDTH = 512,
-    parameter MESSAGE_QUEUE_DEPTH = 4096,
+    parameter int ADJ_QUEUE_WIDTH   = 32,
+    parameter int ADJ_QUEUE_DEPTH   = 64,
+    parameter int MESSAGE_QUEUE_WIDTH = 512,
+    parameter int MESSAGE_QUEUE_DEPTH = 4096,
 
-    parameter FEATURE_COUNT = top_pkg::MAX_FEATURE_COUNT
+    parameter FEATURE_COUNT = top_pkg::MAX_FEATURE_COUNT // TO DO: make read from prefetcher regbank
 ) (
     input logic core_clk,
     input logic resetn,
@@ -67,7 +55,16 @@ module prefetcher_fetch_tag #(
     output logic                                        fetch_tag_msg_rm_resp_ready,
     input  logic                                        fetch_tag_msg_rm_resp_last,
     input  logic [AXI_DATA_WIDTH-1:0]                   fetch_tag_msg_rm_resp_data,
-    input  logic [3:0]                                  fetch_tag_msg_rm_resp_axi_id
+    input  logic [3:0]                                  fetch_tag_msg_rm_resp_axi_id,
+
+    // Message Channels: AGE -> Fetch Tags
+    input  logic                                        message_channel_req_valid,
+    output logic                                        message_channel_req_ready,
+    input  MESSAGE_CHANNEL_REQ_t                        message_channel_req,
+    
+    output logic                                        message_channel_resp_valid,
+    input  logic                                        message_channel_resp_ready,
+    output MESSAGE_CHANNEL_RESP_t                       message_channel_resp
 );
 
 parameter BYTE_COUNT_PER_ADJ_QUEUE_SLOT = 4;
@@ -86,7 +83,8 @@ FETCH_TAG_MESSAGE_FETCH_FSM_e                                 message_fetch_stat
 
 // Address Queue
 logic                                                         push_adj_queue, pop_adj_queue;
-logic                                                         adj_queue_head_valid, adj_queue_head;
+logic                                                         adj_queue_head_valid;
+logic [ADJ_QUEUE_WIDTH-1:0]                                   adj_queue_head;
 logic                                                         adj_queue_empty, adj_queue_full;
 logic [$clog2(ADJ_QUEUE_DEPTH):0]                             adj_queue_count;
 
@@ -94,7 +92,8 @@ logic [$clog2(ADJ_QUEUE_DEPTH):0]                             adj_queue_slots_av
 
 // Message Queue
 logic                                                         push_message_queue, pop_message_queue;
-logic                                                         message_queue_head_valid, message_queue_head;
+logic                                                         message_queue_head_valid;
+logic [MESSAGE_QUEUE_WIDTH-1:0]                               message_queue_head;
 logic                                                         message_queue_empty, message_queue_full;
 logic [$clog2(MESSAGE_QUEUE_DEPTH)-1:0]                       message_queue_count;
 
@@ -105,6 +104,7 @@ logic                                                         accepting_adj_fetc
 logic                                                         accepting_msg_fetch_resp;
 
 // Adjacency request logic
+// logic [$clog2(MAX_NODESLOT_COUNT)-1:0]                        adj_fetch_req_nodeslot;
 logic [AXI_ADDRESS_WIDTH-1:0]                                 adj_fetch_req_address; // address pointer (updated in each fetch)
 logic [$clog2(top_pkg::MAX_REQUIRED_BYTES_ADJ_FETCH_REQ)-1:0] adj_fetch_req_bytes; // bytes in current request
 logic [$clog2(top_pkg::MAX_NEIGHBOURS)-1:0]                   adj_fetch_neighbours_remaining_fetch;
@@ -125,7 +125,10 @@ logic                                                         issue_nsb_partial_
 logic [$clog2(top_pkg::MAX_NEIGHBOURS)-1:0]                   adj_fetch_neighbours_remaining_store;
 logic [AXI_DATA_WIDTH-1:0]                                    fetch_tag_adj_rm_resp_data_q;
 logic [ADJ_QUEUE_WIDTH-1:0]                                   adj_queue_write_data;
-logic [ADJ_QUEUE_WIDTH-1:0]                                   msg_queue_write_data;
+logic [MESSAGE_QUEUE_WIDTH-1:0]                               msg_queue_write_data;
+
+// Message channel logic
+logic accepted_message_channel_req;
 
 // ==================================================================================================================================================
 // Instances
@@ -193,7 +196,10 @@ always_comb begin
 
     case (adj_queue_fetch_state)
     ADJ_IDLE: begin
-        adj_queue_fetch_state_n = !tag_free && accepting_nsb_req && (nsb_prefetcher_req.req_opcode == ADJACENCY_LIST) ? ADJ_FETCH
+        adj_queue_fetch_state_n = !tag_free && accepting_nsb_req 
+                                            && (nsb_prefetcher_req.req_opcode == ADJACENCY_LIST)
+                                            && adj_queue_empty // NSB only requests adj fetch once
+                                            ? ADJ_FETCH
                                     : ADJ_IDLE;
     end
 
@@ -230,11 +236,17 @@ end
 // ----------------------------------------------------
 
 always_comb begin
-    adj_queue_slots_available = ADJ_QUEUE_DEPTH - adj_queue_count;
+    // adj_queue_slots_available = ADJ_QUEUE_DEPTH - adj_queue_count;
+
+    // TO DO: make slots_available parametrizable by depth of adj queue
+
+    // 64 in binary: 
+    adj_queue_slots_available = 7'd64 - adj_queue_count;
 end
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
+        // adj_fetch_req_nodeslot                  <= '0;
         adj_fetch_req_address                   <= '0;
         adj_fetch_neighbours_remaining_fetch    <= '0;
         adj_fetch_responses_pending             <= '0;
@@ -248,6 +260,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         // Accepting adjacency list fetch request
         if ((adj_queue_fetch_state == ADJ_IDLE) && accepting_nsb_req && (nsb_prefetcher_req.req_opcode == ADJACENCY_LIST)) begin 
             // Initialize AXI request according to Nodeslot programming
+            // adj_fetch_req_nodeslot                <= nsb_prefetcher_req.nodeslot;
             adj_fetch_req_address                 <= nsb_prefetcher_req.start_address;
             adj_fetch_neighbours_remaining_fetch  <= nsb_prefetcher_req.neighbour_count;
             issue_nsb_partial_done_adj_fetch      <= '0;
@@ -355,7 +368,10 @@ always_comb begin
     case (message_fetch_state)
     
     MSG_IDLE: begin
-        message_fetch_state_n = !tag_free && accepting_nsb_req && (nsb_prefetcher_req.req_opcode == MESSAGES) && !adj_queue_empty ? MSG_FETCH
+        message_fetch_state_n = !tag_free && accepting_nsb_req
+                                        && (nsb_prefetcher_req.req_opcode == MESSAGES) && !adj_queue_empty
+                                        && (nsb_prefetcher_req.nodeslot == allocated_nodeslot)
+                                        ? MSG_FETCH
                             : MSG_IDLE;
     end
 
@@ -407,7 +423,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         issue_nsb_partial_done_msg_fetch <= '0;
     
     // Accepting MSG fetch request from NSB
-    end else if ((message_fetch_state == MSG_IDLE) && accepting_nsb_req && (nsb_prefetcher_req.req_opcode == MESSAGES)) begin
+    end else if ((message_fetch_state == MSG_IDLE) && (message_fetch_state_n == MSG_FETCH)) begin // && accepting_nsb_req && (nsb_prefetcher_req.req_opcode == MESSAGES)
         msg_fetch_req_precision_q        <= nsb_prefetcher_req.nodeslot_precision;
         msg_queue_expected_responses     <= '0;
         issue_nsb_partial_done_msg_fetch <= '0;
@@ -441,9 +457,9 @@ assign trigger_msg_partial_resp = (issue_nsb_partial_done_msg_fetch && !issue_ns
 always_comb begin
     nsb_prefetcher_req_ready = !tag_free 
                             // only accept NSB req if it's ADJ req and ADJ FSM idle
-                            && ( (adj_queue_fetch_state == ADJ_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST)
+                            && ( (adj_queue_fetch_state == ADJ_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST) && adj_queue_empty && (nsb_prefetcher_req.nodeslot == allocated_nodeslot)
                             // or it's MSG req, MSG FSM idle and ADJ queue non-empty
-                                || (message_fetch_state == MSG_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) && !adj_queue_empty
+                                || (message_fetch_state == MSG_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) && !adj_queue_empty && (nsb_prefetcher_req.nodeslot == allocated_nodeslot)
                                 );
 
     nsb_prefetcher_resp_valid = (adj_queue_fetch_state == ADJ_DONE) || trigger_adj_partial_resp
@@ -455,6 +471,38 @@ always_comb begin
                                         : ERROR;
 
     nsb_prefetcher_resp.partial = trigger_adj_partial_resp || trigger_msg_partial_resp;
+end
+
+// Message Channel interface
+// ----------------------------------------------------
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        accepted_message_channel_req <= '0;
+
+    // Reset flag when receiving new nodeslot allocation
+    end else if (tag_free && allocation_valid) begin
+        accepted_message_channel_req <= '0;
+
+    // latch flag to 1 when accepting message channel req (only service once per nodeslot allocation)
+    end else if (message_channel_req_valid && message_channel_req_ready) begin
+        accepted_message_channel_req <= '1;
+    end
+end
+
+always_comb begin
+    // Accept message channel req when completed message fetching
+    message_channel_req_ready = !message_queue_empty && (message_fetch_state == MSG_IDLE) 
+                                    && (message_channel_req.nodeslot == allocated_nodeslot);
+
+    message_channel_resp_valid = accepted_message_channel_req && message_queue_head_valid && !message_queue_empty;
+
+    message_channel_resp.data = message_queue_head;
+    // message_channel_resp.last = (message_queue_count == {{($clog2(MESSAGE_QUEUE_DEPTH)-1){1'b0}}, 1'b1});
+    message_channel_resp.last = (message_queue_count[$clog2(MESSAGE_QUEUE_DEPTH)-1:1] == '0) && message_queue_count[0];
+
+    // Pop message queue when accepting message channel resp
+    pop_message_queue = message_channel_resp_valid && message_channel_resp_ready;
 end
 
 // Allocation
@@ -469,10 +517,12 @@ always_ff @(posedge core_clk or negedge resetn) begin
         tag_free                    <= '1;
         allocated_nodeslot      <= '0;
         allocated_feature_count <= '0;
+
     end else if (tag_free && allocation_valid) begin
         allocated_nodeslot      <= allocation_nodeslot;
         allocated_feature_count <= allocation_feature_count;
         tag_free                    <= '0;
+    
     end else if (make_tag_free) begin
         tag_free                    <= '1;
         // allocation payloads remain written

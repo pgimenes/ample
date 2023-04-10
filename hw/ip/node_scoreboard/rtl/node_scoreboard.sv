@@ -126,6 +126,9 @@ logic [5:0] nsb_config_aggregation_wait_count_count; // value of field 'NSB_CONF
 logic nsb_config_transformation_wait_count_strobe; // strobe signal for register 'NSB_CONFIG_TRANSFORMATION_WAIT_COUNT' (pulsed when the register is written from the bus)
 logic [5:0] nsb_config_transformation_wait_count_count;// value of field 'NSB_CONFIG_TRANSFORMATION_WAIT_COUNT.COUNT'
 
+logic [63:0] nsb_nodeslot_allocated_fetch_tag_strobe;
+logic [63:0] [31:0] nsb_nodeslot_allocated_fetch_tag_value;
+
 // Other
 // ------------------------------------------------------------
 
@@ -153,6 +156,11 @@ logic accepting_writeback_request;
 
 logic [5:0] aggregation_buffer_population_count;
 logic [5:0] transformation_buffer_population_count;
+
+logic [NODESLOT_COUNT-1:0]         prefetcher_arbiter_grant_oh;
+logic [$clog2(NODESLOT_COUNT)-1:0] prefetcher_arbiter_grant_bin;
+logic [NODESLOT_COUNT-1:0]         age_arbiter_grant_oh;
+logic [$clog2(NODESLOT_COUNT)-1:0] age_arbiter_grant_bin;
 
 // ==================================================================================================================================================
 // Instances
@@ -278,16 +286,16 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
         end else begin
             nsb_nodeslot_node_state_state[nodeslot] <= nodeslot_state_n[nodeslot];
 
-            if ((nodeslot_state == FETCH_NB_LIST) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == ADJACENCY_LIST)) begin
+            if ((nodeslot_state[nodeslot] == FETCH_NB_LIST) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST)) begin
                 fetch_nb_list_resp_received[nodeslot]         <= 1'b1;
 
-            end else if ((nodeslot_state == FETCH_NEIGHBOURS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == MESSAGES)) begin
+            end else if ((nodeslot_state[nodeslot] == FETCH_NEIGHBOURS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::MESSAGES)) begin
                 fetch_nbs_resp_received[nodeslot]             <= 1'b1;
 
-            end else if ((nodeslot_state == AGGR) && nsb_age_resp_valid && (nsb_age_resp.nodeslot == nodeslot)) begin
+            end else if ((nodeslot_state[nodeslot] == AGGR) && nsb_age_resp_valid && (nsb_age_resp.nodeslot == nodeslot)) begin
                 aggregation_done[nodeslot]                    <= 1'b1;
 
-            end else if ((nodeslot_state == TRANS) && nsb_fte_resp_valid && (nsb_fte_resp.nodeslot == nodeslot)) begin
+            end else if ((nodeslot_state[nodeslot] == TRANS) && nsb_fte_resp_valid && (nsb_fte_resp.nodeslot == nodeslot)) begin
                 transformation_done[nodeslot]                    <= 1'b1;
             end
         end
@@ -350,9 +358,27 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
     assign nodeslots_waiting_nb_list_fetch   [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::PROG_DONE);
     assign nodeslots_waiting_neighbour_fetch [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NB_LIST) && fetch_nb_list_resp_received[nodeslot];
     assign nodeslots_waiting_prefetcher      [nodeslot] = nodeslots_waiting_nb_list_fetch[nodeslot] || nodeslots_waiting_neighbour_fetch[nodeslot];
-    assign nodeslots_waiting_aggregation     [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NB_LIST) && fetch_nbs_resp_received[nodeslot];
+    assign nodeslots_waiting_aggregation     [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NEIGHBOURS) && fetch_nbs_resp_received[nodeslot];
     assign nodeslots_waiting_transformation  [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::AGGR) && aggregation_done[nodeslot];
     assign nodeslots_waiting_writeback       [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::TRANS) && transformation_done[nodeslot];
+
+    // Read-only status flags
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            nsb_nodeslot_allocated_fetch_tag_value <= '0;
+        
+        // Reset flags if clearing nodeslot
+        end else if (nodeslot_state_n[nodeslot] == EMPTY) begin
+            nsb_nodeslot_allocated_fetch_tag_value <= '0;
+            
+        end else begin
+            // TO DO: update this to use dynamically allocated fetch tags (MS3)
+            if (nsb_prefetcher_resp_valid) begin
+                nsb_nodeslot_allocated_fetch_tag_value[nsb_prefetcher_resp.nodeslot] <= nsb_prefetcher_resp.nodeslot;
+            end
+        end
+    end
+
 end
 
 always_ff @(posedge core_clk or negedge resetn) begin
@@ -376,9 +402,6 @@ end
 
 // Prefetcher requests
 // ------------------------------------------------------------
-
-logic [NODESLOT_COUNT-1:0]         prefetcher_arbiter_grant_oh;
-logic [$clog2(NODESLOT_COUNT)-1:0] prefetcher_arbiter_grant_bin;
 
 rr_arbiter #(
     .NUM_REQUESTERS     (NODESLOT_COUNT)
@@ -413,13 +436,13 @@ always_comb begin : nsb_prefetcher_req_logic
                                             nsb_nodeslot_adjacency_list_address_lsb_lsb[prefetcher_arbiter_grant_bin]};
     
     nsb_prefetcher_req.neighbour_count = nsb_nodeslot_neighbour_count_count[prefetcher_arbiter_grant_bin];
+
+    // nsb_prefetcher_req.nodeslot_precision = nsb_nodeslot_precision_precision[prefetcher_arbiter_grant_bin];
+    nsb_prefetcher_req.nodeslot_precision = top_pkg::FLOAT_32;
 end
 
 // Aggregation requests
 // ------------------------------------------------------------
-
-logic [NODESLOT_COUNT-1:0]         age_arbiter_grant_oh;
-logic [$clog2(NODESLOT_COUNT)-1:0] age_arbiter_grant_bin;
 
 rr_arbiter #(
     .NUM_REQUESTERS     (NODESLOT_COUNT)
@@ -442,8 +465,9 @@ onehot_to_binary #(
 
 assign nsb_age_req_valid                = |nodeslots_waiting_aggregation;
 assign nsb_age_req.nodeslot             = age_arbiter_grant_bin;
-assign nsb_age_req.node_precision       = top_pkg::FIXED_16; // TO DO: implement (MS3)
+assign nsb_age_req.node_precision       = top_pkg::FLOAT_32; // TO DO: implement (MS3)
 assign nsb_age_req.aggregation_function = top_pkg::SUM; // TO DO: implement (MS3). Layer wise or node wise?
+assign nsb_age_req.fetch_tag = nsb_nodeslot_allocated_fetch_tag_value[age_arbiter_grant_bin];
 
 // Transformation requests
 // ------------------------------------------------------------

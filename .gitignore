@@ -9,3 +9,20 @@ vivado_*
 *.runs
 *.sim
 *.tmp
+
+*.log
+*.jou
+*.pb
+*.wdb
+*.bak
+*.vdb
+*.sdb
+
+# Simulation
+xsim.dir/
+.Xil/
+
+vagrant/
+
+# Register bank builds
+hw/build/regbanks/

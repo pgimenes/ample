@@ -9,14 +9,14 @@ module message_channel #(
     input logic           resetn,
 
     // AGE requests
-    input  logic          nsb_age_mc_req_valid,
-    output logic          nsb_age_mc_req_ready,
-    input  AGE_MC_REQ_t   nsb_age_mc_req,
+    input  logic                    nsb_age_mc_req_valid,
+    output logic                    nsb_age_mc_req_ready,
+    input  AGE_MC_REQ_t             nsb_age_mc_req,
 
     // Generated NSB responses
-    output logic          nsb_age_mc_resp_valid,
-    input  logic          nsb_age_mc_resp_ready,
-    output NSB_AGE_RESP_t nsb_age_mc_resp,
+    output logic                    nsb_age_mc_resp_valid,
+    input  logic                    nsb_age_mc_resp_ready,
+    output NSB_AGE_RESP_t           nsb_age_mc_resp,
 
     // Message Channel: AGE -> Prefetcher (request)
     output logic                    message_channel_req_valid,
