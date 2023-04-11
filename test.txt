@@ -1,3 +1,0 @@
-made the hook script executable and added shebang ---> WORKS
-
-testing if the hook gets executed on another clone of the repo
