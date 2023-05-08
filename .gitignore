@@ -26,3 +26,5 @@ vagrant/
 
 # Register bank builds
 hw/build/regbanks/
+
+__pycache__/

@@ -1,0 +1,310 @@
+{
+    "nodeslots": [
+        {
+            "node_id": 0,
+            "neighbour_count": 16,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 0,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 25280,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 1,
+            "neighbour_count": 9,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 16,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 25536,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 2,
+            "neighbour_count": 10,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 25,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 25792,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 3,
+            "neighbour_count": 6,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 35,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 26048,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 4,
+            "neighbour_count": 3,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 41,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 26304,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 5,
+            "neighbour_count": 4,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 44,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 26560,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 6,
+            "neighbour_count": 4,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 48,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 26816,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 7,
+            "neighbour_count": 4,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 52,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 27072,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 8,
+            "neighbour_count": 5,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 56,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 27328,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 9,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 61,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 27584,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 10,
+            "neighbour_count": 3,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 63,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 27840,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 11,
+            "neighbour_count": 1,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 66,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 28096,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 12,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 67,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 28352,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 13,
+            "neighbour_count": 5,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 69,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 28608,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 14,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 74,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 28864,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 15,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 76,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 29120,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 16,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 78,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 29376,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 17,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 80,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 29632,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 18,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 82,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 29888,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 19,
+            "neighbour_count": 3,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 84,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 30144,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 20,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 87,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 30400,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 21,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 89,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 30656,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 22,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 91,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 30912,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 23,
+            "neighbour_count": 5,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 93,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 31168,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 24,
+            "neighbour_count": 3,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 98,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 31424,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 25,
+            "neighbour_count": 3,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 101,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 31680,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 26,
+            "neighbour_count": 2,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 104,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 31936,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 27,
+            "neighbour_count": 4,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 106,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 32192,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 28,
+            "neighbour_count": 3,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 110,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 32448,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 29,
+            "neighbour_count": 4,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 113,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 32704,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 30,
+            "neighbour_count": 4,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 117,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 32960,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 31,
+            "neighbour_count": 6,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 121,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 33216,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 32,
+            "neighbour_count": 12,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 127,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 33472,
+            "out_messages_address_msb": 0
+        },
+        {
+            "node_id": 33,
+            "neighbour_count": 17,
+            "precision": "FLOAT_32",
+            "adjacency_list_address_lsb": 139,
+            "adjacency_list_address_msb": 0,
+            "out_messages_address_lsb": 33728,
+            "out_messages_address_msb": 0
+        }
+    ]
+}
