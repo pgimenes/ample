@@ -36,17 +36,23 @@ parameter MAX_PRECISION_BYTE_COUNT = 4;
 
 // Prefetcher
 parameter FETCH_TAG_COUNT = MAX_NODESLOT_COUNT;
-
 parameter MESSAGE_CHANNEL_COUNT = MAX_NODESLOT_COUNT;
+
+// Aggregation Buffer
+parameter AGGREGATION_BUFFER_SLOTS = 16;
+parameter AGGREGATION_BUFFER_WRITE_DEPTH = MAX_FEATURE_COUNT * 4 / 8; // 8 bytes per 64b flit
+parameter AGGREGATION_BUFFER_WRITE_WIDTH = 64;
+parameter AGGREGATION_BUFFER_READ_DEPTH = MAX_FEATURE_COUNT * 4 / 4; // 4 bytes per float
+parameter AGGREGATION_BUFFER_READ_WIDTH = 32;
 
 // Supported modes
 // ----------------------------------------------------
 
 typedef enum logic [1:0] {
-    FLOAT_32 = 0,
-    FIXED_16 = 1,
-    FIXED_8 = 2,
-    FIXED_4 = 3
+    FLOAT_32 = 2'd0,
+    FIXED_16 = 2'd1,
+    FIXED_8  = 2'd2,
+    FIXED_4  = 2'd3
 } NODE_PRECISION_e;
 
 function logic [5:0] bits_per_precision (input NODE_PRECISION_e precision);
@@ -62,10 +68,10 @@ function logic [5:0] bits_per_precision (input NODE_PRECISION_e precision);
 endfunction
 
 typedef enum logic [1:0] {
-    SUM = 0,
-    MEAN = 1,
-    RESERVED = 2,
-    RESERVED2 = 3
+    SUM       = 2'd0,
+    MEAN      = 2'd1,
+    RESERVED  = 2'd2,
+    RESERVED2 = 2'd3
 } AGGREGATION_FUNCTION_e;
 
 // Internal request/response interfaces
@@ -92,19 +98,23 @@ typedef struct packed {
 } NSB_FTE_RESP_t;
 
 typedef enum logic [1:0] {
-    WEIGHTS         = 0,
-    ADJACENCY_LIST  = 1,
-    MESSAGES        = 2,
-    ERROR           = 3
+    WEIGHTS         = 2'd0,
+    ADJACENCY_LIST  = 2'd1,
+    MESSAGES        = 2'd2,
+    ERROR           = 2'd3
 } NSB_PREF_OPCODE_e;
 
 typedef struct packed {
     NSB_PREF_OPCODE_e                      req_opcode;
+    logic [AXI_ADDRESS_WIDTH-1:0]          start_address;
+
+    // Weight bank requests
+    logic [$clog2(MAX_FEATURE_COUNT):0]    in_features;
+    logic [$clog2(MAX_FEATURE_COUNT):0]    out_features;
+
+    // For feature bank requests
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
     NODE_PRECISION_e                       nodeslot_precision;
-
-    // For adjacency list request
-    logic [AXI_ADDRESS_WIDTH-1:0]          start_address;
     logic [$clog2(MAX_NEIGHBOURS)-1:0]     neighbour_count;
 } NSB_PREF_REQ_t;
 
@@ -123,6 +133,18 @@ typedef struct packed {
     logic [AXI_DATA_WIDTH-1:0] data;
     logic last;
 } MESSAGE_CHANNEL_RESP_t;
+
+typedef struct packed {
+    // Check request payloads match NSB payloads
+    logic [$clog2(MAX_FEATURE_COUNT):0]    in_features;
+    logic [$clog2(MAX_FEATURE_COUNT):0]    out_features;
+} WEIGHT_CHANNEL_REQ_t;
+
+typedef struct packed {
+    logic [MAX_FEATURE_COUNT-1:0] [31:0] data;
+    logic [MAX_FEATURE_COUNT-1:0] valid_mask;
+    logic                         done;
+} WEIGHT_CHANNEL_RESP_t;
 
 typedef struct packed {
     logic [MAX_NODESLOT_COUNT-1:0] nodeslots;

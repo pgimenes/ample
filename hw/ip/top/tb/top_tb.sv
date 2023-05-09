@@ -406,9 +406,11 @@ axi_memory_master_vip axi_memory_master_vip_i (
 // Tests
 //===========================================================================
 
-matrix_mult_test matrix_mult_test_i (
+top_test top_test_i (
     // .memory_intf                    (memory_intf),
-    .nsb_intf                       (top_i.node_scoreboard_i.nsb_interface) // binded in this file
+    .nsb_intf                       (top_i.node_scoreboard_i.nsb_interface),
+    .age_intf                       (top_i.aggregation_engine_i.age_interface),
+    .prefetcher_intf                (top_i.prefetcher_i.prefetcher_interface)
 );
 
 //===========================================================================
@@ -593,6 +595,14 @@ axi_ram #(
 //===========================================================================
 
 bind top_i.node_scoreboard_i node_scoreboard_interface nsb_interface (
+    .*
+);
+
+bind top_i.aggregation_engine_i aggregation_engine_interface age_interface (
+    .*
+);
+
+bind top_i.prefetcher_i prefetcher_interface prefetcher_interface (
     .*
 );
 
