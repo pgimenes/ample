@@ -11,11 +11,11 @@ module rc_unit #(
     output port_t out_port_o
 );
 
-    wire signed [DEST_ADDR_SIZE_X-1 : 0] x_offset;
-    wire signed [DEST_ADDR_SIZE_Y-1 : 0] y_offset;
+    wire signed [DEST_ADDR_SIZE_X : 0] x_offset;
+    wire signed [DEST_ADDR_SIZE_Y : 0] y_offset;
 
-    assign x_offset = x_dest_i - X_CURRENT;
-    assign y_offset = y_dest_i - Y_CURRENT;
+    assign x_offset = {1'b0, x_dest_i} - X_CURRENT;
+    assign y_offset = {1'b0, y_dest_i} - Y_CURRENT;
 
     /*
     Combinational logic:

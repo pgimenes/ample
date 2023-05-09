@@ -75,12 +75,12 @@ end : rows_gen
 // ============================================================================================
 
 for (genvar row=0; row < MATRIX_N-1; row++) begin
-    assign sys_array_pe_forward         [row][0] = sys_array_forward[row];
+    assign sys_array_pe_forward         [row][0] = sys_array_forward      [row];
     assign sys_array_pe_forward_valid   [row][0] = sys_array_forward_valid[row];
 end
 
 for (genvar col=0; col < MATRIX_N-1; col++) begin
-    assign sys_array_pe_down            [0][col] = sys_array_down[col];
+    assign sys_array_pe_down            [0][col] = sys_array_down      [col];
     assign sys_array_pe_down_valid      [0][col] = sys_array_down_valid[col];
 end
 

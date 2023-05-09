@@ -11,7 +11,7 @@ module prefetcher_fetch_tag #(
     parameter int MESSAGE_QUEUE_WIDTH = 512,
     parameter int MESSAGE_QUEUE_DEPTH = 4096,
 
-    parameter FEATURE_COUNT = top_pkg::MAX_FEATURE_COUNT // TO DO: make read from prefetcher regbank
+    parameter FEATURE_COUNT = 4 // for MS2. TO DO: read from regbank
 ) (
     input logic core_clk,
     input logic resetn,
@@ -130,6 +130,16 @@ logic [MESSAGE_QUEUE_WIDTH-1:0]                               msg_queue_write_da
 // Message channel logic
 logic accepted_message_channel_req;
 
+logic [31:0] debug_counter;
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        debug_counter <= '0;
+    end else begin
+        debug_counter <= debug_counter + 1;
+    end
+end
+
 // ==================================================================================================================================================
 // Instances
 // ==================================================================================================================================================
@@ -157,7 +167,7 @@ ultraram_fifo #(
     .core_clk       (core_clk),
     .resetn         (resetn),
     .push           (push_message_queue),
-    .in_data        (msg_queue_write_data),
+    .in_data        ({debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter}), // replace with msg_queue_write_data
     .pop            (pop_message_queue),
     .out_valid      (message_queue_head_valid),
     .out_data       (message_queue_head),

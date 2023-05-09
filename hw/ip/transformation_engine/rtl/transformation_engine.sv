@@ -9,32 +9,37 @@ module transformation_engine #(
     input logic resetn,
 
     // Regbank Slave AXI interface
-    input  logic [AXI_ADDR_WIDTH-1:0]                           s_axi_awaddr,
-    input  logic [2:0]                                          s_axi_awprot,
-    input  logic                                                s_axi_awvalid,
-    output logic                                                s_axi_awready,
-    input  logic [31:0]                                         s_axi_wdata,
-    input  logic [3:0]                                          s_axi_wstrb,
-    input  logic                                                s_axi_wvalid,
-    output logic                                                s_axi_wready,
-    input  logic [AXI_ADDR_WIDTH-1:0]                           s_axi_araddr,
-    input  logic [2:0]                                          s_axi_arprot,
-    input  logic                                                s_axi_arvalid,
-    output logic                                                s_axi_arready,
-    output logic [31:0]                                         s_axi_rdata,
-    output logic [1:0]                                          s_axi_rresp,
-    output logic                                                s_axi_rvalid,
-    input  logic                                                s_axi_rready,
-    output logic [1:0]                                          s_axi_bresp,
-    output logic                                                s_axi_bvalid,
-    input  logic                                                s_axi_bready,
+    input  logic [AXI_ADDR_WIDTH-1:0]             s_axi_awaddr,
+    input  logic [2:0]                            s_axi_awprot,
+    input  logic                                  s_axi_awvalid,
+    output logic                                  s_axi_awready,
+    input  logic [31:0]                           s_axi_wdata,
+    input  logic [3:0]                            s_axi_wstrb,
+    input  logic                                  s_axi_wvalid,
+    output logic                                  s_axi_wready,
+    input  logic [AXI_ADDR_WIDTH-1:0]             s_axi_araddr,
+    input  logic [2:0]                            s_axi_arprot,
+    input  logic                                  s_axi_arvalid,
+    output logic                                  s_axi_arready,
+    output logic [31:0]                           s_axi_rdata,
+    output logic [1:0]                            s_axi_rresp,
+    output logic                                  s_axi_rvalid,
+    input  logic                                  s_axi_rready,
+    output logic [1:0]                            s_axi_bresp,
+    output logic                                  s_axi_bvalid,
+    input  logic                                  s_axi_bready,
 
     // Controller -> Aggregation Engine Interface
-    input  logic                                                nsb_fte_req_valid,
-    output logic                                                nsb_fte_req_ready,
-    input  NSB_FTE_REQ_t                                        nsb_fte_req,
-    output logic                                                nsb_fte_resp_valid, // valid only for now
-    output NSB_FTE_RESP_t                                       nsb_fte_resp
+    input  logic                                  nsb_fte_req_valid,
+    output logic                                  nsb_fte_req_ready,
+    input  NSB_FTE_REQ_t                          nsb_fte_req,
+    output logic                                  nsb_fte_resp_valid, // valid only for now
+    output NSB_FTE_RESP_t                         nsb_fte_resp,
+
+    output logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              fte_aggregation_buffer_pop,
+    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_fte_out_feature_valid,
+    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_fte_out_feature
+
 );
 
 parameter MATRIX_N = 4;

@@ -1,0 +1,17 @@
+sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+"../../ip/aggregation_engine/tb/aggregation_engine_interface.sv" \
+"../../ip/aggregation_engine/tb/aggregation_engine_tb_monitor.sv" \
+"../../ip/aggregation_engine/tb/aggregation_engine_tb_scoreboard.sv" \
+"../../ip/node_scoreboard/tb/node_scoreboard_interface.sv" \
+"../../ip/node_scoreboard/tb/node_scoreboard_tb_monitor.sv" \
+"../../ip/node_scoreboard/tb/node_scoreboard_tb_scoreboard.sv" \
+"../../ip/prefetcher/tb/prefetcher_interface.sv" \
+"../../ip/prefetcher/tb/prefetcher_tb_monitor.sv" \
+"../../ip/prefetcher/tb/prefetcher_tb_scoreboard.sv" \
+"../../ip/top/tb/top_memory_axi_interface.sv" \
+"../../ip/top/tb/karate_graph.sv" \
+"../../ip/top/tb/matrix_graph.sv" \
+"../../ip/top/tb/top_test.sv" \
+"../../ip/top/tb/top_tb.sv" \
+
+nosort
