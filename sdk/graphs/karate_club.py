@@ -8,7 +8,9 @@ from torch_geometric.nn import Node2Vec
 class KarateClubGraph(TrainedGraph):
     def __init__(self, embeddings=[], weights=[]):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        super().__init__(dataset=KarateClub()[0], embeddings=embeddings, weights=weights)
+        dataset = KarateClub()[0]
+        embeds = dataset.x if embeddings == [] else embeddings
+        super().__init__(dataset=dataset, embeddings=embeds, weights=weights)
 
     def train_embeddings(self, feature_size=64, walk_length=10, context_size=5, walks_per_node=10, num_negative_samples=1, sparse=True):
         self.feature_count=feature_size

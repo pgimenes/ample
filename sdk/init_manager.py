@@ -69,6 +69,7 @@ class InitManager:
 
     def set_in_messages(self):
         for node in range(len(self.trained_graph.nx_graph.nodes)):
+            print(f"Node message is {self.in_messages[node]}")
             self.memory_hex += self.float_list_to_byte_list(self.in_messages[node])
         # TO DO: padding
 
