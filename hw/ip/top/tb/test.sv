@@ -1,0 +1,96 @@
+import axi_vip_pkg::*;
+import axil_master_vip_pkg::*;
+import axi_memory_master_vip_pkg::*;
+
+`define AXIL_MASTER_VIP_IF top_tb.axil_master_vip_i.inst.IF
+`define AXI_MEMORY_MASTER_VIP_IF top_tb.axi_memory_master_vip_i.inst.IF
+
+class Test;
+
+    virtual node_scoreboard_interface nsb_intf;
+    virtual aggregation_engine_interface age_intf;
+    virtual prefetcher_interface prefetcher_intf;
+
+    axil_master_vip_mst_t axil_agent;
+    axi_memory_master_vip_mst_t axi_memory_agent;
+    
+    // Environment
+    node_scoreboard_tb_monitor nsb_monitor_i;
+    aggregation_engine_tb_monitor age_monitor_i;
+    prefetcher_tb_monitor prefetcher_monitor_i;
+    
+    logic [63:0] busy_nodeslots_mask;
+    string TESTNAME;
+
+    function new(virtual node_scoreboard_interface nsb_intf, virtual aggregation_engine_interface age_intf, virtual prefetcher_interface prefetcher_intf);
+        this.nsb_intf = nsb_intf;
+        this.age_intf = age_intf;
+        this.prefetcher_intf = prefetcher_intf;
+
+        $display("[TIMESTAMP]: %d, [TOP_TEST::INFO]: Starting simulation", $time);
+
+        `ifdef DRAM_MODEL
+            // Wait for DDR4 calibration to complete
+            wait(ddr4_c0_init_calib_complete);
+            $display("[TIMESTAMP]: %d, DDR4 C0 Calibration Complete", $time);
+        `endif
+
+            // Initialize AXI-L agent
+            this.axil_agent = new("AXI-L VIP Agent", `AXIL_MASTER_VIP_IF);
+
+            // Initialize AXI Memory Master VIP agent
+            this.axi_memory_agent = new("AXI Memory Master VIP Agent", `AXI_MEMORY_MASTER_VIP_IF);
+
+            // Initialize nodeslots mask as all free
+            this.busy_nodeslots_mask = '0;
+
+            // Environment
+            this.nsb_monitor_i        = new(this.nsb_intf);
+            this.age_monitor_i        = new(this.age_intf);
+            this.prefetcher_monitor_i = new(this.prefetcher_intf);
+    endfunction
+
+    task automatic start_environment();
+        // Initialize AXI VIP agents
+        this.axil_agent.start_master();
+        this.axi_memory_agent.start_master();
+
+        // Run monitors
+        fork
+            this.nsb_monitor_i.main();
+            this.age_monitor_i.main();
+            this.prefetcher_monitor_i.main();
+        join
+    endtask
+
+    task automatic single_axil_write_transaction ( 
+        input string                     name ="single_write",
+        input xil_axi_uint               id =0, 
+        input xil_axi_ulong              addr =0,
+        input xil_axi_len_t              len =0, 
+        input xil_axi_size_t             size =xil_axi_size_t'(xil_clog2((32)/8)),
+        input xil_axi_burst_t            burst =XIL_AXI_BURST_TYPE_FIXED,
+        input xil_axi_lock_t             lock = XIL_AXI_ALOCK_NOLOCK,
+        input xil_axi_cache_t            cache =0,
+        input xil_axi_prot_t             prot =0,
+        input xil_axi_region_t           region =0,
+        input xil_axi_qos_t              qos =0,
+        input xil_axi_data_beat [255:0]  wuser =0, 
+        input xil_axi_data_beat          awuser =0,
+        input bit [63:0]                 data =0
+    );
+
+        axi_transaction wr_trans;
+        wr_trans = this.axil_agent.wr_driver.create_transaction(name);
+        wr_trans.set_write_cmd(addr,burst,id,len,size);
+        wr_trans.set_prot(prot);
+        wr_trans.set_lock(lock);
+        wr_trans.set_cache(cache);
+        wr_trans.set_region(region);
+        wr_trans.set_qos(qos);
+        wr_trans.set_data_block(data);
+        this.axil_agent.wr_driver.send(wr_trans);   
+
+    endtask  : single_axil_write_transaction
+
+endclass
