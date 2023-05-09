@@ -11,7 +11,7 @@ set -e
 
 # Command line options
 xv_boost_lib_path=/mnt/applications/Xilinx/19.2/Vivado/2019.2/tps/boost_1_64_0
-xvlog_opts="--relax -L axi_vip_v1_1_6 -L xilinx_vip --define KARATE_TEST --define RAM_MODEL -i ../../ip/node_scoreboard/tb"
+xvlog_opts="--relax -L axi_vip_v1_1_6 -L xilinx_vip --define GRAPH_TEST --define RAM_MODEL -i ../../ip/node_scoreboard/tb"
 xvhdl_opts="--relax"
 
 if [ "$SIM_GUI" -eq 1 ]; then
