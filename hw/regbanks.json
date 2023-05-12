@@ -1,12 +1,20 @@
 {
     "regbanks": [
         {
+            "name": "aggregation_engine_regbank",
+            "ID": 177050
+        },
+        {
+            "name": "feature_transformation_engine_regbank",
+            "ID": 177247
+        },
+        {
             "name": "node_scoreboard_regbank",
             "ID": 177071
         },
         {
-            "name": "aggregation_engine_regbank",
-            "ID": 177050
+            "name": "prefetcher_regbank",
+            "ID": 177246
         }
     ]
 }

@@ -25,8 +25,8 @@ initial begin
 `ifdef GRAPH_TEST
     graph_test = new(nsb_intf, age_intf, prefetcher_intf);
     fork
-        graph_test.run_test();
         graph_test.start_environment();
+        graph_test.run_test();
     join
 `endif
 

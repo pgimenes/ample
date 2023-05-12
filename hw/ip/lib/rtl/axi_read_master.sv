@@ -5,10 +5,8 @@ Use transaction size of 64 bytes (ARSIZE = 0x6) to saturate 512b data bus
 Calculate required burst length and number of transactions
 When crossing a 4 kb address boundary, issue several transactions with varying ID
 
-
 Currently issuing all read transactions before asserting rready to receive read responses
 This may be bottleneck - in the future, implement two separate state machines
-
 
 */ 
 
@@ -107,8 +105,8 @@ always_comb begin
 
     
     // Max burst length per transaction is 64 such as to not cross a 4kb address boundary, so take modulus 64
-    required_transaction_count = required_beat_count[$clog2(MAX_TOTAL_BEATS)-1:6] + ((burst_length_final_transaction == '0) ? 1'b0 : 1'b1);
     burst_length_final_transaction = required_beat_count[5:0];
+    required_transaction_count = required_beat_count[$clog2(MAX_TOTAL_BEATS)-1:6] + ((burst_length_final_transaction == '0) ? 1'b0 : 1'b1);
     
     last_transaction_pending = sent_transactions == (required_transaction_count - 1'b1);
     last_read_response_pending = beats_received == (required_beat_count - 1'b1);

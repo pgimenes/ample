@@ -65,6 +65,14 @@ typedef enum logic [3:0] {
 // Declarations
 // ==================================================================================================================================================
 
+// Register Bank
+// -------------------------------------------------------------------------------------
+
+logic layer_config_in_features_strobe;
+logic [9:0] layer_config_in_features_count;
+logic layer_config_out_features_strobe;
+logic [9:0] layer_config_out_features_count;
+
 FTE_FSM_e fte_state, fte_state_n;
 
 // Systolic modules
@@ -92,15 +100,38 @@ logic [$clog2(top_pkg::AGGREGATION_BUFFER_SLOTS)-1:0] slot_pop_counter;
 // Instances
 // ==================================================================================================================================================
 
-// TO DO: add register bank
-assign s_axi_awready = '0;
-assign s_axi_wready = '0;
-assign s_axi_arready = '0;
-assign s_axi_rdata = '0;
-assign s_axi_rresp = '0;
-assign s_axi_rvalid = '0;
-assign s_axi_bresp = '0;
-assign s_axi_bvalid = '0;
+feature_transformation_engine_regbank_regs feature_transformation_engine_regbank_i (
+    // Clock and Reset
+    .axi_aclk                        (core_clk),
+    .axi_aresetn                     (resetn),
+
+    // AXI Write Address Channel
+    .s_axi_awaddr,
+    .s_axi_awprot,
+    .s_axi_awvalid,
+    .s_axi_awready,
+    .s_axi_wdata,
+    .s_axi_wstrb,
+    .s_axi_wvalid,
+    .s_axi_wready,
+    .s_axi_araddr,
+    .s_axi_arprot,
+    .s_axi_arvalid,
+    .s_axi_arready,
+    .s_axi_rdata,
+    .s_axi_rresp,
+    .s_axi_rvalid,
+    .s_axi_rready,
+    .s_axi_bresp,
+    .s_axi_bvalid,
+    .s_axi_bready,
+
+    // User Ports
+    .layer_config_in_features_strobe,
+    .layer_config_in_features_count,
+    .layer_config_out_features_strobe,
+    .layer_config_out_features_count 
+);
 
 for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) begin
     sys_array #(

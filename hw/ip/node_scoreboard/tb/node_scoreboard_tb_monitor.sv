@@ -9,7 +9,7 @@ logic expecting_make_valid_msb;
 logic expecting_make_valid_lsb;
 
 function new(virtual node_scoreboard_interface nsb_intf);
-    $display("[TIMESTAMP]: %d, [NSB_MONITOR::DEBUG]: NSB monitor created", $time);
+    $display("[TIMESTAMP]: %t, [NSB_MONITOR::DEBUG]: NSB monitor instantiated.", $time);
     this.nsb_vif = nsb_intf;
 endfunction
 
@@ -26,7 +26,7 @@ task main();
     logic [31:0] msb_addr;
     logic [31:0] lsb_addr;
 
-    $display("[TIMESTAMP]: %d, [NSB_MONITOR::DEBUG]: Checking for writes", $time);
+    $display("[TIMESTAMP]: %t, [NSB_MONITOR::DEBUG]: NSB monitor activated.", $time);
 
     msb_addr = NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + NSB_NODESLOT_CONFIG_MAKE_VALID_MSB_OFFSET;
     msb_addr = NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + NSB_NODESLOT_CONFIG_MAKE_VALID_LSB_OFFSET;

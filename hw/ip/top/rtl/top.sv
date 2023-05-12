@@ -444,7 +444,9 @@ node_scoreboard node_scoreboard_i (
 // Prefetcher
 // ====================================================================================
 
-prefetcher prefetcher_i (
+prefetcher #(
+    .FETCH_TAG_COUNT (top_pkg::MAX_NODESLOT_COUNT)
+) prefetcher_i (
     .core_clk                                           (sys_clk),
     .resetn                                             (!sys_rst),
 
@@ -454,6 +456,27 @@ prefetcher prefetcher_i (
     .nsb_prefetcher_req                          (nsb_prefetcher_req),
     .nsb_prefetcher_resp_valid                   (nsb_prefetcher_resp_valid),
     .nsb_prefetcher_resp                         (nsb_prefetcher_resp),
+
+    // Regbank Slave AXI interface
+    .s_axi_awaddr                                       (axil_interconnect_m_axi_awaddr     [127:96]),
+    .s_axi_wdata                                        (axil_interconnect_m_axi_wdata      [127:96]),
+    .s_axi_araddr                                       (axil_interconnect_m_axi_araddr     [127:96]),
+    .s_axi_rdata                                        (axil_interconnect_m_axi_rdata      [127:96]),
+    .s_axi_awprot                                       (axil_interconnect_m_axi_awprot     [11:9]),
+    .s_axi_arprot                                       (axil_interconnect_m_axi_arprot     [11:9]),
+    .s_axi_awvalid                                      (axil_interconnect_m_axi_awvalid    [3:3]),
+    .s_axi_awready                                      (axil_interconnect_m_axi_awready    [3:3]),
+    .s_axi_wvalid                                       (axil_interconnect_m_axi_wvalid     [3:3]),
+    .s_axi_wready                                       (axil_interconnect_m_axi_wready     [3:3]),
+    .s_axi_bvalid                                       (axil_interconnect_m_axi_bvalid     [3:3]),
+    .s_axi_bready                                       (axil_interconnect_m_axi_bready     [3:3]),
+    .s_axi_arvalid                                      (axil_interconnect_m_axi_arvalid    [3:3]),
+    .s_axi_arready                                      (axil_interconnect_m_axi_arready    [3:3]),
+    .s_axi_rvalid                                       (axil_interconnect_m_axi_rvalid     [3:3]),
+    .s_axi_rready                                       (axil_interconnect_m_axi_rready     [3:3]),
+    .s_axi_wstrb                                        (axil_interconnect_m_axi_wstrb      [15:12]),
+    .s_axi_bresp                                        (axil_interconnect_m_axi_bresp      [7:6]),
+    .s_axi_rresp                                        (axil_interconnect_m_axi_rresp      [7:6]),
 
     // Prefetcher Adj RM -> AXI Memory Interconnect
     .prefetcher_adj_rm_axi_interconnect_axi_araddr             (prefetcher_adj_rm_axi_interconnect_axi_araddr),
@@ -752,6 +775,11 @@ feature_transformation_engine transformation_engine_i (
 // ====================================================================================
 // AXI-L Register Control Crossbar
 // ====================================================================================
+
+// M00: AGE
+// M01: FTE
+// M02: NSB
+// M03: Prefetcher
 
 axi_L_register_control_crossbar axi_L_register_control_crossbar_i (
   .aclk                                 (sys_clk),                    // input wire aclk

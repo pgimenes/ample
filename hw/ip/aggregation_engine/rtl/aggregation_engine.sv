@@ -63,8 +63,10 @@ parameter LAYER_CONFIG_IN_FEATURES = 4; // for MS2
 // Regbank
 // ------------------------------------------------------------
 
-logic layer_config_in_features_strobe; // strobe
-logic [9:0] layer_config_in_features_features;
+logic layer_config_in_features_strobe;
+logic [9:0] layer_config_in_features_count;
+logic layer_config_out_features_strobe;
+logic [3:0] layer_config_out_features_count;
 
 // NOC Mesh
 // ----------------------------------------------------
@@ -199,7 +201,10 @@ aggregation_engine_regbank_regs #(
     .s_axi_bready,
 
     .layer_config_in_features_strobe,
-    .layer_config_in_features_features,
+    .layer_config_in_features_count,
+
+    .layer_config_out_features_strobe,
+    .layer_config_out_features_count,
     .*
 );
 
@@ -459,8 +464,7 @@ always_comb begin
     age_agm_req.coords_x = allocated_agc_float32 % 16;
     age_agm_req.coords_y = allocated_agc_float32 / 16;
 
-    // TO DO: change to layer_config_in_features_features
-    age_agm_req.ac_count = `divide_round_up(LAYER_CONFIG_IN_FEATURES, age_pkg::features_per_aggregation_core(nsb_age_req.node_precision));
+    age_agm_req.ac_count = `divide_round_up(layer_config_in_features_count, age_pkg::features_per_aggregation_core(nsb_age_req.node_precision));
 end
 
 assign nsb_age_resp_valid = |age_agm_resp_valid;
