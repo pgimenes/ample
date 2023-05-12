@@ -11,7 +11,10 @@ class TrainedGraph:
         self.dataset = dataset
         self.nx_graph = to_networkx(self.dataset)
 
-        self.node_ids, self.node_offsets = np.unique(dataset.edge_index[0], return_index=True)
+        node_ids, node_offsets = np.unique(dataset.edge_index[0], return_index=True)
+        self.node_offsets = [0] * len(self.nx_graph.nodes)
+        for idx, i in enumerate(node_ids):
+            self.node_offsets[i] = node_offsets[idx]
 
         for node in self.nx_graph.nodes:
             neighbours = list(self.nx_graph.neighbors(node))

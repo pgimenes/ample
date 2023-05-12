@@ -7,7 +7,7 @@ from sdk.graphs.planetoid_graph import PlanetoidGraph
 
 def main():
     # Load graph and generate feature embeddings
-    planet = PlanetoidGraph("Pubmed")
+    planet = PlanetoidGraph(name="Pubmed")
     planet.random_weights()
 
     # Initialize Memory
@@ -22,5 +22,3 @@ def main():
 
 if (__name__ == "__main__"):
     main()
-
-"""### Train GCN network for club classification"""

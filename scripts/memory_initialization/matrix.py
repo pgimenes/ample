@@ -5,7 +5,7 @@ def main():
     # Load graph and generate feature embeddings
     matrix = MatrixGraph()
     matrix.feature_count = 4
-    matrix.random_embeddings()
+    matrix.random_embeddings(feature_size=4)
     matrix.random_weights()
 
     # matrix.visualize()
@@ -15,9 +15,9 @@ def main():
     init_manager.initialize()
 
     # Dump
-    # init_manager.dump_memory("memory.mem")
+    init_manager.dump_memory("memory.mem")
     init_manager.dump_txt("graph_dump.txt")
-    init_manager.dump_nodeslots()
+    init_manager.dump_nodeslot_programming()
 
 if (__name__ == "__main__"):
     main()
