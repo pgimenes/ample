@@ -42,8 +42,11 @@ class InitManager:
 
     def program_nodeslots(self):
         for node in self.trained_graph.nx_graph.nodes:
+            nb_cnt = self.trained_graph.nx_graph.nodes[node]['neighbour_count']
+            if (nb_cnt == 0):
+                continue
             nodeslot = {'node_id' : node,
-                        'neighbour_count': self.trained_graph.nx_graph.nodes[node]['neighbour_count'],
+                        'neighbour_count': nb_cnt,
                         'precision': 'FLOAT_32',
                         'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node]['adj_list_offset'],
                         'adjacency_list_address_msb': 0,
@@ -69,7 +72,6 @@ class InitManager:
 
     def set_in_messages(self):
         for node in range(len(self.trained_graph.nx_graph.nodes)):
-            print(f"Node message is {self.in_messages[node]}")
             self.memory_hex += self.float_list_to_byte_list(self.in_messages[node])
         # TO DO: padding
 

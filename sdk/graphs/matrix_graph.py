@@ -8,7 +8,7 @@ class MatrixDataset(InMemoryDataset):
     def __init__(self):
         super(MatrixDataset, self).__init__(".", transform=None, pre_transform=None)
         
-        self.data, self.slices = self.data, self.slices = torch.load(self.processed_paths[0])
+        self.data, self.slices = self.process()
         self.num_nodes = 4
         
     @property
@@ -42,8 +42,9 @@ class MatrixDataset(InMemoryDataset):
 
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
-        # return data, slices
+        return data, slices
 
 class MatrixGraph(TrainedGraph):
-    def __init__(self, embeddings=[], weights=[], dim=4):
-        super().__init__(graph=MatrixDataset(), embeddings=embeddings, weights=weights)
+    def __init__(self, embeddings=None, weights=None, dim=4):
+        dataset = MatrixDataset()[0]
+        super().__init__(dataset=dataset, embeddings=embeddings, weights=weights)
