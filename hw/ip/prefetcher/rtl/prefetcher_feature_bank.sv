@@ -12,86 +12,33 @@ module prefetcher_feature_bank #(
     input  logic                                              nsb_prefetcher_feature_bank_req_valid,
     output logic                                              nsb_prefetcher_feature_bank_req_ready,
     input  NSB_PREF_REQ_t                                     nsb_prefetcher_feature_bank_req,
-    output logic                                              nsb_prefetcher_feature_bank_resp_valid, // valid only for now
+
+    output logic                                              nsb_prefetcher_feature_bank_resp_valid,
     output NSB_PREF_RESP_t                                    nsb_prefetcher_feature_bank_resp,
 
-    // Prefetcher Adjacency Read Master -> AXI Memory Interconnect
-    output logic [33:0]                                       prefetcher_feature_bank_adj_rm_axi_interconnect_axi_araddr,
-    output logic [1:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arburst,
-    output logic [3:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arcache,
-    output logic [3:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arid,
-    output logic [7:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arlen,
-    output logic [0:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arlock,
-    output logic [2:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arprot,
-    output logic [3:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arqos,
-    output logic [2:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arsize,
-    output logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arvalid,
-    input  logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arready,
-    output logic [33:0]                                       prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awaddr,
-    output logic [1:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awburst,
-    output logic [3:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awcache,
-    output logic [3:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awid,
-    output logic [7:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awlen,
-    output logic [0:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awlock,
-    output logic [2:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awprot,
-    output logic [3:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awqos,
-    input  logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awready,
-    output logic [2:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awsize,
-    output logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awvalid,
-    input  logic [3:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_bid,
-    output logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_bready,
-    input  logic [1:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_bresp,
-    input  logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_bvalid,
-    input  logic [511:0]                                      prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rdata,
-    input  logic [3:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rid,
-    input  logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rlast,
-    output logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rready,
-    input  logic [1:0]                                        prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rresp,
-    input  logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rvalid,
-    output logic [511:0]                                      prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wdata,
-    output logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wlast,
-    input  logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wready,
-    output logic [63:0]                                       prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wstrb,
-    output logic                                              prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wvalid,
+    // Adjacency Read Master
+    output logic                                              adj_rm_fetch_req_valid,
+    input  logic                                              adj_rm_fetch_req_ready,
+    output logic [AXI_ADDRESS_WIDTH-1:0]                      adj_rm_fetch_start_address,
+    output logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       adj_rm_fetch_byte_count,
 
-    // Prefetcher Message Read Master -> AXI Memory Interconnect
-    output logic [33:0]                                       prefetcher_feature_bank_msg_rm_axi_interconnect_axi_araddr,
-    output logic [1:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arburst,
-    output logic [3:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arcache,
-    output logic [3:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arid,
-    output logic [7:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arlen,
-    output logic [0:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arlock,
-    output logic [2:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arprot,
-    output logic [3:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arqos,
-    output logic [2:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arsize,
-    output logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arvalid,
-    input  logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arready,
-    output logic [33:0]                                       prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awaddr,
-    output logic [1:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awburst,
-    output logic [3:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awcache,
-    output logic [3:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awid,
-    output logic [7:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awlen,
-    output logic [0:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awlock,
-    output logic [2:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awprot,
-    output logic [3:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awqos,
-    input  logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awready,
-    output logic [2:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awsize,
-    output logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awvalid,
-    input  logic [3:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_bid,
-    output logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_bready,
-    input  logic [1:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_bresp,
-    input  logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_bvalid,
-    input  logic [511:0]                                      prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rdata,
-    input  logic [3:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rid,
-    input  logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rlast,
-    output logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rready,
-    input  logic [1:0]                                        prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rresp,
-    input  logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rvalid,
-    output logic [511:0]                                      prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wdata,
-    output logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wlast,
-    input  logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wready,
-    output logic [63:0]                                       prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wstrb,
-    output logic                                              prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wvalid,
+    input  logic                                              adj_rm_fetch_resp_valid,
+    output logic                                              adj_rm_fetch_resp_ready,
+    input  logic                                              adj_rm_fetch_resp_last,
+    input  logic [AXI_DATA_WIDTH-1:0]                         adj_rm_fetch_resp_data,
+    input  logic [3:0]                                        adj_rm_fetch_resp_axi_id,
+
+    // Message Read Master    
+    output logic                                              msg_rm_fetch_req_valid,
+    input  logic                                              msg_rm_fetch_req_ready,
+    output logic [AXI_ADDRESS_WIDTH-1:0]                      msg_rm_fetch_start_address,
+    output logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       msg_rm_fetch_byte_count,
+
+    input  logic                                              msg_rm_fetch_resp_valid,
+    output logic                                              msg_rm_fetch_resp_ready,
+    input  logic                                              msg_rm_fetch_resp_last,
+    input  logic [AXI_DATA_WIDTH-1:0]                         msg_rm_fetch_resp_data,
+    input  logic [3:0]                                        msg_rm_fetch_resp_axi_id,
 
     // Message Channels: AGE -> Prefetcher Feature Bank
     input  logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_req_valid,
@@ -100,7 +47,9 @@ module prefetcher_feature_bank #(
 
     output logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_resp_valid,
     input  logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_resp_ready,
-    output MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp
+    output MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp,
+
+    input  logic [9:0] layer_config_in_features_count
     
 );
 
@@ -108,33 +57,6 @@ module prefetcher_feature_bank #(
 // ==================================================================================================================================================
 // Declarations
 // ==================================================================================================================================================
-
-// Adjacency Read Master requests
-logic                                        adj_rm_fetch_req_valid;
-logic                                        adj_rm_fetch_req_ready;
-logic [AXI_ADDRESS_WIDTH-1:0]                adj_rm_fetch_start_address;
-logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0] adj_rm_fetch_byte_count;
-
-
-// Adjacency Read Master responses
-logic                                        adj_rm_fetch_resp_valid;
-logic                                        adj_rm_fetch_resp_ready;
-logic                                        adj_rm_fetch_resp_last;
-logic [AXI_DATA_WIDTH-1:0]                   adj_rm_fetch_resp_data;
-logic [3:0]                                  adj_rm_fetch_resp_axi_id;
-
-// Message Read Master requests
-logic                                        msg_rm_fetch_req_valid;
-logic                                        msg_rm_fetch_req_ready;
-logic [AXI_ADDRESS_WIDTH-1:0]                msg_rm_fetch_start_address;
-logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0] msg_rm_fetch_byte_count;
-
-// Message Read Master responses
-logic                                        msg_rm_fetch_resp_valid;
-logic                                        msg_rm_fetch_resp_ready;
-logic                                        msg_rm_fetch_resp_last;
-logic [AXI_DATA_WIDTH-1:0]                   msg_rm_fetch_resp_data;
-logic [3:0]                                  msg_rm_fetch_resp_axi_id;
 
 // Per fetch tag logic
 // --------------------------------------------------------------------------
@@ -174,13 +96,19 @@ NSB_PREF_REQ_t [FETCH_TAG_COUNT-1:0]                               nsb_prefetche
 logic [FETCH_TAG_COUNT-1:0]                                        nsb_prefetcher_fetch_tag_resp_valid;
 NSB_PREF_RESP_t [FETCH_TAG_COUNT-1:0]                              nsb_prefetcher_fetch_tag_resp;
 
-// Message Channel count should match fetch tag count
-// logic [FETCH_TAG_COUNT-1:0]                           message_channel_fetch_tag_req_valid;
-// logic [FETCH_TAG_COUNT-1:0]                           message_channel_fetch_tag_req_ready;
-// top_pkg::MESSAGE_CHANNEL_REQ_t [FETCH_TAG_COUNT-1:0]  message_channel_fetch_tag_req;
-// logic [FETCH_TAG_COUNT-1:0]                           message_channel_fetch_tag_resp_valid;
-// logic [FETCH_TAG_COUNT-1:0]                           message_channel_fetch_tag_resp_ready;
-// top_pkg::MESSAGE_CHANNEL_RESP_t [FETCH_TAG_COUNT-1:0] message_channel_fetch_tag_res;
+// Fetch tag response arbitration
+logic [FETCH_TAG_COUNT-1:0]                                        fetch_tag_resp_arb;
+logic [$clog2(FETCH_TAG_COUNT)-1:0]                                fetch_tag_resp_arb_bin;
+
+// Adjacency Read Master request arbitration
+logic [FETCH_TAG_COUNT-1:0]         chosen_fetch_tag_adj_rm_req;
+logic [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_adj_rm_req_bin;
+logic [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_adj_rm_req_bin_q;
+
+// Message Read Master request arbitration
+logic [FETCH_TAG_COUNT-1:0]         chosen_fetch_tag_msg_rm_req;
+logic [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_msg_rm_req_bin;
+logic [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_msg_rm_req_bin_q;
 
 // ==================================================================================================================================================
 // Instances
@@ -199,19 +127,21 @@ for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 
         .core_clk,
         .resetn,
 
-        // NSB -> Prefetcher Interface
-        .nsb_prefetcher_req_valid                       (nsb_prefetcher_fetch_tag_req_valid  [fetch_tag]),
-        .nsb_prefetcher_req_ready                       (nsb_prefetcher_fetch_tag_req_ready  [fetch_tag]),
-        .nsb_prefetcher_req                             (nsb_prefetcher_fetch_tag_req        [fetch_tag]),
-        .nsb_prefetcher_resp_valid                      (nsb_prefetcher_fetch_tag_resp_valid [fetch_tag]),
-        .nsb_prefetcher_resp                            (nsb_prefetcher_fetch_tag_resp       [fetch_tag]),
-
         // Allocation interface
         .allocation_valid                               (allocation_valid                    [fetch_tag]),
         .allocation_nodeslot                            (allocation_nodeslot                 [fetch_tag]),
         .allocation_feature_count                       (allocation_feature_count            [fetch_tag]),
         .deallocation_valid                             (deallocation_valid                  [fetch_tag]),
         .tag_free                                       (tag_free                            [fetch_tag]),
+
+        // NSB -> Prefetcher Interface
+        .nsb_prefetcher_req_valid                       (nsb_prefetcher_fetch_tag_req_valid  [fetch_tag]),
+        .nsb_prefetcher_req_ready                       (nsb_prefetcher_fetch_tag_req_ready  [fetch_tag]),
+        .nsb_prefetcher_req                             (nsb_prefetcher_fetch_tag_req        [fetch_tag]),
+
+        .nsb_prefetcher_resp_valid                      (nsb_prefetcher_fetch_tag_resp_valid [fetch_tag]),
+        .nsb_prefetcher_resp_ready                      (fetch_tag_resp_arb                  [fetch_tag]),
+        .nsb_prefetcher_resp                            (nsb_prefetcher_fetch_tag_resp       [fetch_tag]),
 
         // Request interface to Adjacency AXI Master
         .fetch_tag_adj_rm_req_valid                     (fetch_tag_adj_rm_req_valid     [fetch_tag]),
@@ -242,202 +172,186 @@ for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 
         .message_channel_req_valid                      (message_channel_req_valid    [fetch_tag]),
         .message_channel_req_ready                      (message_channel_req_ready    [fetch_tag]),
         .message_channel_req                            (message_channel_req          [fetch_tag]),
+
         .message_channel_resp_valid                     (message_channel_resp_valid   [fetch_tag]),
         .message_channel_resp_ready                     (message_channel_resp_ready   [fetch_tag]),
         .message_channel_resp                           (message_channel_resp         [fetch_tag])
-);
+    );
+
+    // Fetch tag allocation/de-allocation
+    // --------------------------------------------------------------------------------------------------
+
+    // TO DO: parameterize feature count (read from prefetcher regbank), currently hard coded to support MS2
+    always_comb begin
+        allocation_valid            [fetch_tag] = (nsb_prefetcher_feature_bank_req_valid && (nsb_prefetcher_feature_bank_req.req_opcode == top_pkg::ADJACENCY_LIST) && (nsb_prefetcher_feature_bank_req.nodeslot == fetch_tag));
+        allocation_nodeslot         [fetch_tag] = nsb_prefetcher_feature_bank_req.nodeslot;
+        allocation_feature_count    [fetch_tag] = layer_config_in_features_count;
+    end
+
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            deallocation_valid[fetch_tag] <= '0;
+        end else begin
+            // If last beat sent to AGE, deallocate fetch tag
+            deallocation_valid[fetch_tag] <= message_channel_resp_valid[fetch_tag] && message_channel_resp_ready[fetch_tag] && message_channel_resp[fetch_tag].last ? '1
+                                : '0;
+        end
+    end
+
+    // Distribute NSB requests to correct fetch tag
+    // --------------------------------------------------------------------------------------------------
+
+    always_comb begin
+        nsb_prefetcher_fetch_tag_req_valid  [fetch_tag]  = nsb_prefetcher_feature_bank_req_valid && (nsb_prefetcher_feature_bank_req.nodeslot == fetch_tag);
+        nsb_prefetcher_fetch_tag_req        [fetch_tag]  = nsb_prefetcher_feature_bank_req;
+    end
+
+    // Accept read master requests for chosen fetch tags
+    assign fetch_tag_adj_rm_req_ready [fetch_tag] = chosen_fetch_tag_adj_rm_req [fetch_tag] && adj_rm_fetch_req_ready;
+    assign fetch_tag_msg_rm_req_ready [fetch_tag] = chosen_fetch_tag_msg_rm_req [fetch_tag] && msg_rm_fetch_req_ready;
+
+    // Drive read master responses to appropriate fetch tag
+    always_comb begin 
+        fetch_tag_adj_rm_resp_valid  [fetch_tag] = adj_rm_fetch_resp_valid && (chosen_fetch_tag_adj_rm_req_bin_q == fetch_tag);
+        fetch_tag_adj_rm_resp_last   [fetch_tag] = adj_rm_fetch_resp_last;
+        fetch_tag_adj_rm_resp_data   [fetch_tag] = adj_rm_fetch_resp_data;
+        fetch_tag_adj_rm_resp_axi_id [fetch_tag] = adj_rm_fetch_resp_axi_id;
+
+        fetch_tag_msg_rm_resp_valid  [fetch_tag] = msg_rm_fetch_resp_valid && (chosen_fetch_tag_msg_rm_req_bin_q == fetch_tag);
+        fetch_tag_msg_rm_resp_last   [fetch_tag] = msg_rm_fetch_resp_last;
+        fetch_tag_msg_rm_resp_data   [fetch_tag] = msg_rm_fetch_resp_data;
+        fetch_tag_msg_rm_resp_axi_id [fetch_tag] = msg_rm_fetch_resp_axi_id;
+    end
+
 end
 
-// Adjacency Read Master
-// ----------------------------------------------------------------------------------
+// Fetch Tag response arbitration
+// --------------------------------------------------------------------------------------------------
 
-axi_read_master #(
-    .MAX_BYTE_COUNT (MAX_FETCH_REQ_BYTE_COUNT),
-    .DATA_WIDTH     (AXI_DATA_WIDTH)
-) adj_read_master (
-    .core_clk    (core_clk),
-    .resetn      (resetn),
-    
-    .fetch_req_valid            (adj_rm_fetch_req_valid),
-    .fetch_req_ready            (adj_rm_fetch_req_ready),
-    .fetch_start_address        (adj_rm_fetch_start_address),
-    .fetch_byte_count           (adj_rm_fetch_byte_count),
+rr_arbiter #(
+    .NUM_REQUESTERS (FETCH_TAG_COUNT)
+) fetch_tag_resp_arb_i (
+    .clk        (core_clk),
+    .resetn     (resetn),
 
-    // Response interface
-    .fetch_resp_valid           (adj_rm_fetch_resp_valid),
-    .fetch_resp_ready           (adj_rm_fetch_resp_ready),
-    .fetch_resp_last            (adj_rm_fetch_resp_last),
-    .fetch_resp_data            (adj_rm_fetch_resp_data),
-    .fetch_resp_axi_id          (adj_rm_fetch_resp_axi_id),
-
-    // AXI Read-Only Interface
-   .axi_araddr                  (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_araddr),
-   .axi_arburst                 (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arburst),
-   .axi_arcache                 (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arcache),
-   .axi_arid                    (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arid),
-   .axi_arlen                   (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arlen),
-   .axi_arlock                  (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arlock),
-   .axi_arprot                  (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arprot),
-   .axi_arqos                   (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arqos),
-   .axi_arsize                  (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arsize),
-   .axi_arvalid                 (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arvalid),
-   .axi_arready                 (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_arready),
-   .axi_rdata                   (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rdata),
-   .axi_rid                     (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rid),
-   .axi_rlast                   (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rlast),
-   .axi_rvalid                  (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rvalid),
-   .axi_rready                  (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rready),
-   .axi_rresp                   (prefetcher_feature_bank_adj_rm_axi_interconnect_axi_rresp)
+    .request    (nsb_prefetcher_fetch_tag_resp_valid),
+    .update_lru ('1),
+    .grant_oh   (fetch_tag_resp_arb)
 );
 
-// Message Read Master
-// ----------------------------------------------------------------------------------
+onehot_to_binary #(
+    .INPUT_WIDTH (FETCH_TAG_COUNT)
+) fetch_tag_resp_arb_oh2bin (
+	.clk        (core_clk),
+  	.resetn     (resetn),
 
-axi_read_master #(
-    .MAX_BYTE_COUNT (MAX_FETCH_REQ_BYTE_COUNT),
-    .DATA_WIDTH     (AXI_DATA_WIDTH)
-) msg_read_master (
-    .core_clk    (core_clk),
-    .resetn      (resetn),
-    
-    // Request interface
-    .fetch_req_valid            (msg_rm_fetch_req_valid),
-    .fetch_req_ready            (msg_rm_fetch_req_ready),
-    .fetch_start_address        (msg_rm_fetch_start_address),
-    .fetch_byte_count           (msg_rm_fetch_byte_count),
+	.input_data     (fetch_tag_resp_arb),
+  	.output_data    (fetch_tag_resp_arb_bin)
+);
 
-    // Response interface
-    .fetch_resp_valid           (msg_rm_fetch_resp_valid),
-    .fetch_resp_ready           (msg_rm_fetch_resp_ready),
-    .fetch_resp_last            (msg_rm_fetch_resp_last),
-    .fetch_resp_data            (msg_rm_fetch_resp_data),
-    .fetch_resp_axi_id          (msg_rm_fetch_resp_axi_id),
+// Adjacency Read Master request arbitration
+// --------------------------------------------------------------------------------------------------
 
-    // AXI Read-Only Interface
-   .axi_araddr                  (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_araddr),
-   .axi_arburst                 (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arburst),
-   .axi_arcache                 (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arcache),
-   .axi_arid                    (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arid),
-   .axi_arlen                   (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arlen),
-   .axi_arlock                  (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arlock),
-   .axi_arprot                  (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arprot),
-   .axi_arqos                   (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arqos),
-   .axi_arsize                  (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arsize),
-   .axi_arvalid                 (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arvalid),
-   .axi_arready                 (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_arready),
-   .axi_rdata                   (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rdata),
-   .axi_rid                     (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rid),
-   .axi_rlast                   (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rlast),
-   .axi_rvalid                  (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rvalid),
-   .axi_rready                  (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rready),
-   .axi_rresp                   (prefetcher_feature_bank_msg_rm_axi_interconnect_axi_rresp)
+rr_arbiter #(
+    .NUM_REQUESTERS (FETCH_TAG_COUNT)
+) adj_rm_req_arb (
+    .clk        (core_clk),
+    .resetn     (resetn),
+
+    .request    (fetch_tag_adj_rm_req_valid),
+    .update_lru (adj_rm_fetch_req_ready),
+    .grant_oh   (chosen_fetch_tag_adj_rm_req)
+);
+
+onehot_to_binary #(
+    .INPUT_WIDTH (FETCH_TAG_COUNT)
+) adj_rm_req_arb_oh2bin (
+	.clk        (core_clk),
+  	.resetn     (resetn),
+
+	.input_data     (chosen_fetch_tag_adj_rm_req),
+  	.output_data    (chosen_fetch_tag_adj_rm_req_bin)
+);
+
+
+// Message Read Master request arbitration
+// --------------------------------------------------------------------------------------------------
+
+rr_arbiter #(
+    .NUM_REQUESTERS (FETCH_TAG_COUNT)
+) msg_rm_req_arb (
+    .clk        (core_clk),
+    .resetn     (resetn),
+
+    .request    (fetch_tag_msg_rm_req_valid),
+    .update_lru (msg_rm_fetch_req_ready),
+    .grant_oh   (chosen_fetch_tag_msg_rm_req)
+);
+
+onehot_to_binary #(
+    .INPUT_WIDTH (FETCH_TAG_COUNT)
+) msg_rm_req_arb_oh2bin (
+	.clk        (core_clk),
+  	.resetn     (resetn),
+
+	.input_data     (chosen_fetch_tag_msg_rm_req),
+  	.output_data    (chosen_fetch_tag_msg_rm_req_bin)
 );
 
 // ==================================================================================================================================================
 // Logic
 // ==================================================================================================================================================
 
-// Fetch tag allocation
+// NSB REQ/RESP
 // ----------------------------------------------------------------------------------
 
-// TO DO: parametrize feature count
-
 always_comb begin
-    // MS2: only testing single fetch tag
-    allocation_valid[FETCH_TAG_COUNT-1:1] = '0;
-    allocation_nodeslot[FETCH_TAG_COUNT-1:1] = '0;
-    allocation_feature_count[FETCH_TAG_COUNT-1:1] = '0;
-    
-    allocation_valid[0] = (nsb_prefetcher_feature_bank_req_valid && (nsb_prefetcher_feature_bank_req.req_opcode == top_pkg::ADJACENCY_LIST));
-    allocation_nodeslot[0] = nsb_prefetcher_feature_bank_req.nodeslot;
-    allocation_feature_count[0] = 10'd4; // TO DO: parameterize feature count (read from prefetcher regbank), currently hard coded to support MS2
+    nsb_prefetcher_feature_bank_req_ready    = nsb_prefetcher_fetch_tag_req_ready [nsb_prefetcher_feature_bank_req.nodeslot];
 
+    // NSB responses
+    nsb_prefetcher_feature_bank_resp_valid   = |nsb_prefetcher_fetch_tag_resp_valid;
+    nsb_prefetcher_feature_bank_resp         = nsb_prefetcher_fetch_tag_resp [fetch_tag_resp_arb_bin];
 end
 
+
+// Drive Read Master requests
+// ----------------------------------------------------------------------------------
+
+// Keep track of chosen fetch tag for read master requests in-flight
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
-        deallocation_valid <= '0;
+        chosen_fetch_tag_adj_rm_req_bin_q <= '0;
+        chosen_fetch_tag_msg_rm_req_bin_q <= '0;
+
     end else begin
-        // If last beat sent to AGE, deallocate fetch tag
-        deallocation_valid[0] <= message_channel_resp_valid[0] && message_channel_resp_ready[0] && message_channel_resp[0].last ? '1
-                            : '0;
+        // Accepting adjacency read master request
+        if (adj_rm_fetch_req_valid && adj_rm_fetch_req_ready) begin
+            chosen_fetch_tag_adj_rm_req_bin_q <= chosen_fetch_tag_adj_rm_req_bin;
+        end
+
+        // Accepting message read master request
+        if (msg_rm_fetch_req_valid && msg_rm_fetch_req_ready) begin
+            chosen_fetch_tag_msg_rm_req_bin_q <= chosen_fetch_tag_msg_rm_req_bin;
+        end
     end
 end
 
-assign nsb_prefetcher_fetch_tag_req_valid  [0]  = nsb_prefetcher_feature_bank_req_valid;
-assign nsb_prefetcher_fetch_tag_req        [0]  = nsb_prefetcher_feature_bank_req;
-
-
-// TO DO: change post MS2. Currently dropping all NSB requests for nodeslots other than 0
-assign nsb_prefetcher_feature_bank_req_ready    = (nsb_prefetcher_feature_bank_req.nodeslot == '0) ? nsb_prefetcher_fetch_tag_req_ready [0]
-                                                : '1;
-
-assign nsb_prefetcher_feature_bank_resp_valid   = nsb_prefetcher_fetch_tag_resp_valid [0];
-assign nsb_prefetcher_feature_bank_resp         = nsb_prefetcher_fetch_tag_resp [0];
-
-// Tie requests to adjacency read master from first fetch tag
+// Drive adjacency read master requests
 always_comb begin
-    adj_rm_fetch_req_valid              = fetch_tag_adj_rm_req_valid[0];
-    adj_rm_fetch_start_address          = fetch_tag_adj_rm_start_address[0];
-    adj_rm_fetch_byte_count             = fetch_tag_adj_rm_byte_count[0];
-    fetch_tag_adj_rm_req_ready[0]       = adj_rm_fetch_req_ready;
+    adj_rm_fetch_req_valid              = |fetch_tag_adj_rm_req_valid;
+    adj_rm_fetch_start_address          = fetch_tag_adj_rm_start_address [chosen_fetch_tag_adj_rm_req_bin];
+    adj_rm_fetch_byte_count             = fetch_tag_adj_rm_byte_count    [chosen_fetch_tag_adj_rm_req_bin];
 
-    adj_rm_fetch_resp_ready             = fetch_tag_adj_rm_resp_ready [0];
-    fetch_tag_adj_rm_resp_valid [0]     = adj_rm_fetch_resp_valid;
-    fetch_tag_adj_rm_resp_last [0]      = adj_rm_fetch_resp_last;
-    fetch_tag_adj_rm_resp_data [0]      = adj_rm_fetch_resp_data;
-    fetch_tag_adj_rm_resp_axi_id [0]    = adj_rm_fetch_resp_axi_id;
+    adj_rm_fetch_resp_ready             = fetch_tag_adj_rm_resp_ready [chosen_fetch_tag_adj_rm_req_bin_q];
 end
 
-// Tie requests to message read master from first fetch tag
+// Drive message read master requests
 always_comb begin
-    msg_rm_fetch_req_valid     = fetch_tag_msg_rm_req_valid[0];
-    msg_rm_fetch_start_address = fetch_tag_msg_rm_start_address[0];
-    msg_rm_fetch_byte_count    = fetch_tag_msg_rm_byte_count[0];
-    fetch_tag_msg_rm_req_ready[0] = msg_rm_fetch_req_ready;
+    msg_rm_fetch_req_valid     = |fetch_tag_msg_rm_req_valid;
+    msg_rm_fetch_start_address = fetch_tag_msg_rm_start_address [chosen_fetch_tag_msg_rm_req_bin];
+    msg_rm_fetch_byte_count    = fetch_tag_msg_rm_byte_count    [chosen_fetch_tag_msg_rm_req_bin];
 
-    msg_rm_fetch_resp_ready  = fetch_tag_msg_rm_resp_ready [0];
-    fetch_tag_msg_rm_resp_valid [0] = msg_rm_fetch_resp_valid;
-    fetch_tag_msg_rm_resp_last [0] = msg_rm_fetch_resp_last;
-    fetch_tag_msg_rm_resp_data [0] = msg_rm_fetch_resp_data;
-    fetch_tag_msg_rm_resp_axi_id [0] = msg_rm_fetch_resp_axi_id;
-end
-
-
-
-// Read-only interfaces
-always_comb begin
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awaddr      = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awburst     = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awcache     = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awid        = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awlen       = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awlock      = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awprot      = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awqos       = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awsize      = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_awvalid     = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_bready      = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wdata       = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wlast       = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wstrb       = '0;
-    prefetcher_feature_bank_adj_rm_axi_interconnect_axi_wvalid      = '0;
-
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awaddr      = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awburst     = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awcache     = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awid        = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awlen       = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awlock      = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awprot      = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awqos       = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awsize      = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_awvalid     = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_bready      = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wdata       = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wlast       = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wstrb       = '0;
-    prefetcher_feature_bank_msg_rm_axi_interconnect_axi_wvalid      = '0;
+    msg_rm_fetch_resp_ready  = fetch_tag_msg_rm_resp_ready [chosen_fetch_tag_msg_rm_req_bin_q];
 end
 
 // ==================================================================================================================================================

@@ -6,6 +6,8 @@ on out_data when out_valid is asserted (RAM reads take 3 cycles)
 
 */
 
+`timescale 1ns/1ns
+
 module ultraram_fifo #(
     parameter WIDTH = 512,
     parameter DEPTH = 4096
@@ -43,7 +45,7 @@ ultraram #(
     .AWIDTH(AWIDTH),  // Address Width
     .DWIDTH(WIDTH),  // Data Width
     .NBPIPE(1)   // Number of pipeline Registers
-) address_queue (
+) fifo (
     .core_clk           (core_clk),
     .resetn             (resetn),
     .write_enable       (push),

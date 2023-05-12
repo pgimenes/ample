@@ -96,7 +96,7 @@ logic [1:0] layer_config_in_messages_adress_msb_msb;                    // value
 logic layer_config_out_messages_adress_lsb_strobe;                      // strobe signal for register 'LAYER_CONFIG_OUT_MESSAGES_ADRESS_LSB' (pulsed when the register is written from the bus)
 logic [31:0] layer_config_out_messages_adress_lsb_lsb;                  // value of field 'LAYER_CONFIG_OUT_MESSAGES_ADRESS_LSB.LSB'
 logic layer_config_out_messages_adress_msb_strobe;                      // strobe signal for register 'LAYER_CONFIG_OUT_MESSAGES_ADRESS_MSB' (pulsed when the register is written from the bus)
-logic [31:0] layer_config_out_messages_adress_msb_value;                // value of field 'LAYER_CONFIG_OUT_MESSAGES_ADRESS_MSB.value'
+logic [31:0] layer_config_out_messages_adress_msb_msb;                // value of field 'LAYER_CONFIG_OUT_MESSAGES_ADRESS_MSB.value'
 
 // Nodeslots
 logic [63:0] nsb_nodeslot_neighbour_count_strobe;                       // strobe signal for register 'NSB_NODESLOT_NEIGHBOUR_COUNT' (pulsed when the register is written from the bus)
@@ -127,7 +127,7 @@ logic nsb_config_transformation_wait_count_strobe; // strobe signal for register
 logic [5:0] nsb_config_transformation_wait_count_count;// value of field 'NSB_CONFIG_TRANSFORMATION_WAIT_COUNT.COUNT'
 
 logic [63:0] nsb_nodeslot_allocated_fetch_tag_strobe;
-logic [63:0] [31:0] nsb_nodeslot_allocated_fetch_tag_value;
+logic [63:0] [31:0] nsb_nodeslot_allocated_fetch_tag_fetch_tag;
 
 // Other
 // ------------------------------------------------------------
@@ -217,7 +217,7 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
     .layer_config_out_messages_adress_lsb_strobe,
     .layer_config_out_messages_adress_lsb_lsb,
     .layer_config_out_messages_adress_msb_strobe,
-    .layer_config_out_messages_adress_msb_value,
+    .layer_config_out_messages_adress_msb_msb,
     .nsb_nodeslot_neighbour_count_strobe,
     .nsb_nodeslot_neighbour_count_count,
     .nsb_nodeslot_node_id_strobe,
@@ -365,16 +365,16 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
     // Read-only status flags
     always_ff @(posedge core_clk or negedge resetn) begin
         if (!resetn) begin
-            nsb_nodeslot_allocated_fetch_tag_value <= '0;
+            nsb_nodeslot_allocated_fetch_tag_fetch_tag <= '0;
         
         // Reset flags if clearing nodeslot
         end else if (nodeslot_state_n[nodeslot] == EMPTY) begin
-            nsb_nodeslot_allocated_fetch_tag_value <= '0;
+            nsb_nodeslot_allocated_fetch_tag_fetch_tag <= '0;
             
         end else begin
             // TO DO: update this to use dynamically allocated fetch tags (MS3)
             if (nsb_prefetcher_resp_valid) begin
-                nsb_nodeslot_allocated_fetch_tag_value[nsb_prefetcher_resp.nodeslot] <= nsb_prefetcher_resp.nodeslot;
+                nsb_nodeslot_allocated_fetch_tag_fetch_tag[nsb_prefetcher_resp.nodeslot] <= nsb_prefetcher_resp.nodeslot;
             end
         end
     end
@@ -439,6 +439,10 @@ always_comb begin : nsb_prefetcher_req_logic
 
     // nsb_prefetcher_req.nodeslot_precision = nsb_nodeslot_precision_precision[prefetcher_arbiter_grant_bin];
     nsb_prefetcher_req.nodeslot_precision = top_pkg::FLOAT_32;
+
+    // TO DO: read from regbank
+    nsb_prefetcher_req.in_features <= 'd64;
+    nsb_prefetcher_req.out_features <= 'd64;
 end
 
 // Aggregation requests
@@ -467,7 +471,7 @@ assign nsb_age_req_valid                = |nodeslots_waiting_aggregation;
 assign nsb_age_req.nodeslot             = age_arbiter_grant_bin;
 assign nsb_age_req.node_precision       = top_pkg::FLOAT_32; // TO DO: implement (MS3)
 assign nsb_age_req.aggregation_function = top_pkg::SUM; // TO DO: implement (MS3). Layer wise or node wise?
-assign nsb_age_req.fetch_tag = nsb_nodeslot_allocated_fetch_tag_value[age_arbiter_grant_bin];
+assign nsb_age_req.fetch_tag = nsb_nodeslot_allocated_fetch_tag_fetch_tag[age_arbiter_grant_bin];
 
 // Transformation requests
 // ------------------------------------------------------------

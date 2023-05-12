@@ -10,6 +10,7 @@ verilog blk_mem_gen_v8_4_4 --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl
 verilog xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
 "../../hw.srcs/sources_1/ip/axi_memory_interconnect/sim/axi_memory_interconnect.v" \
 "../../hw.srcs/sources_1/ip/axi_L_register_control_crossbar/sim/axi_L_register_control_crossbar.v" \
+"../../hw.ip_user_files/ip/aggregation_buffer_sdp_bram/sim/aggregation_buffer_sdp_bram.v" \
 "../../ip/lib/verilog-axi/rtl/axi_ram.v" \
 "../../ip/lib/rtl/ultraram.v" \
 
@@ -36,21 +37,14 @@ sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --i
 "../../ip/nocrouter/src/rtl/noc/mesh.sv" \
 
 sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
-"../../ip/nocrouter/src/tb/allocators/tb_round_robin_arbiter.sv" \
-"../../ip/nocrouter/src/tb/allocators/tb_separable_input_first_allocator.sv" \
-"../../ip/nocrouter/src/tb/allocators/tb_switch_allocator.sv" \
-"../../ip/nocrouter/src/tb/allocators/tb_vc_allocator.sv" \
-"../../ip/nocrouter/src/tb/crossbar/tb_crossbar.sv" \
-"../../ip/nocrouter/src/tb/input_port/tb_circular_buffer.sv" \
-"../../ip/nocrouter/src/tb/input_port/tb_input_buffer.sv" \
-"../../ip/nocrouter/src/tb/input_port/tb_input_port.sv" \
-"../../ip/nocrouter/src/tb/input_port/tb_rc_unit.sv" \
-"../../ip/nocrouter/src/tb/mesh/tb_mesh.sv" \
-"../../ip/nocrouter/src/tb/mesh/tb_two_routers.sv" \
-"../../ip/nocrouter/src/tb/router/tb_all_modules.sv" \
-"../../ip/nocrouter/src/tb/router/tb_router.sv" \
-
-sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+"../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs_pkg.sv" \
+"../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs.sv" \
+"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs_pkg.sv" \
+"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs.sv" \
+"../../build/regbanks/prefetcher_regbank/prefetcher_regbank_regs_pkg.sv" \
+"../../build/regbanks/prefetcher_regbank/prefetcher_regbank_regs.sv" \
+"../../build/regbanks/feature_transformation_engine_regbank/feature_transformation_engine_regbank_regs_pkg.sv" \
+"../../build/regbanks/feature_transformation_engine_regbank/feature_transformation_engine_regbank_regs.sv" \
 "../../ip/include/top_pkg.sv" \
 "../../ip/aggregation_engine/include/age_pkg.sv" \
 "../../ip/aggregation_engine/rtl/sum_aggregator.sv" \
@@ -58,13 +52,11 @@ sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --i
 "../../ip/aggregation_engine/rtl/mean_aggregator.sv" \
 "../../ip/aggregation_engine/rtl/feature_aggregator.sv" \
 "../../ip/aggregation_engine/rtl/aggregation_core_float32.sv" \
-"../../ip/aggregation_engine/rtl/message_channel.sv" \
+"../../ip/aggregation_engine/rtl/aggregation_manager.sv" \
+"../../ip/aggregation_engine/rtl/buffer_manager.sv" \
 "../../ip/aggregation_engine/rtl/aggregation_engine.sv" \
-"../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs_pkg.sv" \
-"../../ip/aggregation_engine/regbank/aggregation_engine_regbank_regs_pkg.sv" \
-"../../ip/aggregation_engine/regbank/aggregation_engine_regbank_regs.sv" \
-"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs_pkg.sv" \
-"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs.sv" \
+"../../ip/aggregation_buffer/rtl/aggregation_buffer_slot.sv" \
+"../../ip/aggregation_buffer/rtl/aggregation_buffer.sv" \
 "../../imports/arch_package.sv" \
 "../../ip/lib/rtl/axi_read_master.sv" \
 "../../ip/lib/rtl/float_mac.sv" \
@@ -72,23 +64,20 @@ sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --i
 "../../ip/lib/rtl/mac.sv" \
 "../../ip/lib/rtl/rr_arbiter.sv" \
 "../../ip/lib/rtl/onehot_to_binary.sv" \
+"../../ip/lib/rtl/binary_to_onehot.sv" \
 "../../ip/node_scoreboard/include/node_scoreboard_pkg.sv" \
 "../../ip/node_scoreboard/rtl/node_scoreboard.sv" \
-"../../ip/node_scoreboard/tb/node_scoreboard_interface.sv" \
-"../../ip/node_scoreboard/tb/node_scoreboard_tb_monitor.sv" \
-"../../ip/node_scoreboard/tb/node_scoreboard_tb_scoreboard.sv" \
-"../../ip/top/tb/top_memory_axi_interface.sv" \
-"../../ip/top/tb/matrix_mult_test.sv" \
 "../../ip/output_buffer/rtl/output_buffer.sv" \
 "../../ip/prefetcher/include/prefetcher_pkg.sv" \
 "../../ip/prefetcher/rtl/ultraram_fifo.sv" \
 "../../ip/prefetcher/rtl/prefetcher_fetch_tag.sv" \
 "../../ip/prefetcher/rtl/prefetcher_feature_bank.sv" \
+"../../ip/prefetcher/rtl/prefetcher_weight_bank.sv" \
 "../../ip/prefetcher/rtl/prefetcher.sv" \
 "../../ip/lib/rtl/sys_array.sv" \
 "../../ip/lib/rtl/sys_array_pe.sv" \
-"../../ip/top/rtl/top.sv" \
+"../../ip/transformation_engine/rtl/feature_transformation_engine.sv" \
 "../../ip/transformation_engine/rtl/transformation_engine.sv" \
-"../../ip/top/tb/top_tb.sv" \
+"../../ip/top/rtl/top.sv" \
 
 nosort

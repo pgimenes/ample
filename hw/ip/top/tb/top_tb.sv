@@ -406,10 +406,235 @@ axi_memory_master_vip axi_memory_master_vip_i (
 // Tests
 //===========================================================================
 
-matrix_mult_test matrix_mult_test_i (
-    // .memory_intf                    (memory_intf),
-    .nsb_intf                       (top_i.node_scoreboard_i.nsb_interface) // binded in this file
+node_scoreboard_interface node_scoreboard_interface_i 
+(
+    .core_clk ('0),
+    .resetn ('0),
+
+    // Regbank Slave AXI interface
+    .s_axi_awaddr       ('0),
+    .s_axi_awprot       ('0),
+    .s_axi_awvalid      ('0),
+    .s_axi_awready      ('0),
+    .s_axi_wdata        ('0),
+    .s_axi_wstrb        ('0),
+    .s_axi_wvalid       ('0),
+    .s_axi_wready       ('0),
+    .s_axi_araddr       ('0),
+    .s_axi_arprot       ('0),
+    .s_axi_arvalid      ('0),
+    .s_axi_arready      ('0),
+    .s_axi_rdata        ('0),
+    .s_axi_rresp        ('0),
+    .s_axi_rvalid       ('0),
+    .s_axi_rready       ('0),
+    .s_axi_bresp        ('0),
+    .s_axi_bvalid       ('0),
+    .s_axi_bready       ('0),
+    .nsb_age_req_valid      ('0),
+    .nsb_age_req_ready      ('0),
+    .nsb_age_req        ('0),
+    .nsb_age_resp       ('0),
+    .nsb_age_resp_valid     ('0), // valid only for now
+    .nsb_fte_req_valid      ('0),
+    .nsb_fte_req_ready      ('0),
+    .nsb_fte_req        ('0),
+    .nsb_fte_resp       ('0),
+    .nsb_fte_resp_valid     ('0), // valid only for now
+    .nsb_prefetcher_req_valid       ('0),
+    .nsb_prefetcher_req_ready       ('0),
+    .nsb_prefetcher_req     ('0),
+    .nsb_prefetcher_resp        ('0),
+    .nsb_prefetcher_resp_valid      ('0), // valid only for now
+    .nsb_output_buffer_req_valid        ('0),
+    .nsb_output_buffer_req_ready        ('0),
+    .nsb_output_buffer_req      ('0),
+    .nsb_output_buffer_resp_valid       ('0), // valid only for now
+    .nsb_output_buffer_resp     ('0)
 );
+
+aggregation_engine_interface aggregation_engine_interface_i 
+(
+
+    .core_clk ('0),
+    .resetn ('0),
+    
+    // Regbank Slave AXI interface
+    .s_axi_awaddr ('0),
+    .s_axi_awprot ('0),
+    .s_axi_awvalid ('0),
+    .s_axi_awready ('0),
+    .s_axi_wdata ('0),
+    .s_axi_wstrb ('0),
+    .s_axi_wvalid ('0),
+    .s_axi_wready ('0),
+    .s_axi_araddr ('0),
+    .s_axi_arprot ('0),
+    .s_axi_arvalid ('0),
+    .s_axi_arready ('0),
+    .s_axi_rdata ('0),
+    .s_axi_rresp ('0),
+    .s_axi_rvalid ('0),
+    .s_axi_rready ('0),
+    .s_axi_bresp ('0),
+    .s_axi_bvalid ('0),
+    .s_axi_bready ('0),
+    .nsb_age_req_valid ('0),
+    .nsb_age_req_ready ('0),
+    .nsb_age_req ('0),
+    .nsb_age_resp_valid ('0), // valid only for now
+    .nsb_age_resp ('0),
+    .message_channel_req_valid ('0),
+    .message_channel_req_ready ('0),
+    .message_channel_req ('0),
+    .message_channel_resp_valid ('0),
+    .message_channel_resp_ready ('0),
+    .message_channel_resp ('0),
+    .age_buffer_manager_buffer_slot_write_enable ('0),
+    .age_buffer_manager_buffer_slot_write_address ('0),
+    .age_buffer_manager_buffer_slot_write_data ('0)
+);
+
+prefetcher_interface prefetcher_interface_i 
+(
+    .core_clk ('0),
+    .resetn ('0),
+    .nsb_prefetcher_req_valid ('0),
+    .nsb_prefetcher_req_ready ('0),
+    .nsb_prefetcher_req ('0),
+    .nsb_prefetcher_resp_valid ('0), // valid only for now
+    .nsb_prefetcher_resp ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_araddr ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_arburst ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_arcache ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_arid ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_arlen ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_arlock ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_arprot ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_arqos ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_arsize ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_arvalid ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_arready ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awaddr ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awburst ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awcache ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awid ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awlen ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awlock ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awprot ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awqos ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awready ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awsize ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_awvalid ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_bid ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_bready ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_bresp ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_bvalid ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_rdata ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_rid ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_rlast ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_rready ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_rresp ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_rvalid ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_wdata ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_wlast ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_wready ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_wstrb ('0),
+    .prefetcher_adj_rm_axi_interconnect_axi_wvalid ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_araddr ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_arburst ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_arcache ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_arid ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_arlen ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_arlock ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_arprot ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_arqos ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_arsize ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_arvalid ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_arready ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awaddr ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awburst ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awcache ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awid ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awlen ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awlock ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awprot ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awqos ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awready ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awsize ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_awvalid ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_bid ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_bready ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_bresp ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_bvalid ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_rdata ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_rid ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_rlast ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_rready ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_rresp ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_rvalid ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_wdata ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_wlast ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_wready ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_wstrb ('0),
+    .prefetcher_msg_rm_axi_interconnect_axi_wvalid ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_araddr ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_arburst ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_arcache ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_arid ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_arlen ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_arlock ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_arprot ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_arqos ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_arsize ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_arvalid ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_arready ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awaddr ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awburst ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awcache ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awid ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awlen ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awlock ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awprot ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awqos ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awready ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awsize ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_awvalid ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_bid ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_bready ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_bresp ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_bvalid ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_rdata ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_rid ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_rlast ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_rready ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_rresp ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_rvalid ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_wdata ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_wlast ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_wready ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_wstrb ('0),
+    .prefetcher_weight_bank_rm_axi_interconnect_axi_wvalid ('0),
+    .message_channel_req_valid ('0),
+    .message_channel_req_ready ('0),
+    .message_channel_req ('0),
+    .message_channel_resp_valid ('0),
+    .message_channel_resp_ready ('0),
+    .message_channel_resp ('0),
+    .weight_channel_req_valid ('0),
+    .weight_channel_req_ready ('0),
+    .weight_channel_req ('0),
+    .weight_channel_resp_valid ('0),
+    .weight_channel_resp_ready ('0),
+    .weight_channel_resp ('0)
+);
+
+top_test top_test_i (
+    // .memory_intf                    (memory_intf),
+    .nsb_intf                       (top_i.node_scoreboard_i.nsb_interface),   //   node_scoreboard_interface_i
+    .age_intf                       (top_i.aggregation_engine_i.age_interface),   //   aggregation_engine_interface_i
+    .prefetcher_intf                (top_i.prefetcher_i.prefetcher_interface)  //   prefetcher_interface_i
+ );
 
 //===========================================================================
 //                         DRAM Model
@@ -593,6 +818,14 @@ axi_ram #(
 //===========================================================================
 
 bind top_i.node_scoreboard_i node_scoreboard_interface nsb_interface (
+    .*
+);
+
+bind top_i.aggregation_engine_i aggregation_engine_interface age_interface (
+    .*
+);
+
+bind top_i.prefetcher_i prefetcher_interface prefetcher_interface (
     .*
 );
 
