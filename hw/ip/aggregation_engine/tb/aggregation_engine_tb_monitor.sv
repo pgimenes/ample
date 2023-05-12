@@ -6,12 +6,12 @@ class aggregation_engine_tb_monitor;
 virtual aggregation_engine_interface age_vif;
 
 function new(virtual aggregation_engine_interface age_intf);
-    $display("AGE monitor created");
+    $display("[TIMESTAMP]: %t, [AGE_MONITOR::DEBUG]: AGE monitor instantiated.", $time);
     this.age_vif = age_intf;
 endfunction
 
 task main();
-    $display("Main function in AGE monitor");
+    $display("[TIMESTAMP]: %t, [AGE_MONITOR::DEBUG]: AGE monitor activated.", $time);
     fork
         nsb_req();
     join

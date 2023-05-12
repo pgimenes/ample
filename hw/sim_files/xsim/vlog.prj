@@ -37,6 +37,14 @@ sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --i
 "../../ip/nocrouter/src/rtl/noc/mesh.sv" \
 
 sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+"../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs_pkg.sv" \
+"../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs.sv" \
+"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs_pkg.sv" \
+"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs.sv" \
+"../../build/regbanks/prefetcher_regbank/prefetcher_regbank_regs_pkg.sv" \
+"../../build/regbanks/prefetcher_regbank/prefetcher_regbank_regs.sv" \
+"../../build/regbanks/feature_transformation_engine_regbank/feature_transformation_engine_regbank_regs_pkg.sv" \
+"../../build/regbanks/feature_transformation_engine_regbank/feature_transformation_engine_regbank_regs.sv" \
 "../../ip/include/top_pkg.sv" \
 "../../ip/aggregation_engine/include/age_pkg.sv" \
 "../../ip/aggregation_engine/rtl/sum_aggregator.sv" \
@@ -47,12 +55,8 @@ sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --i
 "../../ip/aggregation_engine/rtl/aggregation_manager.sv" \
 "../../ip/aggregation_engine/rtl/buffer_manager.sv" \
 "../../ip/aggregation_engine/rtl/aggregation_engine.sv" \
-"../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs_pkg.sv" \
-"../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs.sv" \
 "../../ip/aggregation_buffer/rtl/aggregation_buffer_slot.sv" \
 "../../ip/aggregation_buffer/rtl/aggregation_buffer.sv" \
-"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs_pkg.sv" \
-"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs.sv" \
 "../../imports/arch_package.sv" \
 "../../ip/lib/rtl/axi_read_master.sv" \
 "../../ip/lib/rtl/float_mac.sv" \

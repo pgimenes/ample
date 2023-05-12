@@ -5,35 +5,39 @@
    <db_ref_list>
       <db_ref path="top_tb.wdb" id="1">
          <top_modules>
-            <top_module name="\$unit_aggregation_engine_interface_sv " />
+            <top_module name="\$unit_json_svh " />
             <top_module name="age_pkg" />
             <top_module name="aggregation_engine_regbank_regs_pkg" />
             <top_module name="arch_package" />
             <top_module name="axi_memory_master_vip_pkg" />
             <top_module name="axi_vip_pkg" />
             <top_module name="axil_master_vip_pkg" />
+            <top_module name="feature_transformation_engine_regbank_regs_pkg" />
+            <top_module name="json" />
             <top_module name="noc_params" />
             <top_module name="node_scoreboard_pkg" />
             <top_module name="node_scoreboard_regbank_regs_pkg" />
             <top_module name="prefetcher_pkg" />
+            <top_module name="prefetcher_regbank_regs_pkg" />
             <top_module name="std" />
             <top_module name="sys_array_pkg" />
             <top_module name="top_pkg" />
             <top_module name="top_tb" />
+            <top_module name="util" />
             <top_module name="xil_common_vip_pkg" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="11115001fs"></ZoomEndTime>
-      <Cursor1Time time="256564fs"></Cursor1Time>
+      <ZoomStartTime time="499024fs"></ZoomStartTime>
+      <ZoomEndTime time="601625fs"></ZoomEndTime>
+      <Cursor1Time time="533120fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="436"></NameColumnWidth>
-      <ValueColumnWidth column_width="137"></ValueColumnWidth>
+      <ValueColumnWidth column_width="117"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="18" />
+   <WVObjectSize size="38" />
    <wvobject type="logic" fp_name="/top_tb/sys_clk_i">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -106,10 +110,91 @@
          <obj_property name="ObjectShortName">[0]</obj_property>
       </wvobject>
    </wvobject>
+   <wvobject type="group" fp_name="group256">
+      <obj_property name="label">Nodeslot 0</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/nodeslot_make_valid[0]">
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">[0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nodeslot_state[0]">
+         <obj_property name="ElementShortName">[0][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_neighbour_count_count[0]">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">[0][19:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][19:0]</obj_property>
+         <obj_property name="label">neighbour_count</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group257">
+      <obj_property name="label">Nodeslot 1</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_node_id_id[1]">
+         <obj_property name="ElementShortName">[1][19:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][19:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/nodeslot_make_valid[1]">
+         <obj_property name="ElementShortName">[1]</obj_property>
+         <obj_property name="ObjectShortName">[1]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nodeslot_state[1]">
+         <obj_property name="ElementShortName">[1][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_neighbour_count_count[1]">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">[1][19:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][19:0]</obj_property>
+         <obj_property name="label">neighbour_count</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group258">
+      <obj_property name="label">Nodeslot 2</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_node_id_id[2]">
+         <obj_property name="ElementShortName">[2][19:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][19:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/nodeslot_make_valid[2]">
+         <obj_property name="ElementShortName">[2]</obj_property>
+         <obj_property name="ObjectShortName">[2]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nodeslot_state[2]">
+         <obj_property name="ElementShortName">[2][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_neighbour_count_count[2]">
+         <obj_property name="ElementShortName">[2][19:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][19:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group259">
+      <obj_property name="label">Nodeslot 3</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_node_id_id[3]">
+         <obj_property name="ElementShortName">[3][19:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][19:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/nodeslot_make_valid[3]">
+         <obj_property name="ElementShortName">[3]</obj_property>
+         <obj_property name="ObjectShortName">[3]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nodeslot_state[3]">
+         <obj_property name="ElementShortName">[3][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_neighbour_count_count[3]">
+         <obj_property name="ElementShortName">[3][19:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][19:0]</obj_property>
+      </wvobject>
+   </wvobject>
    <wvobject type="group" fp_name="group90">
       <obj_property name="label">NSB -&gt; PREF</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_prefetcher_req_valid">
          <obj_property name="ElementShortName">nsb_prefetcher_req_valid</obj_property>
          <obj_property name="ObjectShortName">nsb_prefetcher_req_valid</obj_property>
@@ -164,6 +249,51 @@
          <obj_property name="ObjectShortName">.response_type[1:0]</obj_property>
       </wvobject>
    </wvobject>
+   <wvobject type="group" fp_name="group229">
+      <obj_property name="label">Prefetcher</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/nsb_prefetcher_fetch_tag_resp_valid">
+         <obj_property name="ElementShortName">nsb_prefetcher_fetch_tag_resp_valid[63:0]</obj_property>
+         <obj_property name="ObjectShortName">nsb_prefetcher_fetch_tag_resp_valid[63:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/fetch_tag_resp_arb">
+         <obj_property name="ElementShortName">fetch_tag_resp_arb[63:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_resp_arb[63:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/fetch_tag_resp_arb_bin">
+         <obj_property name="ElementShortName">fetch_tag_resp_arb_bin[5:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_resp_arb_bin[5:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/nsb_prefetcher_resp_valid">
+         <obj_property name="ElementShortName">nsb_prefetcher_resp_valid</obj_property>
+         <obj_property name="ObjectShortName">nsb_prefetcher_resp_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/nsb_prefetcher_resp.nodeslot">
+         <obj_property name="ElementShortName">.nodeslot[5:0]</obj_property>
+         <obj_property name="ObjectShortName">.nodeslot[5:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/nsb_prefetcher_resp.response_type">
+         <obj_property name="ElementShortName">.response_type[1:0]</obj_property>
+         <obj_property name="ObjectShortName">.response_type[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/fetch_tag_msg_rm_req_valid">
+         <obj_property name="ElementShortName">fetch_tag_msg_rm_req_valid[63:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_msg_rm_req_valid[63:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/chosen_fetch_tag_msg_rm_req">
+         <obj_property name="ElementShortName">chosen_fetch_tag_msg_rm_req[63:0]</obj_property>
+         <obj_property name="ObjectShortName">chosen_fetch_tag_msg_rm_req[63:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/msg_rm_fetch_req_valid">
+         <obj_property name="ElementShortName">msg_rm_fetch_req_valid</obj_property>
+         <obj_property name="ObjectShortName">msg_rm_fetch_req_valid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/msg_rm_fetch_req_ready">
+         <obj_property name="ElementShortName">msg_rm_fetch_req_ready</obj_property>
+         <obj_property name="ObjectShortName">msg_rm_fetch_req_ready</obj_property>
+      </wvobject>
+   </wvobject>
    <wvobject type="group" fp_name="group16">
       <obj_property name="label">FETCH_TAG[0]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -184,243 +314,252 @@
          <obj_property name="ElementShortName">adj_queue_fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">adj_queue_fetch_state[2:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_fetch_req_bytes">
-         <obj_property name="ElementShortName">adj_fetch_req_bytes[11:0]</obj_property>
-         <obj_property name="ObjectShortName">adj_fetch_req_bytes[11:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_fetch_neighbours_remaining_fetch">
-         <obj_property name="ElementShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
-         <obj_property name="ObjectShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_fetch_neighbours_remaining_store">
-         <obj_property name="ElementShortName">adj_fetch_neighbours_remaining_store[9:0]</obj_property>
-         <obj_property name="ObjectShortName">adj_fetch_neighbours_remaining_store[9:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_queue_slots_available">
-         <obj_property name="ElementShortName">adj_queue_slots_available[6:0]</obj_property>
-         <obj_property name="ObjectShortName">adj_queue_slots_available[6:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_fetch_state">
+         <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_queue_count">
          <obj_property name="ElementShortName">adj_queue_count[6:0]</obj_property>
          <obj_property name="ObjectShortName">adj_queue_count[6:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_queue_write_data">
-         <obj_property name="ElementShortName">adj_queue_write_data[31:0]</obj_property>
-         <obj_property name="ObjectShortName">adj_queue_write_data[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_fetch_state">
-         <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
-         <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /msg_queue_expected_responses">
-         <obj_property name="ElementShortName">msg_queue_expected_responses[5:0]</obj_property>
-         <obj_property name="ObjectShortName">msg_queue_expected_responses[5:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /msg_fetch_req_precision_q">
-         <obj_property name="ElementShortName">msg_fetch_req_precision_q[1:0]</obj_property>
-         <obj_property name="ObjectShortName">msg_fetch_req_precision_q[1:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_queue_head_valid">
-         <obj_property name="ElementShortName">adj_queue_head_valid</obj_property>
-         <obj_property name="ObjectShortName">adj_queue_head_valid</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /fetch_tag_adj_rm_resp_data">
-         <obj_property name="ElementShortName">fetch_tag_adj_rm_resp_data[511:0]</obj_property>
-         <obj_property name="ObjectShortName">fetch_tag_adj_rm_resp_data[511:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /fetch_tag_adj_rm_resp_data_q">
-         <obj_property name="ElementShortName">fetch_tag_adj_rm_resp_data_q[511:0]</obj_property>
-         <obj_property name="ObjectShortName">fetch_tag_adj_rm_resp_data_q[511:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_channel_req_ready">
-         <obj_property name="ElementShortName">message_channel_req_ready</obj_property>
-         <obj_property name="ObjectShortName">message_channel_req_ready</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_queue_empty">
-         <obj_property name="ElementShortName">message_queue_empty</obj_property>
-         <obj_property name="ObjectShortName">message_queue_empty</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_channel_req_valid">
-         <obj_property name="ElementShortName">message_channel_req_valid</obj_property>
-         <obj_property name="ObjectShortName">message_channel_req_valid</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/message_channel_req_valid[0]">
-         <obj_property name="ElementShortName">[0]</obj_property>
-         <obj_property name="ObjectShortName">[0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_channel_req">
-         <obj_property name="ElementShortName">message_channel_req</obj_property>
-         <obj_property name="ObjectShortName">message_channel_req</obj_property>
-      </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_queue_count">
          <obj_property name="ElementShortName">message_queue_count[11:0]</obj_property>
          <obj_property name="ObjectShortName">message_queue_count[11:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_queue/in_data">
-         <obj_property name="ElementShortName">in_data[511:0]</obj_property>
-         <obj_property name="ObjectShortName">in_data[511:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_fetch_neighbours_remaining_fetch">
+         <obj_property name="ElementShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group235">
+      <obj_property name="label">FETCH_TAG[1]</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /allocation_valid">
+         <obj_property name="ElementShortName">allocation_valid</obj_property>
+         <obj_property name="ObjectShortName">allocation_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /allocation_nodeslot">
+         <obj_property name="ElementShortName">allocation_nodeslot[5:0]</obj_property>
+         <obj_property name="ObjectShortName">allocation_nodeslot[5:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /tag_free">
+         <obj_property name="ElementShortName">tag_free</obj_property>
+         <obj_property name="ObjectShortName">tag_free</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /adj_queue_fetch_state">
+         <obj_property name="ElementShortName">adj_queue_fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_fetch_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /message_fetch_state">
+         <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /adj_queue_count">
+         <obj_property name="ElementShortName">adj_queue_count[6:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_count[6:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /message_queue_count">
+         <obj_property name="ElementShortName">message_queue_count[11:0]</obj_property>
+         <obj_property name="ObjectShortName">message_queue_count[11:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /adj_fetch_neighbours_remaining_fetch">
+         <obj_property name="ElementShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /nsb_prefetcher_resp_valid">
+         <obj_property name="ElementShortName">nsb_prefetcher_resp_valid</obj_property>
+         <obj_property name="ObjectShortName">nsb_prefetcher_resp_valid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /nsb_prefetcher_resp_ready">
+         <obj_property name="ElementShortName">nsb_prefetcher_resp_ready</obj_property>
+         <obj_property name="ObjectShortName">nsb_prefetcher_resp_ready</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /fetch_tag_msg_rm_req_valid">
+         <obj_property name="ElementShortName">fetch_tag_msg_rm_req_valid</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_msg_rm_req_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /fetch_tag_msg_rm_byte_count">
+         <obj_property name="ElementShortName">fetch_tag_msg_rm_byte_count[17:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_msg_rm_byte_count[17:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group243">
+      <obj_property name="label">FETCH_TAG[2]</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /allocation_valid">
+         <obj_property name="ElementShortName">allocation_valid</obj_property>
+         <obj_property name="ObjectShortName">allocation_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /allocation_nodeslot">
+         <obj_property name="ElementShortName">allocation_nodeslot[5:0]</obj_property>
+         <obj_property name="ObjectShortName">allocation_nodeslot[5:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /tag_free">
+         <obj_property name="ElementShortName">tag_free</obj_property>
+         <obj_property name="ObjectShortName">tag_free</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /adj_queue_fetch_state">
+         <obj_property name="ElementShortName">adj_queue_fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_fetch_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /message_fetch_state">
+         <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /adj_queue_count">
+         <obj_property name="ElementShortName">adj_queue_count[6:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_count[6:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /message_queue_count">
+         <obj_property name="ElementShortName">message_queue_count[11:0]</obj_property>
+         <obj_property name="ObjectShortName">message_queue_count[11:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group251">
+      <obj_property name="label">FETCH_TAG[3]</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /allocation_valid">
+         <obj_property name="ElementShortName">allocation_valid</obj_property>
+         <obj_property name="ObjectShortName">allocation_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /allocation_nodeslot">
+         <obj_property name="ElementShortName">allocation_nodeslot[5:0]</obj_property>
+         <obj_property name="ObjectShortName">allocation_nodeslot[5:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /tag_free">
+         <obj_property name="ElementShortName">tag_free</obj_property>
+         <obj_property name="ObjectShortName">tag_free</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /adj_queue_fetch_state">
+         <obj_property name="ElementShortName">adj_queue_fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_fetch_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /message_fetch_state">
+         <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /adj_queue_count">
+         <obj_property name="ElementShortName">adj_queue_count[6:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_count[6:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /message_queue_count">
+         <obj_property name="ElementShortName">message_queue_count[11:0]</obj_property>
+         <obj_property name="ObjectShortName">message_queue_count[11:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group31">
       <obj_property name="label">ADJ RM</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_req_valid">
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/fetch_req_valid">
          <obj_property name="ElementShortName">fetch_req_valid</obj_property>
          <obj_property name="ObjectShortName">fetch_req_valid</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_req_ready">
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/fetch_req_ready">
          <obj_property name="ElementShortName">fetch_req_ready</obj_property>
          <obj_property name="ObjectShortName">fetch_req_ready</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_start_address">
-         <obj_property name="ElementShortName">fetch_start_address[33:0]</obj_property>
-         <obj_property name="ObjectShortName">fetch_start_address[33:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_byte_count">
-         <obj_property name="ElementShortName">fetch_byte_count[17:0]</obj_property>
-         <obj_property name="ObjectShortName">fetch_byte_count[17:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_resp_valid">
-         <obj_property name="ElementShortName">fetch_resp_valid</obj_property>
-         <obj_property name="ObjectShortName">fetch_resp_valid</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_resp_ready">
-         <obj_property name="ElementShortName">fetch_resp_ready</obj_property>
-         <obj_property name="ObjectShortName">fetch_resp_ready</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_resp_last">
-         <obj_property name="ElementShortName">fetch_resp_last</obj_property>
-         <obj_property name="ObjectShortName">fetch_resp_last</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_resp_data">
-         <obj_property name="ElementShortName">fetch_resp_data[511:0]</obj_property>
-         <obj_property name="ObjectShortName">fetch_resp_data[511:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_resp_axi_id">
-         <obj_property name="ElementShortName">fetch_resp_axi_id[3:0]</obj_property>
-         <obj_property name="ObjectShortName">fetch_resp_axi_id[3:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_state">
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/fetch_state">
          <obj_property name="ElementShortName">fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">fetch_state[2:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/fetch_state_n">
-         <obj_property name="ElementShortName">fetch_state_n[2:0]</obj_property>
-         <obj_property name="ObjectShortName">fetch_state_n[2:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/req_fetch_start_address">
-         <obj_property name="ElementShortName">req_fetch_start_address[31:0]</obj_property>
-         <obj_property name="ObjectShortName">req_fetch_start_address[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/req_fetch_byte_count">
-         <obj_property name="ElementShortName">req_fetch_byte_count[17:0]</obj_property>
-         <obj_property name="ObjectShortName">req_fetch_byte_count[17:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/accepting_fetch_request">
-         <obj_property name="ElementShortName">accepting_fetch_request</obj_property>
-         <obj_property name="ObjectShortName">accepting_fetch_request</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/accepting_axi_read_transaction">
-         <obj_property name="ElementShortName">accepting_axi_read_transaction</obj_property>
-         <obj_property name="ObjectShortName">accepting_axi_read_transaction</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/accepting_axi_read_response">
-         <obj_property name="ElementShortName">accepting_axi_read_response</obj_property>
-         <obj_property name="ObjectShortName">accepting_axi_read_response</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/required_beat_count">
-         <obj_property name="ElementShortName">required_beat_count[11:0]</obj_property>
-         <obj_property name="ObjectShortName">required_beat_count[11:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/burst_length_final_transaction">
-         <obj_property name="ElementShortName">burst_length_final_transaction[7:0]</obj_property>
-         <obj_property name="ObjectShortName">burst_length_final_transaction[7:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/required_transaction_count">
-         <obj_property name="ElementShortName">required_transaction_count[3:0]</obj_property>
-         <obj_property name="ObjectShortName">required_transaction_count[3:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/sent_transactions">
-         <obj_property name="ElementShortName">sent_transactions[3:0]</obj_property>
-         <obj_property name="ObjectShortName">sent_transactions[3:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/beats_requested">
-         <obj_property name="ElementShortName">beats_requested[11:0]</obj_property>
-         <obj_property name="ObjectShortName">beats_requested[11:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/beats_received">
-         <obj_property name="ElementShortName">beats_received[11:0]</obj_property>
-         <obj_property name="ObjectShortName">beats_received[11:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/received_read_responses">
-         <obj_property name="ElementShortName">received_read_responses[7:0]</obj_property>
-         <obj_property name="ObjectShortName">received_read_responses[7:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/current_transaction_address">
-         <obj_property name="ElementShortName">current_transaction_address[33:0]</obj_property>
-         <obj_property name="ObjectShortName">current_transaction_address[33:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/last_transaction_pending">
-         <obj_property name="ElementShortName">last_transaction_pending</obj_property>
-         <obj_property name="ObjectShortName">last_transaction_pending</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/last_read_response_pending">
-         <obj_property name="ElementShortName">last_read_response_pending</obj_property>
-         <obj_property name="ObjectShortName">last_read_response_pending</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/axi_araddr">
-         <obj_property name="ElementShortName">axi_araddr[33:0]</obj_property>
-         <obj_property name="ObjectShortName">axi_araddr[33:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/axi_arvalid">
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/axi_arvalid">
          <obj_property name="ElementShortName">axi_arvalid</obj_property>
          <obj_property name="ObjectShortName">axi_arvalid</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/axi_arready">
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/axi_arlen">
+         <obj_property name="ElementShortName">axi_arlen[7:0]</obj_property>
+         <obj_property name="ObjectShortName">axi_arlen[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/axi_arready">
          <obj_property name="ElementShortName">axi_arready</obj_property>
          <obj_property name="ObjectShortName">axi_arready</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/axi_rdata">
-         <obj_property name="ElementShortName">axi_rdata[511:0]</obj_property>
-         <obj_property name="ObjectShortName">axi_rdata[511:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/fetch_byte_count">
+         <obj_property name="ElementShortName">fetch_byte_count[17:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_byte_count[17:0]</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/axi_rvalid">
-         <obj_property name="ElementShortName">axi_rvalid</obj_property>
-         <obj_property name="ObjectShortName">axi_rvalid</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/sent_transactions">
+         <obj_property name="ElementShortName">sent_transactions[3:0]</obj_property>
+         <obj_property name="ObjectShortName">sent_transactions[3:0]</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/adj_read_master/axi_rready">
-         <obj_property name="ElementShortName">axi_rready</obj_property>
-         <obj_property name="ObjectShortName">axi_rready</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/req_fetch_byte_count">
+         <obj_property name="ElementShortName">req_fetch_byte_count[17:0]</obj_property>
+         <obj_property name="ObjectShortName">req_fetch_byte_count[17:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/required_beat_count">
+         <obj_property name="ElementShortName">required_beat_count[11:0]</obj_property>
+         <obj_property name="ObjectShortName">required_beat_count[11:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/burst_length_final_transaction">
+         <obj_property name="ElementShortName">burst_length_final_transaction[7:0]</obj_property>
+         <obj_property name="ObjectShortName">burst_length_final_transaction[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/required_transaction_count">
+         <obj_property name="ElementShortName">required_transaction_count[3:0]</obj_property>
+         <obj_property name="ObjectShortName">required_transaction_count[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/fetch_resp_valid">
+         <obj_property name="ElementShortName">fetch_resp_valid</obj_property>
+         <obj_property name="ObjectShortName">fetch_resp_valid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/fetch_resp_ready">
+         <obj_property name="ElementShortName">fetch_resp_ready</obj_property>
+         <obj_property name="ObjectShortName">fetch_resp_ready</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/adj_read_master/last_transaction_pending">
+         <obj_property name="ElementShortName">last_transaction_pending</obj_property>
+         <obj_property name="ObjectShortName">last_transaction_pending</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group312">
       <obj_property name="label">MSG RM</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /fetch_tag_msg_rm_req_valid">
-         <obj_property name="ElementShortName">fetch_tag_msg_rm_req_valid</obj_property>
-         <obj_property name="ObjectShortName">fetch_tag_msg_rm_req_valid</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/fetch_req_valid">
+         <obj_property name="ElementShortName">fetch_req_valid</obj_property>
+         <obj_property name="ObjectShortName">fetch_req_valid</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /fetch_tag_msg_rm_req_ready">
-         <obj_property name="ElementShortName">fetch_tag_msg_rm_req_ready</obj_property>
-         <obj_property name="ObjectShortName">fetch_tag_msg_rm_req_ready</obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/fetch_req_ready">
+         <obj_property name="ElementShortName">fetch_req_ready</obj_property>
+         <obj_property name="ObjectShortName">fetch_req_ready</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /fetch_tag_msg_rm_start_address">
-         <obj_property name="ElementShortName">fetch_tag_msg_rm_start_address[33:0]</obj_property>
-         <obj_property name="ObjectShortName">fetch_tag_msg_rm_start_address[33:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/fetch_start_address">
+         <obj_property name="ElementShortName">fetch_start_address[33:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_start_address[33:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /fetch_tag_msg_rm_byte_count">
-         <obj_property name="ElementShortName">fetch_tag_msg_rm_byte_count[17:0]</obj_property>
-         <obj_property name="ObjectShortName">fetch_tag_msg_rm_byte_count[17:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/fetch_byte_count">
+         <obj_property name="ElementShortName">fetch_byte_count[17:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_byte_count[17:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/fetch_resp_valid">
+         <obj_property name="ElementShortName">fetch_resp_valid</obj_property>
+         <obj_property name="ObjectShortName">fetch_resp_valid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/fetch_resp_ready">
+         <obj_property name="ElementShortName">fetch_resp_ready</obj_property>
+         <obj_property name="ObjectShortName">fetch_resp_ready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/fetch_state">
+         <obj_property name="ElementShortName">fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/axi_arvalid">
+         <obj_property name="ElementShortName">axi_arvalid</obj_property>
+         <obj_property name="ObjectShortName">axi_arvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/axi_arready">
+         <obj_property name="ElementShortName">axi_arready</obj_property>
+         <obj_property name="ObjectShortName">axi_arready</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/last_transaction_pending">
+         <obj_property name="ElementShortName">last_transaction_pending</obj_property>
+         <obj_property name="ObjectShortName">last_transaction_pending</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group311">
@@ -910,5 +1049,53 @@
          <obj_property name="ElementShortName">num_flits[4:0]</obj_property>
          <obj_property name="ObjectShortName">num_flits[4:0]</obj_property>
       </wvobject>
+   </wvobject>
+   <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_arvalid">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_arvalid</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_arvalid</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_arid">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_arid[7:0]</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_arid[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_arlen">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_arlen[7:0]</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_arlen[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_arsize">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_arsize[2:0]</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_arsize[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_arburst">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_arburst[1:0]</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_arburst[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_arready">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_arready</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_arready</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_rvalid">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_rvalid</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_rvalid</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_rid">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_rid[7:0]</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_rid[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/c0_ddr4_s_axi_rresp">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_rresp[1:0]</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_rresp[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_rready">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_rready</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_rready</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_awvalid">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_awvalid</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_awvalid</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/top_tb/top_i/c0_ddr4_s_axi_rready">
+      <obj_property name="ElementShortName">c0_ddr4_s_axi_rready</obj_property>
+      <obj_property name="ObjectShortName">c0_ddr4_s_axi_rready</obj_property>
    </wvobject>
 </wave_config>

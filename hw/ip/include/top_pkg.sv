@@ -24,6 +24,9 @@ parameter AXI_ADDRESS_WIDTH = 34;
 parameter AXI_DATA_WIDTH = 512;
 parameter AXI_ADDR_MSB_BITS = 43 % 32;
 
+// Register Bank interface
+parameter AXIL_ADDR_WIDTH = 32;
+
 parameter LARGE_FEATURE_COUNT = 1024;
 parameter LARGE_PRECISION_BYTE_COUNT = 4;
 parameter LARGE_MSG_QUEUE_DEPTH = 64;

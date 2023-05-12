@@ -6,12 +6,12 @@ class prefetcher_tb_monitor;
 virtual prefetcher_interface prefetcher_vif;
 
 function new(virtual prefetcher_interface prefetcher_intf);
-    $display("Prefetcher monitor created");
+    $display("[TIMESTAMP]: %t, [PREF_MONITOR::DEBUG]: Prefetcher monitor instantiated.", $time);
     this.prefetcher_vif = prefetcher_intf;
 endfunction
 
 task main();
-    $display("Main function in prefetcher monitor");
+    $display("[TIMESTAMP]: %t, [PREF_MONITOR::DEBUG]: Prefetcher monitor activated.", $time);
     fork
         nsb_req();
     join

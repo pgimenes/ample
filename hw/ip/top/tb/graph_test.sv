@@ -1,6 +1,9 @@
 
 import json::*;
 import node_scoreboard_regbank_regs_pkg::*;
+import prefetcher_regbank_regs_pkg::*;
+import aggregation_engine_regbank_regs_pkg::*;
+import feature_transformation_engine_regbank_regs_pkg::*;
 
 `include "json.svh"
 
@@ -20,20 +23,27 @@ class GraphTest extends Test;
         root = json::Load("nodeslot_programming.json");
         assert (root!=null) else $fatal(1, "Failed to load JSON file");
         nodeslots = root.getByKey("nodeslots");
+
+        // Program Layer Configuration
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to Prefetcher regbank.", $time, TESTNAME);
+        this.write_prefetcher_regbank("Define Feature Count", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, 'd4);
         
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to AGE regbank.", $time, TESTNAME);
+        this.write_age_regbank("Define Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, 'd4);
+        
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to FTE regbank.", $time, TESTNAME);
+        this.write_fte_regbank("Define Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, 'd4);
+
+        // Program nodeslots from JSON dump
         nodeslot_idx = 0;
         while (nodeslot_idx < nodeslots.size()) begin
             choose_nodeslot(chosen_nodeslot);
-            $display("[TIMESTAMP]: %t, [%0s::INFO]: Ready to program Node ID %0d into Nodeslot %0d.", $time, TESTNAME, nodeslot_idx, chosen_nodeslot);
 
             // Get nodeslot from JSON object and display
             chosen_node_programming = new();
             chosen_node_programming = nodeslots.getByIndex(nodeslot_idx);
             
-            // Display chosen node ID programming
-            // nodeslot_str = new();
-            // chosen_node_programming.dumpS(nodeslot_str);
-            // $display(nodeslot_str.get());
+            $display("[TIMESTAMP]: %t, [%0s::INFO]: Ready to program Node ID %0d into Nodeslot %0d.", $time, TESTNAME, chosen_node_programming.getByKey("node_id").asInt(), chosen_nodeslot);
 
             program_nodeslot(chosen_node_programming, chosen_nodeslot);
             
@@ -76,15 +86,15 @@ class GraphTest extends Test;
         out_messages_address_lsb = nodeslot.getByKey("out_messages_address_lsb").asInt();
         out_messages_address_msb = nodeslot.getByKey("out_messages_address_msb").asInt();
 
-        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Programming node %0d with neighbour_count %0d", $time, TESTNAME, node_id, neighbour_count);
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Programming node %0d with neighbour_count %0d into nodeslot %0d", $time, TESTNAME, node_id, neighbour_count, chosen_nodeslot);
 
-        this.write_nsb_regbank("Define Node ID", NSB_NODESLOT_NODE_ID_OFFSET + chosen_nodeslot, node_id); // node x goes into nodeslot x
-        this.write_nsb_regbank("Define Neighbour count", NSB_NODESLOT_NEIGHBOUR_COUNT_OFFSET + chosen_nodeslot, neighbour_count);
-        this.write_nsb_regbank("Define Precision", NSB_NODESLOT_PRECISION_OFFSET + chosen_nodeslot, 0); // 0 for float (MS2)
-        this.write_nsb_regbank("Define Adjacency List LSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB_OFFSET + chosen_nodeslot, adjacency_list_address_lsb);
-        this.write_nsb_regbank("Define Adjacency List MSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB_OFFSET + chosen_nodeslot, adjacency_list_address_msb);
-        this.write_nsb_regbank("Define Out Messages LSB", NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB_OFFSET + chosen_nodeslot, out_messages_address_lsb);
-        this.write_nsb_regbank("Define Out Messages MSB", NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB_OFFSET + chosen_nodeslot, out_messages_address_msb);
+        this.write_nsb_regbank("Define Node ID",            NSB_NODESLOT_NODE_ID_OFFSET + 4*chosen_nodeslot, node_id); // node x goes into nodeslot x
+        this.write_nsb_regbank("Define Neighbour count",    NSB_NODESLOT_NEIGHBOUR_COUNT_OFFSET + 4*chosen_nodeslot, neighbour_count);
+        this.write_nsb_regbank("Define Precision",          NSB_NODESLOT_PRECISION_OFFSET + 4*chosen_nodeslot, 0); // 0 for float (MS2)
+        this.write_nsb_regbank("Define Adjacency List LSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB_OFFSET + 4*chosen_nodeslot, adjacency_list_address_lsb);
+        this.write_nsb_regbank("Define Adjacency List MSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB_OFFSET + 4*chosen_nodeslot, adjacency_list_address_msb);
+        this.write_nsb_regbank("Define Out Messages LSB",   NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB_OFFSET + 4*chosen_nodeslot, out_messages_address_lsb);
+        this.write_nsb_regbank("Define Out Messages MSB",   NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB_OFFSET + 4*chosen_nodeslot, out_messages_address_msb);
 
         if (chosen_nodeslot > 31) begin
             this.write_nsb_regbank("Make Valid (MSB)", NSB_NODESLOT_CONFIG_MAKE_VALID_MSB_OFFSET, (1 << (chosen_nodeslot % 32)) );
@@ -116,8 +126,39 @@ class GraphTest extends Test;
         input xil_axi_ulong              offset,
         input bit [63:0]                 data = 0
     );
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Writing to NSB regbank, address: %0x", $time, TESTNAME, offset);
         this.single_axil_write_transaction(name, .id('0),
                                     .addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + offset),
+                                    .data(data));
+    endtask
+
+    task automatic write_prefetcher_regbank(
+        input string                     name ="single_write",
+        input xil_axi_ulong              offset,
+        input bit [63:0]                 data = 0
+    );
+        this.single_axil_write_transaction(name, .id('0),
+                                    .addr(PREFETCHER_REGBANK_DEFAULT_BASEADDR + offset),
+                                    .data(data));
+    endtask
+
+    task automatic write_age_regbank(
+        input string                     name ="single_write",
+        input xil_axi_ulong              offset,
+        input bit [63:0]                 data = 0
+    );
+        this.single_axil_write_transaction(name, .id('0),
+                                    .addr(AGGREGATION_ENGINE_REGBANK_DEFAULT_BASEADDR + offset),
+                                    .data(data));
+    endtask
+
+    task automatic write_fte_regbank(
+        input string                     name ="single_write",
+        input xil_axi_ulong              offset,
+        input bit [63:0]                 data = 0
+    );
+        this.single_axil_write_transaction(name, .id('0),
+                                    .addr(FEATURE_TRANSFORMATION_ENGINE_REGBANK_DEFAULT_BASEADDR + offset),
                                     .data(data));
     endtask
 

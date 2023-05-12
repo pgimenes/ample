@@ -22,6 +22,7 @@ module prefetcher_fetch_tag #(
     input  NSB_PREF_REQ_t                               nsb_prefetcher_req,
 
     output logic                                        nsb_prefetcher_resp_valid,
+    input  logic                                        nsb_prefetcher_resp_ready,
     output NSB_PREF_RESP_t                              nsb_prefetcher_resp,
 
     // Allocation interface
@@ -236,7 +237,7 @@ always_comb begin
     end
 
     ADJ_DONE: begin
-        adj_queue_fetch_state_n = nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == ADJACENCY_LIST) ? ADJ_IDLE
+        adj_queue_fetch_state_n = nsb_prefetcher_resp_valid && nsb_prefetcher_resp_ready && (nsb_prefetcher_resp.response_type == ADJACENCY_LIST) ? ADJ_IDLE
                                 : ADJ_DONE;
     end
     endcase
@@ -321,21 +322,21 @@ always_comb begin
 
     // TO DO: simplify
     adj_queue_write_data = (buffered_adj_fetch_resp_offset == '0) ? fetch_tag_adj_rm_resp_data_q [31:0]
-                        : (buffered_adj_fetch_resp_offset == 9'd32) ? fetch_tag_adj_rm_resp_data_q [63:32]
-                        : (buffered_adj_fetch_resp_offset == 9'd64) ? fetch_tag_adj_rm_resp_data_q [95:64]
-                        : (buffered_adj_fetch_resp_offset == 9'd96) ? fetch_tag_adj_rm_resp_data_q [127:96]
-                        : (buffered_adj_fetch_resp_offset == 9'd128) ? fetch_tag_adj_rm_resp_data_q [159:128]
-                        : (buffered_adj_fetch_resp_offset == 9'd160) ? fetch_tag_adj_rm_resp_data_q [191:160]
-                        : (buffered_adj_fetch_resp_offset == 9'd192) ? fetch_tag_adj_rm_resp_data_q [223:192]
-                        : (buffered_adj_fetch_resp_offset == 9'd224) ? fetch_tag_adj_rm_resp_data_q [255:224]
-                        : (buffered_adj_fetch_resp_offset == 9'd256) ? fetch_tag_adj_rm_resp_data_q [287:256]
-                        : (buffered_adj_fetch_resp_offset == 9'd288) ? fetch_tag_adj_rm_resp_data_q [319:288]
-                        : (buffered_adj_fetch_resp_offset == 9'd320) ? fetch_tag_adj_rm_resp_data_q [351:320]
-                        : (buffered_adj_fetch_resp_offset == 9'd352) ? fetch_tag_adj_rm_resp_data_q [383:352]
-                        : (buffered_adj_fetch_resp_offset == 9'd384) ? fetch_tag_adj_rm_resp_data_q [415:384]
-                        : (buffered_adj_fetch_resp_offset == 9'd416) ? fetch_tag_adj_rm_resp_data_q [447:416]
-                        : (buffered_adj_fetch_resp_offset == 9'd448) ? fetch_tag_adj_rm_resp_data_q [479:448]
-                        : (buffered_adj_fetch_resp_offset == 9'd480) ? fetch_tag_adj_rm_resp_data_q [511:480]
+                        : (buffered_adj_fetch_resp_offset == 'd32) ? fetch_tag_adj_rm_resp_data_q [63:32]
+                        : (buffered_adj_fetch_resp_offset == 'd64) ? fetch_tag_adj_rm_resp_data_q [95:64]
+                        : (buffered_adj_fetch_resp_offset == 'd96) ? fetch_tag_adj_rm_resp_data_q [127:96]
+                        : (buffered_adj_fetch_resp_offset == 'd128) ? fetch_tag_adj_rm_resp_data_q [159:128]
+                        : (buffered_adj_fetch_resp_offset == 'd160) ? fetch_tag_adj_rm_resp_data_q [191:160]
+                        : (buffered_adj_fetch_resp_offset == 'd192) ? fetch_tag_adj_rm_resp_data_q [223:192]
+                        : (buffered_adj_fetch_resp_offset == 'd224) ? fetch_tag_adj_rm_resp_data_q [255:224]
+                        : (buffered_adj_fetch_resp_offset == 'd256) ? fetch_tag_adj_rm_resp_data_q [287:256]
+                        : (buffered_adj_fetch_resp_offset == 'd288) ? fetch_tag_adj_rm_resp_data_q [319:288]
+                        : (buffered_adj_fetch_resp_offset == 'd320) ? fetch_tag_adj_rm_resp_data_q [351:320]
+                        : (buffered_adj_fetch_resp_offset == 'd352) ? fetch_tag_adj_rm_resp_data_q [383:352]
+                        : (buffered_adj_fetch_resp_offset == 'd384) ? fetch_tag_adj_rm_resp_data_q [415:384]
+                        : (buffered_adj_fetch_resp_offset == 'd416) ? fetch_tag_adj_rm_resp_data_q [447:416]
+                        : (buffered_adj_fetch_resp_offset == 'd448) ? fetch_tag_adj_rm_resp_data_q [479:448]
+                        : (buffered_adj_fetch_resp_offset == 'd480) ? fetch_tag_adj_rm_resp_data_q [511:480]
                         : '0;
 end
 
@@ -404,7 +405,7 @@ always_comb begin
     end
 
     MSG_DONE: begin
-        message_fetch_state_n = nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == MESSAGES) ? MSG_IDLE
+        message_fetch_state_n = nsb_prefetcher_resp_valid && nsb_prefetcher_resp_ready && (nsb_prefetcher_resp.response_type == MESSAGES) ? MSG_IDLE
                             : MSG_DONE;
     end
 
