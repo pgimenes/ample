@@ -11,7 +11,7 @@ set -e
 
 # Command line options
 xv_boost_lib_path=/mnt/applications/Xilinx/19.2/Vivado/2019.2/tps/boost_1_64_0
-xvlog_opts="--relax -L axi_vip_v1_1_6 -L xilinx_vip --define NSB_NODESLOT_PROGRAMMING_TEST --define RAM_MODEL -i ../../ip/node_scoreboard/tb"
+xvlog_opts="--relax -L axi_vip_v1_1_6 -L xilinx_vip --define GRAPH_TEST --define RAM_MODEL -i ../../ip/node_scoreboard/tb"
 xvhdl_opts="--relax"
 
 if [ "$SIM_GUI" -eq 1 ]; then
@@ -27,9 +27,29 @@ run()
 {
   check_args $# $1
   setup $1 $2
-  compile
-  elaborate
-  simulate
+
+  if [[ "$*" == *"--all"* ]]; then
+    compile
+    elaborate
+    simulate
+  
+  else
+
+    # If --all not set, run each step if the flag is set
+    if [[ "$*" == *"--compile"* ]]; then
+      compile
+    fi
+
+    if [[ "$*" == *"--elaborate"* ]]; then
+      elaborate
+    fi
+
+    if [[ "$*" == *"--simulate"* ]]; then
+      simulate
+    fi
+
+  fi  
+
 }
 
 # RUN_STEP: <compile>
@@ -38,13 +58,19 @@ compile()
   
   # Compile verilog (flag raised by default in bashrc)
   if [[ "$COMPILE_VLOG" -eq 1 ]]; then
-    echo "Compiling verilog..."
+    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Building design files..."
     xvlog $xvlog_opts -prj vlog.prj 2>&1 | tee compile.log
+  fi
+
+  # Compile verilog (flag raised by default in bashrc)
+  if [[ "$BUILD_TB" -eq 1 ]]; then
+    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Building testbench..."
+    xvlog $xvlog_opts -prj vlog_tb.prj 2>&1 | tee compile.log
   fi
 
   # compile VHDL if flag raised
   if [[ "$COMPILE_VHDL" -eq 1 ]]; then
-    echo "Compiling VHDL..."
+    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Compiling VHDL..."
     xvhdl $xvhdl_opts -prj vhdl.prj 2>&1 | tee compile.log
   fi
 }
@@ -52,12 +78,14 @@ compile()
 # RUN_STEP: <elaborate>
 elaborate()
 {
-  xelab --relax --debug typical --mt auto -d "FLOAT_MAC=1" -L axi_infrastructure_v1_1_0 -L xil_defaultlib -L axi_vip_v1_1_6 -L microblaze_v11_0_2 -L lib_cdc_v1_0_2 -L proc_sys_reset_v5_0_13 -L lmb_v10_v3_0_10 -L lmb_bram_if_cntlr_v4_0_17 -L blk_mem_gen_v8_4_4 -L iomodule_v3_1_5 -L fifo_generator_v13_2_5 -L axi_interconnect_v1_7_17 -L generic_baseblocks_v2_1_0 -L axi_register_slice_v2_1_20 -L axi_data_fifo_v2_1_19 -L axi_crossbar_v2_1_21 -L xbip_utils_v3_0_10 -L axi_utils_v2_0_6 -L xbip_pipe_v3_0_6 -L xbip_dsp48_wrapper_v3_0_4 -L xbip_dsp48_addsub_v3_0_6 -L xbip_dsp48_multadd_v3_0_6 -L xbip_bram18k_v3_0_6 -L mult_gen_v12_0_16 -L floating_point_v7_1_9 -L xilinx_vip -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot $TB_TOP xil_defaultlib.$TB_TOP xil_defaultlib.glbl -log elaborate.log
+  echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Running elaboration..."
+  xelab --relax --verbose --debug typical --timescale 1ps/1ps --mt auto -d "FLOAT_MAC=1" -L axi_infrastructure_v1_1_0 -L xil_defaultlib -L axi_vip_v1_1_6 -L microblaze_v11_0_2 -L lib_cdc_v1_0_2 -L proc_sys_reset_v5_0_13 -L lmb_v10_v3_0_10 -L lmb_bram_if_cntlr_v4_0_17 -L blk_mem_gen_v8_4_4 -L iomodule_v3_1_5 -L fifo_generator_v13_2_5 -L axi_interconnect_v1_7_17 -L generic_baseblocks_v2_1_0 -L axi_register_slice_v2_1_20 -L axi_data_fifo_v2_1_19 -L axi_crossbar_v2_1_21 -L xbip_utils_v3_0_10 -L axi_utils_v2_0_6 -L xbip_pipe_v3_0_6 -L xbip_dsp48_wrapper_v3_0_4 -L xbip_dsp48_addsub_v3_0_6 -L xbip_dsp48_multadd_v3_0_6 -L xbip_bram18k_v3_0_6 -L mult_gen_v12_0_16 -L floating_point_v7_1_9 -L xilinx_vip -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot $TB_TOP xil_defaultlib.$TB_TOP -log elaborate.log
 }
 
 # RUN_STEP: <simulate>
 simulate()
 {
+  echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Running simulation..."
   xsim $TB_TOP $SIM_ARGS -key {Behavioral:sim_1:Functional:top_tb} -tclbatch cmd.tcl -protoinst "protoinst_files/bd_9054.protoinst" -log simulate.log
 }
 
@@ -182,10 +210,10 @@ reset_run()
 # Check command line arguments
 check_args()
 {
-  if [[ ($1 == 1 ) && ($2 != "-lib_map_path" && $2 != "-noclean_files" && $2 != "-reset_run" && $2 != "-help" && $2 != "-h") ]]; then
-    echo -e "ERROR: Unknown option specified '$2' (type \"./top_tb.sh -help\" for more information)\n"
-    exit 1
-  fi
+  # if [[ ($1 == 1 ) && ($2 != "-lib_map_path" && $2 != "-noclean_files" && $2 != "-reset_run" && $2 != "-help" && $2 != "-h") ]]; then
+  #   echo -e "ERROR: Unknown option specified '$2' (type \"./top_tb.sh -help\" for more information)\n"
+  #   exit 1
+  # fi
 
   if [[ ($2 == "-help" || $2 == "-h") ]]; then
     usage

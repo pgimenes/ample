@@ -3,6 +3,8 @@
 //  a parameterizable UltraRAM block with 1 Read and 1 write
 //  when addra == addrb, old data will show at doutb 
 
+`timescale 1ns/1ns
+
 module ultraram #(
     parameter AWIDTH = 12,  // Address Width
     parameter DWIDTH = 512,  // Data Width

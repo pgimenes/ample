@@ -1,17 +1,19 @@
 package noc_params;
 
-	localparam MESH_SIZE_X = 5;
-	localparam MESH_SIZE_Y = 5;
+	// TO DO: parametrize from age pkg
+	localparam MESH_SIZE_X = 65; // == 65
+	localparam MESH_SIZE_Y = 3; // == 17
 
-	localparam DEST_ADDR_SIZE_X = $clog2(MESH_SIZE_X);
-	localparam DEST_ADDR_SIZE_Y = $clog2(MESH_SIZE_Y);
+	localparam DEST_ADDR_SIZE_X = $clog2(MESH_SIZE_X); // == 7 (+1 bit for sign)
+	localparam DEST_ADDR_SIZE_Y = $clog2(MESH_SIZE_Y); // == 5 (+1 bit for sign)
 
 	localparam VC_NUM = 2;
 	localparam VC_SIZE = $clog2(VC_NUM);
 
-	localparam HEAD_PAYLOAD_SIZE = 64;
+	// source X and Y coordinates included in payload
+	localparam HEAD_PAYLOAD_SIZE = 64 + DEST_ADDR_SIZE_X + DEST_ADDR_SIZE_Y; // == 76
 
-	localparam FLIT_DATA_SIZE = DEST_ADDR_SIZE_X+DEST_ADDR_SIZE_Y+HEAD_PAYLOAD_SIZE;
+	localparam FLIT_DATA_SIZE = DEST_ADDR_SIZE_X + DEST_ADDR_SIZE_Y + HEAD_PAYLOAD_SIZE;
 
 	typedef enum logic [2:0] {LOCAL, NORTH, SOUTH, WEST, EAST} port_t;
 	localparam PORT_NUM = 5;
