@@ -17,7 +17,7 @@ def main():
     # Dump
     init_manager.dump_memory("memory.mem")
     init_manager.dump_txt("graph_dump.txt")
-    init_manager.dump_nodeslot_programming()
+    init_manager.dump_json()
 
 if (__name__ == "__main__"):
     main()

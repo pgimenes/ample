@@ -5,7 +5,7 @@ import json
 
 class InitManager:
 
-    def __init__(self, graph, nodeslot_programming_file="nodeslot_programming.json"):
+    def __init__(self, graph, nodeslot_dump_file="nodeslot_programming.json", layer_config_file="layer_config.json"):
         # Adjacency list, incoming messages and weights are pulled from the TrainedGraph object
         self.trained_graph = graph
 
@@ -31,14 +31,33 @@ class InitManager:
         # Weights
         self.weights = self.trained_graph.weights
 
+        # Layer configuration
+        self.layer_config_file = layer_config_file
+        self.layer_config = {'global_config': {}, 'layers': []}
+        self.set_layer_config()
+
         # Nodeslot programming
-        self.json_out_file = nodeslot_programming_file
+        self.nodeslot_dump_file = nodeslot_dump_file
         self.nodeslot_programming = {'nodeslots':[]}
         self.program_nodeslots()
 
-    def dump_nodeslot_programming(self):
-        with open(self.json_out_file, 'w') as file:
+    def dump_json(self):
+        with open(self.nodeslot_dump_file, 'w') as file:
             json.dump(self.nodeslot_programming, file, indent=4)
+        with open(self.layer_config_file, 'w') as file:
+            json.dump(self.layer_config, file, indent=4)
+
+    def set_layer_config(self):
+        self.layer_config['global_config']['layer_count'] = 1
+        layer = {
+            'in_feature_count': self.trained_graph.feature_count,
+            'out_feature_count': self.trained_graph.feature_count,
+            'adjacency_list_address': self.offsets[0],
+            'in_messages_address': self.offsets[1],
+            'weights_address': self.offsets[2],
+            'out_messages_address': self.offsets[3],
+        }
+        self.layer_config['layers'].append(layer)
 
     def program_nodeslots(self):
         for node in self.trained_graph.nx_graph.nodes:
