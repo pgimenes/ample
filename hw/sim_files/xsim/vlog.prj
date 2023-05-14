@@ -1,20 +1,20 @@
-sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
 "../../hw.srcs/sources_1/ip/axi_memory_master_vip/sim/axi_memory_master_vip_pkg.sv" \
 "../../hw.srcs/sources_1/ip/axi_memory_master_vip/sim/axi_memory_master_vip.sv" \
 "../../hw.srcs/sources_1/ip/axil_master_vip/sim/axil_master_vip_pkg.sv" \
 "../../hw.srcs/sources_1/ip/axil_master_vip/sim/axil_master_vip.sv" \
 
-verilog blk_mem_gen_v8_4_4 --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+verilog blk_mem_gen_v8_4_4 --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
 "../../hw.ip_user_files/ipstatic/simulation/blk_mem_gen_v8_4.v" \
 
-verilog xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+verilog xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
 "../../hw.srcs/sources_1/ip/axi_memory_interconnect/sim/axi_memory_interconnect.v" \
 "../../hw.srcs/sources_1/ip/axi_L_register_control_crossbar/sim/axi_L_register_control_crossbar.v" \
 "../../hw.ip_user_files/ip/aggregation_buffer_sdp_bram/sim/aggregation_buffer_sdp_bram.v" \
 "../../ip/lib/verilog-axi/rtl/axi_ram.v" \
 "../../ip/lib/rtl/ultraram.v" \
 
-sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
 "../../ip/nocrouter/src/rtl/noc/noc_params.sv" \
 "../../ip/nocrouter/src/if/input_block2crossbar.sv" \
 "../../ip/nocrouter/src/if/input_block2switch_allocator.sv" \
@@ -36,7 +36,7 @@ sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --i
 "../../ip/nocrouter/src/rtl/noc/router_link.sv" \
 "../../ip/nocrouter/src/rtl/noc/mesh.sv" \
 
-sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
 "../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs_pkg.sv" \
 "../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs.sv" \
 "../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs_pkg.sv" \

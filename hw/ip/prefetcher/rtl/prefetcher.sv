@@ -165,7 +165,6 @@ module prefetcher #(
     input  logic                                              weight_channel_req_valid,
     output logic                                              weight_channel_req_ready,
     input  WEIGHT_CHANNEL_REQ_t                               weight_channel_req,
-
     output logic                                              weight_channel_resp_valid,
     input  logic                                              weight_channel_resp_ready,
     output WEIGHT_CHANNEL_RESP_t                              weight_channel_resp
@@ -227,19 +226,12 @@ NSB_PREF_RESP_t                                    nsb_prefetcher_weight_bank_re
 logic                                              weight_bank_axi_rm_fetch_req_valid;
 logic                                              weight_bank_axi_rm_fetch_req_ready;
 logic [AXI_ADDRESS_WIDTH-1:0]                      weight_bank_axi_rm_fetch_start_address;
-logic [$clog2(MAX_FEATURE_COUNT*4)-1:0]            weight_bank_axi_rm_fetch_byte_count;
+logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       weight_bank_axi_rm_fetch_byte_count;
 logic                                              weight_bank_axi_rm_fetch_resp_valid;
 logic                                              weight_bank_axi_rm_fetch_resp_ready;
 logic                                              weight_bank_axi_rm_fetch_resp_last;
 logic [AXI_DATA_WIDTH-1:0]                         weight_bank_axi_rm_fetch_resp_data;
 logic [3:0]                                        weight_bank_axi_rm_fetch_resp_axi_id;
-
-logic                                              weight_channel_req_valid;
-logic                                              weight_channel_req_ready;
-WEIGHT_CHANNEL_REQ_t                               weight_channel_req;
-logic                                              weight_channel_resp_valid;
-logic                                              weight_channel_resp_ready;
-WEIGHT_CHANNEL_RESP_t                              weight_channel_resp;
 
 // ==================================================================================================================================================
 // Instances
@@ -291,8 +283,8 @@ prefetcher_feature_bank #(
     .nsb_prefetcher_feature_bank_req_ready                              (nsb_prefetcher_feature_bank_req_ready),
     .nsb_prefetcher_feature_bank_req                                    (nsb_prefetcher_req),
 
-    .nsb_prefetcher_feature_bank_resp_valid                             (nsb_prefetcher_resp_valid),
-    .nsb_prefetcher_feature_bank_resp                                   (nsb_prefetcher_resp),
+    .nsb_prefetcher_feature_bank_resp_valid                             (nsb_prefetcher_feature_bank_resp_valid),
+    .nsb_prefetcher_feature_bank_resp                                   (nsb_prefetcher_feature_bank_resp),
 
     // Adjacency Read Master
     .adj_rm_fetch_req_valid                                             (adj_rm_fetch_req_valid),
@@ -457,7 +449,7 @@ axi_read_master #(
 // --------------------------------------------------------------------------------------------
 
 axi_read_master #(
-    .MAX_BYTE_COUNT    (top_pkg::MAX_FEATURE_COUNT*top_pkg::MAX_FEATURE_COUNT)
+    .MAX_BYTE_COUNT    (MAX_FETCH_REQ_BYTE_COUNT)
 ) weight_read_master_i (
     .core_clk,
     .resetn,
@@ -509,7 +501,7 @@ always_comb begin
     
     // Weight bank response should never happen at the same time as feature bank, so simple MUX is enough
     nsb_prefetcher_resp_valid             = nsb_prefetcher_feature_bank_resp_valid || nsb_prefetcher_weight_bank_resp_valid;
-    nsb_prefetcher_resp                   = nsb_prefetcher_weight_bank_req_valid ? nsb_prefetcher_weight_bank_resp : nsb_prefetcher_feature_bank_resp;
+    nsb_prefetcher_resp                   = nsb_prefetcher_weight_bank_resp_valid ? nsb_prefetcher_weight_bank_resp : nsb_prefetcher_feature_bank_resp;
 end
 
 // Read-only interfaces

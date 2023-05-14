@@ -29,7 +29,7 @@ module prefetcher_weight_bank #(
     output logic                                              weight_bank_axi_rm_fetch_req_valid,
     input  logic                                              weight_bank_axi_rm_fetch_req_ready,
     output logic [AXI_ADDRESS_WIDTH-1:0]                      weight_bank_axi_rm_fetch_start_address,
-    output logic [$clog2(MAX_FEATURE_COUNT*4)-1:0]            weight_bank_axi_rm_fetch_byte_count,
+    output logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       weight_bank_axi_rm_fetch_byte_count,
 
     // Response interface
     input  logic                                              weight_bank_axi_rm_fetch_resp_valid,
@@ -54,8 +54,8 @@ typedef enum logic [3:0] {
     WEIGHT_BANK_FSM_FETCH_REQ        = 4'd1,
     WEIGHT_BANK_FSM_WAIT_RESP        = 4'd2,
     WEIGHT_BANK_FSM_WRITE            = 4'd3,
-    WEIGHT_BANK_FSM_FEATURES_WAITING = 4'd4,
-    WEIGHT_BANK_FSM_DUMP_FEATURES    = 4'd5
+    WEIGHT_BANK_FSM_WEIGHTS_WAITING = 4'd4,
+    WEIGHT_BANK_FSM_DUMP_WEIGHTS    = 4'd5
 } WEIGHT_BANK_FSM_e;
 
 // ==================================================================================================================================================
@@ -119,7 +119,7 @@ for (genvar row = 0; row < MAX_FEATURE_COUNT; row++) begin
     assign row_fifo_push      [row] = (weight_bank_state == WEIGHT_BANK_FSM_WRITE) & (row == (rows_fetched - 1));
     
     // Pop FIFO when currently valid rows are being dumped
-    assign row_fifo_pop       [row] = (weight_bank_state == WEIGHT_BANK_FSM_DUMP_FEATURES) && row_pop_shift[row] && !row_fifo_empty[row] && accepting_weight_channel_resp;
+    assign row_fifo_pop       [row] = (weight_bank_state == WEIGHT_BANK_FSM_DUMP_WEIGHTS) && row_pop_shift[row] && !row_fifo_empty[row] && accepting_weight_channel_resp;
 end
 
 // ==================================================================================================================================================
@@ -148,13 +148,13 @@ always_comb begin
     end
 
     WEIGHT_BANK_FSM_WAIT_RESP: begin
-        weight_bank_state_n = weight_bank_axi_rm_fetch_resp_valid ? WEIGHT_BANK_FSM_WRITE : WEIGHT_BANK_FSM_FETCH_REQ;
+        weight_bank_state_n = weight_bank_axi_rm_fetch_resp_valid ? WEIGHT_BANK_FSM_WRITE : WEIGHT_BANK_FSM_WAIT_RESP;
     end
 
     WEIGHT_BANK_FSM_WRITE: begin
         weight_bank_state_n = 
                             // Finished writing all features for entire matrix
-                            (features_written == nsb_prefetcher_weight_bank_req_q.in_features) && (rows_fetched == nsb_prefetcher_weight_bank_req_q.out_features) ? WEIGHT_BANK_FSM_FEATURES_WAITING
+                            (feature_offset == 4'd15) && (rows_fetched == nsb_prefetcher_weight_bank_req_q.out_features) ? WEIGHT_BANK_FSM_WEIGHTS_WAITING
                             
                             // Finished writing all features for current row
                             : (feature_offset == 4'd15) && (expected_responses == '0) ? WEIGHT_BANK_FSM_FETCH_REQ
@@ -166,13 +166,13 @@ always_comb begin
                             : WEIGHT_BANK_FSM_WRITE;
     end
 
-    WEIGHT_BANK_FSM_FEATURES_WAITING: begin
-        weight_bank_state_n = weight_channel_req_valid ? WEIGHT_BANK_FSM_DUMP_FEATURES : WEIGHT_BANK_FSM_FEATURES_WAITING;
+    WEIGHT_BANK_FSM_WEIGHTS_WAITING: begin
+        weight_bank_state_n = weight_channel_req_valid ? WEIGHT_BANK_FSM_DUMP_WEIGHTS : WEIGHT_BANK_FSM_WEIGHTS_WAITING;
     end
 
-    WEIGHT_BANK_FSM_DUMP_FEATURES: begin
-        weight_bank_state_n = weight_channel_resp_valid && weight_channel_resp_ready && weight_channel_resp.done ? WEIGHT_BANK_FSM_FEATURES_WAITING
-                            : WEIGHT_BANK_FSM_DUMP_FEATURES;
+    WEIGHT_BANK_FSM_DUMP_WEIGHTS: begin
+        weight_bank_state_n = weight_channel_resp_valid && weight_channel_resp_ready && weight_channel_resp.done ? WEIGHT_BANK_FSM_WEIGHTS_WAITING
+                            : WEIGHT_BANK_FSM_DUMP_WEIGHTS;
     end
 
     endcase
@@ -194,7 +194,7 @@ end
 always_comb begin
     nsb_prefetcher_weight_bank_req_ready = (weight_bank_state == WEIGHT_BANK_FSM_IDLE);
     
-    nsb_prefetcher_weight_bank_resp_valid = (weight_bank_state == WEIGHT_BANK_FSM_WRITE) && (weight_bank_state_n == WEIGHT_BANK_FSM_FEATURES_WAITING);
+    nsb_prefetcher_weight_bank_resp_valid = (weight_bank_state == WEIGHT_BANK_FSM_WRITE) && (weight_bank_state_n == WEIGHT_BANK_FSM_WEIGHTS_WAITING);
     
     nsb_prefetcher_weight_bank_resp.response_type = top_pkg::WEIGHTS;
     nsb_prefetcher_weight_bank_resp.nodeslot = '0; // not used
@@ -278,7 +278,7 @@ end
 // Weight dumping through Weight Channel
 // ----------------------------------------------------------------
 
-assign weight_channel_req_ready = (weight_bank_state == WEIGHT_BANK_FSM_FEATURES_WAITING);
+assign weight_channel_req_ready = (weight_bank_state == WEIGHT_BANK_FSM_WEIGHTS_WAITING);
 
 // Shift register to flush through weights matrix diagonally
 for (genvar row = 1; row < MAX_FEATURE_COUNT; row++) begin
@@ -287,7 +287,7 @@ for (genvar row = 1; row < MAX_FEATURE_COUNT; row++) begin
             row_pop_shift[row] <= '0;
 
         // Clear shift register when starting new weight dump
-        end else if (weight_bank_state_n == WEIGHT_BANK_FSM_DUMP_FEATURES) begin
+        end else if (weight_bank_state_n == WEIGHT_BANK_FSM_DUMP_WEIGHTS) begin
             row_pop_shift[row] <= '0;
 
         // Shift register when accepting weight channel response
@@ -303,7 +303,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         row_counter <= '0;
     
     // Starting new feature dump, reset all flags and counters
-    end else if (weight_bank_state_n == WEIGHT_BANK_FSM_DUMP_FEATURES) begin
+    end else if (weight_bank_state_n == WEIGHT_BANK_FSM_DUMP_WEIGHTS) begin
         row_pop_shift[0] <= '1;
         row_counter <= '0;
 
@@ -321,7 +321,7 @@ end
 
 always_comb begin
     // Issue weight channel response when new data is available on all row FIFOs following a pop
-    weight_channel_resp_valid = (weight_bank_state == WEIGHT_BANK_FSM_DUMP_FEATURES) && (&row_fifo_out_valid) && |row_pop_shift;
+    weight_channel_resp_valid = (weight_bank_state == WEIGHT_BANK_FSM_DUMP_WEIGHTS) && (&row_fifo_out_valid) && |row_pop_shift;
 
     weight_channel_resp.data       = row_fifo_out_data;
     weight_channel_resp.valid_mask = row_pop_shift;

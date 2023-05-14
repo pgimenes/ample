@@ -363,17 +363,6 @@ for (genvar col = 16; col < 64; col++) begin
     end
 end
 
-// Unused column for buffer managers
-// TO DO: fill (MS2)
-for (genvar row = 0; row < 9; row++) begin
-    always_comb begin     
-        node_router_valid             [64][row] = '0;
-        node_router_data              [64][row] = '0;
-        router_node_on                [64][row] = '0;
-        router_node_ready             [64][row] = '0;
-    end
-end
-
 // Buffer Managers
 // ----------------------------------------------------
 
@@ -522,7 +511,7 @@ onehot_to_binary #(
 );
 
 // Drive valid allocation to AGM when it has been arbitrated and a buffer manager is waiting
-assign age_agm_buffer_manager_allocation_valid = agm_allocation_oh & {TOTAL_BUFFER_MANAGERS{bm_waiting}};
+assign age_agm_buffer_manager_allocation_valid = agm_allocation_oh & {TOTAL_AGGREGATION_MANAGERS{bm_waiting}};
 
 // Buffer Manager arbitration (to be allocated an aggregation manager)
 // ----------------------------------------------------

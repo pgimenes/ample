@@ -11,7 +11,7 @@ This may be bottleneck - in the future, implement two separate state machines
 */ 
 
 module axi_read_master #(
-    parameter MAX_BYTE_COUNT = 1000000000, // cannot cross a 4kb address boundary
+    parameter MAX_BYTE_COUNT = 1000000000,
     parameter AXI_ADDRESS_WIDTH = 34,
     parameter DATA_WIDTH = 512
 ) (

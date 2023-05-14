@@ -100,6 +100,9 @@ logic [$clog2(top_pkg::AGGREGATION_BUFFER_SLOTS)-1:0] slot_pop_counter;
 // Instances
 // ==================================================================================================================================================
 
+// Regbank
+// --------------------------------------------------------------------------------
+
 feature_transformation_engine_regbank_regs feature_transformation_engine_regbank_i (
     // Clock and Reset
     .axi_aclk                        (core_clk),
@@ -132,6 +135,9 @@ feature_transformation_engine_regbank_regs feature_transformation_engine_regbank
     .layer_config_out_features_strobe,
     .layer_config_out_features_count 
 );
+
+// Systolic Modules
+// --------------------------------------------------------------------------------
 
 for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) begin
     sys_array #(
