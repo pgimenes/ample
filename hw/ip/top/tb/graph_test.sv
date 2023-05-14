@@ -16,23 +16,40 @@ class GraphTest extends Test;
 
     task automatic run_test();
 
-        Object root, nodeslots, chosen_node_programming;
+        Object nodeslot_root, nodeslots, chosen_node_programming;
+        Object layer_root, layers, layer;
         int nodeslot_idx;
         integer chosen_nodeslot;
+        xil_axi_data_beat fetch_weights_done_resp[];
 
-        root = json::Load("nodeslot_programming.json");
-        assert (root!=null) else $fatal(1, "Failed to load JSON file");
-        nodeslots = root.getByKey("nodeslots");
+        // Load layer configuration
+        layer_root = json::Load("layer_config.json");
+        assert (layer_root!=null) else $fatal(1, "Failed to load Nodeslot programming from JSON file");
+        layers = layer_root.getByKey("layers");
+        layer = layers.getByIndex(0);
 
-        // Program Layer Configuration
-        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to Prefetcher regbank.", $time, TESTNAME);
-        this.write_prefetcher_regbank("Define Feature Count", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, 'd4);
+        // Load nodeslot programming
+        nodeslot_root = json::Load("nodeslot_programming.json");
+        assert (nodeslot_root!=null) else $fatal(1, "Failed to load Nodeslot programming from JSON file");
+        nodeslots = nodeslot_root.getByKey("nodeslots");
+
+        program_layer_config(layer);
+
+        // Fetch layer weights
+        this.write_nsb_regbank("Fetch Weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_OFFSET, '1);
         
-        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to AGE regbank.", $time, TESTNAME);
-        this.write_age_regbank("Define Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, 'd4);
-        
-        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to FTE regbank.", $time, TESTNAME);
-        this.write_fte_regbank("Define Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, 'd4);
+        // Wait for done flag to be asserted
+        while ('1) begin
+            this.axil_read(.addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + CTRL_FETCH_LAYER_WEIGHTS_DONE_OFFSET), .Rdatabeat(fetch_weights_done_resp));            
+            if (|fetch_weights_done_resp[0]) begin
+                $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Layer weights fetch done.", $time, TESTNAME);
+                break;
+            end else begin
+                $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Prefetcher not yet finished with weight fetching.", $time, TESTNAME);
+            end
+        end
+
+        this.write_nsb_regbank("Ack fetch weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK_OFFSET, '1);
 
         // Program nodeslots from JSON dump
         nodeslot_idx = 0;
@@ -50,6 +67,29 @@ class GraphTest extends Test;
             nodeslot_idx++;
         end
 
+    endtask
+
+    task automatic program_layer_config (Object layer_config);
+    
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to Prefetcher regbank.", $time, TESTNAME);
+        this.write_prefetcher_regbank("Define IN Feature Count", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
+        this.write_prefetcher_regbank("Define OUT Feature Count", prefetcher_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
+        
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to AGE regbank.", $time, TESTNAME);
+        this.write_age_regbank("Define IN Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
+        this.write_age_regbank("Define OUT Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
+        
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to FTE regbank.", $time, TESTNAME);
+        this.write_fte_regbank("Define IN Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
+        this.write_fte_regbank("Define OUT Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
+
+        // NSB Layer configuration
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to NSB regbank.", $time, TESTNAME);
+        this.write_nsb_regbank("Define Feature Count", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
+        this.write_nsb_regbank("Define Feature Count", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
+        this.write_nsb_regbank("Define Weights Address", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET, layer_config.getByKey("weights_address").asInt());
+        this.write_nsb_regbank("Define Aggregation Wait Count", node_scoreboard_regbank_regs_pkg::NSB_CONFIG_AGGREGATION_WAIT_COUNT_OFFSET, 'd4);
+        this.write_nsb_regbank("Define Transformation Wait Count", node_scoreboard_regbank_regs_pkg::NSB_CONFIG_TRANSFORMATION_WAIT_COUNT_OFFSET, 'd4);
     endtask
 
     task automatic choose_nodeslot(output int chosen_nodeslot);
@@ -126,10 +166,9 @@ class GraphTest extends Test;
         input xil_axi_ulong              offset,
         input bit [63:0]                 data = 0
     );
-        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Writing to NSB regbank, address: %0x", $time, TESTNAME, offset);
-        this.single_axil_write_transaction(name, .id('0),
-                                    .addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + offset),
-                                    .data(data));
+        this.axil_write(name, .id('0),
+                            .addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + offset),
+                            .data(data));
     endtask
 
     task automatic write_prefetcher_regbank(
@@ -137,9 +176,9 @@ class GraphTest extends Test;
         input xil_axi_ulong              offset,
         input bit [63:0]                 data = 0
     );
-        this.single_axil_write_transaction(name, .id('0),
-                                    .addr(PREFETCHER_REGBANK_DEFAULT_BASEADDR + offset),
-                                    .data(data));
+        this.axil_write(name, .id('0),
+                            .addr(PREFETCHER_REGBANK_DEFAULT_BASEADDR + offset),
+                            .data(data));
     endtask
 
     task automatic write_age_regbank(
@@ -147,9 +186,9 @@ class GraphTest extends Test;
         input xil_axi_ulong              offset,
         input bit [63:0]                 data = 0
     );
-        this.single_axil_write_transaction(name, .id('0),
-                                    .addr(AGGREGATION_ENGINE_REGBANK_DEFAULT_BASEADDR + offset),
-                                    .data(data));
+        this.axil_write(name, .id('0),
+                            .addr(AGGREGATION_ENGINE_REGBANK_DEFAULT_BASEADDR + offset),
+                            .data(data));
     endtask
 
     task automatic write_fte_regbank(
@@ -157,9 +196,9 @@ class GraphTest extends Test;
         input xil_axi_ulong              offset,
         input bit [63:0]                 data = 0
     );
-        this.single_axil_write_transaction(name, .id('0),
-                                    .addr(FEATURE_TRANSFORMATION_ENGINE_REGBANK_DEFAULT_BASEADDR + offset),
-                                    .data(data));
+        this.axil_write(name, .id('0),
+                            .addr(FEATURE_TRANSFORMATION_ENGINE_REGBANK_DEFAULT_BASEADDR + offset),
+                            .data(data));
     endtask
 
 endclass

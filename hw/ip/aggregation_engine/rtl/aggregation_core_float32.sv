@@ -37,7 +37,7 @@ typedef enum logic [2:0] {
     AGC_FSM_UPDATE_ACCS,
     AGC_FSM_WAIT_BUFFER_REQ,
     AGC_FSM_SEND_BUFF_MAN,
-    AGC_FSM_DONE
+    AGC_FSM_WAIT_DRAIN
 } aggregation_core_fsm_e;
 
 function logic [$bits(aggregation_manager_packet_type_e)+1-1:0] decode_head_packet (input flit_t input_packet);
@@ -216,8 +216,8 @@ always_comb begin
         agc_state_n <= (sent_flits_counter == 'd7) ? AGC_FSM_IDLE : AGC_FSM_SEND_BUFF_MAN;
     end
 
-    AGC_FSM_DONE: begin
-        agc_state_n <= noc_router_waiting ? AGC_FSM_IDLE : AGC_FSM_DONE;
+    AGC_FSM_WAIT_DRAIN: begin
+        agc_state_n <= noc_router_waiting ? AGC_FSM_IDLE : AGC_FSM_WAIT_DRAIN;
     end
 
     default: agc_state_n = AGC_FSM_IDLE;
@@ -228,21 +228,27 @@ end
 // Packet decoding
 // --------------------------------------------------------------------------------------------
 
+logic [age_pkg::MESH_NODE_ID_WIDTH-1:0] packet_source;
+
 // All packets
 always_comb begin    
     head_packet = (router_aggregation_core_data.flit_label == noc_params::HEAD);
     tail_packet = (router_aggregation_core_data.flit_label == noc_params::TAIL);
+
+    packet_source = router_aggregation_core_data.data.head_data.head_pl[noc_params::HEAD_PAYLOAD_SIZE-1 : noc_params::HEAD_PAYLOAD_SIZE-MESH_NODE_ID_WIDTH];    
+    packet_source_col = packet_source[MESH_NODE_ID_WIDTH - 1 : MESH_NODE_ID_WIDTH - $clog2(age_pkg::MESH_COLS)];
+    packet_source_row = packet_source[$clog2(age_pkg::MESH_ROWS)-1:0];
     
-    // {packet_source_col, packet_source_row} = age_pkg::decode_packet_source(router_aggregation_core_data);
-    // {packet_dest_col, packet_dest_row} = age_pkg::decode_packet_destination(router_aggregation_core_data);
+    packet_dest_col = router_aggregation_core_data.data.head_data.x_dest;
+    packet_dest_row = router_aggregation_core_data.data.head_data.y_dest;
 
     // TO DO: remove. hard coded to debug
-    packet_source_col = '0;
-    packet_source_row = age_pkg::MESH_ROWS - 1;
-    packet_dest_col   = '0;
-    packet_dest_row   = '0;
+    // packet_source_col = '0;
+    // packet_source_row = age_pkg::MESH_ROWS - 1;
+    // packet_dest_col   = '0;
+    // packet_dest_row   = '0;
 
-    correct_pkt_dest = (packet_dest_row == Y_COORD) && (packet_dest_col == X_COORD);
+    correct_pkt_dest = (packet_dest_row == y_coord) && (packet_dest_col == x_coord);
 end
 
 // Aggregation Manager Packets
@@ -364,7 +370,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         nodeslot_allocation_aggregation_function <= top_pkg::SUM;
     
     // Sent last packet to Buffer Manager: free AGC
-    end else if ((agc_state == AGC_FSM_DONE) && (agc_state_n == AGC_FSM_IDLE)) begin
+    end else if ((agc_state == AGC_FSM_WAIT_DRAIN) && (agc_state_n == AGC_FSM_IDLE)) begin
         aggregation_core_free                    <= '1;
         nodeslot_allocation_nodeslot             <= '0;
         nodeslot_allocation_aggregation_function <= top_pkg::SUM;

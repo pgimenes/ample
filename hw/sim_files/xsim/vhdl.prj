@@ -45,9 +45,6 @@ vhdl floating_point_v7_1_9  \
 
 vhdl xil_defaultlib  \
 "../../hw.srcs/sources_1/ip/fp_add/sim/fp_add.vhd" \
-"../../hw.srcs/sources_1/ip/fp_mult/sim/fp_mult.vhd" \
-"../../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs_pkg.vhd" \
-"../../build/regbanks/controller_regbank/controller_regbank_regs_pkg.vhd" \
-"../../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs_pkg.vhd" \
+"../../hw.srcs/sources_1/ip/fp_mult/sim/fp_mult.vhd"
 
 nosort

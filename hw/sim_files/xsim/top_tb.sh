@@ -9,6 +9,8 @@
 
 set -e
 
+exec > top_tb_log.log
+
 # Command line options
 xv_boost_lib_path=/mnt/applications/Xilinx/19.2/Vivado/2019.2/tps/boost_1_64_0
 xvlog_opts="--relax -L axi_vip_v1_1_6 -L xilinx_vip --define GRAPH_TEST --define RAM_MODEL -i ../../ip/node_scoreboard/tb"
@@ -18,19 +20,24 @@ if [ "$SIM_GUI" -eq 1 ]; then
   SIM_ARGS="--gui"
 fi
 
-
-# Script info
-echo -e "top_tb.sh\n"
-
 # Main steps
 run()
 {
   check_args $# $1
   setup $1 $2
 
-  if [[ "$*" == *"--all"* ]]; then
+  if [[ $# -eq 0 || "$*" == *"--all"* ]]; then
+    
+    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Starting build stage."
+    build_start_time=$(date +%s)
+
     compile
     elaborate
+    
+    build_end_time=$(date +%s)
+    build_execution_time=$((build_end_time - build_start_time))
+    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Build executed in $((build_execution_time / 60))m $((build_execution_time % 60))s."
+    
     simulate
   
   else
@@ -55,37 +62,50 @@ run()
 # RUN_STEP: <compile>
 compile()
 {
+
+  echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Starting compilation stage."
+  compilation_start_time=$(date +%s)
   
   # Compile verilog (flag raised by default in bashrc)
   if [[ "$COMPILE_VLOG" -eq 1 ]]; then
-    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Building design files..."
+    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Building Verilog design files."
     xvlog $xvlog_opts -prj vlog.prj 2>&1 | tee compile.log
-  fi
-
-  # Compile verilog (flag raised by default in bashrc)
-  if [[ "$BUILD_TB" -eq 1 ]]; then
-    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Building testbench..."
-    xvlog $xvlog_opts -prj vlog_tb.prj 2>&1 | tee compile.log
   fi
 
   # compile VHDL if flag raised
   if [[ "$COMPILE_VHDL" -eq 1 ]]; then
-    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Compiling VHDL..."
+    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Compiling VHDL design files."
     xvhdl $xvhdl_opts -prj vhdl.prj 2>&1 | tee compile.log
   fi
+  
+  # Compile testbench files
+  if [[ "$BUILD_TB" -eq 1 ]]; then
+    echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Building testbench."
+    xvlog $xvlog_opts -prj vlog_tb.prj 2>&1 | tee compile.log
+  fi
+
+  compilation_end_time=$(date +%s)
+  compilation_execution_time=$((compilation_end_time - compilation_start_time))
+  echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Compilation stage executed in $((compilation_execution_time / 60))m $((compilation_execution_time % 60))s."
 }
 
 # RUN_STEP: <elaborate>
 elaborate()
 {
-  echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Running elaboration..."
-  xelab --relax --verbose --debug typical --timescale 1ps/1ps --mt auto -d "FLOAT_MAC=1" -L axi_infrastructure_v1_1_0 -L xil_defaultlib -L axi_vip_v1_1_6 -L microblaze_v11_0_2 -L lib_cdc_v1_0_2 -L proc_sys_reset_v5_0_13 -L lmb_v10_v3_0_10 -L lmb_bram_if_cntlr_v4_0_17 -L blk_mem_gen_v8_4_4 -L iomodule_v3_1_5 -L fifo_generator_v13_2_5 -L axi_interconnect_v1_7_17 -L generic_baseblocks_v2_1_0 -L axi_register_slice_v2_1_20 -L axi_data_fifo_v2_1_19 -L axi_crossbar_v2_1_21 -L xbip_utils_v3_0_10 -L axi_utils_v2_0_6 -L xbip_pipe_v3_0_6 -L xbip_dsp48_wrapper_v3_0_4 -L xbip_dsp48_addsub_v3_0_6 -L xbip_dsp48_multadd_v3_0_6 -L xbip_bram18k_v3_0_6 -L mult_gen_v12_0_16 -L floating_point_v7_1_9 -L xilinx_vip -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot $TB_TOP xil_defaultlib.$TB_TOP -log elaborate.log
+  elaboration_start_time=$(date +%s)
+  
+  echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Starting elaboration stage."
+  xelab --relax --verbose --stats --O3 --debug typical --timescale 1ps/1ps --mt auto -d "FLOAT_MAC=1" -L axi_infrastructure_v1_1_0 -L xil_defaultlib -L axi_vip_v1_1_6 -L microblaze_v11_0_2 -L lib_cdc_v1_0_2 -L proc_sys_reset_v5_0_13 -L lmb_v10_v3_0_10 -L lmb_bram_if_cntlr_v4_0_17 -L blk_mem_gen_v8_4_4 -L iomodule_v3_1_5 -L fifo_generator_v13_2_5 -L axi_interconnect_v1_7_17 -L generic_baseblocks_v2_1_0 -L axi_register_slice_v2_1_20 -L axi_data_fifo_v2_1_19 -L axi_crossbar_v2_1_21 -L xbip_utils_v3_0_10 -L axi_utils_v2_0_6 -L xbip_pipe_v3_0_6 -L xbip_dsp48_wrapper_v3_0_4 -L xbip_dsp48_addsub_v3_0_6 -L xbip_dsp48_multadd_v3_0_6 -L xbip_bram18k_v3_0_6 -L mult_gen_v12_0_16 -L floating_point_v7_1_9 -L xilinx_vip -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot $TB_TOP xil_defaultlib.$TB_TOP -log elaborate.log
+  
+  elaboration_end_time=$(date +%s)
+  elaboration_execution_time=$((elaboration_end_time - elaboration_start_time))
+  echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Elaboration stage executed in $((elaboration_execution_time / 60))m $((elaboration_execution_time % 60))s."
 }
 
 # RUN_STEP: <simulate>
 simulate()
 {
-  echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Running simulation..."
+  echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Starting simulation."
   xsim $TB_TOP $SIM_ARGS -key {Behavioral:sim_1:Functional:top_tb} -tclbatch cmd.tcl -protoinst "protoinst_files/bd_9054.protoinst" -log simulate.log
 }
 
