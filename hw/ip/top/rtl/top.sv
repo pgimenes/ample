@@ -372,6 +372,15 @@ logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_resp_valid;
 logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_resp_ready;
 MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp;
 
+// Weight Channel: FTE -> Prefetcher
+logic                                              weight_channel_req_valid;
+logic                                              weight_channel_req_ready;
+WEIGHT_CHANNEL_REQ_t                               weight_channel_req;
+
+logic                                              weight_channel_resp_valid;
+logic                                              weight_channel_resp_ready;
+WEIGHT_CHANNEL_RESP_t                              weight_channel_resp;
+
 // AGE -> Aggregation Buffer Interface
 logic [AGGREGATION_BUFFER_SLOTS-1:0]                           age_aggregation_buffer_write_enable;
 logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] age_aggregation_buffer_write_address;
@@ -412,32 +421,32 @@ node_scoreboard node_scoreboard_i (
     .s_axi_rready                                       (axil_interconnect_m_axi_rready     [2:2]),
 
     // Node Scoreboard -> Aggregation Engine Interface
-    .nsb_age_req_valid            (nsb_age_req_valid),
-    .nsb_age_req_ready            (nsb_age_req_ready),
-    .nsb_age_req                  (nsb_age_req),
-    .nsb_age_resp_valid           (nsb_age_resp_valid),
-    .nsb_age_resp                 (nsb_age_resp),
+    .nsb_age_req_valid                                  (nsb_age_req_valid),
+    .nsb_age_req_ready                                  (nsb_age_req_ready),
+    .nsb_age_req                                        (nsb_age_req),
+    .nsb_age_resp_valid                                 (nsb_age_resp_valid),
+    .nsb_age_resp                                       (nsb_age_resp),
 
     // Node Scoreboard -> Transformation Engine Interface
-    .nsb_fte_req_valid         (nsb_fte_req_valid),
-    .nsb_fte_req_ready         (nsb_fte_req_ready),
-    .nsb_fte_req               (nsb_fte_req),
-    .nsb_fte_resp_valid        (nsb_fte_resp_valid),
-    .nsb_fte_resp              (nsb_fte_resp),
+    .nsb_fte_req_valid                                  (nsb_fte_req_valid),
+    .nsb_fte_req_ready                                  (nsb_fte_req_ready),
+    .nsb_fte_req                                        (nsb_fte_req),
+    .nsb_fte_resp_valid                                 (nsb_fte_resp_valid),
+    .nsb_fte_resp                                       (nsb_fte_resp),
 
     // Node Scoreboard -> Prefetcher Interface
-    .nsb_prefetcher_req_valid                    (nsb_prefetcher_req_valid),
-    .nsb_prefetcher_req_ready                    (nsb_prefetcher_req_ready),
-    .nsb_prefetcher_req                          (nsb_prefetcher_req),
-    .nsb_prefetcher_resp_valid                   (nsb_prefetcher_resp_valid),
-    .nsb_prefetcher_resp                         (nsb_prefetcher_resp),
+    .nsb_prefetcher_req_valid                           (nsb_prefetcher_req_valid),
+    .nsb_prefetcher_req_ready                           (nsb_prefetcher_req_ready),
+    .nsb_prefetcher_req                                 (nsb_prefetcher_req),
+    .nsb_prefetcher_resp_valid                          (nsb_prefetcher_resp_valid),
+    .nsb_prefetcher_resp                                (nsb_prefetcher_resp),
 
     // Node Scoreboard -> Output Buffer Interface
-    .nsb_output_buffer_req_valid                    (nsb_output_buffer_req_valid),
-    .nsb_output_buffer_req_ready                    (nsb_output_buffer_req_ready),
-    .nsb_output_buffer_req                          (nsb_output_buffer_req),
-    .nsb_output_buffer_resp_valid                   (nsb_output_buffer_resp_valid),
-    .nsb_output_buffer_resp                         (nsb_output_buffer_resp)
+    .nsb_output_buffer_req_valid                        (nsb_output_buffer_req_valid),
+    .nsb_output_buffer_req_ready                        (nsb_output_buffer_req_ready),
+    .nsb_output_buffer_req                              (nsb_output_buffer_req),
+    .nsb_output_buffer_resp_valid                       (nsb_output_buffer_resp_valid),
+    .nsb_output_buffer_resp                             (nsb_output_buffer_resp)
 );
 
 // ====================================================================================
@@ -447,36 +456,36 @@ node_scoreboard node_scoreboard_i (
 prefetcher #(
     .FETCH_TAG_COUNT (top_pkg::MAX_NODESLOT_COUNT)
 ) prefetcher_i (
-    .core_clk                                           (sys_clk),
-    .resetn                                             (!sys_rst),
+    .core_clk                                                  (sys_clk),
+    .resetn                                                    (!sys_rst),
 
     // Node Scoreboard -> Prefetcher Interface
-    .nsb_prefetcher_req_valid                    (nsb_prefetcher_req_valid),
-    .nsb_prefetcher_req_ready                    (nsb_prefetcher_req_ready),
-    .nsb_prefetcher_req                          (nsb_prefetcher_req),
-    .nsb_prefetcher_resp_valid                   (nsb_prefetcher_resp_valid),
-    .nsb_prefetcher_resp                         (nsb_prefetcher_resp),
+    .nsb_prefetcher_req_valid                                  (nsb_prefetcher_req_valid),
+    .nsb_prefetcher_req_ready                                  (nsb_prefetcher_req_ready),
+    .nsb_prefetcher_req                                        (nsb_prefetcher_req),
+    .nsb_prefetcher_resp_valid                                 (nsb_prefetcher_resp_valid),
+    .nsb_prefetcher_resp                                       (nsb_prefetcher_resp),
 
     // Regbank Slave AXI interface
-    .s_axi_awaddr                                       (axil_interconnect_m_axi_awaddr     [127:96]),
-    .s_axi_wdata                                        (axil_interconnect_m_axi_wdata      [127:96]),
-    .s_axi_araddr                                       (axil_interconnect_m_axi_araddr     [127:96]),
-    .s_axi_rdata                                        (axil_interconnect_m_axi_rdata      [127:96]),
-    .s_axi_awprot                                       (axil_interconnect_m_axi_awprot     [11:9]),
-    .s_axi_arprot                                       (axil_interconnect_m_axi_arprot     [11:9]),
-    .s_axi_awvalid                                      (axil_interconnect_m_axi_awvalid    [3:3]),
-    .s_axi_awready                                      (axil_interconnect_m_axi_awready    [3:3]),
-    .s_axi_wvalid                                       (axil_interconnect_m_axi_wvalid     [3:3]),
-    .s_axi_wready                                       (axil_interconnect_m_axi_wready     [3:3]),
-    .s_axi_bvalid                                       (axil_interconnect_m_axi_bvalid     [3:3]),
-    .s_axi_bready                                       (axil_interconnect_m_axi_bready     [3:3]),
-    .s_axi_arvalid                                      (axil_interconnect_m_axi_arvalid    [3:3]),
-    .s_axi_arready                                      (axil_interconnect_m_axi_arready    [3:3]),
-    .s_axi_rvalid                                       (axil_interconnect_m_axi_rvalid     [3:3]),
-    .s_axi_rready                                       (axil_interconnect_m_axi_rready     [3:3]),
-    .s_axi_wstrb                                        (axil_interconnect_m_axi_wstrb      [15:12]),
-    .s_axi_bresp                                        (axil_interconnect_m_axi_bresp      [7:6]),
-    .s_axi_rresp                                        (axil_interconnect_m_axi_rresp      [7:6]),
+    .s_axi_awaddr                                              (axil_interconnect_m_axi_awaddr     [127:96]),
+    .s_axi_wdata                                               (axil_interconnect_m_axi_wdata      [127:96]),
+    .s_axi_araddr                                              (axil_interconnect_m_axi_araddr     [127:96]),
+    .s_axi_rdata                                               (axil_interconnect_m_axi_rdata      [127:96]),
+    .s_axi_awprot                                              (axil_interconnect_m_axi_awprot     [11:9]),
+    .s_axi_arprot                                              (axil_interconnect_m_axi_arprot     [11:9]),
+    .s_axi_awvalid                                             (axil_interconnect_m_axi_awvalid    [3:3]),
+    .s_axi_awready                                             (axil_interconnect_m_axi_awready    [3:3]),
+    .s_axi_wvalid                                              (axil_interconnect_m_axi_wvalid     [3:3]),
+    .s_axi_wready                                              (axil_interconnect_m_axi_wready     [3:3]),
+    .s_axi_bvalid                                              (axil_interconnect_m_axi_bvalid     [3:3]),
+    .s_axi_bready                                              (axil_interconnect_m_axi_bready     [3:3]),
+    .s_axi_arvalid                                             (axil_interconnect_m_axi_arvalid    [3:3]),
+    .s_axi_arready                                             (axil_interconnect_m_axi_arready    [3:3]),
+    .s_axi_rvalid                                              (axil_interconnect_m_axi_rvalid     [3:3]),
+    .s_axi_rready                                              (axil_interconnect_m_axi_rready     [3:3]),
+    .s_axi_wstrb                                               (axil_interconnect_m_axi_wstrb      [15:12]),
+    .s_axi_bresp                                               (axil_interconnect_m_axi_bresp      [7:6]),
+    .s_axi_rresp                                               (axil_interconnect_m_axi_rresp      [7:6]),
 
     // Prefetcher Adj RM -> AXI Memory Interconnect
     .prefetcher_adj_rm_axi_interconnect_axi_araddr             (prefetcher_adj_rm_axi_interconnect_axi_araddr),
@@ -599,9 +608,18 @@ prefetcher #(
     .message_channel_req_valid                                 (message_channel_req_valid),
     .message_channel_req_ready                                 (message_channel_req_ready),
     .message_channel_req                                       (message_channel_req),
+
     .message_channel_resp_valid                                (message_channel_resp_valid),
     .message_channel_resp_ready                                (message_channel_resp_ready),
-    .message_channel_resp                                      (message_channel_resp)
+    .message_channel_resp                                      (message_channel_resp),
+
+    .weight_channel_req_valid                                  (weight_channel_req_valid),
+    .weight_channel_req_ready                                  (weight_channel_req_ready),
+    .weight_channel_req                                        (weight_channel_req),
+
+    .weight_channel_resp_valid                                 (weight_channel_resp_valid),
+    .weight_channel_resp_ready                                 (weight_channel_resp_ready),
+    .weight_channel_resp                                       (weight_channel_resp)
 );
 
 // ====================================================================================
@@ -609,15 +627,15 @@ prefetcher #(
 // ====================================================================================
 
 output_buffer output_buffer_i (
-    .core_clk                                           (sys_clk),
-    .resetn                                             (!sys_rst),
+    .core_clk                                              (sys_clk),
+    .resetn                                                (!sys_rst),
 
     // Node Scoreboard -> Output Buffer Interface
-    .nsb_output_buffer_req_valid                    (nsb_output_buffer_req_valid),
-    .nsb_output_buffer_req_ready                    (nsb_output_buffer_req_ready),
-    .nsb_output_buffer_req                          (nsb_output_buffer_req),
-    .nsb_output_buffer_resp_valid                   (nsb_output_buffer_resp_valid),
-    .nsb_output_buffer_resp                         (nsb_output_buffer_resp),
+    .nsb_output_buffer_req_valid                           (nsb_output_buffer_req_valid),
+    .nsb_output_buffer_req_ready                           (nsb_output_buffer_req_ready),
+    .nsb_output_buffer_req                                 (nsb_output_buffer_req),
+    .nsb_output_buffer_resp_valid                          (nsb_output_buffer_resp_valid),
+    .nsb_output_buffer_resp                                (nsb_output_buffer_resp),
 
     // Prefetcher -> AXI Memory Interconnect
     .output_buffer_axi_interconnect_axi_araddr             (output_buffer_axi_interconnect_axi_araddr),
@@ -664,44 +682,44 @@ output_buffer output_buffer_i (
 // ====================================================================================
 
 aggregation_engine aggregation_engine_i (
-    .core_clk                           (sys_clk),
-    .resetn                             (!sys_rst),
+    .core_clk                                     (sys_clk),
+    .resetn                                       (!sys_rst),
     
     // Node Scoreboard -> Aggregation Engine Interface
-    .nsb_age_req_valid            (nsb_age_req_valid),
-    .nsb_age_req_ready            (nsb_age_req_ready),
-    .nsb_age_req                  (nsb_age_req),
-    .nsb_age_resp_valid           (nsb_age_resp_valid),
-    .nsb_age_resp                 (nsb_age_resp),
+    .nsb_age_req_valid                            (nsb_age_req_valid),
+    .nsb_age_req_ready                            (nsb_age_req_ready),
+    .nsb_age_req                                  (nsb_age_req),
+    .nsb_age_resp_valid                           (nsb_age_resp_valid),
+    .nsb_age_resp                                 (nsb_age_resp),
 
     // Regbank Slave AXI interface
-    .s_axi_awaddr                       (axil_interconnect_m_axi_awaddr     [31:0]),
-    .s_axi_awprot                       (axil_interconnect_m_axi_awprot     [2:0]),
-    .s_axi_awvalid                      (axil_interconnect_m_axi_awvalid    [0]),
-    .s_axi_awready                      (axil_interconnect_m_axi_awready    [0]),
-    .s_axi_wdata                        (axil_interconnect_m_axi_wdata      [31:0]),
-    .s_axi_wstrb                        (axil_interconnect_m_axi_wstrb      [3:0]),
-    .s_axi_wvalid                       (axil_interconnect_m_axi_wvalid     [0]),
-    .s_axi_wready                       (axil_interconnect_m_axi_wready     [0]),
-    .s_axi_bresp                        (axil_interconnect_m_axi_bresp      [1:0]),
-    .s_axi_bvalid                       (axil_interconnect_m_axi_bvalid     [0]),
-    .s_axi_bready                       (axil_interconnect_m_axi_bready     [0]),
-    .s_axi_araddr                       (axil_interconnect_m_axi_araddr     [31:0]),
-    .s_axi_arprot                       (axil_interconnect_m_axi_arprot     [2:0]),
-    .s_axi_arvalid                      (axil_interconnect_m_axi_arvalid    [0]),
-    .s_axi_arready                      (axil_interconnect_m_axi_arready    [0]),
-    .s_axi_rdata                        (axil_interconnect_m_axi_rdata      [31:0]),
-    .s_axi_rresp                        (axil_interconnect_m_axi_rresp      [1:0]),
-    .s_axi_rvalid                       (axil_interconnect_m_axi_rvalid     [0]),
-    .s_axi_rready                       (axil_interconnect_m_axi_rready     [0]),
+    .s_axi_awaddr                                 (axil_interconnect_m_axi_awaddr     [31:0]),
+    .s_axi_awprot                                 (axil_interconnect_m_axi_awprot     [2:0]),
+    .s_axi_awvalid                                (axil_interconnect_m_axi_awvalid    [0]),
+    .s_axi_awready                                (axil_interconnect_m_axi_awready    [0]),
+    .s_axi_wdata                                  (axil_interconnect_m_axi_wdata      [31:0]),
+    .s_axi_wstrb                                  (axil_interconnect_m_axi_wstrb      [3:0]),
+    .s_axi_wvalid                                 (axil_interconnect_m_axi_wvalid     [0]),
+    .s_axi_wready                                 (axil_interconnect_m_axi_wready     [0]),
+    .s_axi_bresp                                  (axil_interconnect_m_axi_bresp      [1:0]),
+    .s_axi_bvalid                                 (axil_interconnect_m_axi_bvalid     [0]),
+    .s_axi_bready                                 (axil_interconnect_m_axi_bready     [0]),
+    .s_axi_araddr                                 (axil_interconnect_m_axi_araddr     [31:0]),
+    .s_axi_arprot                                 (axil_interconnect_m_axi_arprot     [2:0]),
+    .s_axi_arvalid                                (axil_interconnect_m_axi_arvalid    [0]),
+    .s_axi_arready                                (axil_interconnect_m_axi_arready    [0]),
+    .s_axi_rdata                                  (axil_interconnect_m_axi_rdata      [31:0]),
+    .s_axi_rresp                                  (axil_interconnect_m_axi_rresp      [1:0]),
+    .s_axi_rvalid                                 (axil_interconnect_m_axi_rvalid     [0]),
+    .s_axi_rready                                 (axil_interconnect_m_axi_rready     [0]),
 
-    .message_channel_req_valid          (message_channel_req_valid),
-    .message_channel_req_ready          (message_channel_req_ready),
-    .message_channel_req                (message_channel_req),
+    .message_channel_req_valid                    (message_channel_req_valid),
+    .message_channel_req_ready                    (message_channel_req_ready),
+    .message_channel_req                          (message_channel_req),
 
-    .message_channel_resp_valid         (message_channel_resp_valid),
-    .message_channel_resp_ready         (message_channel_resp_ready),
-    .message_channel_resp               (message_channel_resp),
+    .message_channel_resp_valid                   (message_channel_resp_valid),
+    .message_channel_resp_ready                   (message_channel_resp_ready),
+    .message_channel_resp                         (message_channel_resp),
 
     .age_buffer_manager_buffer_slot_write_enable  (age_aggregation_buffer_write_enable),
     .age_buffer_manager_buffer_slot_write_address (age_aggregation_buffer_write_address),
@@ -761,15 +779,22 @@ feature_transformation_engine transformation_engine_i (
     .s_axi_bready                                       (axil_interconnect_m_axi_bready     [1:1]), // input
 
     // Node Scoreboard -> Transformation Engine Interface
-    .nsb_fte_req_valid         (nsb_fte_req_valid),
-    .nsb_fte_req_ready         (nsb_fte_req_ready),
-    .nsb_fte_req               (nsb_fte_req),
-    .nsb_fte_resp_valid        (nsb_fte_resp_valid),
-    .nsb_fte_resp              (nsb_fte_resp),
+    .nsb_fte_req_valid                                  (nsb_fte_req_valid),
+    .nsb_fte_req_ready                                  (nsb_fte_req_ready),
+    .nsb_fte_req                                        (nsb_fte_req),
+    .nsb_fte_resp_valid                                 (nsb_fte_resp_valid),
+    .nsb_fte_resp                                       (nsb_fte_resp),
 
-    .fte_aggregation_buffer_pop               (fte_aggregation_buffer_pop),
-    .aggregation_buffer_fte_out_feature_valid (aggregation_buffer_fte_out_feature_valid),
-    .aggregation_buffer_fte_out_feature       (aggregation_buffer_fte_out_feature)
+    .fte_aggregation_buffer_pop                         (fte_aggregation_buffer_pop),
+    .aggregation_buffer_fte_out_feature_valid           (aggregation_buffer_fte_out_feature_valid),
+    .aggregation_buffer_fte_out_feature                 (aggregation_buffer_fte_out_feature),
+
+    .weight_channel_req_valid                           (weight_channel_req_valid),
+    .weight_channel_req_ready                           (weight_channel_req_ready),
+    .weight_channel_req                                 (weight_channel_req),
+    .weight_channel_resp_valid                          (weight_channel_resp_valid),
+    .weight_channel_resp_ready                          (weight_channel_resp_ready),
+    .weight_channel_resp                                (weight_channel_resp)
 );
 
 // ====================================================================================
