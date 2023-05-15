@@ -15,8 +15,8 @@ def main():
     init_manager.initialize()
 
     # Dump
-    init_manager.dump_memory("memory.mem")
-    init_manager.dump_txt("graph_dump.txt")
+    init_manager.dump_memory()
+    init_manager.dump_txt()
     init_manager.dump_json()
 
 if (__name__ == "__main__"):
