@@ -21,6 +21,7 @@ class TrainedGraph:
             self.nx_graph.nodes[node]['neighbours'] = neighbours
             self.nx_graph.nodes[node]['neighbour_count'] = len(neighbours)
             self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
+            self.nx_graph.nodes[node]['adjacency_list_address_lsb'] = 0
         
         self.node_count = len(list(self.nx_graph.nodes))
 

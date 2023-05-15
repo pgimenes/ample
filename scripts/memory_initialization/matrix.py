@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 from sdk.init_manager import InitManager
 from sdk.graphs.matrix_graph import MatrixGraph
+import os
 
 def main():
     # Load graph and generate feature embeddings
@@ -11,8 +14,9 @@ def main():
     # matrix.visualize()
 
     # Initialize Memory
-    init_manager = InitManager(matrix)
-    init_manager.initialize()
+    base_path = os.environ.get("FYP_DIR") + "/hw/sim_files/xsim"
+    init_manager = InitManager(matrix, base_path=base_path)
+    init_manager.map_memory()
 
     # Dump
     init_manager.dump_memory()

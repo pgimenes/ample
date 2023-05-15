@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 import argparse
 from sdk.init_manager import InitManager
 from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph
+import os
 
 '''
     Build the Planetoid graphs with requested embedding size and generate memory file.
@@ -28,8 +30,9 @@ def run_graph(graph):
 
     # Initialize Memory
 
-    init_manager = InitManager(graph)
-    init_manager.initialize()
+    base_path = os.environ.get("FYP_DIR") + "/hw/sim_files/xsim"
+    init_manager = InitManager(graph, base_path=base_path)
+    init_manager.map_memory()
 
     # Dump
     init_manager.dump_memory()

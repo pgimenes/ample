@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 import argparse
 from sdk.init_manager import InitManager
 from sdk.graphs.planetoid_graph import PlanetoidGraph
+import os
 
 '''
     Build the Planetoid graphs with requested embedding size and generate memory file.
@@ -24,12 +26,13 @@ def main(args):
 
     # Initialize Memory
 
-    init_manager = InitManager(planet)
-    init_manager.initialize()
+    base_path = os.environ.get("FYP_DIR") + "/hw/sim_files/xsim"
+    init_manager = InitManager(planet, base_path=base_path)
+    init_manager.map_memory()
 
     # Dump
-    init_manager.dump_memory("memory.mem")
-    init_manager.dump_txt("graph_dump.txt")
+    init_manager.dump_memory()
+    init_manager.dump_txt()
     init_manager.dump_json()
 
 def parse_arguments():
