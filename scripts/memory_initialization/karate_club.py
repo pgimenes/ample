@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 from sdk.init_manager import InitManager
 from sdk.graphs.karate_club import KarateClubGraph
 from sdk.models.simple_gcn import SimpleGCN
+import os
 
 '''
     Build the KarateClub graph with requested embedding size and generate memory file.
@@ -15,8 +17,9 @@ def main():
 
     # Initialize Memory
 
-    init_manager = InitManager(karate)
-    init_manager.initialize()
+    base_path = os.environ.get("FYP_DIR") + "/hw/sim_files/xsim"
+    init_manager = InitManager(karate, base_path=base_path)
+    init_manager.map_memory()
 
     # Dump
     init_manager.dump_memory()

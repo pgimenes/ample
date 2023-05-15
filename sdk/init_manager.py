@@ -6,128 +6,67 @@ import os
 
 class InitManager:
 
-    def __init__(self, graph, nodeslot_dump_file="nodeslot_programming.json", layer_config_file="layer_config.json", memory_dump_file="memory.mem", graph_dump_file="graph_dump.txt"):
+    def __init__(self, graph, base_path="config_files", nodeslot_dump_file="nodeslot_programming.json", layer_config_file="layer_config.json", memory_dump_file="memory.mem", graph_dump_file="graph_dump.txt"):
         # Adjacency list, incoming messages and weights are pulled from the TrainedGraph object
         self.trained_graph = graph
 
         # List of hex bytes
         self.memory_hex = []
 
-        self.offsets = [0]
-        # Adjacency list has range: 0 -> edge_count * 4
-        self.offsets.append(self.required_bytes_with_padding(bytes_required=len(4 * self.trained_graph.dataset.edge_index[0]) ))
-        # Incoming messages have range: offsets[1] -> node_count * features_per_node * bytes_per_feature (float = 4)
-        self.offsets.append(self.offsets[1] + self.required_bytes_with_padding(len(self.trained_graph.nx_graph.nodes) * self.trained_graph.feature_count * 4))
-        # Weights have range: offsets[2] -> feature_count * feature_count * bytes_per_weight (float = 4)
-        self.offsets.append(self.offsets[2] + self.trained_graph.feature_count**2 * 4)
-        # Outgoing messages start at offsets [3]
-        
+        self.offsets = {'adj_list': 0, 'in_messages':0, 'weights':0, 'out_messages':0}
+
         # Adjacency list
         self.node_ids, self.node_offsets = np.unique(self.trained_graph.dataset.edge_index[0], return_index=True)
+        
         self.adj_list = self.trained_graph.dataset.edge_index[1]
-
-        # Incoming messages
         self.in_messages = self.trained_graph.embeddings
-
-        # Weights
         self.weights = self.trained_graph.weights
 
         # Create directory for output files
-        os.makedirs("config_files", exist_ok=True)
+        os.makedirs(base_path, exist_ok=True)
 
         # Memory dump
-        self.memory_dump_file = os.path.join("config_files", memory_dump_file)
-        self.graph_dump_file = os.path.join("config_files", graph_dump_file)
+        self.memory_dump_file = os.path.join(base_path, memory_dump_file)
+        self.graph_dump_file = os.path.join(base_path, graph_dump_file)
 
         # Layer configuration
-        self.layer_config_file = os.path.join("config_files", layer_config_file)
+        self.layer_config_file = os.path.join(base_path, layer_config_file)
         self.layer_config = {'global_config': {}, 'layers': []}
-        self.set_layer_config()
 
         # Nodeslot programming
-        self.nodeslot_dump_file = os.path.join("config_files", nodeslot_dump_file)
+        self.nodeslot_dump_file = os.path.join(base_path, nodeslot_dump_file)
         self.nodeslot_programming = {'nodeslots':[]}
-        self.program_nodeslots()
 
-    def dump_json(self):
-        with open(self.nodeslot_dump_file, 'w') as file:
-            json.dump(self.nodeslot_programming, file, indent=4)
-        with open(self.layer_config_file, 'w') as file:
-            json.dump(self.layer_config, file, indent=4)
+    # Memory initialization
+    # ===============================================
 
-    def set_layer_config(self):
-        self.layer_config['global_config']['layer_count'] = 1
-        layer = {
-            'in_feature_count': self.trained_graph.feature_count,
-            'out_feature_count': self.trained_graph.feature_count,
-            'adjacency_list_address': self.offsets[0],
-            'in_messages_address': self.offsets[1],
-            'weights_address': self.offsets[2],
-            'out_messages_address': self.offsets[3],
-        }
-        self.layer_config['layers'].append(layer)
+    def map_memory(self):
+        self.memory_hex = []
+        self.map_adj_list()
+        self.map_in_messages()
+        self.map_weights()
 
-    def program_nodeslots(self):
+    def map_adj_list(self):
         for node in self.trained_graph.nx_graph.nodes:
-            nb_cnt = self.trained_graph.nx_graph.nodes[node]['neighbour_count']
-            if (nb_cnt == 0):
-                continue
-            nodeslot = {'node_id' : node,
-                        'neighbour_count': nb_cnt,
-                        'precision': 'FLOAT_32',
-                        'adjacency_list_address_lsb': 4*self.trained_graph.nx_graph.nodes[node]['adj_list_offset'],
-                        'adjacency_list_address_msb': 0,
-                        'out_messages_address_lsb': self.offsets[3] + node * self.trained_graph.feature_count * 4,
-                        'out_messages_address_msb': 0
-                        }
-            self.nodeslot_programming['nodeslots'].append(nodeslot)
+            self.trained_graph.nx_graph.nodes[node]['adjacency_list_address_lsb'] = len(self.memory_hex)
+            self.memory_hex += self.int_list_to_byte_list(self.trained_graph.nx_graph.nodes[node]['neighbours'], align=True, alignment=64)
 
-    def required_bytes_with_padding(self, bytes_required):
-        '''
-            Pad with 0s to fill each block of 64 bytes
-        '''
-        return (math.ceil(bytes_required/64) * 64)
+        # Set offset for next memory range
+        self.offsets['in_messages'] = len(self.memory_hex)
 
-    def initialize(self):
-        self.set_adj_list()
-        self.set_in_messages()
-        self.set_weights()
+    def map_in_messages(self):
+        for node in self.trained_graph.nx_graph.nodes:
+            self.memory_hex += self.float_list_to_byte_list(self.in_messages[node], align=True, alignment=64)
+        
+        # Set offset for next memory range
+        self.offsets['weights'] = len(self.memory_hex)
 
-    def set_adj_list(self):
-        # Define list of node offsets (to be programmed into nodeslots)
-        self.memory_hex = self.int_list_to_byte_list(self.adj_list, pad=True, end_offset=self.offsets[1])
-
-    def set_in_messages(self):
-        for node in range(len(self.trained_graph.nx_graph.nodes)):
-            self.memory_hex += self.float_list_to_byte_list(self.in_messages[node])
-        # TO DO: padding
-
-    def set_weights(self):
+    def map_weights(self):
         for outf in range(self.trained_graph.feature_count):
-            self.memory_hex += self.float_list_to_byte_list(self.trained_graph.weights[outf])
-        # TO DO: padding
+            self.memory_hex += self.float_list_to_byte_list(self.trained_graph.weights[outf], align=True, alignment=64)
 
-    def int_list_to_byte_list(self, in_list, pad=False, end_offset=None):
-        '''
-        Convert to list of bytes in hex
-        '''
-        memory_hex = np.array([f"{dest_node:08x}" for dest_node in in_list])
-        memory_hex = [s[i:i+2] for s in memory_hex for i in range(0, 8, 2)]
-        if (pad and end_offset is not None):
-            memory_hex += ['00'] * (end_offset - len(memory_hex))
-        return memory_hex
-
-    def float_list_to_byte_list(self, in_list, pad=False, end_offset=None):
-        hex_list = [struct.pack('!f', i).hex() for i in in_list]
-        hex_list = [s[i:i+2] for s in hex_list for i in range(0, 8, 2)]
-        if (pad and end_offset is not None):
-            hex_list += ['00'] * (end_offset - len(hex_list))
-        return hex_list
-
-    def print_memory(self, memory):
-        for i in range(len(memory)//64):
-            print(''.join(memory[i*64:(i+1)*64]))
-        print(''.join(memory[64*(len(memory)//64):]))
+        # Set offset for next memory range
+        self.offsets['out_messages'] = len(self.memory_hex)
 
     def dump_memory(self):
         with open(self.memory_dump_file, 'w') as file:
@@ -137,9 +76,79 @@ class InitManager:
             file.write(''.join(self.memory_hex[64*(len(self.memory_hex)//64):]))
             file.write('\n')
 
+    # Nodeslot programming and layer configuration
+    # ===============================================
+
+    def set_layer_config(self):
+        self.layer_config['global_config']['layer_count'] = 1
+        layer = {
+            'in_feature_count': self.trained_graph.feature_count,
+            'out_feature_count': self.trained_graph.feature_count,
+            'adjacency_list_address': self.offsets['adj_list'],
+            'in_messages_address': self.offsets['in_messages'],
+            'weights_address': self.offsets['weights'],
+            'out_messages_address': self.offsets['out_messages'],
+        }
+        self.layer_config['layers'].append(layer)
+
+    def program_nodeslots(self, ignore_isolated_nodes=False):
+        for node in self.trained_graph.nx_graph.nodes:
+            nb_cnt = self.trained_graph.nx_graph.nodes[node]['neighbour_count']
+            if (ignore_isolated_nodes and nb_cnt == 0):
+                continue
+            nodeslot = {'node_id' : node,
+                        'neighbour_count': nb_cnt,
+                        'precision': 'FLOAT_32',
+                        'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node]['adjacency_list_address_lsb'],
+                        'adjacency_list_address_msb': 0,
+                        'out_messages_address_lsb': self.offsets['out_messages'] + node * self.trained_graph.feature_count * 4,
+                        'out_messages_address_msb': 0
+                        }
+            self.nodeslot_programming['nodeslots'].append(nodeslot)
+
+    def dump_json(self):
+        # Re-initializize layer config and nodeslot programming
+        self.layer_config = {'global_config': {}, 'layers': []}
+        self.nodeslot_programming = {'nodeslots':[]}
+        self.set_layer_config()
+        self.program_nodeslots()
+
+        with open(self.nodeslot_dump_file, 'w') as file:
+            json.dump(self.nodeslot_programming, file, indent=4)
+        with open(self.layer_config_file, 'w') as file:
+            json.dump(self.layer_config, file, indent=4)
+
+    # Memory initialization utilities
+    # ===============================================
+
+    def int_list_to_byte_list(self, in_list, align=False, alignment=None):
+        '''
+        Convert to list of bytes in hex
+        '''
+        in_list = [0] if (in_list == []) else in_list
+        memory_hex = np.array([f"{dest_node:08x}" for dest_node in in_list])
+        memory_hex = [s[i:i+2] for s in memory_hex for i in range(0, 8, 2)]
+        if (align and alignment is not None):
+            zeros = (alignment - len(memory_hex) % alignment)
+            zeros = 0 if (zeros == 64) else zeros
+            memory_hex += ['00'] * zeros
+        return memory_hex
+
+    def float_list_to_byte_list(self, in_list, align=False, alignment=None):
+        hex_list = [struct.pack('!f', i).hex() for i in in_list]
+        hex_list = [s[i:i+2] for s in hex_list for i in range(0, 8, 2)]
+        if (align and alignment is not None):
+            zeros = (alignment - len(hex_list) % alignment)
+            zeros = 0 if (zeros == 64) else zeros
+            hex_list += ['00'] * zeros
+        return hex_list
+    
+    # Graph info for debugging
+    # ===============================================
+
     def dump_txt(self):
         with open(self.graph_dump_file, 'w') as file:
-            file.write(f"out_messages_offset = {self.offsets[3]};")
+            file.write(f"out_messages_offset = {self.offsets['out_messages']};")
             file.write("\n")
             
             file.write("adj_list = '{")
