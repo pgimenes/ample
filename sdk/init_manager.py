@@ -2,10 +2,11 @@ import numpy as np
 import struct
 import math
 import json
+import os
 
 class InitManager:
 
-    def __init__(self, graph, nodeslot_dump_file="nodeslot_programming.json", layer_config_file="layer_config.json"):
+    def __init__(self, graph, nodeslot_dump_file="nodeslot_programming.json", layer_config_file="layer_config.json", memory_dump_file="memory.mem", graph_dump_file="graph_dump.txt"):
         # Adjacency list, incoming messages and weights are pulled from the TrainedGraph object
         self.trained_graph = graph
 
@@ -31,13 +32,20 @@ class InitManager:
         # Weights
         self.weights = self.trained_graph.weights
 
+        # Create directory for output files
+        os.makedirs("config_files", exist_ok=True)
+
+        # Memory dump
+        self.memory_dump_file = os.path.join("config_files", memory_dump_file)
+        self.graph_dump_file = os.path.join("config_files", graph_dump_file)
+
         # Layer configuration
-        self.layer_config_file = layer_config_file
+        self.layer_config_file = os.path.join("config_files", layer_config_file)
         self.layer_config = {'global_config': {}, 'layers': []}
         self.set_layer_config()
 
         # Nodeslot programming
-        self.nodeslot_dump_file = nodeslot_dump_file
+        self.nodeslot_dump_file = os.path.join("config_files", nodeslot_dump_file)
         self.nodeslot_programming = {'nodeslots':[]}
         self.program_nodeslots()
 
@@ -67,7 +75,7 @@ class InitManager:
             nodeslot = {'node_id' : node,
                         'neighbour_count': nb_cnt,
                         'precision': 'FLOAT_32',
-                        'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node]['adj_list_offset'],
+                        'adjacency_list_address_lsb': 4*self.trained_graph.nx_graph.nodes[node]['adj_list_offset'],
                         'adjacency_list_address_msb': 0,
                         'out_messages_address_lsb': self.offsets[3] + node * self.trained_graph.feature_count * 4,
                         'out_messages_address_msb': 0
@@ -121,16 +129,16 @@ class InitManager:
             print(''.join(memory[i*64:(i+1)*64]))
         print(''.join(memory[64*(len(memory)//64):]))
 
-    def dump_memory(self, filename):
-        with open(filename, 'w') as file:
+    def dump_memory(self):
+        with open(self.memory_dump_file, 'w') as file:
             for i in range(len(self.memory_hex)//64):
                 file.write(''.join(self.memory_hex[i*64:(i+1)*64]))
                 file.write('\n')
             file.write(''.join(self.memory_hex[64*(len(self.memory_hex)//64):]))
             file.write('\n')
 
-    def dump_txt(self, filename):
-        with open(filename, 'w') as file:
+    def dump_txt(self):
+        with open(self.graph_dump_file, 'w') as file:
             file.write(f"out_messages_offset = {self.offsets[3]};")
             file.write("\n")
             
