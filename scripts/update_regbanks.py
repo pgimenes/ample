@@ -3,14 +3,8 @@ import subprocess
 import json
 
 
-DOWNLOAD_SCRIPT = "/scratch/pg519/fuzzy_carnival/scripts/download_regbank.py"
-REGBANK_LIST = "/scratch/pg519/fuzzy_carnival/hw/regbanks.json"
-BUILD_DIR = "/scratch/pg519/fuzzy_carnival/hw/build"
-REGBANKS_BUILD = BUILD_DIR + "/regbanks"
-FILESET = "sources_1"
-
-def download_regbank_files(regbank_id):
-    os.system("python3.6 " + DOWNLOAD_SCRIPT + " " + str(regbank_id) + " all")
+def download_regbank_files(regbank_id, script_file):
+    os.system("python3.6 " + script_file + " " + str(regbank_id) + " all")
 
 def update_vivado_project(regbank_list):
     tcl_file = "/scratch/pg519/fuzzy_carnival/hw/update_regbanks.tcl"
@@ -30,6 +24,14 @@ def update_vivado_project(regbank_list):
 
 def main():
 
+    BASE_PATH = os.environ.get("FYP_DIR")
+
+    DOWNLOAD_SCRIPT = BASE_PATH + "/scripts/download_regbank.py"
+    REGBANK_LIST = BASE_PATH + "/hw/regbanks.json"
+    BUILD_DIR = BASE_PATH + "/hw/build"
+    REGBANKS_BUILD = BUILD_DIR + "/regbanks"
+    FILESET = "sources_1"
+
     json_file = open(REGBANK_LIST)
     regbanks = json.load(json_file)
 
@@ -41,7 +43,7 @@ def main():
     for regbank in regbanks["regbanks"]:
         regbank_list = regbank_list + [regbank["name"]]
         print(f"Regbank " + regbank["name"] + " has ID " + str(regbank["ID"]))
-        download_regbank_files(regbank["ID"])
+        download_regbank_files(regbank["ID"], DOWNLOAD_SCRIPT)
 
         # Move zipfile to build directory
         zip_file = regbank["name"] + "_regs.zip "
