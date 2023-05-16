@@ -45,7 +45,9 @@ module prefetcher_weight_bank #(
 
     output logic                                              weight_channel_resp_valid,
     input  logic                                              weight_channel_resp_ready,
-    output WEIGHT_CHANNEL_RESP_t                              weight_channel_resp
+    output WEIGHT_CHANNEL_RESP_t                              weight_channel_resp,
+
+    input  logic [31:0] layer_config_weights_address_lsb_value
     
 );
 
@@ -54,8 +56,8 @@ typedef enum logic [3:0] {
     WEIGHT_BANK_FSM_FETCH_REQ        = 4'd1,
     WEIGHT_BANK_FSM_WAIT_RESP        = 4'd2,
     WEIGHT_BANK_FSM_WRITE            = 4'd3,
-    WEIGHT_BANK_FSM_WEIGHTS_WAITING = 4'd4,
-    WEIGHT_BANK_FSM_DUMP_WEIGHTS    = 4'd5
+    WEIGHT_BANK_FSM_WEIGHTS_WAITING  = 4'd4,
+    WEIGHT_BANK_FSM_DUMP_WEIGHTS     = 4'd5
 } WEIGHT_BANK_FSM_e;
 
 // ==================================================================================================================================================
@@ -244,22 +246,22 @@ assign weight_bank_axi_rm_fetch_resp_ready = (weight_bank_state == WEIGHT_BANK_F
 
 always_comb begin
     row_fifo_in_data = 
-                        feature_offset == '0 ? weight_bank_axi_rm_fetch_resp_data_q [31 : 0]
-                        : feature_offset == 1'b1 ? weight_bank_axi_rm_fetch_resp_data_q [63 : 32]
-                        : feature_offset == 2'b10 ? weight_bank_axi_rm_fetch_resp_data_q [95 : 64]
-                        : feature_offset == 2'b11 ? weight_bank_axi_rm_fetch_resp_data_q [127 : 96]
-                        : feature_offset == 3'b100 ? weight_bank_axi_rm_fetch_resp_data_q [159 : 128]
-                        : feature_offset == 3'b101 ? weight_bank_axi_rm_fetch_resp_data_q [191 : 160]
-                        : feature_offset == 3'b110 ? weight_bank_axi_rm_fetch_resp_data_q [223 : 192]
-                        : feature_offset == 3'b111 ? weight_bank_axi_rm_fetch_resp_data_q [255 : 224]
-                        : feature_offset == 4'b1000 ? weight_bank_axi_rm_fetch_resp_data_q [287 : 256]
-                        : feature_offset == 4'b1001 ? weight_bank_axi_rm_fetch_resp_data_q [319 : 288]
-                        : feature_offset == 4'b1010 ? weight_bank_axi_rm_fetch_resp_data_q [351 : 320]
-                        : feature_offset == 4'b1011 ? weight_bank_axi_rm_fetch_resp_data_q [383 : 352]
-                        : feature_offset == 4'b1100 ? weight_bank_axi_rm_fetch_resp_data_q [415 : 384]
-                        : feature_offset == 4'b1101 ? weight_bank_axi_rm_fetch_resp_data_q [447 : 416]
-                        : feature_offset == 4'b1110 ? weight_bank_axi_rm_fetch_resp_data_q [479 : 448]
-                        : feature_offset == 4'b1111 ? weight_bank_axi_rm_fetch_resp_data_q [511 : 480]
+                        feature_offset == '0        ? weight_bank_axi_rm_fetch_resp_data_q [511 : 480]
+                        : feature_offset == 1'b1    ? weight_bank_axi_rm_fetch_resp_data_q [479 : 448]
+                        : feature_offset == 2'b10   ? weight_bank_axi_rm_fetch_resp_data_q [447 : 416]
+                        : feature_offset == 2'b11   ? weight_bank_axi_rm_fetch_resp_data_q [415 : 384]
+                        : feature_offset == 3'b100  ? weight_bank_axi_rm_fetch_resp_data_q [383 : 352]
+                        : feature_offset == 3'b101  ? weight_bank_axi_rm_fetch_resp_data_q [351 : 320]
+                        : feature_offset == 3'b110  ? weight_bank_axi_rm_fetch_resp_data_q [319 : 288]
+                        : feature_offset == 3'b111  ? weight_bank_axi_rm_fetch_resp_data_q [287 : 256]
+                        : feature_offset == 4'b1000 ? weight_bank_axi_rm_fetch_resp_data_q [255 : 224]
+                        : feature_offset == 4'b1001 ? weight_bank_axi_rm_fetch_resp_data_q [223 : 192]
+                        : feature_offset == 4'b1010 ? weight_bank_axi_rm_fetch_resp_data_q [191 : 160]
+                        : feature_offset == 4'b1011 ? weight_bank_axi_rm_fetch_resp_data_q [159 : 128]
+                        : feature_offset == 4'b1100 ? weight_bank_axi_rm_fetch_resp_data_q [127 : 96]
+                        : feature_offset == 4'b1101 ? weight_bank_axi_rm_fetch_resp_data_q [95 : 64]
+                        : feature_offset == 4'b1110 ? weight_bank_axi_rm_fetch_resp_data_q [63 : 32]
+                        : feature_offset == 4'b1111 ? weight_bank_axi_rm_fetch_resp_data_q [31 : 0]
                         : '0;
 end
 
@@ -287,7 +289,7 @@ for (genvar row = 1; row < MAX_FEATURE_COUNT; row++) begin
             row_pop_shift[row] <= '0;
 
         // Clear shift register when starting new weight dump
-        end else if (weight_bank_state_n == WEIGHT_BANK_FSM_DUMP_WEIGHTS) begin
+        end else if ((weight_bank_state == WEIGHT_BANK_FSM_WEIGHTS_WAITING) && (weight_bank_state_n == WEIGHT_BANK_FSM_DUMP_WEIGHTS)) begin
             row_pop_shift[row] <= '0;
 
         // Shift register when accepting weight channel response
@@ -297,24 +299,29 @@ for (genvar row = 1; row < MAX_FEATURE_COUNT; row++) begin
     end
 end
 
+logic [$clog2(MAX_FEATURE_COUNT)-1:0] required_pulses;
+
+// Round up in features to the nearest multiple of 16
+assign required_pulses = {nsb_prefetcher_weight_bank_req_q.in_features[$clog2(MAX_FEATURE_COUNT)-1:4], 4'd0} + (|nsb_prefetcher_weight_bank_req_q.in_features[3:0] ? 'd16 : '0);
+
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         row_pop_shift[0] <= '0; // Head of shift register
         row_counter <= '0;
     
     // Starting new feature dump, reset all flags and counters
-    end else if (weight_bank_state_n == WEIGHT_BANK_FSM_DUMP_WEIGHTS) begin
+    end else if ((weight_bank_state == WEIGHT_BANK_FSM_WEIGHTS_WAITING) && (weight_bank_state_n == WEIGHT_BANK_FSM_DUMP_WEIGHTS)) begin
         row_pop_shift[0] <= '1;
         row_counter <= '0;
 
     // Pulse matrix
     end else if (|row_fifo_pop) begin
         // Increment when popping any rows, but latch at '1
-        row_counter <= (row_counter == 'd1024) ? row_counter : (row_counter + 1'b1);
+        row_counter <= (row_counter == required_pulses) ? row_counter : (row_counter + 1'b1);
 
         // If accepting weight channel response, new data is available on all row FIFOs
         // so shift register and clear popped rows flag
-        row_pop_shift[0] <= (row_counter != '1);
+        row_pop_shift[0] <= !(row_counter >= (required_pulses - 1'b1));
 
     end
 end
@@ -324,7 +331,9 @@ always_comb begin
     weight_channel_resp_valid = (weight_bank_state == WEIGHT_BANK_FSM_DUMP_WEIGHTS) && (&row_fifo_out_valid) && |row_pop_shift;
 
     weight_channel_resp.data       = row_fifo_out_data;
-    weight_channel_resp.valid_mask = row_pop_shift;
+    weight_channel_resp.valid_mask = row_pop_shift & ~row_fifo_empty;
+    
+    weight_channel_resp.done       = (weight_channel_resp.valid_mask == '0);
     
     accepting_weight_channel_resp = (weight_channel_resp_valid && weight_channel_resp_ready);
 end

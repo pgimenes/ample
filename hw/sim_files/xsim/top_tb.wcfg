@@ -29,15 +29,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="16000000fs"></ZoomEndTime>
-      <Cursor1Time time="15978686fs"></Cursor1Time>
+      <ZoomStartTime time="3424684fs"></ZoomStartTime>
+      <ZoomEndTime time="3509385fs"></ZoomEndTime>
+      <Cursor1Time time="3495268fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="407"></NameColumnWidth>
+      <NameColumnWidth column_width="363"></NameColumnWidth>
       <ValueColumnWidth column_width="66"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="37" />
+   <WVObjectSize size="40" />
    <wvobject type="logic" fp_name="/top_tb/sys_clk_i">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -146,10 +146,22 @@
          <obj_property name="ElementShortName">nsb_config_transformation_wait_count_count[5:0]</obj_property>
          <obj_property name="ObjectShortName">nsb_config_transformation_wait_count_count[5:0]</obj_property>
       </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/layer_config_weights_address_lsb_lsb">
+         <obj_property name="ElementShortName">layer_config_weights_address_lsb_lsb[31:0]</obj_property>
+         <obj_property name="ObjectShortName">layer_config_weights_address_lsb_lsb[31:0]</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_age_req_valid">
       <obj_property name="ElementShortName">nsb_age_req_valid</obj_property>
       <obj_property name="ObjectShortName">nsb_age_req_valid</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/aggregation_buffer_population_count">
+      <obj_property name="ElementShortName">aggregation_buffer_population_count[5:0]</obj_property>
+      <obj_property name="ObjectShortName">aggregation_buffer_population_count[5:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_config_aggregation_wait_count_count">
+      <obj_property name="ElementShortName">nsb_config_aggregation_wait_count_count[5:0]</obj_property>
+      <obj_property name="ObjectShortName">nsb_config_aggregation_wait_count_count[5:0]</obj_property>
    </wvobject>
    <wvobject type="group" fp_name="group256">
       <obj_property name="label">Nodeslot 0</obj_property>
@@ -351,23 +363,48 @@
          <obj_property name="ElementShortName">adj_queue_fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">adj_queue_fetch_state[2:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_fetch_state">
-         <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
-         <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /fetch_tag_adj_rm_start_address">
+         <obj_property name="ElementShortName">fetch_tag_adj_rm_start_address[33:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_adj_rm_start_address[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_fetch_neighbours_remaining_fetch">
+         <obj_property name="ElementShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /fetch_tag_adj_rm_byte_count">
+         <obj_property name="ElementShortName">fetch_tag_adj_rm_byte_count[17:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_adj_rm_byte_count[17:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /push_adj_queue">
+         <obj_property name="ElementShortName">push_adj_queue</obj_property>
+         <obj_property name="ObjectShortName">push_adj_queue</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_queue_write_data">
+         <obj_property name="ElementShortName">adj_queue_write_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_write_data[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /fetch_tag_adj_rm_resp_data_q">
+         <obj_property name="ElementShortName">fetch_tag_adj_rm_resp_data_q[511:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_adj_rm_resp_data_q[511:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /buffered_adj_fetch_resp_offset">
+         <obj_property name="ElementShortName">buffered_adj_fetch_resp_offset[8:0]</obj_property>
+         <obj_property name="ObjectShortName">buffered_adj_fetch_resp_offset[8:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_queue_count">
          <obj_property name="ElementShortName">adj_queue_count[6:0]</obj_property>
          <obj_property name="ObjectShortName">adj_queue_count[6:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_fetch_state">
+         <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
+      </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_queue_count">
          <obj_property name="ElementShortName">message_queue_count[11:0]</obj_property>
          <obj_property name="ObjectShortName">message_queue_count[11:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_fetch_neighbours_remaining_fetch">
-         <obj_property name="ElementShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
-         <obj_property name="ObjectShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group235">
@@ -389,13 +426,29 @@
          <obj_property name="ElementShortName">adj_queue_fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">adj_queue_fetch_state[2:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /message_fetch_state">
-         <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
-         <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /fetch_tag_adj_rm_start_address">
+         <obj_property name="ElementShortName">fetch_tag_adj_rm_start_address[33:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_adj_rm_start_address[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /fetch_tag_adj_rm_resp_data">
+         <obj_property name="ElementShortName">fetch_tag_adj_rm_resp_data[511:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_adj_rm_resp_data[511:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /push_adj_queue">
+         <obj_property name="ElementShortName">push_adj_queue</obj_property>
+         <obj_property name="ObjectShortName">push_adj_queue</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /adj_queue_write_data">
+         <obj_property name="ElementShortName">adj_queue_write_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_write_data[31:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /adj_queue_count">
          <obj_property name="ElementShortName">adj_queue_count[6:0]</obj_property>
          <obj_property name="ObjectShortName">adj_queue_count[6:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /message_fetch_state">
+         <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /message_queue_count">
          <obj_property name="ElementShortName">message_queue_count[11:0]</obj_property>
@@ -441,6 +494,18 @@
          <obj_property name="ElementShortName">adj_queue_fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">adj_queue_fetch_state[2:0]</obj_property>
       </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /fetch_tag_adj_rm_start_address">
+         <obj_property name="ElementShortName">fetch_tag_adj_rm_start_address[33:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_adj_rm_start_address[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /fetch_tag_adj_rm_resp_data_q">
+         <obj_property name="ElementShortName">fetch_tag_adj_rm_resp_data_q[511:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_adj_rm_resp_data_q[511:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /adj_queue_write_data">
+         <obj_property name="ElementShortName">adj_queue_write_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_write_data[31:0]</obj_property>
+      </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[2].fetch_tag_i /message_fetch_state">
          <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
@@ -473,9 +538,45 @@
          <obj_property name="ElementShortName">adj_queue_fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">adj_queue_fetch_state[2:0]</obj_property>
       </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /fetch_tag_adj_rm_start_address">
+         <obj_property name="ElementShortName">fetch_tag_adj_rm_start_address[33:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_adj_rm_start_address[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /adj_fetch_neighbours_remaining_fetch">
+         <obj_property name="ElementShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_fetch_neighbours_remaining_fetch[9:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /fetch_tag_adj_rm_byte_count">
+         <obj_property name="ElementShortName">fetch_tag_adj_rm_byte_count[17:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_adj_rm_byte_count[17:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /adj_queue_write_data">
+         <obj_property name="ElementShortName">adj_queue_write_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_write_data[31:0]</obj_property>
+      </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /message_fetch_state">
          <obj_property name="ElementShortName">message_fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">message_fetch_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /push_message_queue">
+         <obj_property name="ElementShortName">push_message_queue</obj_property>
+         <obj_property name="ObjectShortName">push_message_queue</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /fetch_tag_msg_rm_start_address">
+         <obj_property name="ElementShortName">fetch_tag_msg_rm_start_address[33:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_tag_msg_rm_start_address[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /layer_config_in_messages_address_lsb_value">
+         <obj_property name="ElementShortName">layer_config_in_messages_address_lsb_value[31:0]</obj_property>
+         <obj_property name="ObjectShortName">layer_config_in_messages_address_lsb_value[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /adj_queue_head">
+         <obj_property name="ElementShortName">adj_queue_head[31:0]</obj_property>
+         <obj_property name="ObjectShortName">adj_queue_head[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /msg_queue_write_data">
+         <obj_property name="ElementShortName">msg_queue_write_data[511:0]</obj_property>
+         <obj_property name="ObjectShortName">msg_queue_write_data[511:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /adj_queue_count">
          <obj_property name="ElementShortName">adj_queue_count[6:0]</obj_property>
@@ -625,7 +726,6 @@
    <wvobject type="group" fp_name="group208">
       <obj_property name="label">AGE</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/nsb_age_req_valid">
          <obj_property name="ElementShortName">nsb_age_req_valid</obj_property>
          <obj_property name="ObjectShortName">nsb_age_req_valid</obj_property>
@@ -635,21 +735,21 @@
          <obj_property name="ObjectShortName">.nodeslot[5:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/age_agm_req.ac_count">
-         <obj_property name="ElementShortName">.ac_count[6:0]</obj_property>
-         <obj_property name="ObjectShortName">.ac_count[6:0]</obj_property>
+         <obj_property name="ElementShortName">.ac_count[7:0]</obj_property>
+         <obj_property name="ObjectShortName">.ac_count[7:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/agc_float32_free_mask">
-         <obj_property name="ElementShortName">agc_float32_free_mask[31:0]</obj_property>
-         <obj_property name="ObjectShortName">agc_float32_free_mask[31:0]</obj_property>
+         <obj_property name="ElementShortName">agc_float32_free_mask[63:0]</obj_property>
+         <obj_property name="ObjectShortName">agc_float32_free_mask[63:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/allocated_agc_float32">
-         <obj_property name="ElementShortName">allocated_agc_float32[4:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agc_float32[4:0]</obj_property>
+         <obj_property name="ElementShortName">allocated_agc_float32[5:0]</obj_property>
+         <obj_property name="ObjectShortName">allocated_agc_float32[5:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/allocatable_aggregation_cores_float32">
-         <obj_property name="ElementShortName">allocatable_aggregation_cores_float32[31:0]</obj_property>
-         <obj_property name="ObjectShortName">allocatable_aggregation_cores_float32[31:0]</obj_property>
+         <obj_property name="ElementShortName">allocatable_aggregation_cores_float32[63:0]</obj_property>
+         <obj_property name="ObjectShortName">allocatable_aggregation_cores_float32[63:0]</obj_property>
       </wvobject>
       <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/nsb_age_resp_valid">
          <obj_property name="ElementShortName">nsb_age_resp_valid</obj_property>
@@ -675,7 +775,6 @@
    <wvobject type="group" fp_name="group359">
       <obj_property name="label">AGM [0]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[0].agm_i /agm_state">
          <obj_property name="ElementShortName">agm_state[4:0]</obj_property>
          <obj_property name="ObjectShortName">agm_state[4:0]</obj_property>
@@ -690,7 +789,6 @@
    <wvobject type="group" fp_name="group270">
       <obj_property name="label">AGM[1]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[1].agm_i /agm_state">
          <obj_property name="ElementShortName">agm_state[4:0]</obj_property>
          <obj_property name="ObjectShortName">agm_state[4:0]</obj_property>
@@ -702,8 +800,8 @@
          <obj_property name="label">allocated_agc</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[1].agm_i /buffer_manager_allocation_q">
-         <obj_property name="ElementShortName">buffer_manager_allocation_q[0:0]</obj_property>
-         <obj_property name="ObjectShortName">buffer_manager_allocation_q[0:0]</obj_property>
+         <obj_property name="ElementShortName">buffer_manager_allocation_q[1:0]</obj_property>
+         <obj_property name="ObjectShortName">buffer_manager_allocation_q[1:0]</obj_property>
       </wvobject>
       <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[1].agm_i /age_aggregation_manager_req_valid">
          <obj_property name="ElementShortName">age_aggregation_manager_req_valid</obj_property>
@@ -722,8 +820,8 @@
          <obj_property name="ObjectShortName">.x_dest[6:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[1].agm_i /aggregation_manager_router_data.data.head_data.y_dest">
-         <obj_property name="ElementShortName">.y_dest[1:0]</obj_property>
-         <obj_property name="ObjectShortName">.y_dest[1:0]</obj_property>
+         <obj_property name="ElementShortName">.y_dest[2:0]</obj_property>
+         <obj_property name="ObjectShortName">.y_dest[2:0]</obj_property>
       </wvobject>
       <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[1].agm_i /noc_router_waiting">
          <obj_property name="ElementShortName">noc_router_waiting</obj_property>
@@ -741,7 +839,6 @@
    <wvobject type="group" fp_name="group271">
       <obj_property name="label">AGM[2]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[2].agm_i /agm_state">
          <obj_property name="ElementShortName">agm_state[4:0]</obj_property>
          <obj_property name="ObjectShortName">agm_state[4:0]</obj_property>
@@ -757,8 +854,8 @@
          <obj_property name="label">allocated_agc</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[2].agm_i /buffer_manager_allocation_q">
-         <obj_property name="ElementShortName">buffer_manager_allocation_q[0:0]</obj_property>
-         <obj_property name="ObjectShortName">buffer_manager_allocation_q[0:0]</obj_property>
+         <obj_property name="ElementShortName">buffer_manager_allocation_q[1:0]</obj_property>
+         <obj_property name="ObjectShortName">buffer_manager_allocation_q[1:0]</obj_property>
       </wvobject>
       <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[2].agm_i /age_aggregation_manager_buffer_manager_allocation_valid">
          <obj_property name="ElementShortName">age_aggregation_manager_buffer_manager_allocation_valid</obj_property>
@@ -772,7 +869,6 @@
    <wvobject type="group" fp_name="group272">
       <obj_property name="label">AGM[3]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[3].agm_i /agm_state">
          <obj_property name="ElementShortName">agm_state[4:0]</obj_property>
          <obj_property name="ObjectShortName">agm_state[4:0]</obj_property>
@@ -788,8 +884,8 @@
          <obj_property name="label">allocated_agc</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[3].agm_i /buffer_manager_allocation_q">
-         <obj_property name="ElementShortName">buffer_manager_allocation_q[0:0]</obj_property>
-         <obj_property name="ObjectShortName">buffer_manager_allocation_q[0:0]</obj_property>
+         <obj_property name="ElementShortName">buffer_manager_allocation_q[1:0]</obj_property>
+         <obj_property name="ObjectShortName">buffer_manager_allocation_q[1:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group109">
@@ -803,13 +899,25 @@
          <obj_property name="ElementShortName">agc_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">agc_state[2:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /sent_flits_counter">
-         <obj_property name="ElementShortName">sent_flits_counter[2:0]</obj_property>
-         <obj_property name="ObjectShortName">sent_flits_counter[2:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /features[4]">
+         <obj_property name="ElementShortName">[4][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[4][31:0]</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /aggregation_core_router_valid">
-         <obj_property name="ElementShortName">aggregation_core_router_valid</obj_property>
-         <obj_property name="ObjectShortName">aggregation_core_router_valid</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /features[3]">
+         <obj_property name="ElementShortName">[3][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /features[2]">
+         <obj_property name="ElementShortName">[2][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /features[1]">
+         <obj_property name="ElementShortName">[1][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /features[0]">
+         <obj_property name="ElementShortName">[0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][31:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group289">
@@ -840,8 +948,8 @@
          <obj_property name="ObjectShortName">correct_pkt_dest</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /packet_dest_row">
-         <obj_property name="ElementShortName">packet_dest_row[1:0]</obj_property>
-         <obj_property name="ObjectShortName">packet_dest_row[1:0]</obj_property>
+         <obj_property name="ElementShortName">packet_dest_row[2:0]</obj_property>
+         <obj_property name="ObjectShortName">packet_dest_row[2:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /packet_dest_col">
          <obj_property name="ElementShortName">packet_dest_col[6:0]</obj_property>
@@ -856,8 +964,8 @@
          <obj_property name="ObjectShortName">aggregation_core_router_valid</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /aggregation_core_router_data.data.bt_pl">
-         <obj_property name="ElementShortName">.bt_pl[81:0]</obj_property>
-         <obj_property name="ObjectShortName">.bt_pl[81:0]</obj_property>
+         <obj_property name="ElementShortName">.bt_pl[83:0]</obj_property>
+         <obj_property name="ObjectShortName">.bt_pl[83:0]</obj_property>
          <obj_property name="Radix">BINARYRADIX</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /aggregation_core_router_data.data.head_data.x_dest">
@@ -865,8 +973,8 @@
          <obj_property name="ObjectShortName">.x_dest[6:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /aggregation_core_router_data.data.head_data.y_dest">
-         <obj_property name="ElementShortName">.y_dest[1:0]</obj_property>
-         <obj_property name="ObjectShortName">.y_dest[1:0]</obj_property>
+         <obj_property name="ElementShortName">.y_dest[2:0]</obj_property>
+         <obj_property name="ObjectShortName">.y_dest[2:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /features">
          <obj_property name="ElementShortName">features[15:0][31:0]</obj_property>
@@ -877,8 +985,8 @@
          <obj_property name="ObjectShortName">bm_chosen_data[63:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /buffer_manager_pkt_dest_row">
-         <obj_property name="ElementShortName">buffer_manager_pkt_dest_row[1:0]</obj_property>
-         <obj_property name="ObjectShortName">buffer_manager_pkt_dest_row[1:0]</obj_property>
+         <obj_property name="ElementShortName">buffer_manager_pkt_dest_row[2:0]</obj_property>
+         <obj_property name="ObjectShortName">buffer_manager_pkt_dest_row[2:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /buffer_manager_pkt_dest_col">
          <obj_property name="ElementShortName">buffer_manager_pkt_dest_col[6:0]</obj_property>
@@ -912,7 +1020,6 @@
    <wvobject type="group" fp_name="group266">
       <obj_property name="label">BM[0]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /bm_state">
          <obj_property name="ElementShortName">bm_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">bm_state[2:0]</obj_property>
@@ -930,8 +1037,8 @@
          <obj_property name="ObjectShortName">allocated_agcs_x_coords_q[31:0][6:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /allocated_agcs_y_coords_q">
-         <obj_property name="ElementShortName">allocated_agcs_y_coords_q[31:0][1:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agcs_y_coords_q[31:0][1:0]</obj_property>
+         <obj_property name="ElementShortName">allocated_agcs_y_coords_q[31:0][2:0]</obj_property>
+         <obj_property name="ObjectShortName">allocated_agcs_y_coords_q[31:0][2:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /allocated_agcs_count_q">
          <obj_property name="ElementShortName">allocated_agcs_count_q[4:0]</obj_property>
@@ -957,7 +1064,6 @@
    <wvobject type="group" fp_name="group293">
       <obj_property name="label">BM[1]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /bm_state">
          <obj_property name="ElementShortName">bm_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">bm_state[2:0]</obj_property>
@@ -975,8 +1081,8 @@
          <obj_property name="ObjectShortName">allocated_agcs_x_coords_q[31:0][6:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /allocated_agcs_y_coords_q">
-         <obj_property name="ElementShortName">allocated_agcs_y_coords_q[31:0][1:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agcs_y_coords_q[31:0][1:0]</obj_property>
+         <obj_property name="ElementShortName">allocated_agcs_y_coords_q[31:0][2:0]</obj_property>
+         <obj_property name="ObjectShortName">allocated_agcs_y_coords_q[31:0][2:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /allocated_agcs_count_q">
          <obj_property name="ElementShortName">allocated_agcs_count_q[4:0]</obj_property>
@@ -1015,8 +1121,8 @@
          <obj_property name="ObjectShortName">router_buffer_manager_ready</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /received_packet_source_row">
-         <obj_property name="ElementShortName">received_packet_source_row[1:0]</obj_property>
-         <obj_property name="ObjectShortName">received_packet_source_row[1:0]</obj_property>
+         <obj_property name="ElementShortName">received_packet_source_row[2:0]</obj_property>
+         <obj_property name="ObjectShortName">received_packet_source_row[2:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /received_packet_source_col">
          <obj_property name="ElementShortName">received_packet_source_col[6:0]</obj_property>
@@ -1246,10 +1352,13 @@
    <wvobject type="group" fp_name="group298">
       <obj_property name="label">WEIGHT BANK</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_valid">
          <obj_property name="ElementShortName">nsb_prefetcher_weight_bank_req_valid</obj_property>
          <obj_property name="ObjectShortName">nsb_prefetcher_weight_bank_req_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_q.start_address">
+         <obj_property name="ElementShortName">.start_address[33:0]</obj_property>
+         <obj_property name="ObjectShortName">.start_address[33:0]</obj_property>
       </wvobject>
       <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_ready">
          <obj_property name="ElementShortName">nsb_prefetcher_weight_bank_req_ready</obj_property>
@@ -1285,6 +1394,10 @@
          <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_byte_count[17:0]</obj_property>
          <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_byte_count[17:0]</obj_property>
       </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_start_address">
+         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_start_address[33:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_start_address[33:0]</obj_property>
+      </wvobject>
       <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_resp_valid">
          <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_resp_valid</obj_property>
          <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_resp_valid</obj_property>
@@ -1314,6 +1427,89 @@
       <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_channel_req_valid">
          <obj_property name="ElementShortName">weight_channel_req_valid</obj_property>
          <obj_property name="ObjectShortName">weight_channel_req_valid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp_valid">
+         <obj_property name="ElementShortName">weight_channel_resp_valid</obj_property>
+         <obj_property name="ObjectShortName">weight_channel_resp_valid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp_ready">
+         <obj_property name="ElementShortName">weight_channel_resp_ready</obj_property>
+         <obj_property name="ObjectShortName">weight_channel_resp_ready</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp.valid_mask[3]">
+         <obj_property name="ElementShortName">[3]</obj_property>
+         <obj_property name="ObjectShortName">[3]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp.valid_mask[2]">
+         <obj_property name="ElementShortName">[2]</obj_property>
+         <obj_property name="ObjectShortName">[2]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp.valid_mask[1]">
+         <obj_property name="ElementShortName">[1]</obj_property>
+         <obj_property name="ObjectShortName">[1]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp.valid_mask[0]">
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">[0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp.done">
+         <obj_property name="ElementShortName">.done</obj_property>
+         <obj_property name="ObjectShortName">.done</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_counter">
+         <obj_property name="ElementShortName">row_counter[10:0]</obj_property>
+         <obj_property name="ObjectShortName">row_counter[10:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_pop">
+         <obj_property name="ElementShortName">row_fifo_pop[1023:0]</obj_property>
+         <obj_property name="ObjectShortName">row_fifo_pop[1023:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_pop_shift">
+         <obj_property name="ElementShortName">row_pop_shift[1023:0]</obj_property>
+         <obj_property name="ObjectShortName">row_pop_shift[1023:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_q.in_features">
+         <obj_property name="ElementShortName">.in_features[10:0]</obj_property>
+         <obj_property name="ObjectShortName">.in_features[10:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_count[4]">
+         <obj_property name="ElementShortName">[4][10:0]</obj_property>
+         <obj_property name="ObjectShortName">[4][10:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_count[3]">
+         <obj_property name="ElementShortName">[3][10:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][10:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_count[2]">
+         <obj_property name="ElementShortName">[2][10:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][10:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_count[1]">
+         <obj_property name="ElementShortName">[1][10:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][10:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_count[0]">
+         <obj_property name="ElementShortName">[0][10:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][10:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_in_data">
+         <obj_property name="ElementShortName">row_fifo_in_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">row_fifo_in_data[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/required_pulses">
+         <obj_property name="ElementShortName">required_pulses[9:0]</obj_property>
+         <obj_property name="ObjectShortName">required_pulses[9:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_resp_data_q">
+         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_resp_data_q[511:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_resp_data_q[511:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group307">
@@ -1351,6 +1547,87 @@
       <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/nsb_fte_req_valid">
          <obj_property name="ElementShortName">nsb_fte_req_valid</obj_property>
          <obj_property name="ObjectShortName">nsb_fte_req_valid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/pulse_systolic_module">
+         <obj_property name="ElementShortName">pulse_systolic_module</obj_property>
+         <obj_property name="ObjectShortName">pulse_systolic_module</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/aggregation_buffer_fte_out_feature_valid">
+         <obj_property name="ElementShortName">aggregation_buffer_fte_out_feature_valid[15:0]</obj_property>
+         <obj_property name="ObjectShortName">aggregation_buffer_fte_out_feature_valid[15:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/weight_channel_resp_valid">
+         <obj_property name="ElementShortName">weight_channel_resp_valid</obj_property>
+         <obj_property name="ObjectShortName">weight_channel_resp_valid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/weight_channel_resp.done">
+         <obj_property name="ElementShortName">.done</obj_property>
+         <obj_property name="ObjectShortName">.done</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_acc">
+         <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+         <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_forward_in_valid">
+         <obj_property name="ElementShortName">pe_forward_in_valid</obj_property>
+         <obj_property name="ObjectShortName">pe_forward_in_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_forward_in">
+         <obj_property name="ElementShortName">pe_forward_in[31:0]</obj_property>
+         <obj_property name="ObjectShortName">pe_forward_in[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_down_in_valid">
+         <obj_property name="ElementShortName">pe_down_in_valid</obj_property>
+         <obj_property name="ObjectShortName">pe_down_in_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_down_in">
+         <obj_property name="ElementShortName">pe_down_in[31:0]</obj_property>
+         <obj_property name="ObjectShortName">pe_down_in[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /sys_array_down[0]">
+         <obj_property name="ElementShortName">[0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group385">
+      <obj_property name="label">Aggregation Buffer</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /out_feature">
+         <obj_property name="ElementShortName">out_feature[31:0]</obj_property>
+         <obj_property name="ObjectShortName">out_feature[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[1].slot_i /out_feature">
+         <obj_property name="ElementShortName">out_feature[31:0]</obj_property>
+         <obj_property name="ObjectShortName">out_feature[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[2].slot_i /out_feature">
+         <obj_property name="ElementShortName">out_feature[31:0]</obj_property>
+         <obj_property name="ObjectShortName">out_feature[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[3].slot_i /out_feature">
+         <obj_property name="ElementShortName">out_feature[31:0]</obj_property>
+         <obj_property name="ObjectShortName">out_feature[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /feature_count">
+         <obj_property name="ElementShortName">feature_count[9:0]</obj_property>
+         <obj_property name="ObjectShortName">feature_count[9:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[1].slot_i /feature_count">
+         <obj_property name="ElementShortName">feature_count[9:0]</obj_property>
+         <obj_property name="ObjectShortName">feature_count[9:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[2].slot_i /feature_count">
+         <obj_property name="ElementShortName">feature_count[9:0]</obj_property>
+         <obj_property name="ObjectShortName">feature_count[9:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[3].slot_i /feature_count">
+         <obj_property name="ElementShortName">feature_count[9:0]</obj_property>
+         <obj_property name="ObjectShortName">feature_count[9:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

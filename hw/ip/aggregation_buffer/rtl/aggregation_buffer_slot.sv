@@ -15,7 +15,8 @@ module aggregation_buffer_slot #(
     output logic                           out_feature_valid,
     output logic [READ_WIDTH-1:0]          out_feature,
     
-    output logic [$clog2(READ_DEPTH)-1:0]  feature_count
+    output logic [$clog2(READ_DEPTH)-1:0]  feature_count,
+    output logic                           slot_free
 );
 
 logic [9:0] rd_ptr;
@@ -45,15 +46,15 @@ aggregation_buffer_sdp_bram fifo (
 
 always_ff @( posedge core_clk or negedge resetn ) begin
     if ( !resetn ) begin
-        rd_ptr            <= 0;
-        out_feature_valid <= 0;
+        rd_ptr            <= '0;
+        out_feature_valid <= '1;
         pop1              <= '0;
         pop2              <= '0;
         feature_count     <= 0;
 
     end else begin
         if (write_enable) begin
-            feature_count <= feature_count + 1'b1;
+            feature_count <= feature_count + 'd2;
         end
         
         // Latch out_valid to 0 when pop or to 1, 3 cycles later
@@ -70,5 +71,7 @@ always_ff @( posedge core_clk or negedge resetn ) begin
         pop2 <= pop1;
     end
 end
+
+assign slot_free = (feature_count == '0);
 
 endmodule

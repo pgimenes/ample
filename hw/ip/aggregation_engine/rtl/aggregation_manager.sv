@@ -308,14 +308,14 @@ always_comb begin
                                                                                 }
 
                                             // Subsequent packets contain message channel response split into 64-bit chunks
-                                            : (packet_state == PKT_FSM_BODY1) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[63:0]}
-                                            : (packet_state == PKT_FSM_BODY2) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[127:64]}
-                                            : (packet_state == PKT_FSM_BODY3) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[191:128]}
-                                            : (packet_state == PKT_FSM_BODY4) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[255:192]}
-                                            : (packet_state == PKT_FSM_BODY5) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[319:256]}
-                                            : (packet_state == PKT_FSM_BODY6) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[383:320]}
-                                            : (packet_state == PKT_FSM_BODY7) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[447:384]}
-                                            : (packet_state == PKT_FSM_TAIL) ?  {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[511:448]} : '0;
+                                            : (packet_state == PKT_FSM_BODY1) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[511:448]}
+                                            : (packet_state == PKT_FSM_BODY2) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[447:384]}
+                                            : (packet_state == PKT_FSM_BODY3) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[383:320]}
+                                            : (packet_state == PKT_FSM_BODY4) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[319:256]}
+                                            : (packet_state == PKT_FSM_BODY5) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[255:192]}
+                                            : (packet_state == PKT_FSM_BODY6) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[191:128]}
+                                            : (packet_state == PKT_FSM_BODY7) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[127:64]}
+                                            : (packet_state == PKT_FSM_TAIL) ?  {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[63:0]} : '0;
     
     // Buffer request packets to AGCs
     end else if (agm_state == AGM_FSM_AGC_BUFFER_REQ) begin

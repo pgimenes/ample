@@ -50,7 +50,10 @@ module aggregation_engine #(
     // AGE -> Aggregation Buffer
     output logic [TOTAL_BUFFER_MANAGERS-1:0]                                                       age_buffer_manager_buffer_slot_write_enable,
     output logic [TOTAL_BUFFER_MANAGERS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] age_buffer_manager_buffer_slot_write_address,
-    output logic [TOTAL_BUFFER_MANAGERS-1:0] [age_pkg::PAYLOAD_DATA_WIDTH-1:0]                     age_buffer_manager_buffer_slot_write_data
+    output logic [TOTAL_BUFFER_MANAGERS-1:0] [age_pkg::PAYLOAD_DATA_WIDTH-1:0]                     age_buffer_manager_buffer_slot_write_data,
+    input  logic [TOTAL_BUFFER_MANAGERS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0]  buffer_slot_age_buffer_manager_feature_count,
+    input  logic [TOTAL_BUFFER_MANAGERS-1:0]                                                       buffer_slot_age_buffer_manager_slot_free
+
 );
 
 // parameter LAYER_CONFIG_IN_FEATURES = top_pkg::MAX_FEATURE_COUNT;
@@ -391,7 +394,9 @@ for (genvar bm = 0; bm < TOTAL_BUFFER_MANAGERS; bm++) begin
 
         .bm_buffer_slot_write_enable  (age_buffer_manager_buffer_slot_write_enable  [bm]),
         .bm_buffer_slot_write_address (age_buffer_manager_buffer_slot_write_address [bm]),
-        .bm_buffer_slot_write_data    (age_buffer_manager_buffer_slot_write_data    [bm])
+        .bm_buffer_slot_write_data    (age_buffer_manager_buffer_slot_write_data    [bm]),
+        .buffer_slot_bm_feature_count (buffer_slot_age_buffer_manager_feature_count [bm]),
+        .buffer_slot_bm_slot_free     (buffer_slot_age_buffer_manager_slot_free     [bm])
     );
     
     always_comb begin

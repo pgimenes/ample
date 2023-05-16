@@ -30,7 +30,7 @@ module feature_transformation_engine #(
     output logic                                  s_axi_bvalid,
     input  logic                                  s_axi_bready,
 
-    // Node Scoreboard -> Aggregation Engine Interface
+    // Node Scoreboard -> Transformation Engine Interface
     input  logic                                  nsb_fte_req_valid,
     output logic                                  nsb_fte_req_ready,
     input  NSB_FTE_REQ_t                          nsb_fte_req,
@@ -41,6 +41,7 @@ module feature_transformation_engine #(
     output logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              fte_aggregation_buffer_pop,
     input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_fte_out_feature_valid,
     input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_fte_out_feature,
+    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_fte_slot_free,
 
     // Weight Channels: FTE -> Prefetcher Weight Bank (REQ)
     output logic                                              weight_channel_req_valid,
@@ -58,7 +59,7 @@ module feature_transformation_engine #(
 parameter SYSTOLIC_MODULE_COUNT = 1;
 
 typedef enum logic [3:0] { 
-    FTE_FSM_IDLE, FTE_FSM_REQ_WC, FTE_FSM_MULT
+    FTE_FSM_IDLE, FTE_FSM_REQ_WC, FTE_FSM_MULT, FTE_FSM_NSB_RESP
 } FTE_FSM_e;
 
 // ==================================================================================================================================================
@@ -86,7 +87,7 @@ logic [MATRIX_N-1:0] [31:0]          sys_array_forward;
 logic [MAX_FEATURE_COUNT-1:0]        sys_array_down_valid; // 1024
 logic [MAX_FEATURE_COUNT-1:0] [31:0] sys_array_down;
 
-// logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] sys_array_pe_acc;
+logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] sys_array_pe_acc;
 
 // Driving systolic modules
 // -------------------------------------------------------------------------------------
@@ -95,6 +96,7 @@ logic                                                 begin_feature_dump;
 logic                                                 pulse_systolic_module;
 logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]         slot_pop_shift;
 logic [$clog2(top_pkg::AGGREGATION_BUFFER_SLOTS)-1:0] slot_pop_counter;
+logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]         busy_aggregation_slots_snapshot;
 
 // ==================================================================================================================================================
 // Instances
@@ -153,13 +155,13 @@ for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) be
         .sys_array_down_valid    (sys_array_down_valid    [sys_module]),
         .sys_array_down          (sys_array_down          [sys_module]),
         
-        .sys_array_pe_acc        ()
+        .sys_array_pe_acc        (sys_array_pe_acc        [sys_module])
     );
 
     // Driving from weight channel
     always_comb begin
-        sys_array_down_valid    [sys_module] = pulse_systolic_module && weight_channel_resp.valid_mask[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
-        sys_array_down          [sys_module] = weight_channel_resp.data[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
+        sys_array_down_valid    [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = {MATRIX_N{pulse_systolic_module}} & weight_channel_resp.valid_mask[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
+        sys_array_down          [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = weight_channel_resp.data[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
     end
 end
 
@@ -192,7 +194,11 @@ always_comb begin
         end
 
         FTE_FSM_MULT: begin
-            fte_state_n = FTE_FSM_MULT;
+            fte_state_n = weight_channel_resp_valid && weight_channel_resp.done ? FTE_FSM_NSB_RESP : FTE_FSM_MULT;
+        end
+
+        FTE_FSM_NSB_RESP: begin
+            fte_state_n = FTE_FSM_IDLE;
         end
 
         default: begin
@@ -213,10 +219,10 @@ always_comb begin
     pulse_systolic_module = (fte_state_n == FTE_FSM_MULT) && (&aggregation_buffer_fte_out_feature_valid) && weight_channel_resp_valid;
 
     // Drive systolic module from aggregation buffer (on the left)
-    sys_array_forward_valid      = slot_pop_shift & {MATRIX_N{pulse_systolic_module}};
+    sys_array_forward_valid      = slot_pop_shift & {MATRIX_N{pulse_systolic_module}} & busy_aggregation_slots_snapshot;
     sys_array_forward            = aggregation_buffer_fte_out_feature;
 
-    fte_aggregation_buffer_pop = slot_pop_shift & {MATRIX_N{pulse_systolic_module}};
+    fte_aggregation_buffer_pop = slot_pop_shift & {MATRIX_N{pulse_systolic_module}} & busy_aggregation_slots_snapshot;
 
 end
 
@@ -257,6 +263,19 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end
 end
 
+// Take snapshot of busy slots after NSB request
+// -------------------------------------------------------------------------------------
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        busy_aggregation_slots_snapshot <= '0;
+    
+    // Starting multiplication
+    end else if ((fte_state == FTE_FSM_IDLE) && (fte_state_n == FTE_FSM_REQ_WC)) begin
+        busy_aggregation_slots_snapshot <= ~aggregation_buffer_fte_slot_free;
+    end
+end
+
 // NSB Interface
 // -------------------------------------------------------------------------------------
 
@@ -264,7 +283,7 @@ always_comb begin
     nsb_fte_req_ready           = (fte_state == FTE_FSM_IDLE);
     
     // TO DO: NSB resp
-    nsb_fte_resp_valid          = '0;
+    nsb_fte_resp_valid          = (fte_state == FTE_FSM_NSB_RESP);
     nsb_fte_resp                = '0;
 end
 
@@ -277,7 +296,7 @@ always_comb begin
     weight_channel_req.out_features = top_pkg::MAX_FEATURE_COUNT;
 
     // Accept weight bank response when pulsing systolic module (i.e. aggregation buffer is also ready)
-    weight_channel_resp_ready = (fte_state == FTE_FSM_MULT) && pulse_systolic_module;
+    weight_channel_resp_ready = (fte_state == FTE_FSM_MULT) && (pulse_systolic_module || weight_channel_resp.done);
 end
 
 endmodule

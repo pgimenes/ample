@@ -319,10 +319,10 @@ assign feature_aggregator_reset_accumulator = (agc_state == AGC_FSM_IDLE) && (ag
 for (genvar pkt = 0; pkt < 8; pkt++) begin
     always_comb begin
         feature_aggregator_in_feature_valid [2*pkt]     = (agc_state == AGC_FSM_UPDATE_ACCS) && (received_flits == (pkt+1)) && !feature_updated[2*pkt];
-        feature_aggregator_in_feature       [2*pkt]     = router_agc_pkt_q.data.bt_pl[31:0];
+        feature_aggregator_in_feature       [2*pkt]     = router_agc_pkt_q.data.bt_pl[63:32];
 
         feature_aggregator_in_feature_valid [2*pkt + 1] = (agc_state == AGC_FSM_UPDATE_ACCS) && (received_flits == (pkt+1)) && !feature_updated[2*pkt + 1];
-        feature_aggregator_in_feature       [2*pkt + 1] = router_agc_pkt_q.data.bt_pl[63:32];
+        feature_aggregator_in_feature       [2*pkt + 1] = router_agc_pkt_q.data.bt_pl[31:0];
     end
 end
 

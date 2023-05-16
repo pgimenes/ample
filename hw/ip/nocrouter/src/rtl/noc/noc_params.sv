@@ -2,7 +2,7 @@ package noc_params;
 
 	// TO DO: parametrize from age pkg
 	localparam MESH_SIZE_X = 65; // == 65
-	localparam MESH_SIZE_Y = 3; // == 17
+	localparam MESH_SIZE_Y = 5; // == 17
 
 	localparam DEST_ADDR_SIZE_X = $clog2(MESH_SIZE_X); // == 7 (+1 bit for sign)
 	localparam DEST_ADDR_SIZE_Y = $clog2(MESH_SIZE_Y); // == 5 (+1 bit for sign)

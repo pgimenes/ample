@@ -24,13 +24,13 @@ class GraphTest extends Test;
 
         // Load layer configuration
         layer_root = json::Load("layer_config.json");
-        assert (layer_root!=null) else $fatal(1, "Failed to load Nodeslot programming from JSON file");
+        assert (layer_root!=null) else $fatal(1, "Failed to load layer configuration from JSON file");
         layers = layer_root.getByKey("layers");
         layer = layers.getByIndex(0);
 
         // Load nodeslot programming
         nodeslot_root = json::Load("nodeslot_programming.json");
-        assert (nodeslot_root!=null) else $fatal(1, "Failed to load Nodeslot programming from JSON file");
+        assert (nodeslot_root!=null) else $fatal(1, "Failed to load nodeslot programming from JSON file");
         nodeslots = nodeslot_root.getByKey("nodeslots");
 
         program_layer_config(layer);
@@ -59,12 +59,16 @@ class GraphTest extends Test;
             // Get nodeslot from JSON object and display
             chosen_node_programming = new();
             chosen_node_programming = nodeslots.getByIndex(nodeslot_idx);
-            
-            $display("[TIMESTAMP]: %t, [%0s::INFO]: Ready to program Node ID %0d into Nodeslot %0d.", $time, TESTNAME, chosen_node_programming.getByKey("node_id").asInt(), chosen_nodeslot);
-
-            program_nodeslot(chosen_node_programming, chosen_nodeslot);
-            
             nodeslot_idx++;
+
+            if (chosen_node_programming.getByKey("neighbour_count").asInt() == 0) begin
+                continue;
+            end
+
+            $display("[TIMESTAMP]: %t, [%0s::INFO]: Ready to program Node ID %0d into Nodeslot %0d.", $time, TESTNAME, chosen_node_programming.getByKey("node_id").asInt(), chosen_nodeslot);
+            program_nodeslot(chosen_node_programming, chosen_nodeslot);
+            this.busy_nodeslots_mask[chosen_nodeslot] = 1'b1; // Mark nodeslot busy
+            
         end
 
     endtask
@@ -74,6 +78,14 @@ class GraphTest extends Test;
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to Prefetcher regbank.", $time, TESTNAME);
         this.write_prefetcher_regbank("Define IN Feature Count", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_prefetcher_regbank("Define OUT Feature Count", prefetcher_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
+        
+        // Addresses
+        this.write_prefetcher_regbank("Define Adjacency List Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_ADJACENCY_LIST_ADDRESS_LSB_OFFSET, layer_config.getByKey("adjacency_list_address").asInt());
+        this.write_prefetcher_regbank("Define Adjacency List Address MSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_ADJACENCY_LIST_ADDRESS_MSB_OFFSET, '0);
+        this.write_prefetcher_regbank("Define IN Messages Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_MESSAGES_ADDRESS_LSB_OFFSET, layer_config.getByKey("in_messages_address").asInt());
+        this.write_prefetcher_regbank("Define IN Messages Address MSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_MESSAGES_ADDRESS_MSB_OFFSET, '0);
+        this.write_prefetcher_regbank("Define Weights Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET, layer_config.getByKey("weights_address").asInt());
+        this.write_prefetcher_regbank("Define Weights Address MSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET, '0);
         
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to AGE regbank.", $time, TESTNAME);
         this.write_age_regbank("Define IN Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
@@ -87,7 +99,17 @@ class GraphTest extends Test;
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to NSB regbank.", $time, TESTNAME);
         this.write_nsb_regbank("Define Feature Count", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_nsb_regbank("Define Feature Count", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
-        this.write_nsb_regbank("Define Weights Address", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET, layer_config.getByKey("weights_address").asInt());
+        
+        // Addresses
+        this.write_nsb_regbank("Define Adjacency List Address LSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_ADJACENCY_LIST_ADDRESS_LSB_OFFSET, layer_config.getByKey("adjacency_list_address").asInt());
+        this.write_nsb_regbank("Define Adjacency List Address MSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_ADJACENCY_LIST_ADDRESS_MSB_OFFSET, '0);
+        this.write_nsb_regbank("Define IN Messages Address LSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_IN_MESSAGES_ADDRESS_LSB_OFFSET, layer_config.getByKey("in_messages_address").asInt());
+        this.write_nsb_regbank("Define IN Messages Address MSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_IN_MESSAGES_ADDRESS_MSB_OFFSET, '0);
+        this.write_nsb_regbank("Define Weights Address LSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET, layer_config.getByKey("weights_address").asInt());
+        this.write_nsb_regbank("Define Weights Address MSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_MSB_OFFSET, '0);
+        this.write_nsb_regbank("Define OUT Messages Address LSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_OUT_MESSAGES_ADDRESS_LSB_OFFSET, layer_config.getByKey("out_messages_address").asInt());
+        this.write_nsb_regbank("Define OUT Messages Address MSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_OUT_MESSAGES_ADDRESS_MSB_OFFSET, '0);
+
         this.write_nsb_regbank("Define Aggregation Wait Count", node_scoreboard_regbank_regs_pkg::NSB_CONFIG_AGGREGATION_WAIT_COUNT_OFFSET, 'd4);
         this.write_nsb_regbank("Define Transformation Wait Count", node_scoreboard_regbank_regs_pkg::NSB_CONFIG_TRANSFORMATION_WAIT_COUNT_OFFSET, 'd4);
     endtask
@@ -99,7 +121,6 @@ class GraphTest extends Test;
         while (this.busy_nodeslots_mask == '1) begin end
 
         while( (this.busy_nodeslots_mask[chosen_nodeslot] == '1) ) this.choose_least_significant(this.busy_nodeslots_mask, chosen_nodeslot);
-        this.busy_nodeslots_mask[chosen_nodeslot] = 1'b1;
     endtask
 
     task automatic choose_least_significant (input logic [63:0] busy_nodeslots, output integer chosen_nodeslot);

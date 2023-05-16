@@ -98,7 +98,7 @@ typedef struct packed {
 } NSB_FTE_REQ_t;
 
 typedef struct packed {
-    logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
+    logic [MAX_NODESLOT_COUNT-1:0] nodeslot;
 } NSB_FTE_RESP_t;
 
 typedef enum logic [1:0] {
