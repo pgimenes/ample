@@ -86,20 +86,22 @@ logic [2:0] layer_config_weights_precision_precision;
 logic layer_config_activations_precision_strobe;
 logic [2:0] layer_config_activations_precision_precision;
 
+logic layer_config_adjacency_list_address_lsb_strobe;
+logic [31:0] layer_config_adjacency_list_address_lsb_lsb;
+logic layer_config_adjacency_list_address_msb_strobe;
+logic [1:0] layer_config_adjacency_list_address_msb_msb;
+logic layer_config_in_messages_address_lsb_strobe;
+logic [31:0] layer_config_in_messages_address_lsb_lsb;
+logic layer_config_in_messages_address_msb_strobe;
+logic [1:0] layer_config_in_messages_address_msb_msb;
 logic layer_config_weights_address_lsb_strobe;                          // strobe signal for register 'LAYER_CONFIG_WEIGHTS_ADDRESS_LSB' (pulsed when the register is written from the bus)
 logic [31:0] layer_config_weights_address_lsb_lsb;                      // value of field 'LAYER_CONFIG_WEIGHTS_ADDRESS_LSB.LSB'
 logic layer_config_weights_address_msb_strobe;                          // strobe signal for register 'LAYER_CONFIG_WEIGHTS_ADDRESS_MSB' (pulsed when the register is written from the bus)
 logic [1:0] layer_config_weights_address_msb_msb;                       // value of field 'LAYER_CONFIG_WEIGHTS_ADDRESS_MSB.MSB'
-
-logic layer_config_in_messages_adress_lsb_strobe;                       // strobe signal for register 'LAYER_CONFIG_IN_MESSAGES_ADRESS_LSB' (pulsed when the register is written from the bus)
-logic [31:0] layer_config_in_messages_adress_lsb_lsb;                   // value of field 'LAYER_CONFIG_IN_MESSAGES_ADRESS_LSB.LSB'
-logic layer_config_in_messages_adress_msb_strobe;                       // strobe signal for register 'LAYER_CONFIG_IN_MESSAGES_ADRESS_MSB' (pulsed when the register is written from the bus)
-logic [1:0] layer_config_in_messages_adress_msb_msb;                    // value of field 'LAYER_CONFIG_IN_MESSAGES_ADRESS_MSB.MSB'
-
-logic layer_config_out_messages_adress_lsb_strobe;                      // strobe signal for register 'LAYER_CONFIG_OUT_MESSAGES_ADRESS_LSB' (pulsed when the register is written from the bus)
-logic [31:0] layer_config_out_messages_adress_lsb_lsb;                  // value of field 'LAYER_CONFIG_OUT_MESSAGES_ADRESS_LSB.LSB'
-logic layer_config_out_messages_adress_msb_strobe;                      // strobe signal for register 'LAYER_CONFIG_OUT_MESSAGES_ADRESS_MSB' (pulsed when the register is written from the bus)
-logic [31:0] layer_config_out_messages_adress_msb_msb;                // value of field 'LAYER_CONFIG_OUT_MESSAGES_ADRESS_MSB.value'
+logic layer_config_out_messages_address_lsb_strobe;
+logic [31:0] layer_config_out_messages_address_lsb_lsb;
+logic layer_config_out_messages_address_msb_strobe;
+logic [1:0] layer_config_out_messages_address_msb_msb;
 
 // Nodeslots
 logic [63:0] nsb_nodeslot_neighbour_count_strobe;                       // strobe signal for register 'NSB_NODESLOT_NEIGHBOUR_COUNT' (pulsed when the register is written from the bus)
@@ -198,24 +200,38 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
     .s_axi_bready,
 
     // User Ports
+    .layer_config_in_features_strobe,
+    .layer_config_in_features_count,
+    .layer_config_out_features_strobe,
+    .layer_config_out_features_count,
+    .layer_config_weights_precision_strobe,
+    .layer_config_weights_precision_precision,
+    .layer_config_activations_precision_strobe,
+    .layer_config_activations_precision_precision,
+
+    .layer_config_adjacency_list_address_lsb_strobe,
+    .layer_config_adjacency_list_address_lsb_lsb,
+    .layer_config_adjacency_list_address_msb_strobe,
+    .layer_config_adjacency_list_address_msb_msb,
+    .layer_config_in_messages_address_lsb_strobe,
+    .layer_config_in_messages_address_lsb_lsb,
+    .layer_config_in_messages_address_msb_strobe,
+    .layer_config_in_messages_address_msb_msb,
     .layer_config_weights_address_lsb_strobe,
     .layer_config_weights_address_lsb_lsb,
     .layer_config_weights_address_msb_strobe,
     .layer_config_weights_address_msb_msb,
+    .layer_config_out_messages_address_lsb_strobe,
+    .layer_config_out_messages_address_lsb_lsb,
+    .layer_config_out_messages_address_msb_strobe,
+    .layer_config_out_messages_address_msb_msb,
+
     .ctrl_fetch_layer_weights_strobe,
     .ctrl_fetch_layer_weights_fetch,
     .ctrl_fetch_layer_weights_done_strobe,
     .ctrl_fetch_layer_weights_done_done,
     .ctrl_fetch_layer_weights_done_ack_strobe,
     .ctrl_fetch_layer_weights_done_ack_ack,
-    .layer_config_in_messages_adress_lsb_strobe,
-    .layer_config_in_messages_adress_lsb_lsb,
-    .layer_config_in_messages_adress_msb_strobe,
-    .layer_config_in_messages_adress_msb_msb,
-    .layer_config_out_messages_adress_lsb_strobe,
-    .layer_config_out_messages_adress_lsb_lsb,
-    .layer_config_out_messages_adress_msb_strobe,
-    .layer_config_out_messages_adress_msb_msb,
     .nsb_nodeslot_neighbour_count_strobe,
     .nsb_nodeslot_neighbour_count_count,
     .nsb_nodeslot_node_id_strobe,
@@ -240,14 +256,6 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
     .nsb_config_aggregation_wait_count_count,
     .nsb_config_transformation_wait_count_strobe,
     .nsb_config_transformation_wait_count_count,
-    .layer_config_in_features_strobe,
-    .layer_config_in_features_count,
-    .layer_config_out_features_strobe,
-    .layer_config_out_features_count,
-    .layer_config_weights_precision_strobe,
-    .layer_config_weights_precision_precision,
-    .layer_config_activations_precision_strobe,
-    .layer_config_activations_precision_precision,
     .*
 );
 

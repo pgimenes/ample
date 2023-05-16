@@ -382,9 +382,11 @@ logic                                              weight_channel_resp_ready;
 WEIGHT_CHANNEL_RESP_t                              weight_channel_resp;
 
 // AGE -> Aggregation Buffer Interface
-logic [AGGREGATION_BUFFER_SLOTS-1:0]                           age_aggregation_buffer_write_enable;
+logic [AGGREGATION_BUFFER_SLOTS-1:0]                                              age_aggregation_buffer_write_enable;
 logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] age_aggregation_buffer_write_address;
 logic [AGGREGATION_BUFFER_SLOTS-1:0] [AGGREGATION_BUFFER_WRITE_WIDTH-1:0]         age_aggregation_buffer_write_data;
+logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_READ_DEPTH)-1:0]  aggregation_buffer_age_feature_count;
+logic [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free;
 
 // FTE -> Aggregation Buffer Interface
 logic [AGGREGATION_BUFFER_SLOTS-1:0]                                     fte_aggregation_buffer_pop;
@@ -723,7 +725,9 @@ aggregation_engine aggregation_engine_i (
 
     .age_buffer_manager_buffer_slot_write_enable  (age_aggregation_buffer_write_enable),
     .age_buffer_manager_buffer_slot_write_address (age_aggregation_buffer_write_address),
-    .age_buffer_manager_buffer_slot_write_data    (age_aggregation_buffer_write_data)
+    .age_buffer_manager_buffer_slot_write_data    (age_aggregation_buffer_write_data),
+    .buffer_slot_age_buffer_manager_feature_count (aggregation_buffer_age_feature_count),
+    .buffer_slot_age_buffer_manager_slot_free     (aggregation_buffer_slot_free)
 );
 
 // ====================================================================================
@@ -746,7 +750,10 @@ aggregation_buffer #(
 
     .pop                (fte_aggregation_buffer_pop),
     .out_feature_valid  (aggregation_buffer_fte_out_feature_valid),
-    .out_feature        (aggregation_buffer_fte_out_feature)
+    .out_feature        (aggregation_buffer_fte_out_feature),
+
+    .feature_count      (aggregation_buffer_age_feature_count),
+    .slot_free          (aggregation_buffer_slot_free)
 );
 
 // ====================================================================================
@@ -788,6 +795,7 @@ feature_transformation_engine transformation_engine_i (
     .fte_aggregation_buffer_pop                         (fte_aggregation_buffer_pop),
     .aggregation_buffer_fte_out_feature_valid           (aggregation_buffer_fte_out_feature_valid),
     .aggregation_buffer_fte_out_feature                 (aggregation_buffer_fte_out_feature),
+    .aggregation_buffer_fte_slot_free                   (aggregation_buffer_slot_free),
 
     .weight_channel_req_valid                           (weight_channel_req_valid),
     .weight_channel_req_ready                           (weight_channel_req_ready),

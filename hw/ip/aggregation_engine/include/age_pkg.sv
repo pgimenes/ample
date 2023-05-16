@@ -4,12 +4,12 @@ import noc_params::*;
 package age_pkg;
 
 // Float 32 Aggregation Cores
-parameter AGC_FLOAT32_ROWS = 2;
+parameter AGC_FLOAT32_ROWS = 4;
 parameter AGC_FLOAT32_COLS = 16;
 parameter AGC_COUNT_FLOAT32 = AGC_FLOAT32_ROWS * AGC_FLOAT32_COLS;
 
 // Total Aggregation Cores
-parameter AGC_ROWS = 2;
+parameter AGC_ROWS = 4;
 parameter AGC_COLS = 64;
 parameter TOTAL_AGGREGATION_CORES = AGC_ROWS * AGC_COLS; // TO DO: change (MS3), MS2 only supports float 32
 
@@ -19,10 +19,9 @@ parameter AGM_COLS = 64;
 parameter TOTAL_AGGREGATION_MANAGERS = AGM_ROWS * AGM_COLS;
 
 // Buffer Managers
-parameter BM_ROWS = 2;
+parameter BM_ROWS = 4;
 parameter BM_COLS = 1;
 parameter TOTAL_BUFFER_MANAGERS = BM_ROWS * BM_COLS;
-
 
 // Mesh parameters
 parameter MESH_ROWS = AGC_ROWS + AGM_ROWS; // row of aggregation managers

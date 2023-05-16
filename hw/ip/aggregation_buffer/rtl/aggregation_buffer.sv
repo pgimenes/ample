@@ -14,7 +14,10 @@ module aggregation_buffer #(
 
     input  logic [NUM_SLOTS-1:0]                           pop,
     output logic [NUM_SLOTS-1:0]                           out_feature_valid,
-    output logic [NUM_SLOTS-1:0] [READ_WIDTH-1:0]          out_feature
+    output logic [NUM_SLOTS-1:0] [READ_WIDTH-1:0]          out_feature,
+    
+    output logic [NUM_SLOTS-1:0] [$clog2(READ_DEPTH)-1:0]  feature_count,
+    output logic [NUM_SLOTS-1:0]                           slot_free
 );
 
 for (genvar slot = 0; slot < NUM_SLOTS; slot++) begin
@@ -33,7 +36,10 @@ for (genvar slot = 0; slot < NUM_SLOTS; slot++) begin
 
         .pop                (pop               [slot]),
         .out_feature_valid  (out_feature_valid [slot]),
-        .out_feature        (out_feature       [slot])
+        .out_feature        (out_feature       [slot]),
+
+        .feature_count      (feature_count     [slot]),
+        .slot_free          (slot_free         [slot])
     );
 end
 

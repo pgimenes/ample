@@ -65,7 +65,10 @@ module prefetcher_fetch_tag #(
     
     output logic                                        message_channel_resp_valid,
     input  logic                                        message_channel_resp_ready,
-    output MESSAGE_CHANNEL_RESP_t                       message_channel_resp
+    output MESSAGE_CHANNEL_RESP_t                       message_channel_resp,
+    
+    input  logic [31:0] layer_config_adjacency_list_address_lsb_value,
+    input  logic [31:0] layer_config_in_messages_address_lsb_value
 );
 
 parameter BYTE_COUNT_PER_ADJ_QUEUE_SLOT = 4;
@@ -168,7 +171,7 @@ ultraram_fifo #(
     .core_clk       (core_clk),
     .resetn         (resetn),
     .push           (push_message_queue),
-    .in_data        ({debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter, debug_counter}), // replace with msg_queue_write_data
+    .in_data        (msg_queue_write_data),
     .pop            (pop_message_queue),
     .out_valid      (message_queue_head_valid),
     .out_data       (message_queue_head),
@@ -305,7 +308,7 @@ always_comb begin
 
     fetch_tag_adj_rm_byte_count     = adj_fetch_req_bytes;
     fetch_tag_adj_rm_req_valid      = (adj_queue_fetch_state == ADJ_FETCH);
-    fetch_tag_adj_rm_start_address  = adj_fetch_req_address;
+    fetch_tag_adj_rm_start_address  = {2'd0, layer_config_adjacency_list_address_lsb_value} + adj_fetch_req_address;
 
     // Response
     fetch_tag_adj_rm_resp_ready         = (adj_queue_fetch_state == ADJ_WAIT_RESP);
@@ -321,22 +324,22 @@ always_comb begin
     // adj_queue_write_data = fetch_tag_adj_rm_resp_data_q [buffered_adj_fetch_resp_offset + 9'd31 : buffered_adj_fetch_resp_offset];
 
     // TO DO: simplify
-    adj_queue_write_data = (buffered_adj_fetch_resp_offset == '0) ? fetch_tag_adj_rm_resp_data_q [31:0]
-                        : (buffered_adj_fetch_resp_offset == 'd32) ? fetch_tag_adj_rm_resp_data_q [63:32]
-                        : (buffered_adj_fetch_resp_offset == 'd64) ? fetch_tag_adj_rm_resp_data_q [95:64]
-                        : (buffered_adj_fetch_resp_offset == 'd96) ? fetch_tag_adj_rm_resp_data_q [127:96]
-                        : (buffered_adj_fetch_resp_offset == 'd128) ? fetch_tag_adj_rm_resp_data_q [159:128]
-                        : (buffered_adj_fetch_resp_offset == 'd160) ? fetch_tag_adj_rm_resp_data_q [191:160]
-                        : (buffered_adj_fetch_resp_offset == 'd192) ? fetch_tag_adj_rm_resp_data_q [223:192]
-                        : (buffered_adj_fetch_resp_offset == 'd224) ? fetch_tag_adj_rm_resp_data_q [255:224]
-                        : (buffered_adj_fetch_resp_offset == 'd256) ? fetch_tag_adj_rm_resp_data_q [287:256]
-                        : (buffered_adj_fetch_resp_offset == 'd288) ? fetch_tag_adj_rm_resp_data_q [319:288]
-                        : (buffered_adj_fetch_resp_offset == 'd320) ? fetch_tag_adj_rm_resp_data_q [351:320]
-                        : (buffered_adj_fetch_resp_offset == 'd352) ? fetch_tag_adj_rm_resp_data_q [383:352]
-                        : (buffered_adj_fetch_resp_offset == 'd384) ? fetch_tag_adj_rm_resp_data_q [415:384]
-                        : (buffered_adj_fetch_resp_offset == 'd416) ? fetch_tag_adj_rm_resp_data_q [447:416]
-                        : (buffered_adj_fetch_resp_offset == 'd448) ? fetch_tag_adj_rm_resp_data_q [479:448]
-                        : (buffered_adj_fetch_resp_offset == 'd480) ? fetch_tag_adj_rm_resp_data_q [511:480]
+    adj_queue_write_data = (buffered_adj_fetch_resp_offset == '0) ? fetch_tag_adj_rm_resp_data_q [511:480]
+                        : (buffered_adj_fetch_resp_offset == 'd32) ? fetch_tag_adj_rm_resp_data_q [479:448]
+                        : (buffered_adj_fetch_resp_offset == 'd64) ? fetch_tag_adj_rm_resp_data_q [447:416]
+                        : (buffered_adj_fetch_resp_offset == 'd96) ? fetch_tag_adj_rm_resp_data_q [415:384]
+                        : (buffered_adj_fetch_resp_offset == 'd128) ? fetch_tag_adj_rm_resp_data_q [383:352]
+                        : (buffered_adj_fetch_resp_offset == 'd160) ? fetch_tag_adj_rm_resp_data_q [351:320]
+                        : (buffered_adj_fetch_resp_offset == 'd192) ? fetch_tag_adj_rm_resp_data_q [319:288]
+                        : (buffered_adj_fetch_resp_offset == 'd224) ? fetch_tag_adj_rm_resp_data_q [287:256]
+                        : (buffered_adj_fetch_resp_offset == 'd256) ? fetch_tag_adj_rm_resp_data_q [255:224]
+                        : (buffered_adj_fetch_resp_offset == 'd288) ? fetch_tag_adj_rm_resp_data_q [223:192]
+                        : (buffered_adj_fetch_resp_offset == 'd320) ? fetch_tag_adj_rm_resp_data_q [191:160]
+                        : (buffered_adj_fetch_resp_offset == 'd352) ? fetch_tag_adj_rm_resp_data_q [159:128]
+                        : (buffered_adj_fetch_resp_offset == 'd384) ? fetch_tag_adj_rm_resp_data_q [127:96]
+                        : (buffered_adj_fetch_resp_offset == 'd416) ? fetch_tag_adj_rm_resp_data_q [95:64]
+                        : (buffered_adj_fetch_resp_offset == 'd448) ? fetch_tag_adj_rm_resp_data_q [63:32]
+                        : (buffered_adj_fetch_resp_offset == 'd480) ? fetch_tag_adj_rm_resp_data_q [31:0]
                         : '0;
 end
 
@@ -417,7 +420,7 @@ end
 
 always_comb begin
     fetch_tag_msg_rm_req_valid      = (message_fetch_state == MSG_FETCH) && !adj_queue_empty && adj_queue_head_valid && !message_queue_full;
-    fetch_tag_msg_rm_start_address  = adj_queue_head;
+    fetch_tag_msg_rm_start_address  = {2'd0, layer_config_in_messages_address_lsb_value} + 64*adj_queue_head;
     fetch_tag_msg_rm_byte_count     = FEATURE_COUNT * top_pkg::bits_per_precision(msg_fetch_req_precision_q) / 8;
 
     fetch_tag_msg_rm_resp_ready = (message_fetch_state == MSG_STORE);
