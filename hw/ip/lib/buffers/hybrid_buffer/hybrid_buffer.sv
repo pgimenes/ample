@@ -1,9 +1,15 @@
-module aggregation_buffer #(
+
+// Hybrid buffer used as intermediate storage between AGE -> FTE and FTE -> MPE
+// Write interface behaves as RAM (write_enable, write_address)
+// Read interface behaves as FIFO
+
+module hybrid_buffer #(
     parameter NUM_SLOTS = 16,
     parameter WRITE_WIDTH = 64,
     parameter WRITE_DEPTH = 512,
     parameter READ_WIDTH = 32,
-    parameter READ_DEPTH = 1024
+    parameter READ_DEPTH = 1024,
+    parameter BUFFER_TYPE = "AGGREGATION"
 ) (
     input  logic                                           core_clk,
     input  logic                                           resetn,
@@ -21,11 +27,12 @@ module aggregation_buffer #(
 );
 
 for (genvar slot = 0; slot < NUM_SLOTS; slot++) begin
-    aggregation_buffer_slot #(
+    hybrid_buffer_slot #(
         .WRITE_WIDTH (WRITE_WIDTH),
         .WRITE_DEPTH (WRITE_DEPTH),
         .READ_WIDTH  (READ_WIDTH),
-        .READ_DEPTH  (READ_DEPTH)
+        .READ_DEPTH  (READ_DEPTH),
+        .BUFFER_TYPE (BUFFER_TYPE)
     ) slot_i (
         .core_clk           (core_clk),
         .resetn             (resetn),
