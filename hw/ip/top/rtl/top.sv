@@ -393,6 +393,18 @@ logic [AGGREGATION_BUFFER_SLOTS-1:0]                                     fte_agg
 logic [AGGREGATION_BUFFER_SLOTS-1:0]                                     aggregation_buffer_fte_out_feature_valid;
 logic [AGGREGATION_BUFFER_SLOTS-1:0] [AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_fte_out_feature;
 
+// FTE -> Transformation Buffer Interface
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                 fte_transformation_buffer_write_enable;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0] fte_transformation_buffer_write_address;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]         fte_transformation_buffer_write_data;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_READ_DEPTH)-1:0]  transformation_buffer_fte_feature_count;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                 transformation_buffer_slot_free;
+
+// MPE -> TRANSFORMATION Buffer Interface
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                        mpe_transformation_buffer_pop;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                        transformation_buffer_mpe_out_feature_valid;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_READ_WIDTH-1:0] transformation_buffer_mpe_out_feature;
+
 // ====================================================================================
 // Node Scoreboard
 // ====================================================================================
@@ -734,7 +746,7 @@ aggregation_engine aggregation_engine_i (
 // Aggregation Buffer
 // ====================================================================================
 
-aggregation_buffer #(
+hybrid_buffer #(
     .NUM_SLOTS   (top_pkg::AGGREGATION_BUFFER_SLOTS),
     .WRITE_WIDTH (top_pkg::AGGREGATION_BUFFER_WRITE_WIDTH),
     .WRITE_DEPTH (top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH),
@@ -802,7 +814,39 @@ feature_transformation_engine transformation_engine_i (
     .weight_channel_req                                 (weight_channel_req),
     .weight_channel_resp_valid                          (weight_channel_resp_valid),
     .weight_channel_resp_ready                          (weight_channel_resp_ready),
-    .weight_channel_resp                                (weight_channel_resp)
+    .weight_channel_resp                                (weight_channel_resp),
+
+    .fte_transformation_buffer_write_enable             (fte_transformation_buffer_write_enable),
+    .fte_transformation_buffer_write_address            (fte_transformation_buffer_write_address),
+    .fte_transformation_buffer_write_data               (fte_transformation_buffer_write_data),
+
+    .transformation_buffer_slot_free                    (transformation_buffer_slot_free)
+);
+
+// ====================================================================================
+// Transformation Buffer
+// ====================================================================================
+
+hybrid_buffer #(
+    .NUM_SLOTS   (top_pkg::TRANSFORMATION_BUFFER_SLOTS),
+    .WRITE_WIDTH (top_pkg::TRANSFORMATION_BUFFER_WRITE_WIDTH),
+    .WRITE_DEPTH (top_pkg::TRANSFORMATION_BUFFER_WRITE_DEPTH),
+    .READ_WIDTH  (top_pkg::TRANSFORMATION_BUFFER_READ_WIDTH),
+    .READ_DEPTH  (top_pkg::TRANSFORMATION_BUFFER_READ_DEPTH),
+    .BUFFER_TYPE ("TRANSFORMATION")
+) transformation_buffer_i (
+    .core_clk           (sys_clk),
+    .resetn             (!sys_rst),
+
+    .write_enable       (fte_transformation_buffer_write_enable),
+    .write_address      (fte_transformation_buffer_write_address),
+    .write_data         (fte_transformation_buffer_write_data),
+
+    .pop                (mpe_transformation_buffer_pop),
+    .out_feature_valid  (transformation_buffer_mpe_out_feature_valid),
+    .out_feature        (transformation_buffer_mpe_out_feature),
+    .feature_count      (transformation_buffer_fte_feature_count),
+    .slot_free          (transformation_buffer_slot_free)
 );
 
 // ====================================================================================

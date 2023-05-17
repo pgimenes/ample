@@ -630,7 +630,6 @@ prefetcher_interface prefetcher_interface_i
 );
 
 top_test top_test_i (
-    // .memory_intf                    (memory_intf),
     .nsb_intf                       (top_i.node_scoreboard_i.nsb_interface),   //   node_scoreboard_interface_i
     .age_intf                       (top_i.aggregation_engine_i.age_interface),   //   aggregation_engine_interface_i
     .prefetcher_intf                (top_i.prefetcher_i.prefetcher_interface)  //   prefetcher_interface_i

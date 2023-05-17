@@ -206,10 +206,16 @@ end
 // Weight read master fetch request logic
 // ----------------------------------------------------------------
 
+logic [$clog2(MAX_FEATURE_COUNT*4)-1:0] bytes_per_row;
+logic [$clog2(MAX_FEATURE_COUNT*4)-1:0] bytes_per_row_padded;
+
 always_comb begin
     weight_bank_axi_rm_fetch_req_valid = (weight_bank_state == WEIGHT_BANK_FSM_FETCH_REQ);
     weight_bank_axi_rm_fetch_byte_count = nsb_prefetcher_weight_bank_req_q.in_features * 4;
-    weight_bank_axi_rm_fetch_start_address = nsb_prefetcher_weight_bank_req_q.start_address + (rows_fetched * nsb_prefetcher_weight_bank_req_q.in_features * 4);
+    
+    bytes_per_row = nsb_prefetcher_weight_bank_req_q.in_features * 4;
+    bytes_per_row_padded = {bytes_per_row[$clog2(MAX_FEATURE_COUNT*4)-1:6], 6'b0} + (|bytes_per_row[5:0] ? 'd64 : '0); // div 64 round up
+    weight_bank_axi_rm_fetch_start_address = nsb_prefetcher_weight_bank_req_q.start_address + rows_fetched * bytes_per_row_padded;
 end
 
 always_ff @(posedge core_clk or negedge resetn) begin

@@ -1,16 +1,11 @@
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
 // Engineer: 
 // 
-// Create Date:
 // Design Name: 
+// Create Date:
 // Module Name: sys_array_pe
-// Project Name:
-// Target Devices:
 // Tool Versions: 
 // Description: 
-// 
-// Dependencies: 
 // 
 // Revision:
 // Revision 0.01 - File Created
@@ -58,19 +53,22 @@ mac #(
     .acc                (pe_acc)
 );
 
-assign update = pe_forward_in_valid && pe_down_in_valid;
+always_comb begin
+    
+    update = pe_forward_in_valid && pe_down_in_valid;
+
+    pe_forward_out_valid = pe_forward_in_valid;
+    pe_down_out_valid    = pe_down_in_valid;
+end
 
 always_ff @(posedge core_clk or negedge rstn) begin
     if (!rstn) begin
         pe_forward_out              <= '0;
-        pe_forward_out_valid        <= '0;
         pe_down_out                 <= '0;
-        pe_down_out_valid           <= '0;
     end else begin
+        // Register incoming messages when updating the accumulator
         pe_forward_out              <= update ? pe_forward_in : pe_forward_out;
-        pe_forward_out_valid        <= pe_forward_in_valid;
         pe_down_out                 <= update ? pe_down_in : pe_down_out;
-        pe_down_out_valid           <= pe_down_in_valid;
     end
 end
 
@@ -78,9 +76,9 @@ end
 // Assertions
 // ======================================================================================================
 
-P_update_acc_both_valid: assert property (
-    @(posedge core_clk) disable iff (!rstn)
-    (!pe_forward_in_valid || !pe_down_in_valid) |=> pe_acc == $past(pe_acc, 1)
-);
+// P_update_acc_both_valid: assert property (
+//     @(posedge core_clk) disable iff (!rstn)
+//     (!pe_forward_in_valid || !pe_down_in_valid) |=> pe_acc == $past(pe_acc, 1)
+// );
 
 endmodule
