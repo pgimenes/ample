@@ -30,6 +30,7 @@ module mac #(
     input  ieee_sp_float_s                    a,
     input  ieee_sp_float_s                    b,
     output ieee_sp_float_s                    acc,
+    input  ieee_sp_float_s                    overwrite_data,
 `elsif BFP_MAC
     input  bfp_msfp12_s                       a,
     input  bfp_msfp12_s                       b,
@@ -40,22 +41,32 @@ module mac #(
     output fv_fixed_point_s                   acc,
 `endif
     
-    input  logic                              en
+    input  logic                              en,
+    input  logic                              overwrite
 );
 
 `ifdef FLOAT_MAC
+
     float_mac #(
         .FLOAT_WIDTH(FLOAT_WIDTH)
     ) float_mac_i (
         .core_clk,
         .rstn,
+
         .en,
         .a,
         .b,
+        
+        .overwrite,
+        .overwrite_data,
+
         .acc 
     );
+
 `elsif BFP_MAC
+
 `elsif FORMAL_MAC
+
     fixed_point_mac #(
         .WIDTH(FLOAT_WIDTH)
     ) fixed_point_mac_i (
@@ -66,6 +77,7 @@ module mac #(
         .b,
         .acc 
     );
+
 `endif
 
 // ======================================================================================================

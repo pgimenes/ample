@@ -33,6 +33,9 @@ module sys_array_pe #(
     output logic                            pe_forward_out_valid,
     output logic [FLOAT_WIDTH-1:0]          pe_down_out,
     output logic                            pe_down_out_valid,
+
+    input  logic                            overwrite,
+    input  logic [FLOAT_WIDTH-1:0]          overwrite_data,
     
     output logic [FLOAT_WIDTH-1:0]          pe_acc
 );
@@ -44,9 +47,14 @@ mac #(
 ) mac_i (
     .core_clk,            
     .rstn,
+    
     .en                 (update),
     .a                  (pe_forward_in),
     .b                  (pe_down_in),
+
+    .overwrite          (overwrite),
+    .overwrite_data     (overwrite_data),
+    
     .acc                (pe_acc)
 );
 

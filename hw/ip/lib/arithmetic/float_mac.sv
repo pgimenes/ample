@@ -27,6 +27,9 @@ module float_mac #(
     input  logic                              en,             // enable accumulator update
     input  logic [FLOAT_WIDTH-1:0]            a,
     input  logic [FLOAT_WIDTH-1:0]            b,
+
+    input  logic                              overwrite,
+    input  logic [FLOAT_WIDTH-1:0]            overwrite_data,
     
     output logic [FLOAT_WIDTH-1:0]            acc             // accumulator
 );
@@ -64,7 +67,9 @@ always_ff @(posedge core_clk or negedge rstn) begin
     if (!rstn) begin
         acc_reg <= '0;
     end else begin
-        acc_reg <= en && fp_mult_result_valid && fp_add_result_valid ? fp_add_result : acc_reg;
+        acc_reg <= overwrite ? overwrite_data
+                    : en && fp_mult_result_valid && fp_add_result_valid ? fp_add_result 
+                    : acc_reg;
     end
 end
 
