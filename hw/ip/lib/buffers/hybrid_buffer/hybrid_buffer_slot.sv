@@ -21,7 +21,7 @@ module hybrid_buffer_slot #(
     output logic                           slot_free
 );
 
-logic [$clog2(WRITE_DEPTH)-1:0] rd_ptr;
+logic [$clog2(READ_DEPTH)-1:0] rd_ptr;
 logic pop1, pop2;
 
 // Instances

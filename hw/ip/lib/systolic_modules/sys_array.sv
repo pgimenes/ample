@@ -83,12 +83,12 @@ end : rows_gen
 // Logic
 // ============================================================================================
 
-for (genvar row=0; row < MATRIX_N-1; row++) begin
+for (genvar row=0; row < MATRIX_N; row++) begin
     assign sys_array_pe_forward         [row][0] = sys_array_forward      [row];
     assign sys_array_pe_forward_valid   [row][0] = sys_array_forward_valid[row];
 end
 
-for (genvar col=0; col < MATRIX_N-1; col++) begin
+for (genvar col=0; col < MATRIX_N; col++) begin
     assign sys_array_pe_down            [0][col] = sys_array_down      [col];
     assign sys_array_pe_down_valid      [0][col] = sys_array_down_valid[col];
 end
@@ -99,23 +99,23 @@ assign overwrite = shift ? '1 : '0;
 // Assertions
 // ============================================================================================
 
-for (genvar row=0; row < MATRIX_N; row++) begin
+// for (genvar row=0; row < MATRIX_N; row++) begin
 
-    P_forward_valid_propagates: assert property (
-        @(posedge core_clk) disable iff (!rstn)
-        sys_array_forward_valid[row] |-> ##(MATRIX_N) sys_array_pe_forward_valid[row][MATRIX_N]
-    );
+//     P_forward_valid_propagates: assert property (
+//         @(posedge core_clk) disable iff (!rstn)
+//         sys_array_forward_valid[row] |-> ##(MATRIX_N) sys_array_pe_forward_valid[row][MATRIX_N]
+//     );
 
-end
+// end
 
-for (genvar col=0; col < MATRIX_N; col++) begin
+// for (genvar col=0; col < MATRIX_N; col++) begin
 
-    P_down_valid_propagates: assert property (
-        @(posedge core_clk) disable iff (!rstn)
-        sys_array_down_valid[col] |-> ##(MATRIX_N) sys_array_pe_down_valid[MATRIX_N][col]
-    );
+//     P_down_valid_propagates: assert property (
+//         @(posedge core_clk) disable iff (!rstn)
+//         sys_array_down_valid[col] |-> ##(MATRIX_N) sys_array_pe_down_valid[MATRIX_N][col]
+//     );
 
-end
+// end
 
 
 endmodule

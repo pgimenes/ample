@@ -49,6 +49,13 @@ parameter AGGREGATION_BUFFER_WRITE_WIDTH = 64;
 parameter AGGREGATION_BUFFER_READ_DEPTH = MAX_FEATURE_COUNT * 4 / 4; // 4 bytes per float
 parameter AGGREGATION_BUFFER_READ_WIDTH = 32;
 
+// Transformation Buffer
+parameter TRANSFORMATION_BUFFER_SLOTS = 16;
+parameter TRANSFORMATION_BUFFER_WRITE_DEPTH = 1024*32/512; // == 64
+parameter TRANSFORMATION_BUFFER_WRITE_WIDTH = 512;
+parameter TRANSFORMATION_BUFFER_READ_DEPTH = MAX_FEATURE_COUNT * 4 / 4; // 4 bytes per float
+parameter TRANSFORMATION_BUFFER_READ_WIDTH = 32;
+
 // Supported modes
 // ----------------------------------------------------
 
@@ -94,7 +101,7 @@ typedef struct packed {
 } NSB_AGE_RESP_t;
 
 typedef struct packed {
-    logic [MAX_NODESLOT_COUNT-1:0] nodeslots;
+    logic [MAX_NODESLOT_COUNT-1:0]         nodeslots;
 } NSB_FTE_REQ_t;
 
 typedef struct packed {

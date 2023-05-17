@@ -29,15 +29,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="3424684fs"></ZoomStartTime>
-      <ZoomEndTime time="3509385fs"></ZoomEndTime>
-      <Cursor1Time time="3495268fs"></Cursor1Time>
+      <ZoomStartTime time="3537795fs"></ZoomStartTime>
+      <ZoomEndTime time="3582516fs"></ZoomEndTime>
+      <Cursor1Time time="3545248fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="363"></NameColumnWidth>
+      <NameColumnWidth column_width="327"></NameColumnWidth>
       <ValueColumnWidth column_width="66"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="40" />
+   <WVObjectSize size="42" />
    <wvobject type="logic" fp_name="/top_tb/sys_clk_i">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -691,6 +691,82 @@
          <obj_property name="ObjectShortName">axi_arready</obj_property>
       </wvobject>
       <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/msg_read_master/last_transaction_pending">
+         <obj_property name="ElementShortName">last_transaction_pending</obj_property>
+         <obj_property name="ObjectShortName">last_transaction_pending</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group298">
+      <obj_property name="label">WEIGHT BANK</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_valid">
+         <obj_property name="ElementShortName">nsb_prefetcher_weight_bank_req_valid</obj_property>
+         <obj_property name="ObjectShortName">nsb_prefetcher_weight_bank_req_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_state">
+         <obj_property name="ElementShortName">weight_bank_state[3:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_bank_state[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_req_valid">
+         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_req_valid</obj_property>
+         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_req_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_byte_count">
+         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_byte_count[17:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_byte_count[17:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_start_address">
+         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_start_address[33:0]</obj_property>
+         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_start_address[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/bytes_per_row">
+         <obj_property name="ElementShortName">bytes_per_row[11:0]</obj_property>
+         <obj_property name="ObjectShortName">bytes_per_row[11:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/bytes_per_row_padded">
+         <obj_property name="ElementShortName">bytes_per_row_padded[11:0]</obj_property>
+         <obj_property name="ObjectShortName">bytes_per_row_padded[11:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_push[3]">
+         <obj_property name="ElementShortName">[3]</obj_property>
+         <obj_property name="ObjectShortName">[3]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_push[2]">
+         <obj_property name="ElementShortName">[2]</obj_property>
+         <obj_property name="ObjectShortName">[2]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_push[1]">
+         <obj_property name="ElementShortName">[1]</obj_property>
+         <obj_property name="ObjectShortName">[1]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_push[0]">
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">[0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_in_data">
+         <obj_property name="ElementShortName">row_fifo_in_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">row_fifo_in_data[31:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group307">
+      <obj_property name="label">Weight Bank AXI RM</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/fetch_state">
+         <obj_property name="ElementShortName">fetch_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/req_fetch_start_address">
+         <obj_property name="ElementShortName">req_fetch_start_address[31:0]</obj_property>
+         <obj_property name="ObjectShortName">req_fetch_start_address[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/req_fetch_byte_count">
+         <obj_property name="ElementShortName">req_fetch_byte_count[17:0]</obj_property>
+         <obj_property name="ObjectShortName">req_fetch_byte_count[17:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/accepting_axi_read_transaction">
+         <obj_property name="ElementShortName">accepting_axi_read_transaction</obj_property>
+         <obj_property name="ObjectShortName">accepting_axi_read_transaction</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/last_transaction_pending">
          <obj_property name="ElementShortName">last_transaction_pending</obj_property>
          <obj_property name="ObjectShortName">last_transaction_pending</obj_property>
       </wvobject>
@@ -1349,191 +1425,33 @@
          <obj_property name="ObjectShortName">num_flits[4:0]</obj_property>
       </wvobject>
    </wvobject>
-   <wvobject type="group" fp_name="group298">
-      <obj_property name="label">WEIGHT BANK</obj_property>
+   <wvobject type="group" fp_name="group385">
+      <obj_property name="label">Aggregation Buffer</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_valid">
-         <obj_property name="ElementShortName">nsb_prefetcher_weight_bank_req_valid</obj_property>
-         <obj_property name="ObjectShortName">nsb_prefetcher_weight_bank_req_valid</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /write_enable">
+         <obj_property name="ElementShortName">write_enable</obj_property>
+         <obj_property name="ObjectShortName">write_enable</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_q.start_address">
-         <obj_property name="ElementShortName">.start_address[33:0]</obj_property>
-         <obj_property name="ObjectShortName">.start_address[33:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /write_address">
+         <obj_property name="ElementShortName">write_address[8:0]</obj_property>
+         <obj_property name="ObjectShortName">write_address[8:0]</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_ready">
-         <obj_property name="ElementShortName">nsb_prefetcher_weight_bank_req_ready</obj_property>
-         <obj_property name="ObjectShortName">nsb_prefetcher_weight_bank_req_ready</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /write_data">
+         <obj_property name="ElementShortName">write_data[63:0]</obj_property>
+         <obj_property name="ObjectShortName">write_data[63:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req.req_opcode">
-         <obj_property name="ElementShortName">.req_opcode[1:0]</obj_property>
-         <obj_property name="ObjectShortName">.req_opcode[1:0]</obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /pop">
+         <obj_property name="ElementShortName">pop</obj_property>
+         <obj_property name="ObjectShortName">pop</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req.start_address">
-         <obj_property name="ElementShortName">.start_address[33:0]</obj_property>
-         <obj_property name="ObjectShortName">.start_address[33:0]</obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /out_feature_valid">
+         <obj_property name="ElementShortName">out_feature_valid</obj_property>
+         <obj_property name="ObjectShortName">out_feature_valid</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_q.in_features">
-         <obj_property name="ElementShortName">.in_features[10:0]</obj_property>
-         <obj_property name="ObjectShortName">.in_features[10:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_q.out_features">
-         <obj_property name="ElementShortName">.out_features[10:0]</obj_property>
-         <obj_property name="ObjectShortName">.out_features[10:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_state">
-         <obj_property name="ElementShortName">weight_bank_state[3:0]</obj_property>
-         <obj_property name="ObjectShortName">weight_bank_state[3:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_req_valid">
-         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_req_valid</obj_property>
-         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_req_valid</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_byte_count">
-         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_byte_count[17:0]</obj_property>
-         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_byte_count[17:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_start_address">
-         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_start_address[33:0]</obj_property>
-         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_start_address[33:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_resp_valid">
-         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_resp_valid</obj_property>
-         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_resp_valid</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_axi_rm_fetch_resp_valid">
-         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_resp_valid</obj_property>
-         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_resp_valid</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/rows_fetched">
-         <obj_property name="ElementShortName">rows_fetched[10:0]</obj_property>
-         <obj_property name="ObjectShortName">rows_fetched[10:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/features_written">
-         <obj_property name="ElementShortName">features_written[10:0]</obj_property>
-         <obj_property name="ObjectShortName">features_written[10:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/expected_responses">
-         <obj_property name="ElementShortName">expected_responses[4:0]</obj_property>
-         <obj_property name="ObjectShortName">expected_responses[4:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_req_valid">
-         <obj_property name="ElementShortName">weight_channel_req_valid</obj_property>
-         <obj_property name="ObjectShortName">weight_channel_req_valid</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_channel_req_valid">
-         <obj_property name="ElementShortName">weight_channel_req_valid</obj_property>
-         <obj_property name="ObjectShortName">weight_channel_req_valid</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp_valid">
-         <obj_property name="ElementShortName">weight_channel_resp_valid</obj_property>
-         <obj_property name="ObjectShortName">weight_channel_resp_valid</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp_ready">
-         <obj_property name="ElementShortName">weight_channel_resp_ready</obj_property>
-         <obj_property name="ObjectShortName">weight_channel_resp_ready</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp.valid_mask[3]">
-         <obj_property name="ElementShortName">[3]</obj_property>
-         <obj_property name="ObjectShortName">[3]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp.valid_mask[2]">
-         <obj_property name="ElementShortName">[2]</obj_property>
-         <obj_property name="ObjectShortName">[2]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp.valid_mask[1]">
-         <obj_property name="ElementShortName">[1]</obj_property>
-         <obj_property name="ObjectShortName">[1]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp.valid_mask[0]">
-         <obj_property name="ElementShortName">[0]</obj_property>
-         <obj_property name="ObjectShortName">[0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_channel_resp.done">
-         <obj_property name="ElementShortName">.done</obj_property>
-         <obj_property name="ObjectShortName">.done</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_counter">
-         <obj_property name="ElementShortName">row_counter[10:0]</obj_property>
-         <obj_property name="ObjectShortName">row_counter[10:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_pop">
-         <obj_property name="ElementShortName">row_fifo_pop[1023:0]</obj_property>
-         <obj_property name="ObjectShortName">row_fifo_pop[1023:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_pop_shift">
-         <obj_property name="ElementShortName">row_pop_shift[1023:0]</obj_property>
-         <obj_property name="ObjectShortName">row_pop_shift[1023:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/nsb_prefetcher_weight_bank_req_q.in_features">
-         <obj_property name="ElementShortName">.in_features[10:0]</obj_property>
-         <obj_property name="ObjectShortName">.in_features[10:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_count[4]">
-         <obj_property name="ElementShortName">[4][10:0]</obj_property>
-         <obj_property name="ObjectShortName">[4][10:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_count[3]">
-         <obj_property name="ElementShortName">[3][10:0]</obj_property>
-         <obj_property name="ObjectShortName">[3][10:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_count[2]">
-         <obj_property name="ElementShortName">[2][10:0]</obj_property>
-         <obj_property name="ObjectShortName">[2][10:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_count[1]">
-         <obj_property name="ElementShortName">[1][10:0]</obj_property>
-         <obj_property name="ObjectShortName">[1][10:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_count[0]">
-         <obj_property name="ElementShortName">[0][10:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][10:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/row_fifo_in_data">
-         <obj_property name="ElementShortName">row_fifo_in_data[31:0]</obj_property>
-         <obj_property name="ObjectShortName">row_fifo_in_data[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/required_pulses">
-         <obj_property name="ElementShortName">required_pulses[9:0]</obj_property>
-         <obj_property name="ObjectShortName">required_pulses[9:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_i/weight_bank_axi_rm_fetch_resp_data_q">
-         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_resp_data_q[511:0]</obj_property>
-         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_resp_data_q[511:0]</obj_property>
-      </wvobject>
-   </wvobject>
-   <wvobject type="group" fp_name="group307">
-      <obj_property name="label">Weight Bank AXI RM</obj_property>
-      <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/fetch_state">
-         <obj_property name="ElementShortName">fetch_state[2:0]</obj_property>
-         <obj_property name="ObjectShortName">fetch_state[2:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/req_fetch_start_address">
-         <obj_property name="ElementShortName">req_fetch_start_address[31:0]</obj_property>
-         <obj_property name="ObjectShortName">req_fetch_start_address[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/req_fetch_byte_count">
-         <obj_property name="ElementShortName">req_fetch_byte_count[17:0]</obj_property>
-         <obj_property name="ObjectShortName">req_fetch_byte_count[17:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/accepting_axi_read_transaction">
-         <obj_property name="ElementShortName">accepting_axi_read_transaction</obj_property>
-         <obj_property name="ObjectShortName">accepting_axi_read_transaction</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/last_transaction_pending">
-         <obj_property name="ElementShortName">last_transaction_pending</obj_property>
-         <obj_property name="ObjectShortName">last_transaction_pending</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /out_feature">
+         <obj_property name="ElementShortName">out_feature[31:0]</obj_property>
+         <obj_property name="ObjectShortName">out_feature[31:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group318">
@@ -1552,9 +1470,9 @@
          <obj_property name="ElementShortName">pulse_systolic_module</obj_property>
          <obj_property name="ObjectShortName">pulse_systolic_module</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/aggregation_buffer_fte_out_feature_valid">
-         <obj_property name="ElementShortName">aggregation_buffer_fte_out_feature_valid[15:0]</obj_property>
-         <obj_property name="ObjectShortName">aggregation_buffer_fte_out_feature_valid[15:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/aggregation_buffer_driver_i/slot_pop_shift">
+         <obj_property name="ElementShortName">slot_pop_shift[15:0]</obj_property>
+         <obj_property name="ObjectShortName">slot_pop_shift[15:0]</obj_property>
       </wvobject>
       <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/weight_channel_resp_valid">
          <obj_property name="ElementShortName">weight_channel_resp_valid</obj_property>
@@ -1564,70 +1482,154 @@
          <obj_property name="ElementShortName">.done</obj_property>
          <obj_property name="ObjectShortName">.done</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_acc">
-         <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-         <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/transformation_buffer_slot_free">
+         <obj_property name="ElementShortName">transformation_buffer_slot_free[15:0]</obj_property>
+         <obj_property name="ObjectShortName">transformation_buffer_slot_free[15:0]</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_forward_in_valid">
-         <obj_property name="ElementShortName">pe_forward_in_valid</obj_property>
-         <obj_property name="ObjectShortName">pe_forward_in_valid</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/transformation_buffer_slot_arb_oh">
+         <obj_property name="ElementShortName">transformation_buffer_slot_arb_oh[15:0]</obj_property>
+         <obj_property name="ObjectShortName">transformation_buffer_slot_arb_oh[15:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_forward_in">
-         <obj_property name="ElementShortName">pe_forward_in[31:0]</obj_property>
-         <obj_property name="ObjectShortName">pe_forward_in[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_down_in_valid">
-         <obj_property name="ElementShortName">pe_down_in_valid</obj_property>
-         <obj_property name="ObjectShortName">pe_down_in_valid</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_down_in">
-         <obj_property name="ElementShortName">pe_down_in[31:0]</obj_property>
-         <obj_property name="ObjectShortName">pe_down_in[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /sys_array_down[0]">
-         <obj_property name="ElementShortName">[0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_array_pe_acc[0][0]">
+         <obj_property name="ElementShortName">[0][15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][15:0][31:0]</obj_property>
       </wvobject>
    </wvobject>
-   <wvobject type="group" fp_name="group385">
-      <obj_property name="label">Aggregation Buffer</obj_property>
+   <wvobject type="group" fp_name="group359">
+      <obj_property name="label">Transformation Buffer</obj_property>
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="isExpanded"></obj_property>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /out_feature">
-         <obj_property name="ElementShortName">out_feature[31:0]</obj_property>
-         <obj_property name="ObjectShortName">out_feature[31:0]</obj_property>
+      <wvobject type="vbus" fp_name="vbus484">
+         <obj_property name="label">write_enable</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject type="logic" fp_name="/top_tb/top_i/transformation_buffer_i/write_enable[3]">
+            <obj_property name="ElementShortName">[3]</obj_property>
+            <obj_property name="ObjectShortName">[3]</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/top_tb/top_i/transformation_buffer_i/write_enable[2]">
+            <obj_property name="ElementShortName">[2]</obj_property>
+            <obj_property name="ObjectShortName">[2]</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/top_tb/top_i/transformation_buffer_i/write_enable[1]">
+            <obj_property name="ElementShortName">[1]</obj_property>
+            <obj_property name="ObjectShortName">[1]</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/top_tb/top_i/transformation_buffer_i/write_enable[0]">
+            <obj_property name="ElementShortName">[0]</obj_property>
+            <obj_property name="ObjectShortName">[0]</obj_property>
+         </wvobject>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[1].slot_i /out_feature">
-         <obj_property name="ElementShortName">out_feature[31:0]</obj_property>
-         <obj_property name="ObjectShortName">out_feature[31:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_buffer_i/write_data[0]">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">[0][511:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][511:0]</obj_property>
+         <obj_property name="label">write_data</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[2].slot_i /out_feature">
-         <obj_property name="ElementShortName">out_feature[31:0]</obj_property>
-         <obj_property name="ObjectShortName">out_feature[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="group" fp_name="group397">
+      <obj_property name="label">Systolic Module [0]</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/pulse_systolic_module">
+         <obj_property name="ElementShortName">pulse_systolic_module</obj_property>
+         <obj_property name="ObjectShortName">pulse_systolic_module</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[3].slot_i /out_feature">
-         <obj_property name="ElementShortName">out_feature[31:0]</obj_property>
-         <obj_property name="ObjectShortName">out_feature[31:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /sys_array_pe_acc[0]">
+         <obj_property name="ElementShortName">[0][15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][15:0][31:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /feature_count">
-         <obj_property name="ElementShortName">feature_count[9:0]</obj_property>
-         <obj_property name="ObjectShortName">feature_count[9:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /sys_array_pe_acc[1]">
+         <obj_property name="ElementShortName">[1][15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][15:0][31:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[1].slot_i /feature_count">
-         <obj_property name="ElementShortName">feature_count[9:0]</obj_property>
-         <obj_property name="ObjectShortName">feature_count[9:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /sys_array_pe_acc[2]">
+         <obj_property name="ElementShortName">[2][15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][15:0][31:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[2].slot_i /feature_count">
-         <obj_property name="ElementShortName">feature_count[9:0]</obj_property>
-         <obj_property name="ObjectShortName">feature_count[9:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /sys_array_pe_acc[3]">
+         <obj_property name="ElementShortName">[3][15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][15:0][31:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[3].slot_i /feature_count">
-         <obj_property name="ElementShortName">feature_count[9:0]</obj_property>
-         <obj_property name="ObjectShortName">feature_count[9:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <wvobject type="vbus" fp_name="vbus442">
+         <obj_property name="label">row0</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[1].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[2].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[3].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject type="vbus" fp_name="vbus448">
+         <obj_property name="label">row1</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[1].cols_gen[0].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[1].cols_gen[1].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[1].cols_gen[2].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[1].cols_gen[3].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject type="vbus" fp_name="vbus453">
+         <obj_property name="label">row2</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[2].cols_gen[0].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[2].cols_gen[1].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[2].cols_gen[2].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[2].cols_gen[3].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject type="vbus" fp_name="vbus458">
+         <obj_property name="label">row3</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[3].cols_gen[0].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[3].cols_gen[1].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[3].cols_gen[2].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[3].cols_gen[3].sys_array_pe_i /pe_acc">
+            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
+         </wvobject>
       </wvobject>
    </wvobject>
 </wave_config>
