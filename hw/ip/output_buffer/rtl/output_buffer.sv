@@ -1,6 +1,8 @@
 
 import top_pkg::*;
 
+// TO DO: will become the writeback manager
+
 module output_buffer #(
     parameter AXI_ADDR_WIDTH = 34
 ) (

@@ -22,7 +22,7 @@ module fixed_point_mac #(
     parameter WIDTH = 32
 ) (
     input  logic                              core_clk,            
-    input  logic                              rstn,
+    input  logic                              resetn,
 
     input  logic                              en,             // enable accumulator update
     input  logic [WIDTH-1:0]                  a,
@@ -34,8 +34,8 @@ module fixed_point_mac #(
 logic [WIDTH-1:0] acc_reg;
 
 // Accumulator
-always_ff @(posedge core_clk or negedge rstn) begin
-    if (!rstn) begin
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
         acc_reg <= '0;
     end else begin
         acc_reg <= en ? (acc_reg + a*b) : acc_reg;

@@ -66,6 +66,20 @@ typedef enum logic [1:0] {
     FIXED_4  = 2'd3
 } NODE_PRECISION_e;
 
+typedef enum logic [1:0] {
+    SUM       = 2'd0,
+    MEAN      = 2'd1,
+    RESERVED  = 2'd2,
+    RESERVED2 = 2'd3
+} AGGREGATION_FUNCTION_e;
+
+typedef enum logic {
+    NONE, RELU
+} ACTIVATION_FUNCTION_e;
+
+// Utilities
+// ----------------------------------------------------
+
 function logic [5:0] bits_per_precision (input NODE_PRECISION_e precision);
     logic [5:0] bits;
     case(precision)
@@ -77,13 +91,6 @@ function logic [5:0] bits_per_precision (input NODE_PRECISION_e precision);
     endcase
     return bits;
 endfunction
-
-typedef enum logic [1:0] {
-    SUM       = 2'd0,
-    MEAN      = 2'd1,
-    RESERVED  = 2'd2,
-    RESERVED2 = 2'd3
-} AGGREGATION_FUNCTION_e;
 
 // Internal request/response interfaces
 // ----------------------------------------------------

@@ -59,11 +59,9 @@ sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --i
 "../../ip/lib/buffers/hybrid_buffer/hybrid_buffer_slot.sv" \
 "../../ip/lib/buffers/hybrid_buffer/hybrid_buffer.sv" \
 "../../ip/lib/buffers/hybrid_buffer/hybrid_buffer_driver.sv" \
-"../../imports/arch_package.sv" \
 "../../ip/lib/axi/axi_read_master.sv" \
 "../../ip/lib/arithmetic/float_mac.sv" \
 "../../ip/lib/arithmetic/mac.sv" \
-"../../ip/transformation_engine/include/sys_array_pkg.sv" \
 "../../ip/lib/base_components/binary_to_onehot.sv" \
 "../../ip/lib/base_components/count_ones.sv" \
 "../../ip/lib/base_components/onehot_to_binary.sv" \
@@ -72,15 +70,15 @@ sv xil_defaultlib --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --i
 "../../ip/node_scoreboard/rtl/node_scoreboard.sv" \
 "../../ip/output_buffer/rtl/output_buffer.sv" \
 "../../ip/prefetcher/include/prefetcher_pkg.sv" \
-"../../ip/prefetcher/rtl/ultraram_fifo.sv" \
+"../../ip/lib/buffers/ultraram_fifo.sv" \
 "../../ip/prefetcher/rtl/prefetcher_fetch_tag.sv" \
 "../../ip/prefetcher/rtl/prefetcher_feature_bank.sv" \
 "../../ip/prefetcher/rtl/prefetcher_weight_bank.sv" \
 "../../ip/prefetcher/rtl/prefetcher.sv" \
-"../../ip/lib/systolic_modules/sys_array.sv" \
-"../../ip/lib/systolic_modules/sys_array_pe.sv" \
+"../../ip/lib/systolic_modules/activation_core.sv" \
+"../../ip/lib/systolic_modules/processing_element.sv" \
+"../../ip/lib/systolic_modules/systolic_module.sv" \
 "../../ip/transformation_engine/rtl/feature_transformation_engine.sv" \
-"../../ip/transformation_engine/rtl/transformation_engine.sv" \
 "../../ip/top/rtl/top.sv" \
 
 nosort

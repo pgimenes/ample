@@ -242,12 +242,6 @@ always_comb begin
     packet_dest_col = router_aggregation_core_data.data.head_data.x_dest;
     packet_dest_row = router_aggregation_core_data.data.head_data.y_dest;
 
-    // TO DO: remove. hard coded to debug
-    // packet_source_col = '0;
-    // packet_source_row = age_pkg::MESH_ROWS - 1;
-    // packet_dest_col   = '0;
-    // packet_dest_row   = '0;
-
     correct_pkt_dest = (packet_dest_row == y_coord) && (packet_dest_col == x_coord);
 end
 

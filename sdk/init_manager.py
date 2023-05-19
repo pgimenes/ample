@@ -84,10 +84,12 @@ class InitManager:
         layer = {
             'in_feature_count': self.trained_graph.feature_count,
             'out_feature_count': self.trained_graph.feature_count,
+            'transformation_activation': self.trained_graph.transformation_activation,
+            'transformation_bias': self.trained_graph.transformation_bias,
             'adjacency_list_address': self.offsets['adj_list'],
             'in_messages_address': self.offsets['in_messages'],
             'weights_address': self.offsets['weights'],
-            'out_messages_address': self.offsets['out_messages'],
+            'out_messages_address': self.offsets['out_messages']
         }
         self.layer_config['layers'].append(layer)
 
