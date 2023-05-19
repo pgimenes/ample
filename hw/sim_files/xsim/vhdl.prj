@@ -45,6 +45,9 @@ vhdl floating_point_v7_1_9  \
 
 vhdl xil_defaultlib  \
 "../../hw.srcs/sources_1/ip/fp_add/sim/fp_add.vhd" \
-"../../hw.srcs/sources_1/ip/fp_mult/sim/fp_mult.vhd"
+"../../hw.srcs/sources_1/ip/fp_mult/sim/fp_mult.vhd" \
+"../../hw.ip_user_files/ip/fixed16_upsampler/sim/fixed16_upsampler.vhd" \
+"../../hw.ip_user_files/ip/fixed8_upsampler/sim/fixed8_upsampler.vhd" \
+"../../hw.ip_user_files/ip/fixed4_upsampler/sim/fixed4_upsampler.vhd"
 
 nosort
