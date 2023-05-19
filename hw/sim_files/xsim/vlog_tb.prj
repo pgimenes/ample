@@ -1,4 +1,4 @@
-sv xil_defaultlib --include "../../../imports/json_sv/sv" --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../imports" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
+sv xil_defaultlib --include "../../../imports/json_sv/sv" --include "../../hw.srcs/sources_1/ip/ddr4_0/ip_1/rtl/map" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/ip_top" --include "../../hw.srcs/sources_1/ip/ddr4_0/rtl/cal" --include "../../build/regbanks/controller_regbank" --include "../../build/regbanks/aggregation_engine_regbank" --include "../../build/regbanks/node_scoreboard_regbank" --include "../../hw.ip_user_files/ipstatic/hdl" -d "FLOAT_MAC=1" \
 "../../../imports/json_sv/sv/json.svh" \
 "../../../imports/json_sv/sv/util.sv" \
 "../../../imports/json_sv/sv/json.sv" \

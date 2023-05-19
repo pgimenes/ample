@@ -79,7 +79,7 @@ class GraphTest extends Test;
         this.write_prefetcher_regbank("Define IN Feature Count", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_prefetcher_regbank("Define OUT Feature Count", prefetcher_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
         
-        // Addresses
+        // Prefetcher regbank
         this.write_prefetcher_regbank("Define Adjacency List Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_ADJACENCY_LIST_ADDRESS_LSB_OFFSET, layer_config.getByKey("adjacency_list_address").asInt());
         this.write_prefetcher_regbank("Define Adjacency List Address MSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_ADJACENCY_LIST_ADDRESS_MSB_OFFSET, '0);
         this.write_prefetcher_regbank("Define IN Messages Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_MESSAGES_ADDRESS_LSB_OFFSET, layer_config.getByKey("in_messages_address").asInt());
@@ -87,14 +87,19 @@ class GraphTest extends Test;
         this.write_prefetcher_regbank("Define Weights Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET, layer_config.getByKey("weights_address").asInt());
         this.write_prefetcher_regbank("Define Weights Address MSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET, '0);
         
+        // AGE regbank
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to AGE regbank.", $time, TESTNAME);
         this.write_age_regbank("Define IN Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_age_regbank("Define OUT Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
         
+        // FTE regbank
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to FTE regbank.", $time, TESTNAME);
         this.write_fte_regbank("Define IN Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_fte_regbank("Define OUT Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
+        this.write_fte_regbank("Define transformation activation function", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_ACTIVATION_FUNCTION_OFFSET, layer_config.getByKey("transformation_activation").asInt());
+        this.write_fte_regbank("Define transformation bias term", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_BIAS_OFFSET, layer_config.getByKey("transformation_bias").asInt());
 
+        // NSB regbank
         // NSB Layer configuration
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to NSB regbank.", $time, TESTNAME);
         this.write_nsb_regbank("Define Feature Count", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());

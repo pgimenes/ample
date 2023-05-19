@@ -29,12 +29,12 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="3537795fs"></ZoomStartTime>
-      <ZoomEndTime time="3582516fs"></ZoomEndTime>
-      <Cursor1Time time="3545248fs"></Cursor1Time>
+      <ZoomStartTime time="3570615fs"></ZoomStartTime>
+      <ZoomEndTime time="3588156fs"></ZoomEndTime>
+      <Cursor1Time time="3575236fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="327"></NameColumnWidth>
+      <NameColumnWidth column_width="315"></NameColumnWidth>
       <ValueColumnWidth column_width="66"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="42" />
@@ -1454,6 +1454,119 @@
          <obj_property name="ObjectShortName">out_feature[31:0]</obj_property>
       </wvobject>
    </wvobject>
+   <wvobject type="group" fp_name="group397">
+      <obj_property name="label">Systolic Module [0]</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/pulse_systolic_module">
+         <obj_property name="ElementShortName">pulse_systolic_module</obj_property>
+         <obj_property name="ObjectShortName">pulse_systolic_module</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_module_i /sys_module_pe_acc">
+         <obj_property name="ElementShortName">sys_module_pe_acc[16:0][15:0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">sys_module_pe_acc[16:0][15:0][31:0]</obj_property>
+      </wvobject>
+      <wvobject type="vbus" fp_name="vbus390">
+         <obj_property name="label">row0</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_module_i /sys_module_pe_acc[0][3]">
+            <obj_property name="ElementShortName">[3][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_module_i /sys_module_pe_acc[0][2]">
+            <obj_property name="ElementShortName">[2][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_module_i /sys_module_pe_acc[0][1]">
+            <obj_property name="ElementShortName">[1][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_module_i /sys_module_pe_acc[0][0]">
+            <obj_property name="ElementShortName">[0][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject type="vbus" fp_name="vbus400">
+         <obj_property name="label">row1</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][1][3]">
+            <obj_property name="ElementShortName">[3][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][1][2]">
+            <obj_property name="ElementShortName">[2][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][1][1]">
+            <obj_property name="ElementShortName">[1][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][1][0]">
+            <obj_property name="ElementShortName">[0][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject type="vbus" fp_name="vbus399">
+         <obj_property name="label">row2</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][2][3]">
+            <obj_property name="ElementShortName">[3][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][2][2]">
+            <obj_property name="ElementShortName">[2][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][2][1]">
+            <obj_property name="ElementShortName">[1][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][2][0]">
+            <obj_property name="ElementShortName">[0][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject type="vbus" fp_name="vbus405">
+         <obj_property name="label">row3</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][3][3]">
+            <obj_property name="ElementShortName">[3][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][3][2]">
+            <obj_property name="ElementShortName">[2][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][3][1]">
+            <obj_property name="ElementShortName">[1][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_pe_acc[0][3][0]">
+            <obj_property name="ElementShortName">[0][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/pulse_systolic_module">
+         <obj_property name="ElementShortName">pulse_systolic_module</obj_property>
+         <obj_property name="ObjectShortName">pulse_systolic_module</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/sys_module_flush_done">
+         <obj_property name="ElementShortName">sys_module_flush_done</obj_property>
+         <obj_property name="ObjectShortName">sys_module_flush_done</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_module_i /forward_flush_done">
+         <obj_property name="ElementShortName">forward_flush_done[15:0]</obj_property>
+         <obj_property name="ObjectShortName">forward_flush_done[15:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_module_i /sys_module_forward_valid">
+         <obj_property name="ElementShortName">sys_module_forward_valid[15:0]</obj_property>
+         <obj_property name="ObjectShortName">sys_module_forward_valid[15:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_module_i /sys_module_down_valid">
+         <obj_property name="ElementShortName">sys_module_down_valid[15:0]</obj_property>
+         <obj_property name="ObjectShortName">sys_module_down_valid[15:0]</obj_property>
+      </wvobject>
+   </wvobject>
    <wvobject type="group" fp_name="group318">
       <obj_property name="label">FTE</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -1490,9 +1603,13 @@
          <obj_property name="ElementShortName">transformation_buffer_slot_arb_oh[15:0]</obj_property>
          <obj_property name="ObjectShortName">transformation_buffer_slot_arb_oh[15:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/sys_array_pe_acc[0][0]">
-         <obj_property name="ElementShortName">[0][15:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][15:0][31:0]</obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/bias_valid">
+         <obj_property name="ElementShortName">bias_valid</obj_property>
+         <obj_property name="ObjectShortName">bias_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/layer_config_bias_value">
+         <obj_property name="ElementShortName">layer_config_bias_value[31:0]</obj_property>
+         <obj_property name="ObjectShortName">layer_config_bias_value[31:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group359">
@@ -1524,112 +1641,6 @@
          <obj_property name="ElementShortName">[0][511:0]</obj_property>
          <obj_property name="ObjectShortName">[0][511:0]</obj_property>
          <obj_property name="label">write_data</obj_property>
-      </wvobject>
-   </wvobject>
-   <wvobject type="group" fp_name="group397">
-      <obj_property name="label">Systolic Module [0]</obj_property>
-      <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
-      <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/pulse_systolic_module">
-         <obj_property name="ElementShortName">pulse_systolic_module</obj_property>
-         <obj_property name="ObjectShortName">pulse_systolic_module</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /sys_array_pe_acc[0]">
-         <obj_property name="ElementShortName">[0][15:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][15:0][31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /sys_array_pe_acc[1]">
-         <obj_property name="ElementShortName">[1][15:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">[1][15:0][31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /sys_array_pe_acc[2]">
-         <obj_property name="ElementShortName">[2][15:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">[2][15:0][31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /sys_array_pe_acc[3]">
-         <obj_property name="ElementShortName">[3][15:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">[3][15:0][31:0]</obj_property>
-      </wvobject>
-      <wvobject type="vbus" fp_name="vbus442">
-         <obj_property name="label">row0</obj_property>
-         <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="isExpanded"></obj_property>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[0].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[1].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[2].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[0].cols_gen[3].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-      </wvobject>
-      <wvobject type="vbus" fp_name="vbus448">
-         <obj_property name="label">row1</obj_property>
-         <obj_property name="DisplayName">label</obj_property>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[1].cols_gen[0].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[1].cols_gen[1].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[1].cols_gen[2].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[1].cols_gen[3].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-      </wvobject>
-      <wvobject type="vbus" fp_name="vbus453">
-         <obj_property name="label">row2</obj_property>
-         <obj_property name="DisplayName">label</obj_property>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[2].cols_gen[0].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[2].cols_gen[1].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[2].cols_gen[2].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[2].cols_gen[3].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-      </wvobject>
-      <wvobject type="vbus" fp_name="vbus458">
-         <obj_property name="label">row3</obj_property>
-         <obj_property name="DisplayName">label</obj_property>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[3].cols_gen[0].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[3].cols_gen[1].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[3].cols_gen[2].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/top_i/transformation_engine_i/\genblk1[0].sys_array_i /\rows_gen[3].cols_gen[3].sys_array_pe_i /pe_acc">
-            <obj_property name="ElementShortName">pe_acc[31:0]</obj_property>
-            <obj_property name="ObjectShortName">pe_acc[31:0]</obj_property>
-         </wvobject>
       </wvobject>
    </wvobject>
 </wave_config>

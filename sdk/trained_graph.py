@@ -30,6 +30,10 @@ class TrainedGraph:
         # Feature count initialization may change when embeddings are trained
         self.feature_count = len(dataset.x[0])
 
+        # TO DO: read activation from model object
+        self.transformation_activation = 1 # relu
+        self.transformation_bias = 0
+
         # Trained weights
         self.weights = weights
 

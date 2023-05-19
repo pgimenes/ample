@@ -24,7 +24,7 @@ module mac #(
     parameter FLOAT_WIDTH = 32
 ) (
     input  logic                              core_clk,            
-    input  logic                              rstn,
+    input  logic                              resetn,
 
 `ifdef FLOAT_MAC
     input  ieee_sp_float_s                    a,
@@ -51,7 +51,7 @@ module mac #(
         .FLOAT_WIDTH(FLOAT_WIDTH)
     ) float_mac_i (
         .core_clk,
-        .rstn,
+        .resetn,
 
         .en,
         .a,
@@ -71,7 +71,7 @@ module mac #(
         .WIDTH(FLOAT_WIDTH)
     ) fixed_point_mac_i (
         .core_clk,
-        .rstn,
+        .resetn,
         .en,
         .a,
         .b,
@@ -85,12 +85,12 @@ module mac #(
 // ======================================================================================================
 
 P_acc_grows: assert property (
-    @(posedge core_clk) disable iff (!rstn)
+    @(posedge core_clk) disable iff (!resetn)
     en |=> acc >= $past(acc, 1)
 );
 
 P_acc_constant: cover property (
-    @(posedge core_clk) disable iff (!rstn)
+    @(posedge core_clk) disable iff (!resetn)
     en |=> acc == $past(acc, 1)
 );
 
