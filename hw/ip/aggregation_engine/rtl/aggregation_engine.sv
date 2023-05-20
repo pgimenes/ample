@@ -111,10 +111,12 @@ logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     route
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     router_aggregation_manager_ready;
 flit_t [TOTAL_AGGREGATION_MANAGERS-1:0]                                    router_aggregation_manager_data;
 
-logic [TOTAL_AGGREGATION_MANAGERS-1:0] [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0]     agm_allocated_nodeslot;
+top_pkg::NSB_AGE_REQ_t [TOTAL_AGGREGATION_MANAGERS-1:0]                              agm_allocation;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0] [AGC_COUNT_FLOAT32-1:0]                       agm_allocated_agcs;
 logic [TOTAL_AGGREGATION_MANAGERS-1:0] [$clog2(TOTAL_AGGREGATION_CORES)-1:0]         agm_allocated_agcs_count;
-logic [TOTAL_AGGREGATION_MANAGERS-1:0] [MAX_AC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] agm_coords_buffer_x;
-logic [TOTAL_AGGREGATION_MANAGERS-1:0] [MAX_AC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] agm_coords_buffer_y;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0] [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] agm_coords_buffer_x;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0] [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] agm_coords_buffer_y;
+
 
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]         aggregation_manager_resp_arbitration_oh;
 logic [$clog2(TOTAL_AGGREGATION_MANAGERS)-1:0] aggregation_manager_resp_arbitration_bin;
@@ -152,12 +154,19 @@ logic  [BM_ROWS-1:0] [BM_COLS-1:0] router_buffer_manager_valid;
 logic  [BM_ROWS-1:0] [BM_COLS-1:0] router_buffer_manager_ready;
 flit_t [BM_ROWS-1:0] [BM_COLS-1:0] router_buffer_manager_data;
 
-// AGC Allocation
+// FLOAT_32 AGC Allocation
 // ----------------------------------------------------
 
 logic [AGC_COUNT_FLOAT32-1:0]           agc_float32_free_mask;
 logic [$clog2(AGC_COUNT_FLOAT32)-1:0]   allocated_agc_float32;
 logic [AGC_COUNT_FLOAT32-1:0]           allocatable_aggregation_cores_float32;
+
+// FIXED_16 AGC Allocation
+// ----------------------------------------------------
+
+logic [AGC_COUNT_FLOAT32-1:0]           agc_fixed16_free_mask;
+logic [$clog2(AGC_COUNT_FLOAT32)-1:0]   allocated_agc_fixed16;
+logic [AGC_COUNT_FLOAT32-1:0]           allocatable_aggregation_cores_fixed16;
 
 // (Aggregation <-> Buffer Manager) Allocation
 logic [TOTAL_BUFFER_MANAGERS-1:0] buffer_master_allocation_oh;
@@ -277,7 +286,8 @@ for (genvar agm = 0; agm < TOTAL_AGGREGATION_MANAGERS; agm = agm + 1) begin
         .router_aggregation_manager_ready                        (router_aggregation_manager_ready [agm]),
         .router_aggregation_manager_data                         (router_aggregation_manager_data [agm]),
                          
-        .agm_allocated_nodeslot                                  (agm_allocated_nodeslot [agm]),
+        .agm_allocation                                          (agm_allocation [agm]),
+        .agm_allocated_agcs                                      (agm_allocated_agcs [agm]),
         .agm_allocated_agcs_count                                (agm_allocated_agcs_count [agm]),
         .coords_buffer_x                                         (agm_coords_buffer_x [agm]),
         .coords_buffer_y                                         (agm_coords_buffer_y [agm])
@@ -308,16 +318,17 @@ end
 for (genvar agc_row = 0; agc_row < AGC_FLOAT32_ROWS; agc_row = agc_row + 1) begin
 
     // Build mask of free aggregation cores for allocation
-    assign agc_float32_free_mask [((agc_row+1)*AGC_FLOAT32_ROWS)-1:(agc_row*AGC_FLOAT32_ROWS)] = aggregation_core_free[agc_row];
+    // assign agc_float32_free_mask [((agc_row+1)*AGC_FLOAT32_ROWS)-1:(agc_row*AGC_FLOAT32_ROWS)] = aggregation_core_free[agc_row];
+    assign agc_float32_free_mask [((agc_row+1)*AGC_FLOAT32_COLS)-1:(agc_row*AGC_FLOAT32_COLS)] = aggregation_core_free[agc_row] [AGC_FLOAT32_COLS-1:AGC_FLOAT32_COL_OFFSET];
 
     for (genvar agc_col = 0; agc_col < AGC_FLOAT32_COLS; agc_col = agc_col + 1) begin
     
-        aggregation_core_float32 #(
-            .X_COORD(agc_col),
-            .Y_COORD(agc_row),
+        aggregation_core #(
+            .X_COORD       (agc_col),
+            .Y_COORD       (agc_row),
 
-            .FEATURE_COUNT(16),
-            .DATA_WIDTH(32)
+            .FEATURE_COUNT (16),
+            .DATA_WIDTH    (32)
 
         ) agc_float32_i (
             .core_clk,
@@ -353,9 +364,62 @@ for (genvar agc_row = 0; agc_row < AGC_FLOAT32_ROWS; agc_row = agc_row + 1) begi
     end
 end
 
+// Aggregation Cores: FIXED_16
+// ----------------------------------------------------
+
+for (genvar agc_row = 0; agc_row < AGC_FIXED16_ROWS; agc_row = agc_row + 1) begin
+
+    // Build mask of free aggregation cores for allocation
+    assign agc_fixed16_free_mask [((agc_row+1)*AGC_FIXED16_COLS)-1:(agc_row*AGC_FIXED16_COLS)] = aggregation_core_free[agc_row] [AGC_FIXED16_COL_OFFSET + AGC_FIXED16_COLS - 1 : AGC_FIXED16_COL_OFFSET];
+
+    for (genvar agc_col = AGC_FIXED16_COL_OFFSET; agc_col < (AGC_FIXED16_COL_OFFSET + AGC_FIXED16_COLS); agc_col++) begin
+    
+        aggregation_core #(
+            .X_COORD       (agc_col),
+            .Y_COORD       (agc_row),
+
+            .FEATURE_COUNT (16),
+            .DATA_WIDTH    (16),
+
+            .PRECISION     ("FIXED_16")
+
+        ) agc_fixed16_i (
+            .core_clk,
+            .resetn,
+
+            // Allocation interface
+            .aggregation_core_free          (aggregation_core_free          [agc_row][agc_col]),
+
+            // Aggregation Core -> Router
+            .aggregation_core_router_on     (aggregation_core_router_on     [agc_row][agc_col]),
+            .aggregation_core_router_valid  (aggregation_core_router_valid  [agc_row][agc_col]),
+            .aggregation_core_router_ready  (aggregation_core_router_ready  [agc_row][agc_col]),
+            .aggregation_core_router_data   (aggregation_core_router_data   [agc_row][agc_col]),
+
+            // Router -> Aggregation Core
+            .router_aggregation_core_on     (router_aggregation_core_on     [agc_row][agc_col]),
+            .router_aggregation_core_valid  (router_aggregation_core_valid  [agc_row][agc_col]),
+            .router_aggregation_core_ready  (router_aggregation_core_ready  [agc_row][agc_col]),
+            .router_aggregation_core_data   (router_aggregation_core_data   [agc_row][agc_col])
+        );
+
+        always_comb begin
+            aggregation_core_router_on    [agc_row][agc_col] = node_router_on                [agc_col][agc_row];
+            aggregation_core_router_ready [agc_row][agc_col] = node_router_ready             [agc_col][agc_row];
+            node_router_valid             [agc_col][agc_row] = aggregation_core_router_valid [agc_row][agc_col];
+            node_router_data              [agc_col][agc_row] = aggregation_core_router_data  [agc_row][agc_col];
+            
+            router_aggregation_core_valid [agc_row][agc_col] = router_node_valid             [agc_col][agc_row];
+            router_aggregation_core_data  [agc_row][agc_col] = router_node_data              [agc_col][agc_row];
+            router_node_on                [agc_col][agc_row] = router_aggregation_core_on    [agc_row][agc_col];
+            router_node_ready             [agc_col][agc_row] = router_aggregation_core_ready [agc_row][agc_col];
+        end
+    end
+end
+
 // Unused nodes for other aggregation cores
 // TO DO: fill (MS3)
-for (genvar col = 16; col < 64; col++) begin
+for (genvar col = AGC_UNUSED_COLS_OFFSET; col < AGC_COLS; col++) begin
     for (genvar row = 0; row < 8; row++) begin
         always_comb begin
             node_router_valid             [col][row] = '0;
@@ -412,41 +476,47 @@ for (genvar bm = 0; bm < TOTAL_BUFFER_MANAGERS; bm++) begin
     end
 end
 
-// ==================================================================================================================================================
-// Logic
-// ==================================================================================================================================================
-
 // Aggregation Core (FLOAT32) Allocation
 // ----------------------------------------------------
 
-// TO DO: replace with new allocation scheme for MS3
+aggregation_core_allocator #(
+    .NUM_CORES (age_pkg::AGC_COUNT_FLOAT32)
+) agc_float32_allocator (
+    .core_clk               (core_clk),
+    .resetn                 (resetn),
 
-onehot_to_binary #(
-    .INPUT_WIDTH    (AGC_COUNT_FLOAT32)
-) find_first_agc_float32_i (
-    .clk            (core_clk), // not registered for now
-    .resetn         (resetn),
-    .input_data     (agc_float32_free_mask & allocatable_aggregation_cores_float32),
-    .output_data    (allocated_agc_float32)
+    .cores_free             (agc_float32_free_mask),
+    .accept_allocation      (nsb_age_req_valid && nsb_age_req_ready && (nsb_age_req.node_precision == top_pkg::FLOAT_32)),
+    .allocated_core         (allocated_agc_float32),
+
+    .deallocation_valid     (nsb_age_resp_valid && agm_allocation[aggregation_manager_resp_arbitration_bin].node_precision == top_pkg::FLOAT_32),
+
+    // Deallocate the AGCs associated with the AGM sending NSB response
+    .deallocation_cores     (agm_allocated_agcs [aggregation_manager_resp_arbitration_bin])
 );
 
-// Keep snapshot of allocated aggregation cores when NSB request is accepted
-// This accounts for race condition between AGC aggregation and message channel (aggregation manager)
-//      sending nodeslot allocation packet to AGC
+// Aggregation Core (FIXED_16) Allocation
+// ----------------------------------------------------
 
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        allocatable_aggregation_cores_float32 <= '1;
-    
-    // When accepting NSB request, AGC has been allocated
-    end else if (nsb_age_req_valid && nsb_age_req_ready) begin
-        allocatable_aggregation_cores_float32[allocated_agc_float32] <= '0;
+aggregation_core_allocator #(
+    .NUM_CORES (age_pkg::AGC_COUNT_FIXED16)
+) agc_fixed16_allocator (
+    .core_clk               (core_clk),
+    .resetn                 (resetn),
 
-    // When sending response to NSB, aggregation has completed for that nodeslot and AGCs have been cleared
-    end else if (nsb_age_resp_valid) begin // valid only response
-        allocatable_aggregation_cores_float32[nsb_age_resp.nodeslot] <= '1; // TO DO: read from mask of allocated AGCs for each nodeslot
-    end
-end
+    .cores_free             (agc_fixed16_free_mask),
+    .accept_allocation      (nsb_age_req_valid && nsb_age_req_ready && (nsb_age_req.node_precision == top_pkg::FIXED_16)),
+    .allocated_core         (allocated_agc_fixed16),
+
+    .deallocation_valid     (nsb_age_resp_valid && agm_allocation[aggregation_manager_resp_arbitration_bin].node_precision == top_pkg::FIXED_16),
+
+    // Deallocate the AGCs associated with the AGM sending NSB response
+    .deallocation_cores     (agm_allocated_agcs [aggregation_manager_resp_arbitration_bin])
+);
+
+// ==================================================================================================================================================
+// Logic
+// ==================================================================================================================================================
 
 // NSB -> Message Channel (Aggregation Manager) requests
 // ----------------------------------------------------
@@ -455,14 +525,23 @@ always_comb begin
     nsb_age_req_ready = age_agm_req_ready[nsb_age_req.nodeslot];
 
     age_agm_req.nsb_req = nsb_age_req;
-    age_agm_req.coords_x = allocated_agc_float32 % 16;
-    age_agm_req.coords_y = allocated_agc_float32 / 16;
 
-    age_agm_req.ac_count = `divide_round_up(layer_config_in_features_count, age_pkg::features_per_aggregation_core(nsb_age_req.node_precision));
+    age_agm_req.allocated_cores = (nsb_age_req.node_precision == FLOAT_32) ? allocated_agc_float32
+                                : (nsb_age_req.node_precision == FIXED_16) ? allocated_agc_fixed16
+                                : (nsb_age_req.node_precision == FIXED_8) ? allocated_agc_float32 // to do
+                                : (nsb_age_req.node_precision == FIXED_4) ? allocated_agc_float32 // to do
+                                : '0;
+    
+    // TO DO: for higher feature count, compute coordinates for each AGC
+    age_agm_req.coords_x = allocated_agc_float32 [3:0]; // % 16
+    age_agm_req.coords_y = allocated_agc_float32 [$clog2(AGC_COUNT_FLOAT32)-1:4]; // div 16
+
+
+    age_agm_req.ac_count = layer_config_in_features_count[9:4] + (|layer_config_in_features_count[3:0] ? 1'b1 : '0);
 end
 
 assign nsb_age_resp_valid = |age_agm_resp_valid;
-assign nsb_age_resp.nodeslot = agm_allocated_nodeslot[aggregation_manager_resp_arbitration_bin];
+assign nsb_age_resp.nodeslot = agm_allocation[aggregation_manager_resp_arbitration_bin].nodeslot;
 
 rr_arbiter #(
     .NUM_REQUESTERS(TOTAL_AGGREGATION_MANAGERS)

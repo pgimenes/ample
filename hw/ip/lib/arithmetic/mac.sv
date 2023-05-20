@@ -18,8 +18,6 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-import sys_array_pkg::*;
-
 module mac #(
     parameter FLOAT_WIDTH = 32
 ) (
@@ -27,10 +25,10 @@ module mac #(
     input  logic                              resetn,
 
 `ifdef FLOAT_MAC
-    input  ieee_sp_float_s                    a,
-    input  ieee_sp_float_s                    b,
-    output ieee_sp_float_s                    acc,
-    input  ieee_sp_float_s                    overwrite_data,
+    input  logic [31:0]                       a,
+    input  logic [31:0]                       b,
+    output logic [31:0]                       acc,
+    input  logic [31:0]                       overwrite_data,
 `elsif BFP_MAC
     input  bfp_msfp12_s                       a,
     input  bfp_msfp12_s                       b,
@@ -44,6 +42,8 @@ module mac #(
     input  logic                              en,
     input  logic                              overwrite
 );
+
+// TO DO: define bfp_msfp12_s, fv_fixed_point_s types
 
 `ifdef FLOAT_MAC
 

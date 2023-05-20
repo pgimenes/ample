@@ -2,7 +2,8 @@ import top_pkg::*;
 
 module mean_aggregator #(
     parameter DATA_WIDTH = 32,
-    parameter MAX_ACC_COUNT = top_pkg::MAX_FEATURE_COUNT
+    parameter MAX_ACC_COUNT = top_pkg::MAX_FEATURE_COUNT,
+    parameter PRECISION = "FLOAT_32"
 ) (
     input  logic                  core_clk,
     input  logic                  resetn,

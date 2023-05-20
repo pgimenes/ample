@@ -49,25 +49,25 @@ logic [$clog2(MESH_ROWS)-1:0]                             y_coord;
 BM_FSM_e                                                  bm_state, bm_state_n;
 
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                    allocated_agm_q;
-logic [MAX_AC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0]       allocated_agcs_x_coords_q;
-logic [MAX_AC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0]       allocated_agcs_y_coords_q;
-logic [$clog2(MAX_AC_PER_NODE)-1:0]                       allocated_agcs_count_q;
+logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0]       allocated_agcs_x_coords_q;
+logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0]       allocated_agcs_y_coords_q;
+logic [$clog2(MAX_AGC_PER_NODE)-1:0]                       allocated_agcs_count_q;
 
-logic [MAX_AC_PER_NODE-1:0]                               allocated_agcs_oh;
-logic [MAX_AC_PER_NODE-1:0]                               allocated_agcs;
-logic [MAX_AC_PER_NODE-1:0]                               agc_done;
+logic [MAX_AGC_PER_NODE-1:0]                               allocated_agcs_oh;
+logic [MAX_AGC_PER_NODE-1:0]                               allocated_agcs;
+logic [MAX_AGC_PER_NODE-1:0]                               agc_done;
 
 flit_t                                                    received_flit;
-logic [$clog2(MAX_AC_PER_NODE)-1:0]                       agc_offset; // offset of the AGC that sent the last received packet flit
+logic [$clog2(MAX_AGC_PER_NODE)-1:0]                       agc_offset; // offset of the AGC that sent the last received packet flit
 
 logic [$clog2(MESH_ROWS)-1:0]                             received_packet_source_row;
 logic [$clog2(MESH_COLS)-1:0]                             received_packet_source_col;
 logic [$clog2(MESH_ROWS)-1:0]                             incoming_packet_source_row;
 logic [$clog2(MESH_COLS)-1:0]                             incoming_packet_source_col;
 
-logic [MAX_AC_PER_NODE-1:0]                               agc_source_oh;
-logic [MAX_AC_PER_NODE-1:0]                               agc_source_oh_early;
-logic [MAX_AC_PER_NODE-1:0] [3:0]                         flit_counter;
+logic [MAX_AGC_PER_NODE-1:0]                               agc_source_oh;
+logic [MAX_AGC_PER_NODE-1:0]                               agc_source_oh_early;
+logic [MAX_AGC_PER_NODE-1:0] [3:0]                         flit_counter;
 
 // Done packets
 logic [$clog2(MESH_COLS)-1:0]                             outgoing_packet_dest_col;
@@ -83,7 +83,7 @@ logic                                                     done_head_sent;
 // Create one-hot mask of which AGCs were allocated based on AGC allocation count
 // This is used to evaluate which flit counters should reach max value of 8
 binary_to_onehot #(
-    .WIDTH          ($clog2(MAX_AC_PER_NODE))
+    .WIDTH          ($clog2(MAX_AGC_PER_NODE))
 ) allocated_agcs_bin2oh (
     .binary_input     (allocated_agcs_count_q),
     .one_hot_output   (allocated_agcs_oh)
@@ -91,7 +91,7 @@ binary_to_onehot #(
 
 // Convert one hot mask of AGC source to AGC offset for buffer address
 onehot_to_binary #(
-    .INPUT_WIDTH    (MAX_AC_PER_NODE)
+    .INPUT_WIDTH    (MAX_AGC_PER_NODE)
 ) agc_offset_oh2bin (
     .clk            (core_clk),
     .resetn         (resetn),
@@ -203,7 +203,7 @@ end
 // Flit counter for each AGC allocated to the current nodeslot
 // -------------------------------------------------------------------------------------
 
-for (genvar agc_source = 0; agc_source < MAX_AC_PER_NODE; agc_source++) begin
+for (genvar agc_source = 0; agc_source < MAX_AGC_PER_NODE; agc_source++) begin
 
     // One hot mask indicating which AGC in the allocation list is the source of the current packet
     assign agc_source_oh[agc_source] = (allocated_agcs_x_coords_q[agc_source] == received_packet_source_col)

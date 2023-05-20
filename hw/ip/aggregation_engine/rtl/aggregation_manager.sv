@@ -46,11 +46,12 @@ module aggregation_manager #(
     output logic                                                router_aggregation_manager_ready,
     input  flit_t                                               router_aggregation_manager_data,
 
-    // Buffer of allocated AGC coordinates - visible to AGE for BM allocation
-    output logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0]     agm_allocated_nodeslot,
-    output logic [$clog2(TOTAL_AGGREGATION_CORES)-1:0]         agm_allocated_agcs_count,
-    output logic [MAX_AC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] coords_buffer_x,
-    output logic [MAX_AC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] coords_buffer_y
+    // Output AGM allocation payloads for AGE visibility
+    output NSB_AGE_REQ_t                                        agm_allocation,
+    output logic [AGC_COUNT_FLOAT32-1:0]                        agm_allocated_agcs,
+    output logic [$clog2(TOTAL_AGGREGATION_CORES)-1:0]          agm_allocated_agcs_count,
+    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] coords_buffer_x,
+    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] coords_buffer_y
 );
 
 typedef enum logic [4:0] {
@@ -74,13 +75,7 @@ logic [$clog2(MESH_COLS)-1:0]                       x_coord;
 logic [$clog2(MESH_ROWS)-1:0]                       y_coord;
 
 // Circular buffer for coordinates of the allocated aggregation cores
-logic [MAX_AC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] coords_buffer_x;
-logic [MAX_AC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] coords_buffer_y;
-logic [$clog2(MAX_AC_PER_NODE)-1:0] coord_ptr;
-
-// Registered NSB->AGE req
-AGGREGATION_FUNCTION_e                              nsb_req_aggregation_function_q;
-logic [$clog2(top_pkg::FETCH_TAG_COUNT)-1:0]        nsb_req_fetch_tag_q;
+logic [$clog2(MAX_AGC_PER_NODE)-1:0] coord_ptr;
 
 agm_state_e                                         agm_state, agm_state_n;
 axi_packet_fsm_e                                    packet_state, packet_state_n;
@@ -177,16 +172,21 @@ end
 // Buffer NSB request payloads
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
-        agm_allocated_nodeslot <= '0;
-        nsb_req_aggregation_function_q <= top_pkg::SUM;
-        nsb_req_fetch_tag_q <= '0;
-        agm_allocated_agcs_count <= '0;
+        agm_allocation.nodeslot           <= '0;
+        agm_allocation.node_precision <= top_pkg::FLOAT_32;
+        agm_allocation.aggregation_function   <= top_pkg::SUM;
+        agm_allocation.fetch_tag              <= '0;
+        
+        agm_allocated_agcs               <= '0;
+        agm_allocated_agcs_count         <= '0;
+        
 
     end else if (age_aggregation_manager_req_valid && age_aggregation_manager_req_ready) begin
-        agm_allocated_nodeslot             <= age_aggregation_manager_req.nsb_req.nodeslot;
-        nsb_req_aggregation_function_q <= age_aggregation_manager_req.nsb_req.aggregation_function;
-        nsb_req_fetch_tag_q            <= age_aggregation_manager_req.nsb_req.fetch_tag;
-        agm_allocated_agcs_count           <= age_aggregation_manager_req.ac_count;
+        agm_allocation.nodeslot         <= age_aggregation_manager_req.nsb_req.nodeslot;
+        agm_allocation.aggregation_function <= age_aggregation_manager_req.nsb_req.aggregation_function;
+        agm_allocation.fetch_tag            <= age_aggregation_manager_req.nsb_req.fetch_tag;
+        agm_allocated_agcs_count       <= age_aggregation_manager_req.ac_count;
+        agm_allocated_agcs             <= age_aggregation_manager_req.allocated_cores;
     end
 end
 
@@ -194,7 +194,7 @@ always_comb begin
     age_aggregation_manager_req_ready = (agm_state == AGM_FSM_IDLE) && (packet_state == PKT_FSM_IDLE);
 
     age_aggregation_manager_resp_valid = (agm_state == AGM_FSM_NSB_RESP);
-    age_aggregation_manager_resp.nodeslot = agm_allocated_nodeslot;
+    age_aggregation_manager_resp.nodeslot = agm_allocation.nodeslot;
 end
 
 // Message channel REQ/RESP interface
@@ -202,8 +202,8 @@ end
 
 always_comb begin
     message_channel_req_valid     = (agm_state == AGM_FSM_PREF_REQ);
-    message_channel_req.nodeslot  = agm_allocated_nodeslot;
-    message_channel_req.fetch_tag = nsb_req_fetch_tag_q;
+    message_channel_req.nodeslot  = agm_allocation.nodeslot;
+    message_channel_req.fetch_tag = agm_allocation.fetch_tag;
     message_channel_resp_ready    = (agm_state == AGM_FSM_WAIT_PREF_RESP);
 end
 
@@ -281,8 +281,8 @@ always_comb begin
                                             // Tail packet contains aggregation function and nodeslot
                                             agc_pkt_head_sent ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr],
                                                                         x_coord, y_coord, // source node coordinates
-                                                                        {(PAYLOAD_DATA_WIDTH - $bits(AGGREGATION_FUNCTION_e) - $bits(agm_allocated_nodeslot)){1'b0}}, // 56 zeros
-                                                                        nsb_req_aggregation_function_q, agm_allocated_nodeslot
+                                                                        {(PAYLOAD_DATA_WIDTH - $bits(AGGREGATION_FUNCTION_e) - $bits(agm_allocation.nodeslot)){1'b0}}, // 56 zeros
+                                                                        agm_allocation.aggregation_function, agm_allocation.nodeslot
                                                                     }
                                             
                                             // Head packet contains packet type and last flag (always set to 1 for allocation packets)
