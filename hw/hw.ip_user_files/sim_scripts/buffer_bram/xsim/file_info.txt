@@ -1,2 +1,0 @@
-buffer_bram.v,verilog,xil_defaultlib,../../../ip/buffer_bram/sim/buffer_bram.v,
-glbl.v,Verilog,xil_defaultlib,glbl.v

@@ -57,7 +57,7 @@ def run_graph(graph, random_weights=True):
 
     # Initialize Memory
 
-    base_path = os.environ.get("FYP_DIR") + "/hw/sim_files/xsim"
+    base_path = os.environ.get("FYP_DIR") + "/hw/sim"
     init_manager = InitManager(graph, base_path=base_path)
     init_manager.map_memory()
 

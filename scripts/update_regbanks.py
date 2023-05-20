@@ -6,21 +6,19 @@ import json
 def download_regbank_files(regbank_id, script_file):
     os.system("python3.6 " + script_file + " " + str(regbank_id) + " all")
 
-def update_vivado_project(regbank_list):
-    tcl_file = "/scratch/pg519/fuzzy_carnival/hw/update_regbanks.tcl"
+def update_vivado_project(BASE_PATH, regbank_list):
+    tcl_file = BASE_PATH + "/hw/update_regbanks.tcl"
     os.system("touch " + tcl_file)
 
     with open(tcl_file, "w") as tfile:
         # Open project
-        tfile.write("open_project $::env(FYP_DIR)/hw/hw.xpr \n")
+        tfile.write("open_project $::env(FYP_DIR)/hw/build/build_project.xpr \n")
 
         for rb in regbank_list:
-            tfile.write("add_files -fileset sources_1 build/regbanks/" + rb + " \n")
+            tfile.write("add_files -fileset sources_1 " + BASE_PATH + "/hw/build/regbanks/" + rb + " \n")
 
     # Run tcl script
-    os.system("cd $FYP_DIR/hw; vivado -mode batch -source " + tcl_file)
-
-# READ JSON
+    os.system("cd " + BASE_PATH + "/hw/build; vivado -mode batch -source " + tcl_file)
 
 def main():
 
@@ -30,7 +28,6 @@ def main():
     REGBANK_LIST = BASE_PATH + "/hw/regbanks.json"
     BUILD_DIR = BASE_PATH + "/hw/build"
     REGBANKS_BUILD = BUILD_DIR + "/regbanks"
-    FILESET = "sources_1"
 
     json_file = open(REGBANK_LIST)
     regbanks = json.load(json_file)
@@ -54,6 +51,6 @@ def main():
         os.system("mkdir " + REGBANK_DIR)
         os.system("unzip -o " + REGBANKS_BUILD + "/" + zip_file + " -d " + REGBANK_DIR)
 
-    update_vivado_project(regbank_list)
+    update_vivado_project(BASE_PATH, regbank_list)
 
 if __name__ == "__main__": main()
