@@ -1,2 +1,0 @@
-fixed4_upsampler.vhd,vhdl,xil_defaultlib,../../../ip/fixed4_upsampler/sim/fixed4_upsampler.vhd,
-glbl.v,Verilog,xil_defaultlib,glbl.v

@@ -1,4 +1,0 @@
-vhdl xil_defaultlib  \
-"../../../ip/fp_div/sim/fp_div.vhd" \
-
-nosort

@@ -1,2 +1,0 @@
-aggregation_buffer_sdp_bram.v,verilog,xil_defaultlib,../../../ip/aggregation_buffer_sdp_bram/sim/aggregation_buffer_sdp_bram.v,
-glbl.v,Verilog,xil_defaultlib,glbl.v
