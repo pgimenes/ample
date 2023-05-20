@@ -18,7 +18,7 @@
   <p align="center">
     An FPGA accelerator for Graph Neural Networks following the Message Passing Mechanism.
     <br />
-    <a href="https://github.com/pgimenes/fuzzy_carnival"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/pgimenes/fuzzy_carnival/wiki"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/pgimenes/fuzzy_carnival">View Demo</a>
@@ -42,7 +42,7 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#building-and-running-a-simulation">Building and Running a Simulation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -65,28 +65,38 @@
 <!-- GETTING STARTED -->
 ## Getting Started
 
-Getting started instructions.
-
 ### Prerequisites
 
-List pre-requisites.
-* npm
+* To run the Software Development Kit (SDK), create a new conda environment with the provided package list.
   ```sh
-  npm install npm@latest -g
+  conda env create -f env.yml
+  conda activate sdk
   ```
 
-### Installation
+### Building and Running a Simulation
 
-Installation/build instructions
+1. Set the WORK_AREA environment variable
+   ```sh
+   export WORK_AREA="<path/to/repo>"
+   ```
+1. Clone the repo with SSH
+   ```sh
+   git clone git@github.com:pgimenes/fuzzy_carnival.git $WORK_AREA
+   ```
+3. Run the build script to generate Xilinx IP files and register banks and pull latest version of required submodules.
+   ```sh
+   source $WORK_AREA/scripts/build.sh
+   ```
+4. Run the SDK to generate required simulation files for desired application. The --matrix argument generates payloads for a 4x4 matrix multiplication.
+   ```sh
+   $WORK_AREA/sdk/initialize.py --matrix
+   ```
+4. Launch a simulation, and monitor the generated log at $WORK_AREA/hw/sim/top_tb_log.log.
+   ```sh
+   cd $WORK_AREA/hw/sim; ./top_tb.sh
+   ```
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/your_username_/Project-Name.git
-   ```
-2. Install NPM packages
-   ```sh
-   npm install
-   ```
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -95,7 +105,7 @@ Installation/build instructions
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+TO DO
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
