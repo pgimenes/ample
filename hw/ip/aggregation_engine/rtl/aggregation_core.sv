@@ -2,11 +2,15 @@ import top_pkg::*;
 import age_pkg::*;
 import noc_params::*;
 
-module aggregation_core_float32 #(
-    parameter FEATURE_COUNT = 16,
-    parameter DATA_WIDTH = 32,
+module aggregation_core #(
     parameter X_COORD = 0,
-    parameter Y_COORD = 0
+    parameter Y_COORD = 0,
+
+    parameter FEATURE_COUNT = 16,
+
+    parameter DATA_WIDTH = 32,
+    parameter FLOAT_WIDTH = 32,
+    parameter PRECISION = "FLOAT_32"
 ) (
     input logic core_clk,
     input logic resetn,
@@ -29,12 +33,13 @@ module aggregation_core_float32 #(
 
 parameter ALLOCATION_PKT_AGGR_FUNC_OFFSET = $clog2(top_pkg::MAX_NODESLOT_COUNT);
 
-typedef enum logic [2:0] {
+typedef enum logic [3:0] {
     AGC_FSM_IDLE,
     AGC_FSM_NODESLOT_ALLOCATION,
     AGC_FSM_WAIT_FEATURE_HEAD,
     AGC_FSM_WAIT_FEATURE_BODY,
     AGC_FSM_UPDATE_ACCS,
+    AGC_FSM_UPSAMPLE,
     AGC_FSM_WAIT_BUFFER_REQ,
     AGC_FSM_SEND_BUFF_MAN,
     AGC_FSM_WAIT_DRAIN
@@ -112,27 +117,37 @@ logic [$clog2(FEATURE_COUNT/2)-1:0]             sent_flits_counter;
 
 logic                                           noc_router_waiting;
 
+// Multi-precision support
+logic                                       upsample;
+logic [FEATURE_COUNT-1:0]                   upsampled_accumulator_valid;
+logic [FEATURE_COUNT-1:0] [FLOAT_WIDTH-1:0] upsampled_features;
+
 // ==================================================================================================================================================
 // Instantiations
 // ==================================================================================================================================================
 
 for (genvar feature = 0; feature < FEATURE_COUNT; feature = feature + 1) begin
     feature_aggregator #(
-        .DATA_WIDTH(DATA_WIDTH)
+        .DATA_WIDTH (DATA_WIDTH),
+        .PRECISION  (PRECISION)
     ) feature_aggregator_i (
         .core_clk,
         .resetn,
 
         .aggregation_function_sel      (nodeslot_allocation_aggregation_function),
-        .reset_accumulator             (feature_aggregator_reset_accumulator     [feature]),
 
         .in_feature_valid              (feature_aggregator_in_feature_valid      [feature]),
         .in_feature_ready              (feature_aggregator_in_feature_ready      [feature]),
         .in_feature                    (feature_aggregator_in_feature            [feature]),
 
         .feature_updated               (feature_aggregator_feature_updated       [feature]),
+        .accumulator                   (features                                 [feature]),
         
-        .accumulator                   (features                                 [feature])
+        .reset_accumulator             (feature_aggregator_reset_accumulator     [feature]),
+
+        .upsample                       (upsample),
+        .upsampled_accumulator_valid    (upsampled_accumulator_valid             [feature]),
+        .upsampled_accumulator          (upsampled_features                      [feature])
     );
 
     // Update mask of updated features for the current packet
@@ -197,7 +212,7 @@ always_comb begin
     AGC_FSM_UPDATE_ACCS: begin
         agc_state_n <= 
                     // Updating last feature accumulator and last packet flag has already been received
-                    (received_flits == 4'd8) && feature_updated[FEATURE_COUNT-1] && feature_updated[FEATURE_COUNT-2] && aggregation_manager_packet_last_q ? AGC_FSM_WAIT_BUFFER_REQ // updating final features
+                    (received_flits == 4'd8) && feature_updated[FEATURE_COUNT-1] && feature_updated[FEATURE_COUNT-2] && aggregation_manager_packet_last_q ? AGC_FSM_UPSAMPLE // updating final features
 
                     // Updating last feature accumulator but packets still pending
                     : (received_flits == 4'd8) && feature_updated[FEATURE_COUNT-1] && feature_updated[FEATURE_COUNT-2] ? AGC_FSM_WAIT_FEATURE_HEAD
@@ -205,6 +220,10 @@ always_comb begin
                     // Feature accumulators accepting update but flits still pending for this packet
                     : feature_updated[2*(received_flits-1)] && feature_updated[2*(received_flits-1) + 1] ? AGC_FSM_WAIT_FEATURE_BODY
                     : AGC_FSM_UPDATE_ACCS;
+    end
+
+    AGC_FSM_UPSAMPLE: begin
+        agc_state_n <= &upsampled_accumulator_valid ? AGC_FSM_WAIT_BUFFER_REQ : AGC_FSM_UPSAMPLE;
     end
     
     AGC_FSM_WAIT_BUFFER_REQ: begin
@@ -320,6 +339,11 @@ for (genvar pkt = 0; pkt < 8; pkt++) begin
     end
 end
 
+// Multi-precision support
+// --------------------------------------------------------------------------------------------
+
+assign upsample = (agc_state == AGC_FSM_UPSAMPLE);
+
 // AGC/Router interface
 // ----------------------------------------------------
 
@@ -333,14 +357,14 @@ always_comb begin
     
     aggregation_core_router_valid = (agc_state == AGC_FSM_SEND_BUFF_MAN);
     
-    bm_chosen_data = (sent_flits_counter == 'd0) ? {features[1], features[0]}
-                    : (sent_flits_counter == 'd1) ? {features[3], features[2]}
-                    : (sent_flits_counter == 'd2) ? {features[5], features[4]}
-                    : (sent_flits_counter == 'd3) ? {features[7], features[6]}
-                    : (sent_flits_counter == 'd4) ? {features[9], features[8]}
-                    : (sent_flits_counter == 'd5) ? {features[11], features[10]}
-                    : (sent_flits_counter == 'd6) ? {features[13], features[12]}
-                    : (sent_flits_counter == 'd7) ? {features[15], features[14]}
+    bm_chosen_data = (sent_flits_counter == 'd0) ?  {upsampled_features[1],  upsampled_features[0]}
+                    : (sent_flits_counter == 'd1) ? {upsampled_features[3],  upsampled_features[2]}
+                    : (sent_flits_counter == 'd2) ? {upsampled_features[5],  upsampled_features[4]}
+                    : (sent_flits_counter == 'd3) ? {upsampled_features[7],  upsampled_features[6]}
+                    : (sent_flits_counter == 'd4) ? {upsampled_features[9],  upsampled_features[8]}
+                    : (sent_flits_counter == 'd5) ? {upsampled_features[11], upsampled_features[10]}
+                    : (sent_flits_counter == 'd6) ? {upsampled_features[13], upsampled_features[12]}
+                    : (sent_flits_counter == 'd7) ? {upsampled_features[15], upsampled_features[14]}
                     : '0;
 
     aggregation_core_router_data.vc_id = '0; // TO DO: consider using both VCs?
