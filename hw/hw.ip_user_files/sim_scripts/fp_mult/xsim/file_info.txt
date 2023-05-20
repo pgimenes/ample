@@ -1,2 +1,0 @@
-fp_mult.vhd,vhdl,xil_defaultlib,../../../../hw.srcs/sources_1/ip/fp_mult/sim/fp_mult.vhd,
-glbl.v,Verilog,xil_defaultlib,glbl.v

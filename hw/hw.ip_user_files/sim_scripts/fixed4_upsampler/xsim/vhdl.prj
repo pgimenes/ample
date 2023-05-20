@@ -1,4 +1,0 @@
-vhdl xil_defaultlib  \
-"../../../ip/fixed4_upsampler/sim/fixed4_upsampler.vhd" \
-
-nosort
