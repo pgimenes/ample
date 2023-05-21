@@ -329,13 +329,14 @@ assign feature_aggregator_reset_accumulator = (agc_state == AGC_FSM_IDLE) && (ag
 
 // Update accumulators depending on number of packet beats received
 // Update both accumulators at the same time by waiting for both ready signals to be asserted
+// For lower precision formats, feature is in LSBs
 for (genvar pkt = 0; pkt < 8; pkt++) begin
     always_comb begin
         feature_aggregator_in_feature_valid [2*pkt]     = (agc_state == AGC_FSM_UPDATE_ACCS) && (received_flits == (pkt+1)) && !feature_updated[2*pkt];
-        feature_aggregator_in_feature       [2*pkt]     = router_agc_pkt_q.data.bt_pl[63:32];
+        feature_aggregator_in_feature       [2*pkt]     = router_agc_pkt_q.data.bt_pl[32+DATA_WIDTH-1 : 32];
 
         feature_aggregator_in_feature_valid [2*pkt + 1] = (agc_state == AGC_FSM_UPDATE_ACCS) && (received_flits == (pkt+1)) && !feature_updated[2*pkt + 1];
-        feature_aggregator_in_feature       [2*pkt + 1] = router_agc_pkt_q.data.bt_pl[31:0];
+        feature_aggregator_in_feature       [2*pkt + 1] = router_agc_pkt_q.data.bt_pl[DATA_WIDTH-1 : 0];
     end
 end
 
@@ -404,8 +405,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
         // potentially read from NSB regbank instead, indexed by nodeslot_allocation_nodeslot?
         nodeslot_allocation_aggregation_function <= router_aggregation_core_data.data.bt_pl [ALLOCATION_PKT_AGGR_FUNC_OFFSET + $bits(top_pkg::AGGREGATION_FUNCTION_e) - 1 : ALLOCATION_PKT_AGGR_FUNC_OFFSET] == 2'd0 ? top_pkg::SUM
                                                 : router_aggregation_core_data.data.bt_pl [ALLOCATION_PKT_AGGR_FUNC_OFFSET + $bits(top_pkg::AGGREGATION_FUNCTION_e) - 1 : ALLOCATION_PKT_AGGR_FUNC_OFFSET] == 2'd1 ? top_pkg::MEAN
-                                                : router_aggregation_core_data.data.bt_pl [ALLOCATION_PKT_AGGR_FUNC_OFFSET + $bits(top_pkg::AGGREGATION_FUNCTION_e) - 1 : ALLOCATION_PKT_AGGR_FUNC_OFFSET] == 2'd2 ? top_pkg::RESERVED
-                                                : RESERVED2;
+                                                : router_aggregation_core_data.data.bt_pl [ALLOCATION_PKT_AGGR_FUNC_OFFSET + $bits(top_pkg::AGGREGATION_FUNCTION_e) - 1 : ALLOCATION_PKT_AGGR_FUNC_OFFSET] == 2'd2 ? top_pkg::WEIGHTED_SUM
+                                                : RESERVED;
 
     end
 end

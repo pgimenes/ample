@@ -59,6 +59,22 @@ end else if (BUFFER_TYPE == "TRANSFORMATION") begin
         .doutb          (out_feature)    // output wire [31 : 0] doutb
     );
 
+end else if (BUFFER_TYPE == "SCALE_FACTOR") begin
+    
+    scale_factor_queue fifo (
+        .clka         (core_clk),  // input wire clka
+        .ena          ('1),        // input wire ena
+        .wea          (write_enable),       // input wire [0 : 0] wea
+        .addra        (write_address),     // input wire [5 : 0] addra
+        .dina         (write_data),      // input wire [511 : 0] dina
+        
+        .clkb         (core_clk), // input wire clkb
+        .enb          ('1),       // input wire enb
+        .addrb        (rd_ptr),    // input wire [9 : 0] addrb
+        .doutb        (out_feature),    // output wire [31 : 0] doutb
+        
+        .sleep        ('0)     // input wire sleep
+    );
 end
 
 // Logic
