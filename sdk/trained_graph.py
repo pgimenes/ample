@@ -7,24 +7,18 @@ from torch_geometric.utils import to_networkx
 import random
 
 class TrainedGraph:
-    def __init__(self, dataset, embeddings=[], weights=[], precision="float"):
+    def __init__(self, dataset, embeddings=[], weights=[], graph_precision="float"):
         self.dataset = dataset
         self.nx_graph = to_networkx(self.dataset)
+        self.graph_precision = graph_precision
 
+        # Node offsets in adjacency list
         node_ids, node_offsets = np.unique(dataset.edge_index[0], return_index=True)
         self.node_offsets = [0] * len(self.nx_graph.nodes)
         for idx, i in enumerate(node_ids):
             self.node_offsets[i] = node_offsets[idx]
 
-        for node in self.nx_graph.nodes:
-            neighbours = list(self.nx_graph.neighbors(node))
-            self.nx_graph.nodes[node]['neighbours'] = neighbours
-            self.nx_graph.nodes[node]['neighbour_count'] = len(neighbours)
-            self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
-            self.nx_graph.nodes[node]['adjacency_list_address_lsb'] = 0
-            self.nx_graph.nodes[node]['precision'] = float
-        
-        self.node_count = len(list(self.nx_graph.nodes))
+        self.init_nx_graph()
 
         # Local copy of embeddings stored in node objects
         self.embeddings = embeddings
@@ -38,28 +32,44 @@ class TrainedGraph:
         # Trained weights
         self.weights = weights
 
-        self.precision = precision
-
     def visualize(self):
         pos = nx.spring_layout(self.nx_graph)
         nx.draw(self.nx_graph, pos, with_labels=True)
         plt.show()
 
+    def init_nx_graph(self):
+        for node in self.nx_graph.nodes:
+                    neighbours = list(self.nx_graph.neighbors(node))
+                    self.nx_graph.nodes[node]['neighbours'] = neighbours
+                    self.nx_graph.nodes[node]['neighbour_count'] = len(neighbours)
+                    self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
+                    self.nx_graph.nodes[node]['adjacency_list_address_lsb'] = 0 # to be defined my init manager
+                    
+                    if (self.graph_precision == 'mixed'):
+                        prec = random.choice(["FLOAT_32", "FIXED_16"])
+                        self.nx_graph.nodes[node]['precision'] = prec
+                        # print(f"Initializing node {node} with precision {prec}")
+                    else:
+                        self.nx_graph.nodes[node]['precision'] = self.graph_precision
+                         
     def random_embeddings(self, feature_size=64):
         self.feature_count = feature_size
 
-        self.embeddings = np.zeros((self.node_count, feature_size))
-        for node in range(self.node_count):
+        self.embeddings = np.zeros((len(self.nx_graph.nodes), feature_size))
+        for node in self.nx_graph.nodes:
 
             # Define range according to precision
-            if (self.precision == "float"):
+            if (self.nx_graph.nodes[node]['precision'] == "FLOAT_32"):
                 embd = [random.uniform(-2, 2) for _ in range(feature_size)]
-            elif (self.precision == "fixed_16"):
+            elif (self.nx_graph.nodes[node]['precision'] == "FIXED_16"):
                 embd = [random.randint(-32768, 32767) for _ in range(feature_size)]
-            elif (self.precision == "fixed_8"):
+            elif (self.nx_graph.nodes[node]['precision'] == "FIXED_8"):
                 embd = [random.randint(-128, 127) for _ in range(feature_size)]
-            elif (self.precision == "fixed_4"):
+            elif (self.nx_graph.nodes[node]['precision'] == "FIXED_4"):
                 embd = [random.randint(-8, 7) for _ in range(feature_size)]
+            else:
+                print(f"Unrecognized precision, defaulting to float.")
+                embd = [random.uniform(-2, 2) for _ in range(feature_size)]
 
             self.nx_graph.nodes[node]['embedding'] = embd
             self.embeddings[node] = self.nx_graph.nodes[node]['embedding']

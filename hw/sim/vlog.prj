@@ -48,7 +48,8 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 "../ip/lib/arithmetic/aggregators/sum_aggregator.sv" \
 "../ip/lib/arithmetic/aggregators/mean_aggregator.sv" \
 "../ip/aggregation_engine/rtl/feature_aggregator.sv" \
-"../ip/aggregation_engine/rtl/aggregation_core_float32.sv" \
+"../ip/aggregation_engine/rtl/aggregation_core_allocator.sv" \
+"../ip/aggregation_engine/rtl/aggregation_core.sv" \
 "../ip/aggregation_engine/rtl/aggregation_manager.sv" \
 "../ip/aggregation_engine/rtl/buffer_manager.sv" \
 "../ip/aggregation_engine/rtl/aggregation_engine.sv" \
