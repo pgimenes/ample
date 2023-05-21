@@ -87,6 +87,7 @@ FETCH_TAG_MESSAGE_FETCH_FSM_e                                 message_fetch_stat
 
 // Address Queue
 logic                                                         push_adj_queue, pop_adj_queue;
+logic [ADJ_QUEUE_WIDTH-1:0]                                   adj_queue_write_data;
 logic                                                         adj_queue_head_valid;
 logic [ADJ_QUEUE_WIDTH-1:0]                                   adj_queue_head;
 logic                                                         adj_queue_empty, adj_queue_full;
@@ -107,17 +108,6 @@ logic                                                         accepting_message_
 logic                                                         accepting_adj_fetch_resp;
 logic                                                         accepting_msg_fetch_resp;
 
-// Adjacency request logic
-// logic [$clog2(MAX_NODESLOT_COUNT)-1:0]                        adj_fetch_req_nodeslot;
-logic [AXI_ADDRESS_WIDTH-1:0]                                 adj_fetch_req_address; // address pointer (updated in each fetch)
-logic [$clog2(top_pkg::MAX_REQUIRED_BYTES_ADJ_FETCH_REQ)-1:0] adj_fetch_req_bytes; // bytes in current request
-logic [$clog2(top_pkg::MAX_NEIGHBOURS)-1:0]                   adj_fetch_neighbours_remaining_fetch;
-logic [$clog2(prefetcher_pkg::MAX_ADJ_FETCH_RESPONSES)-1:0]   adj_fetch_responses_pending;
-logic [$clog2(AXI_DATA_WIDTH)-1:0]                            buffered_adj_fetch_resp_offset;
-
-logic                                                         issue_nsb_partial_done_adj_fetch;
-logic                                                         issue_nsb_partial_done_adj_fetch_q;
-
 // Message request logic
 top_pkg::NODE_PRECISION_e                                     msg_fetch_req_precision_q;
 logic [$clog2(MAX_MSG_FETCH_RESPONSES)-1:0]                   msg_queue_expected_responses;
@@ -125,24 +115,10 @@ logic [$clog2(MAX_MSG_FETCH_RESPONSES)-1:0]                   msg_queue_expected
 logic                                                         issue_nsb_partial_done_msg_fetch;
 logic                                                         issue_nsb_partial_done_msg_fetch_q;
 
-// Store logic
-logic [$clog2(top_pkg::MAX_NEIGHBOURS)-1:0]                   adj_fetch_neighbours_remaining_store;
-logic [AXI_DATA_WIDTH-1:0]                                    fetch_tag_adj_rm_resp_data_q;
-logic [ADJ_QUEUE_WIDTH-1:0]                                   adj_queue_write_data;
 logic [MESSAGE_QUEUE_WIDTH-1:0]                               msg_queue_write_data;
 
 // Message channel logic
 logic accepted_message_channel_req;
-
-logic [31:0] debug_counter;
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        debug_counter <= '0;
-    end else begin
-        debug_counter <= debug_counter + 1;
-    end
-end
 
 // ==================================================================================================================================================
 // Instances
@@ -162,6 +138,50 @@ ultraram_fifo #(
     .count          (adj_queue_count),
     .empty          (adj_queue_empty),
     .full           (adj_queue_full)
+);
+
+logic adj_queue_manager_ready;
+logic adj_queue_fetch_resp_valid;
+logic adj_queue_fetch_resp_partial;
+
+prefetcher_streaming_manager #(
+    .FETCH_TYPE (top_pkg::ADJACENCY_LIST),
+    .QUEUE_WIDTH         (ADJ_QUEUE_WIDTH),
+    .QUEUE_DEPTH         (ADJ_QUEUE_DEPTH),
+    .STREAMING_ENABLED   (1),
+    .UNPACKING_ENABLED   (1)
+) adj_queue_manager_i (
+
+    .core_clk                         (core_clk),
+    .resetn                           (resetn),
+
+    .fetch_req_valid                  (!tag_free && nsb_prefetcher_req_valid),
+    .fetch_req_ready                  (adj_queue_manager_ready),
+    .fetch_req_opcode                 (nsb_prefetcher_req.req_opcode),
+    .fetch_req_start_address          (nsb_prefetcher_req.start_address),
+    .fetch_req_obj_count              (nsb_prefetcher_req.neighbour_count),
+
+    .fetch_resp_valid                 (adj_queue_fetch_resp_valid),
+    .fetch_resp_partial               (adj_queue_fetch_resp_partial),
+
+    .fetch_memory_range_start_address ({2'd0, layer_config_adjacency_list_address_lsb_value}),
+
+    .read_master_req_valid            (fetch_tag_adj_rm_req_valid),
+    .read_master_req_ready            (fetch_tag_adj_rm_req_ready),
+    .read_master_start_address        (fetch_tag_adj_rm_start_address),
+    .read_master_byte_count           (fetch_tag_adj_rm_byte_count),
+    
+    .read_master_resp_valid           (fetch_tag_adj_rm_resp_valid),
+    .read_master_resp_ready           (fetch_tag_adj_rm_resp_ready),
+    .read_master_resp_last            (fetch_tag_adj_rm_resp_last),
+    .read_master_resp_data            (fetch_tag_adj_rm_resp_data),
+    .read_master_resp_axi_id          (fetch_tag_adj_rm_resp_axi_id),
+    
+    .push_queue                       (push_adj_queue),
+    .push_data                        (adj_queue_write_data),
+    .queue_slots_available            (adj_queue_slots_available),
+    .queue_empty                      (adj_queue_empty),
+    .queue_full                       (adj_queue_full)
 );
 
 ultraram_fifo #(
@@ -194,175 +214,9 @@ always_comb begin
     accepting_msg_fetch_resp    = fetch_tag_msg_rm_resp_valid && fetch_tag_msg_rm_resp_ready;
 end
 
-// Adjacency queue fetch state machine
-// ----------------------------------------------------
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        adj_queue_fetch_state <= ADJ_IDLE;
-    end else begin
-        adj_queue_fetch_state <= adj_queue_fetch_state_n;
-    end
-end
-
-always_comb begin
-    adj_queue_fetch_state_n = adj_queue_fetch_state;
-
-    case (adj_queue_fetch_state)
-    ADJ_IDLE: begin
-        adj_queue_fetch_state_n = !tag_free && accepting_nsb_req 
-                                            && (nsb_prefetcher_req.req_opcode == ADJACENCY_LIST)
-                                            && adj_queue_empty // NSB only requests adj fetch once
-                                            ? ADJ_FETCH
-                                    : ADJ_IDLE;
-    end
-
-    ADJ_FETCH: begin
-        adj_queue_fetch_state_n = accepting_adj_fetch_req ? ADJ_WAIT_RESP : ADJ_FETCH;
-    end
-
-    ADJ_WAIT_RESP: begin
-        adj_queue_fetch_state_n = accepting_adj_fetch_resp ? ADJ_STORE : ADJ_WAIT_RESP;
-    end
-
-    ADJ_STORE: begin // ahh
-        adj_queue_fetch_state_n = (adj_fetch_neighbours_remaining_store == '0) ? ADJ_DONE
-                                : adj_queue_full ? ADJ_PAUSE
-                                : |adj_fetch_responses_pending && buffered_adj_fetch_resp_offset == 9'd480 ? ADJ_WAIT_RESP
-                                : (adj_fetch_responses_pending == '0) && |adj_fetch_neighbours_remaining_fetch ? ADJ_FETCH
-                                : ADJ_STORE;
-    end
-
-    ADJ_PAUSE: begin
-        adj_queue_fetch_state_n = |adj_fetch_neighbours_remaining_store && !adj_queue_full ? ADJ_FETCH
-                                    : (adj_fetch_neighbours_remaining_store == '0) ? ADJ_IDLE // defensive
-                                    : ADJ_PAUSE;
-    end
-
-    ADJ_DONE: begin
-        adj_queue_fetch_state_n = nsb_prefetcher_resp_valid && nsb_prefetcher_resp_ready && (nsb_prefetcher_resp.response_type == ADJACENCY_LIST) ? ADJ_IDLE
-                                : ADJ_DONE;
-    end
-    endcase
-end
-
-// Adjacency queue request logic
-// ----------------------------------------------------
-
 always_comb begin
     // adj_queue_slots_available = ADJ_QUEUE_DEPTH - adj_queue_count;
-
-    // TO DO: make slots_available parametrizable by depth of adj queue
-
-    // 64 in binary: 
     adj_queue_slots_available = 7'd64 - adj_queue_count;
-end
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        // adj_fetch_req_nodeslot                  <= '0;
-        adj_fetch_req_address                   <= '0;
-        adj_fetch_neighbours_remaining_fetch    <= '0;
-        adj_fetch_responses_pending             <= '0;
-        
-        fetch_tag_adj_rm_resp_data_q            <= '0;
-        
-        issue_nsb_partial_done_adj_fetch        <= '0;
-        issue_nsb_partial_done_adj_fetch_q      <= '0;
-    
-    end else begin
-        // Accepting adjacency list fetch request
-        if ((adj_queue_fetch_state == ADJ_IDLE) && accepting_nsb_req && (nsb_prefetcher_req.req_opcode == ADJACENCY_LIST)) begin 
-            // Initialize AXI request according to Nodeslot programming
-            // adj_fetch_req_nodeslot                <= nsb_prefetcher_req.nodeslot;
-            adj_fetch_req_address                 <= nsb_prefetcher_req.start_address;
-            adj_fetch_neighbours_remaining_fetch  <= nsb_prefetcher_req.neighbour_count;
-            issue_nsb_partial_done_adj_fetch      <= '0;
-            adj_fetch_responses_pending           <= '0;
-        
-        end else if (accepting_adj_fetch_req) begin
-            // When accepting adjacency fetch request, update address and pending_bytes counters
-            adj_fetch_req_address                <= adj_fetch_req_address + adj_fetch_req_bytes;
-            adj_fetch_neighbours_remaining_fetch <= adj_fetch_neighbours_remaining_fetch - `min(adj_fetch_neighbours_remaining_fetch, adj_queue_slots_available);
-            adj_fetch_responses_pending          <= `divide_round_up(adj_fetch_req_bytes, 64); // 64 bytes per response beat
-
-        end else if (accepting_adj_fetch_resp) begin
-            adj_fetch_responses_pending    <= adj_fetch_responses_pending - 1'b1;
-            fetch_tag_adj_rm_resp_data_q   <= fetch_tag_adj_rm_resp_data;
-        end
-
-        if (adj_queue_fetch_state == ADJ_STORE && adj_queue_fetch_state_n == ADJ_PAUSE) begin
-            // Raise partial done resp flag. This latches at 1 until new NSB req received, so that
-            // the response is only sent the first time the adjacency queue gets full
-            issue_nsb_partial_done_adj_fetch <= '1;
-        end
-
-        issue_nsb_partial_done_adj_fetch_q <= issue_nsb_partial_done_adj_fetch;
-    end
-end
-
-// Read master logic
-always_comb begin
-    // Request
-    adj_fetch_req_bytes             = `min(adj_fetch_neighbours_remaining_fetch, adj_queue_slots_available) * 4;
-
-    fetch_tag_adj_rm_byte_count     = adj_fetch_req_bytes;
-    fetch_tag_adj_rm_req_valid      = (adj_queue_fetch_state == ADJ_FETCH);
-    fetch_tag_adj_rm_start_address  = {2'd0, layer_config_adjacency_list_address_lsb_value} + adj_fetch_req_address;
-
-    // Response
-    fetch_tag_adj_rm_resp_ready         = (adj_queue_fetch_state == ADJ_WAIT_RESP);
-end
-
-// Adjacency queue store logic
-// ----------------------------------------------------
-
-always_comb begin
-    push_adj_queue = (adj_queue_fetch_state == ADJ_STORE) && !adj_queue_full && |adj_fetch_neighbours_remaining_store;
-
-    // Cannot address register by non-constant expression like below:
-    // adj_queue_write_data = fetch_tag_adj_rm_resp_data_q [buffered_adj_fetch_resp_offset + 9'd31 : buffered_adj_fetch_resp_offset];
-
-    // TO DO: simplify
-    adj_queue_write_data = (buffered_adj_fetch_resp_offset == '0) ? fetch_tag_adj_rm_resp_data_q [511:480]
-                        : (buffered_adj_fetch_resp_offset == 'd32) ? fetch_tag_adj_rm_resp_data_q [479:448]
-                        : (buffered_adj_fetch_resp_offset == 'd64) ? fetch_tag_adj_rm_resp_data_q [447:416]
-                        : (buffered_adj_fetch_resp_offset == 'd96) ? fetch_tag_adj_rm_resp_data_q [415:384]
-                        : (buffered_adj_fetch_resp_offset == 'd128) ? fetch_tag_adj_rm_resp_data_q [383:352]
-                        : (buffered_adj_fetch_resp_offset == 'd160) ? fetch_tag_adj_rm_resp_data_q [351:320]
-                        : (buffered_adj_fetch_resp_offset == 'd192) ? fetch_tag_adj_rm_resp_data_q [319:288]
-                        : (buffered_adj_fetch_resp_offset == 'd224) ? fetch_tag_adj_rm_resp_data_q [287:256]
-                        : (buffered_adj_fetch_resp_offset == 'd256) ? fetch_tag_adj_rm_resp_data_q [255:224]
-                        : (buffered_adj_fetch_resp_offset == 'd288) ? fetch_tag_adj_rm_resp_data_q [223:192]
-                        : (buffered_adj_fetch_resp_offset == 'd320) ? fetch_tag_adj_rm_resp_data_q [191:160]
-                        : (buffered_adj_fetch_resp_offset == 'd352) ? fetch_tag_adj_rm_resp_data_q [159:128]
-                        : (buffered_adj_fetch_resp_offset == 'd384) ? fetch_tag_adj_rm_resp_data_q [127:96]
-                        : (buffered_adj_fetch_resp_offset == 'd416) ? fetch_tag_adj_rm_resp_data_q [95:64]
-                        : (buffered_adj_fetch_resp_offset == 'd448) ? fetch_tag_adj_rm_resp_data_q [63:32]
-                        : (buffered_adj_fetch_resp_offset == 'd480) ? fetch_tag_adj_rm_resp_data_q [31:0]
-                        : '0;
-end
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        adj_fetch_neighbours_remaining_store <= '0;
-        buffered_adj_fetch_resp_offset       <= '0;
-    
-    // Accepting NSB fetch request
-    end else if ((adj_queue_fetch_state == ADJ_IDLE) && accepting_nsb_req && (nsb_prefetcher_req.req_opcode == ADJACENCY_LIST)) begin
-        adj_fetch_neighbours_remaining_store <= nsb_prefetcher_req.neighbour_count;
-        buffered_adj_fetch_resp_offset       <= '0;
-    
-    // Accepting response from ADJ read master
-    end else if ((adj_queue_fetch_state == ADJ_WAIT_RESP) && (adj_queue_fetch_state_n == ADJ_STORE)) begin
-        buffered_adj_fetch_resp_offset <= '0;
-
-    // Storing into adjacency queue
-    end else if ((adj_queue_fetch_state == ADJ_STORE) && push_adj_queue) begin
-        buffered_adj_fetch_resp_offset <= buffered_adj_fetch_resp_offset + 9'd32;
-        adj_fetch_neighbours_remaining_store = adj_fetch_neighbours_remaining_store - 1'b1;
-    end
-
 end
 
 // Message queue fetch state machine
@@ -462,29 +316,24 @@ end
 // NSB interface
 // ----------------------------------------------------
 
-logic trigger_adj_partial_resp;
 logic trigger_msg_partial_resp;
 
-assign trigger_adj_partial_resp = (issue_nsb_partial_done_adj_fetch && !issue_nsb_partial_done_adj_fetch);
-assign trigger_msg_partial_resp = (issue_nsb_partial_done_msg_fetch && !issue_nsb_partial_done_msg_fetch);
+assign trigger_msg_partial_resp = (issue_nsb_partial_done_msg_fetch && !issue_nsb_partial_done_msg_fetch_q);
 
 always_comb begin
-    nsb_prefetcher_req_ready = !tag_free 
-                            // only accept NSB req if it's ADJ req and ADJ FSM idle
-                            && ( (adj_queue_fetch_state == ADJ_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST) && adj_queue_empty && (nsb_prefetcher_req.nodeslot == allocated_nodeslot)
-                            // or it's MSG req, MSG FSM idle and ADJ queue non-empty
-                                || (message_fetch_state == MSG_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) && !adj_queue_empty && (nsb_prefetcher_req.nodeslot == allocated_nodeslot)
-                                );
+    nsb_prefetcher_req_ready = !tag_free && (nsb_prefetcher_req.nodeslot == allocated_nodeslot)
+                                && (adj_queue_manager_ready                        
+                                    || (message_fetch_state == MSG_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) && !adj_queue_empty );
 
-    nsb_prefetcher_resp_valid = (adj_queue_fetch_state == ADJ_DONE) || trigger_adj_partial_resp
+    nsb_prefetcher_resp_valid = adj_queue_fetch_resp_valid
                             || (message_fetch_state == MSG_DONE) || trigger_msg_partial_resp;
 
     nsb_prefetcher_resp.nodeslot = allocated_nodeslot;
-    nsb_prefetcher_resp.response_type = trigger_adj_partial_resp || (adj_queue_fetch_state == ADJ_DONE) ? ADJACENCY_LIST
+    nsb_prefetcher_resp.response_type = adj_queue_fetch_resp_valid ? ADJACENCY_LIST
                                         : trigger_msg_partial_resp || (message_fetch_state == MSG_DONE) ? MESSAGES
                                         : ERROR;
 
-    nsb_prefetcher_resp.partial = trigger_adj_partial_resp || trigger_msg_partial_resp;
+    nsb_prefetcher_resp.partial = adj_queue_fetch_resp_partial || trigger_msg_partial_resp;
 end
 
 // Message Channel interface

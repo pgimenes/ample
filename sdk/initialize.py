@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.10
 import argparse
 from sdk.init_manager import InitManager
 from sdk.graphs.matrix_graph import MatrixGraph
