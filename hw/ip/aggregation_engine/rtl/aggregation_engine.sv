@@ -315,17 +315,17 @@ end
 // Aggregation Cores: FLOAT32
 // ----------------------------------------------------
 
-for (genvar agc_row = 0; agc_row < AGC_FLOAT32_ROWS; agc_row = agc_row + 1) begin
+for (genvar agc_float32_row = 0; agc_float32_row < AGC_FLOAT32_ROWS; agc_float32_row = agc_float32_row + 1) begin : float32_row_gen
 
     // Build mask of free aggregation cores for allocation
-    // assign agc_float32_free_mask [((agc_row+1)*AGC_FLOAT32_ROWS)-1:(agc_row*AGC_FLOAT32_ROWS)] = aggregation_core_free[agc_row];
-    assign agc_float32_free_mask [((agc_row+1)*AGC_FLOAT32_COLS)-1:(agc_row*AGC_FLOAT32_COLS)] = aggregation_core_free[agc_row] [AGC_FLOAT32_COLS-1:AGC_FLOAT32_COL_OFFSET];
+    // assign agc_float32_free_mask [((agc_float32_row+1)*AGC_FLOAT32_ROWS)-1:(agc_float32_row*AGC_FLOAT32_ROWS)] = aggregation_core_free[agc_float32_row];
+    assign agc_float32_free_mask [((agc_float32_row+1)*AGC_FLOAT32_COLS)-1:(agc_float32_row*AGC_FLOAT32_COLS)] = aggregation_core_free[agc_float32_row] [AGC_FLOAT32_COLS-1:AGC_FLOAT32_COL_OFFSET];
 
-    for (genvar agc_col = 0; agc_col < AGC_FLOAT32_COLS; agc_col = agc_col + 1) begin
+    for (genvar agc_float32_col = 0; agc_float32_col < AGC_FLOAT32_COLS; agc_float32_col = agc_float32_col + 1) begin : float32_col_gen
     
         aggregation_core #(
-            .X_COORD       (agc_col),
-            .Y_COORD       (agc_row),
+            .X_COORD       (agc_float32_col),
+            .Y_COORD       (agc_float32_row),
 
             .FEATURE_COUNT (16),
             .DATA_WIDTH    (32)
@@ -335,48 +335,48 @@ for (genvar agc_row = 0; agc_row < AGC_FLOAT32_ROWS; agc_row = agc_row + 1) begi
             .resetn,
 
             // Allocation interface
-            .aggregation_core_free          (aggregation_core_free          [agc_row][agc_col]),
+            .aggregation_core_free          (aggregation_core_free          [agc_float32_row][agc_float32_col]),
 
             // Aggregation Core -> Router
-            .aggregation_core_router_on     (aggregation_core_router_on     [agc_row][agc_col]),
-            .aggregation_core_router_valid  (aggregation_core_router_valid  [agc_row][agc_col]),
-            .aggregation_core_router_ready  (aggregation_core_router_ready  [agc_row][agc_col]),
-            .aggregation_core_router_data   (aggregation_core_router_data   [agc_row][agc_col]),
+            .aggregation_core_router_on     (aggregation_core_router_on     [agc_float32_row][agc_float32_col]),
+            .aggregation_core_router_valid  (aggregation_core_router_valid  [agc_float32_row][agc_float32_col]),
+            .aggregation_core_router_ready  (aggregation_core_router_ready  [agc_float32_row][agc_float32_col]),
+            .aggregation_core_router_data   (aggregation_core_router_data   [agc_float32_row][agc_float32_col]),
 
             // Router -> Aggregation Core
-            .router_aggregation_core_on     (router_aggregation_core_on     [agc_row][agc_col]),
-            .router_aggregation_core_valid  (router_aggregation_core_valid  [agc_row][agc_col]),
-            .router_aggregation_core_ready  (router_aggregation_core_ready  [agc_row][agc_col]),
-            .router_aggregation_core_data   (router_aggregation_core_data   [agc_row][agc_col])
+            .router_aggregation_core_on     (router_aggregation_core_on     [agc_float32_row][agc_float32_col]),
+            .router_aggregation_core_valid  (router_aggregation_core_valid  [agc_float32_row][agc_float32_col]),
+            .router_aggregation_core_ready  (router_aggregation_core_ready  [agc_float32_row][agc_float32_col]),
+            .router_aggregation_core_data   (router_aggregation_core_data   [agc_float32_row][agc_float32_col])
         );
 
         always_comb begin
-            aggregation_core_router_on    [agc_row][agc_col] = node_router_on                [agc_col][agc_row];
-            aggregation_core_router_ready [agc_row][agc_col] = node_router_ready             [agc_col][agc_row];
-            node_router_valid             [agc_col][agc_row] = aggregation_core_router_valid [agc_row][agc_col];
-            node_router_data              [agc_col][agc_row] = aggregation_core_router_data  [agc_row][agc_col];
+            aggregation_core_router_on    [agc_float32_row][agc_float32_col] = node_router_on                [agc_float32_col][agc_float32_row];
+            aggregation_core_router_ready [agc_float32_row][agc_float32_col] = node_router_ready             [agc_float32_col][agc_float32_row];
+            node_router_valid             [agc_float32_col][agc_float32_row] = aggregation_core_router_valid [agc_float32_row][agc_float32_col];
+            node_router_data              [agc_float32_col][agc_float32_row] = aggregation_core_router_data  [agc_float32_row][agc_float32_col];
             
-            router_aggregation_core_valid [agc_row][agc_col] = router_node_valid             [agc_col][agc_row];
-            router_aggregation_core_data  [agc_row][agc_col] = router_node_data              [agc_col][agc_row];
-            router_node_on                [agc_col][agc_row] = router_aggregation_core_on    [agc_row][agc_col];
-            router_node_ready             [agc_col][agc_row] = router_aggregation_core_ready [agc_row][agc_col];
+            router_aggregation_core_valid [agc_float32_row][agc_float32_col] = router_node_valid             [agc_float32_col][agc_float32_row];
+            router_aggregation_core_data  [agc_float32_row][agc_float32_col] = router_node_data              [agc_float32_col][agc_float32_row];
+            router_node_on                [agc_float32_col][agc_float32_row] = router_aggregation_core_on    [agc_float32_row][agc_float32_col];
+            router_node_ready             [agc_float32_col][agc_float32_row] = router_aggregation_core_ready [agc_float32_row][agc_float32_col];
         end
-    end
-end
+    end : float32_col_gen
+end : float32_row_gen
 
 // Aggregation Cores: FIXED_16
 // ----------------------------------------------------
 
-for (genvar agc_row = 0; agc_row < AGC_FIXED16_ROWS; agc_row = agc_row + 1) begin
+for (genvar agc_fixed16_row = 0; agc_fixed16_row < AGC_FIXED16_ROWS; agc_fixed16_row = agc_fixed16_row + 1) begin : fixed16_row_gen
 
     // Build mask of free aggregation cores for allocation
-    assign agc_fixed16_free_mask [((agc_row+1)*AGC_FIXED16_COLS)-1:(agc_row*AGC_FIXED16_COLS)] = aggregation_core_free[agc_row] [AGC_FIXED16_COL_OFFSET + AGC_FIXED16_COLS - 1 : AGC_FIXED16_COL_OFFSET];
+    assign agc_fixed16_free_mask [((agc_fixed16_row+1)*AGC_FIXED16_COLS)-1:(agc_fixed16_row*AGC_FIXED16_COLS)] = aggregation_core_free[agc_fixed16_row] [AGC_FIXED16_COL_OFFSET + AGC_FIXED16_COLS - 1 : AGC_FIXED16_COL_OFFSET];
 
-    for (genvar agc_col = AGC_FIXED16_COL_OFFSET; agc_col < (AGC_FIXED16_COL_OFFSET + AGC_FIXED16_COLS); agc_col++) begin
+    for (genvar agc_fixed16_col = AGC_FIXED16_COL_OFFSET; agc_fixed16_col < (AGC_FIXED16_COL_OFFSET + AGC_FIXED16_COLS); agc_fixed16_col++) begin : fixed16_col_gen
     
         aggregation_core #(
-            .X_COORD       (agc_col),
-            .Y_COORD       (agc_row),
+            .X_COORD       (agc_fixed16_col),
+            .Y_COORD       (agc_fixed16_row),
 
             .FEATURE_COUNT (16),
             .DATA_WIDTH    (16),
@@ -388,34 +388,34 @@ for (genvar agc_row = 0; agc_row < AGC_FIXED16_ROWS; agc_row = agc_row + 1) begi
             .resetn,
 
             // Allocation interface
-            .aggregation_core_free          (aggregation_core_free          [agc_row][agc_col]),
+            .aggregation_core_free          (aggregation_core_free          [agc_fixed16_row][agc_fixed16_col]),
 
             // Aggregation Core -> Router
-            .aggregation_core_router_on     (aggregation_core_router_on     [agc_row][agc_col]),
-            .aggregation_core_router_valid  (aggregation_core_router_valid  [agc_row][agc_col]),
-            .aggregation_core_router_ready  (aggregation_core_router_ready  [agc_row][agc_col]),
-            .aggregation_core_router_data   (aggregation_core_router_data   [agc_row][agc_col]),
+            .aggregation_core_router_on     (aggregation_core_router_on     [agc_fixed16_row][agc_fixed16_col]),
+            .aggregation_core_router_valid  (aggregation_core_router_valid  [agc_fixed16_row][agc_fixed16_col]),
+            .aggregation_core_router_ready  (aggregation_core_router_ready  [agc_fixed16_row][agc_fixed16_col]),
+            .aggregation_core_router_data   (aggregation_core_router_data   [agc_fixed16_row][agc_fixed16_col]),
 
             // Router -> Aggregation Core
-            .router_aggregation_core_on     (router_aggregation_core_on     [agc_row][agc_col]),
-            .router_aggregation_core_valid  (router_aggregation_core_valid  [agc_row][agc_col]),
-            .router_aggregation_core_ready  (router_aggregation_core_ready  [agc_row][agc_col]),
-            .router_aggregation_core_data   (router_aggregation_core_data   [agc_row][agc_col])
+            .router_aggregation_core_on     (router_aggregation_core_on     [agc_fixed16_row][agc_fixed16_col]),
+            .router_aggregation_core_valid  (router_aggregation_core_valid  [agc_fixed16_row][agc_fixed16_col]),
+            .router_aggregation_core_ready  (router_aggregation_core_ready  [agc_fixed16_row][agc_fixed16_col]),
+            .router_aggregation_core_data   (router_aggregation_core_data   [agc_fixed16_row][agc_fixed16_col])
         );
 
         always_comb begin
-            aggregation_core_router_on    [agc_row][agc_col] = node_router_on                [agc_col][agc_row];
-            aggregation_core_router_ready [agc_row][agc_col] = node_router_ready             [agc_col][agc_row];
-            node_router_valid             [agc_col][agc_row] = aggregation_core_router_valid [agc_row][agc_col];
-            node_router_data              [agc_col][agc_row] = aggregation_core_router_data  [agc_row][agc_col];
+            aggregation_core_router_on    [agc_fixed16_row][agc_fixed16_col] = node_router_on                [agc_fixed16_col][agc_fixed16_row];
+            aggregation_core_router_ready [agc_fixed16_row][agc_fixed16_col] = node_router_ready             [agc_fixed16_col][agc_fixed16_row];
+            node_router_valid             [agc_fixed16_col][agc_fixed16_row] = aggregation_core_router_valid [agc_fixed16_row][agc_fixed16_col];
+            node_router_data              [agc_fixed16_col][agc_fixed16_row] = aggregation_core_router_data  [agc_fixed16_row][agc_fixed16_col];
             
-            router_aggregation_core_valid [agc_row][agc_col] = router_node_valid             [agc_col][agc_row];
-            router_aggregation_core_data  [agc_row][agc_col] = router_node_data              [agc_col][agc_row];
-            router_node_on                [agc_col][agc_row] = router_aggregation_core_on    [agc_row][agc_col];
-            router_node_ready             [agc_col][agc_row] = router_aggregation_core_ready [agc_row][agc_col];
+            router_aggregation_core_valid [agc_fixed16_row][agc_fixed16_col] = router_node_valid             [agc_fixed16_col][agc_fixed16_row];
+            router_aggregation_core_data  [agc_fixed16_row][agc_fixed16_col] = router_node_data              [agc_fixed16_col][agc_fixed16_row];
+            router_node_on                [agc_fixed16_col][agc_fixed16_row] = router_aggregation_core_on    [agc_fixed16_row][agc_fixed16_col];
+            router_node_ready             [agc_fixed16_col][agc_fixed16_row] = router_aggregation_core_ready [agc_fixed16_row][agc_fixed16_col];
         end
-    end
-end
+    end : fixed16_col_gen
+end : fixed16_row_gen
 
 // Unused nodes for other aggregation cores
 // TO DO: fill (MS3)

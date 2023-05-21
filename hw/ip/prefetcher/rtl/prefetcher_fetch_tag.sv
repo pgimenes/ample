@@ -108,7 +108,6 @@ logic                                                         accepting_adj_fetc
 logic                                                         accepting_msg_fetch_resp;
 
 // Adjacency request logic
-// logic [$clog2(MAX_NODESLOT_COUNT)-1:0]                        adj_fetch_req_nodeslot;
 logic [AXI_ADDRESS_WIDTH-1:0]                                 adj_fetch_req_address; // address pointer (updated in each fetch)
 logic [$clog2(top_pkg::MAX_REQUIRED_BYTES_ADJ_FETCH_REQ)-1:0] adj_fetch_req_bytes; // bytes in current request
 logic [$clog2(top_pkg::MAX_NEIGHBOURS)-1:0]                   adj_fetch_neighbours_remaining_fetch;
@@ -225,7 +224,7 @@ always_comb begin
         adj_queue_fetch_state_n = accepting_adj_fetch_resp ? ADJ_STORE : ADJ_WAIT_RESP;
     end
 
-    ADJ_STORE: begin // ahh
+    ADJ_STORE: begin
         adj_queue_fetch_state_n = (adj_fetch_neighbours_remaining_store == '0) ? ADJ_DONE
                                 : adj_queue_full ? ADJ_PAUSE
                                 : |adj_fetch_responses_pending && buffered_adj_fetch_resp_offset == 9'd480 ? ADJ_WAIT_RESP
@@ -260,7 +259,6 @@ end
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
-        // adj_fetch_req_nodeslot                  <= '0;
         adj_fetch_req_address                   <= '0;
         adj_fetch_neighbours_remaining_fetch    <= '0;
         adj_fetch_responses_pending             <= '0;
@@ -274,7 +272,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
         // Accepting adjacency list fetch request
         if ((adj_queue_fetch_state == ADJ_IDLE) && accepting_nsb_req && (nsb_prefetcher_req.req_opcode == ADJACENCY_LIST)) begin 
             // Initialize AXI request according to Nodeslot programming
-            // adj_fetch_req_nodeslot                <= nsb_prefetcher_req.nodeslot;
             adj_fetch_req_address                 <= nsb_prefetcher_req.start_address;
             adj_fetch_neighbours_remaining_fetch  <= nsb_prefetcher_req.neighbour_count;
             issue_nsb_partial_done_adj_fetch      <= '0;

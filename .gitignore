@@ -39,3 +39,7 @@ graph_dump.txt
 nodeslot_programming.json
 layer_config.json
 *.mem
+
+hw/build/
+hw/sim/xsim.ini
+hw/update_regbanks.tcl

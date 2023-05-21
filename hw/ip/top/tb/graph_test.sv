@@ -138,6 +138,16 @@ class GraphTest extends Test;
         chosen_nodeslot = -1;
     endtask
 
+    function automatic int get_precision(string precision_str);
+        case (precision_str)
+            "FLOAT_32": return 0;
+            "FIXED_16": return 1;
+            "FIXED_8": return 2;
+            "FIXED_4": return 3;
+            default: return -1;
+        endcase
+    endfunction
+
     task automatic program_nodeslot(Object nodeslot, integer chosen_nodeslot);
         integer node_id, neighbour_count;
         string precision;
@@ -156,7 +166,7 @@ class GraphTest extends Test;
 
         this.write_nsb_regbank("Define Node ID",            NSB_NODESLOT_NODE_ID_OFFSET + 4*chosen_nodeslot, node_id); // node x goes into nodeslot x
         this.write_nsb_regbank("Define Neighbour count",    NSB_NODESLOT_NEIGHBOUR_COUNT_OFFSET + 4*chosen_nodeslot, neighbour_count);
-        this.write_nsb_regbank("Define Precision",          NSB_NODESLOT_PRECISION_OFFSET + 4*chosen_nodeslot, 0); // 0 for float (MS2)
+        this.write_nsb_regbank("Define Precision",          NSB_NODESLOT_PRECISION_OFFSET + 4*chosen_nodeslot, this.get_precision(nodeslot.getByKey("precision").asString())); // 0 for float (MS2)
         this.write_nsb_regbank("Define Adjacency List LSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB_OFFSET + 4*chosen_nodeslot, adjacency_list_address_lsb);
         this.write_nsb_regbank("Define Adjacency List MSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB_OFFSET + 4*chosen_nodeslot, adjacency_list_address_msb);
         this.write_nsb_regbank("Define Out Messages LSB",   NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB_OFFSET + 4*chosen_nodeslot, out_messages_address_lsb);

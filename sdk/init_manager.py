@@ -9,6 +9,7 @@ class InitManager:
     def __init__(self, graph, base_path="config_files", nodeslot_dump_file="nodeslot_programming.json", layer_config_file="layer_config.json", memory_dump_file="memory.mem", graph_dump_file="graph_dump.txt"):
         # Adjacency list, incoming messages and weights are pulled from the TrainedGraph object
         self.trained_graph = graph
+        self.trained_graph.init_nx_graph()
 
         # List of hex bytes
         self.memory_hex = []
@@ -17,10 +18,6 @@ class InitManager:
 
         # Adjacency list
         self.node_ids, self.node_offsets = np.unique(self.trained_graph.dataset.edge_index[0], return_index=True)
-        
-        self.adj_list = self.trained_graph.dataset.edge_index[1]
-        self.in_messages = self.trained_graph.embeddings
-        self.weights = self.trained_graph.weights
 
         # Create directory for output files
         os.makedirs(base_path, exist_ok=True)
@@ -56,7 +53,7 @@ class InitManager:
 
     def map_in_messages(self):
         for node in self.trained_graph.nx_graph.nodes:
-            self.memory_hex += self.float_list_to_byte_list(self.in_messages[node], align=True, alignment=64)
+            self.memory_hex += self.float_list_to_byte_list(self.trained_graph.embeddings[node], align=True, alignment=64)
         
         # Set offset for next memory range
         self.offsets['weights'] = len(self.memory_hex)
@@ -100,7 +97,7 @@ class InitManager:
                 continue
             nodeslot = {'node_id' : node,
                         'neighbour_count': nb_cnt,
-                        'precision': 'FLOAT_32',
+                        'precision': self.trained_graph.nx_graph.nodes[node]['precision'],
                         'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node]['adjacency_list_address_lsb'],
                         'adjacency_list_address_msb': 0,
                         'out_messages_address_lsb': self.offsets['out_messages'] + node * self.trained_graph.feature_count * 4,
@@ -154,23 +151,23 @@ class InitManager:
             file.write("\n")
             
             file.write("adj_list = '{")
-            file.write(str(self.adj_list.tolist())[1:-1])
+            file.write(str(self.trained_graph.dataset.edge_index[1])[1:-1])
             file.write("};")
             file.write("\n")
 
             file.write("node_offsets = '{")
-            file.write(str(self.node_offsets.tolist())[1:-1])
+            file.write(str(self.trained_graph.node_offsets)[1:-1])
             file.write("};")
             file.write("\n")
 
-            for idx, node in enumerate(self.in_messages):
+            for idx, node in enumerate(self.trained_graph.embeddings):
                 file.write(f"embeddings[{idx}] = ")
                 file.write("'{")
                 file.write(str(node.tolist())[1:-1])
                 file.write("};")
                 file.write("\n")
 
-            for idx, feature in enumerate(self.weights):
+            for idx, feature in enumerate(self.trained_graph.weights):
                 file.write(f"weights[{idx}] = ")
                 file.write("'{")
                 file.write(str(feature.tolist())[1:-1])

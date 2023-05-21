@@ -97,7 +97,7 @@ logic                                           tail_packet;
 
 logic [$clog2(MESH_ROWS)-1:0]                   packet_dest_row;
 logic [$clog2(MESH_COLS)-1:0]                   packet_dest_col;
-logic correct_pkt_dest;
+logic                                           correct_pkt_dest;
 
 logic [$clog2(MESH_ROWS)-1:0]                   packet_source_row;
 logic [$clog2(MESH_COLS)-1:0]                   packet_source_col;
@@ -261,7 +261,7 @@ always_comb begin
     packet_dest_col = router_aggregation_core_data.data.head_data.x_dest;
     packet_dest_row = router_aggregation_core_data.data.head_data.y_dest;
 
-    correct_pkt_dest = (packet_dest_row == y_coord) && (packet_dest_col == x_coord);
+    correct_pkt_dest = (packet_dest_row == Y_COORD[$clog2(MESH_ROWS)-1:0]) && (packet_dest_col == X_COORD[$clog2(MESH_COLS)-1:0]);
 end
 
 // Aggregation Manager Packets
@@ -374,7 +374,7 @@ always_comb begin
                                             : noc_params::BODY;
 
     aggregation_core_router_data.data.bt_pl = {buffer_manager_pkt_dest_col, buffer_manager_pkt_dest_row,
-                                                x_coord, y_coord, // source node coordinates
+                                                X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], // source node coordinates
                                                 bm_chosen_data };
 end
 

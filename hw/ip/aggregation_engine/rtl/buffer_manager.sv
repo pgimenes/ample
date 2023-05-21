@@ -158,6 +158,7 @@ assign age_buffer_manager_nodeslot_allocation_ready = (bm_state == IDLE);
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
+        allocated_agm_q           <= '0;
         allocated_agcs_x_coords_q <= '0;
         allocated_agcs_y_coords_q <= '0;
         allocated_agcs_count_q    <= '0;
