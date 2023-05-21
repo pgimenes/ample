@@ -120,6 +120,8 @@ logic [63:0] nsb_nodeslot_out_messages_address_lsb_strobe;              // strob
 logic [63:0] [31:0] nsb_nodeslot_out_messages_address_lsb_lsb;          // value of field 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB.LSB'
 logic [63:0] nsb_nodeslot_out_messages_address_msb_strobe;              // strobe signal for register 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB' (pulsed when the register is written from the bus)
 logic [63:0] [1:0] nsb_nodeslot_out_messages_address_msb_msb;           // value of field 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB.MSB'
+logic [63:0] nsb_nodeslot_aggregation_function_strobe;                  // strobe signal for register 'nsb_nodeslot_aggregation_function' (pulsed when the register is written from the bus)
+logic [63:0] [1:0] nsb_nodeslot_aggregation_function_value;             // value of field 'nsb_nodeslot_aggregation_function.value'
 
 logic nsb_nodeslot_config_make_valid_msb_strobe; // strobe signal for register 'NSB_NODESLOT_CONFIG_MAKE_VALID_MSB' (pulsed when the register is written from the bus)
 logic [31:0] nsb_nodeslot_config_make_valid_msb_make_valid; // value of field 'NSB_NODESLOT_CONFIG_MAKE_VALID_MSB.MAKE_VALID'

@@ -10,6 +10,7 @@ parameter MESSAGE_QUEUE_DEPTH = 4096;
 
 parameter MAX_ADJ_FETCH_RESPONSES = `divide_round_up(ADJ_QUEUE_DEPTH * ADJ_QUEUE_WIDTH, top_pkg::AXI_DATA_WIDTH);
 parameter MAX_MSG_FETCH_RESPONSES = `divide_round_up(top_pkg::MAX_FEATURE_COUNT * top_pkg::MAX_PRECISION_BYTE_COUNT,  (top_pkg::AXI_DATA_WIDTH/8));
+parameter MAX_FETCH_RESPONSES = `max(MAX_ADJ_FETCH_RESPONSES, MAX_MSG_FETCH_RESPONSES);
 
 typedef enum logic [2:0] {
     ADJ_IDLE                = 3'd0,

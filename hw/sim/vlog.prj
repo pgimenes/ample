@@ -67,6 +67,7 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 "../ip/output_buffer/rtl/output_buffer.sv" \
 "../ip/prefetcher/include/prefetcher_pkg.sv" \
 "../ip/lib/buffers/ultraram_fifo.sv" \
+"../ip/prefetcher/rtl/prefetcher_streaming_manager.sv" \
 "../ip/prefetcher/rtl/prefetcher_fetch_tag.sv" \
 "../ip/prefetcher/rtl/prefetcher_feature_bank.sv" \
 "../ip/prefetcher/rtl/prefetcher_weight_bank.sv" \
