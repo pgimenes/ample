@@ -44,6 +44,7 @@ class TrainedGraph:
                     self.nx_graph.nodes[node]['neighbour_count'] = len(neighbours)
                     self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
                     self.nx_graph.nodes[node]['adjacency_list_address_lsb'] = 0 # to be defined my init manager
+                    self.nx_graph.nodes[node]['aggregation_function'] = "SUM"
                     
                     if (self.graph_precision == 'mixed'):
                         prec = random.choice(["FLOAT_32", "FIXED_16"])

@@ -98,6 +98,7 @@ class InitManager:
             nodeslot = {'node_id' : node,
                         'neighbour_count': nb_cnt,
                         'precision': self.trained_graph.nx_graph.nodes[node]['precision'],
+                        'aggregation_function': self.trained_graph.nx_graph.nodes[node]['aggregation_function'],
                         'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node]['adjacency_list_address_lsb'],
                         'adjacency_list_address_msb': 0,
                         'out_messages_address_lsb': self.offsets['out_messages'] + node * self.trained_graph.feature_count * 4,
