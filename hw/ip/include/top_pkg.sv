@@ -67,10 +67,10 @@ typedef enum logic [1:0] {
 } NODE_PRECISION_e;
 
 typedef enum logic [1:0] {
-    SUM       = 2'd0,
-    MEAN      = 2'd1,
-    RESERVED  = 2'd2,
-    RESERVED2 = 2'd3
+    SUM,
+    MEAN,
+    WEIGHTED_SUM,
+    AGGR_FUNC_RESERVED
 } AGGREGATION_FUNCTION_e;
 
 typedef enum logic {
@@ -116,10 +116,10 @@ typedef struct packed {
 } NSB_FTE_RESP_t;
 
 typedef enum logic [1:0] {
-    WEIGHTS         = 2'd0,
-    ADJACENCY_LIST  = 2'd1,
-    MESSAGES        = 2'd2,
-    ERROR           = 2'd3
+    WEIGHTS           = 2'd0,
+    ADJACENCY_LIST    = 2'd1,
+    MESSAGES          = 2'd2,
+    NSB_PREF_RESERVED = 2'd3
 } NSB_PREF_OPCODE_e;
 
 typedef struct packed {

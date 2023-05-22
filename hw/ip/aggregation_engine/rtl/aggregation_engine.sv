@@ -124,16 +124,15 @@ logic [$clog2(TOTAL_AGGREGATION_MANAGERS)-1:0] aggregation_manager_resp_arbitrat
 // Aggregation Cores
 // ----------------------------------------------------
 
-logic  [AGC_FLOAT32_ROWS-1:0] [AGC_FLOAT32_COLS-1:0] aggregation_core_free;
-logic  [AGC_FLOAT32_ROWS-1:0] [AGC_FLOAT32_COLS-1:0] aggregation_core_router_on;
-logic  [AGC_FLOAT32_ROWS-1:0] [AGC_FLOAT32_COLS-1:0] aggregation_core_router_valid;
-logic  [AGC_FLOAT32_ROWS-1:0] [AGC_FLOAT32_COLS-1:0] aggregation_core_router_ready;
-flit_t [AGC_FLOAT32_ROWS-1:0] [AGC_FLOAT32_COLS-1:0] aggregation_core_router_data;
-
-logic  [AGC_FLOAT32_ROWS-1:0] [AGC_FLOAT32_COLS-1:0] router_aggregation_core_on;
-logic  [AGC_FLOAT32_ROWS-1:0] [AGC_FLOAT32_COLS-1:0] router_aggregation_core_valid;
-logic  [AGC_FLOAT32_ROWS-1:0] [AGC_FLOAT32_COLS-1:0] router_aggregation_core_ready;
-flit_t [AGC_FLOAT32_ROWS-1:0] [AGC_FLOAT32_COLS-1:0] router_aggregation_core_data;
+logic  [AGC_ROWS-1:0] [AGC_COLS-1:0] aggregation_core_free;
+logic  [AGC_ROWS-1:0] [AGC_COLS-1:0] aggregation_core_router_on;
+logic  [AGC_ROWS-1:0] [AGC_COLS-1:0] aggregation_core_router_valid;
+logic  [AGC_ROWS-1:0] [AGC_COLS-1:0] aggregation_core_router_ready;
+flit_t [AGC_ROWS-1:0] [AGC_COLS-1:0] aggregation_core_router_data;
+logic  [AGC_ROWS-1:0] [AGC_COLS-1:0] router_aggregation_core_on;
+logic  [AGC_ROWS-1:0] [AGC_COLS-1:0] router_aggregation_core_valid;
+logic  [AGC_ROWS-1:0] [AGC_COLS-1:0] router_aggregation_core_ready;
+flit_t [AGC_ROWS-1:0] [AGC_COLS-1:0] router_aggregation_core_data;
 
 // Buffer Managers
 // ----------------------------------------------------
@@ -158,15 +157,17 @@ flit_t [BM_ROWS-1:0] [BM_COLS-1:0] router_buffer_manager_data;
 // ----------------------------------------------------
 
 logic [AGC_COUNT_FLOAT32-1:0]           agc_float32_free_mask;
-logic [$clog2(AGC_COUNT_FLOAT32)-1:0]   allocated_agc_float32;
+logic [AGC_COUNT_FLOAT32-1:0]           allocated_agc_float32;
+logic [$clog2(AGC_COUNT_FLOAT32)-1:0]   allocated_agc_float32_bin;
 logic [AGC_COUNT_FLOAT32-1:0]           allocatable_aggregation_cores_float32;
 
 // FIXED_16 AGC Allocation
 // ----------------------------------------------------
 
-logic [AGC_COUNT_FLOAT32-1:0]           agc_fixed16_free_mask;
-logic [$clog2(AGC_COUNT_FLOAT32)-1:0]   allocated_agc_fixed16;
-logic [AGC_COUNT_FLOAT32-1:0]           allocatable_aggregation_cores_fixed16;
+logic [AGC_COUNT_FIXED16-1:0]           agc_fixed16_free_mask;
+logic [AGC_COUNT_FIXED16-1:0]           allocated_agc_fixed16;
+logic [$clog2(AGC_COUNT_FIXED16)-1:0]   allocated_agc_fixed16_bin;
+logic [AGC_COUNT_FIXED16-1:0]           allocatable_aggregation_cores_fixed16;
 
 // (Aggregation <-> Buffer Manager) Allocation
 logic [TOTAL_BUFFER_MANAGERS-1:0] buffer_master_allocation_oh;
@@ -495,6 +496,15 @@ aggregation_core_allocator #(
     .deallocation_cores     (agm_allocated_agcs [aggregation_manager_resp_arbitration_bin])
 );
 
+onehot_to_binary #(
+    .INPUT_WIDTH (age_pkg::AGC_COUNT_FLOAT32)
+) allocated_agc_float32_oh2bin (
+	.clk            (core_clk),
+  	.resetn         (resetn),
+	.input_data     (allocated_agc_float32),
+  	.output_data    (allocated_agc_float32_bin)
+);
+
 // Aggregation Core (FIXED_16) Allocation
 // ----------------------------------------------------
 
@@ -514,6 +524,15 @@ aggregation_core_allocator #(
     .deallocation_cores     (agm_allocated_agcs [aggregation_manager_resp_arbitration_bin])
 );
 
+onehot_to_binary #(
+    .INPUT_WIDTH (age_pkg::AGC_COUNT_FIXED16)
+) allocated_agc_fixed16_oh2bin (
+	.clk            (core_clk),
+  	.resetn         (resetn),
+	.input_data     (allocated_agc_fixed16),
+  	.output_data    (allocated_agc_fixed16_bin)
+);
+
 // ==================================================================================================================================================
 // Logic
 // ==================================================================================================================================================
@@ -525,19 +544,26 @@ always_comb begin
     nsb_age_req_ready = age_agm_req_ready[nsb_age_req.nodeslot];
 
     age_agm_req.nsb_req = nsb_age_req;
-
-    age_agm_req.allocated_cores = (nsb_age_req.node_precision == FLOAT_32) ? allocated_agc_float32
-                                : (nsb_age_req.node_precision == FIXED_16) ? allocated_agc_fixed16
-                                : (nsb_age_req.node_precision == FIXED_8) ? allocated_agc_float32 // to do
-                                : (nsb_age_req.node_precision == FIXED_4) ? allocated_agc_float32 // to do
-                                : '0;
-    
-    // TO DO: for higher feature count, compute coordinates for each AGC
-    age_agm_req.coords_x = allocated_agc_float32 [3:0]; // % 16
-    age_agm_req.coords_y = allocated_agc_float32 [$clog2(AGC_COUNT_FLOAT32)-1:4]; // div 16
-
-
     age_agm_req.ac_count = layer_config_in_features_count[9:4] + (|layer_config_in_features_count[3:0] ? 1'b1 : '0);
+
+    case (nsb_age_req.node_precision)
+
+    FLOAT_32: begin
+        age_agm_req.allocated_cores = allocated_agc_float32;
+
+        age_agm_req.coords_x [0] = allocated_agc_float32_bin [3:0]; // % 16
+        age_agm_req.coords_y [0] = allocated_agc_float32_bin [$clog2(AGC_COUNT_FLOAT32)-1:4]; // div 16
+    end
+
+    FIXED_16: begin
+        age_agm_req.allocated_cores = allocated_agc_fixed16;
+        
+        age_agm_req.coords_x [0] = AGC_FIXED16_COL_OFFSET[$clog2(MESH_COLS)-1:0] + allocated_agc_fixed16_bin [3:0]; // % 16
+        age_agm_req.coords_y [0] = allocated_agc_fixed16_bin [$clog2(AGC_COUNT_FIXED16)-1:4]; // div 16
+    end
+
+    endcase
+    
 end
 
 assign nsb_age_resp_valid = |age_agm_resp_valid;

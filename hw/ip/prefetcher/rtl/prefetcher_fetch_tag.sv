@@ -479,7 +479,7 @@ always_comb begin
     nsb_prefetcher_resp.nodeslot = allocated_nodeslot;
     nsb_prefetcher_resp.response_type = trigger_adj_partial_resp || (adj_queue_fetch_state == ADJ_DONE) ? ADJACENCY_LIST
                                         : trigger_msg_partial_resp || (message_fetch_state == MSG_DONE) ? MESSAGES
-                                        : ERROR;
+                                        : NSB_PREF_RESERVED;
 
     nsb_prefetcher_resp.partial = trigger_adj_partial_resp || trigger_msg_partial_resp;
 end
