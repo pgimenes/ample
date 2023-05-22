@@ -51,7 +51,9 @@ module prefetcher_feature_bank #(
 
     input  logic [9:0] layer_config_in_features_count,
     input  logic [31:0] layer_config_adjacency_list_address_lsb_value,
-    input  logic [31:0] layer_config_in_messages_address_lsb_value
+    input  logic [31:0] layer_config_in_messages_address_lsb_value,
+    input  logic [31:0] layer_config_scale_factors_address_lsb_value,
+    input  logic [1:0] layer_config_scale_factors_address_msb_value
     
 );
 
@@ -180,7 +182,9 @@ for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 
         .message_channel_resp                           (message_channel_resp         [fetch_tag]),
 
         .layer_config_adjacency_list_address_lsb_value  (layer_config_adjacency_list_address_lsb_value),
-        .layer_config_in_messages_address_lsb_value     (layer_config_in_messages_address_lsb_value)
+        .layer_config_in_messages_address_lsb_value     (layer_config_in_messages_address_lsb_value),
+        .layer_config_scale_factors_address_lsb_value,
+        .layer_config_scale_factors_address_msb_value
     );
 
     // Fetch tag allocation/de-allocation

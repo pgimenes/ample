@@ -13,7 +13,7 @@ class InitManager:
         # List of hex bytes
         self.memory_hex = []
 
-        self.offsets = {'adj_list': 0, 'in_messages':0, 'weights':0, 'out_messages':0}
+        self.offsets = {'adj_list': 0, 'scale_factors': 0, 'in_messages':0, 'weights':0, 'out_messages':0}
 
         # Adjacency list
         self.node_ids, self.node_offsets = np.unique(self.trained_graph.dataset.edge_index[0], return_index=True)
@@ -43,14 +43,23 @@ class InitManager:
     def map_memory(self):
         self.memory_hex = []
         self.map_adj_list()
+        self.map_scale_factors()
         self.map_in_messages()
         self.map_weights()
 
     def map_adj_list(self):
         for node in self.trained_graph.nx_graph.nodes:
-            self.trained_graph.nx_graph.nodes[node]['adjacency_list_address_lsb'] = len(self.memory_hex)
+            self.trained_graph.nx_graph.nodes[node]['adjacency_list_address'] = len(self.memory_hex)
             self.memory_hex += self.int_list_to_byte_list(self.trained_graph.nx_graph.nodes[node]['neighbours'], align=True, alignment=64)
 
+        # Set offset for next memory range
+        self.offsets['scale_factors'] = len(self.memory_hex)
+
+    def map_scale_factors(self):
+        for node in self.trained_graph.nx_graph.nodes:
+            self.trained_graph.nx_graph.nodes[node]['scale_factors_address'] = len(self.memory_hex)
+            self.memory_hex += self.float_list_to_byte_list(self.trained_graph.nx_graph.nodes[node]['scale_factors'], align=True, alignment=64)
+        
         # Set offset for next memory range
         self.offsets['in_messages'] = len(self.memory_hex)
 
@@ -101,8 +110,13 @@ class InitManager:
             nodeslot = {'node_id' : node,
                         'neighbour_count': nb_cnt,
                         'precision': 'FLOAT_32',
-                        'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node]['adjacency_list_address_lsb'],
+                        
+                        'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node]['adjacency_list_address'],
                         'adjacency_list_address_msb': 0,
+                        
+                        'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node]['scale_factors_address'],
+                        'scale_factors_address_msb': 0,
+                        
                         'out_messages_address_lsb': self.offsets['out_messages'] + node * self.trained_graph.feature_count * 4,
                         'out_messages_address_msb': 0
                         }

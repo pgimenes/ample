@@ -116,11 +116,12 @@ typedef struct packed {
     logic [MAX_NODESLOT_COUNT-1:0] nodeslot;
 } NSB_FTE_RESP_t;
 
-typedef enum logic [1:0] {
-    WEIGHTS         = 2'd0,
-    ADJACENCY_LIST  = 2'd1,
-    MESSAGES        = 2'd2,
-    ERROR           = 2'd3
+typedef enum logic [2:0] {
+    WEIGHTS,
+    ADJACENCY_LIST,
+    MESSAGES,
+    SCALE_FACTOR,
+    FETCH_RESERVED
 } NSB_PREF_OPCODE_e;
 
 typedef struct packed {
