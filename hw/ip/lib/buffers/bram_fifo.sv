@@ -11,6 +11,7 @@ module bram_fifo #(
     parameter WRITE_DEPTH = 512,
     parameter READ_WIDTH = 32,
     parameter READ_DEPTH = 1024,
+    parameter BRAM_TYPE = "SCALE_FACTOR"
 ) (
     input  logic                        core_clk,
     input  logic                        resetn,
@@ -44,20 +45,28 @@ logic wr_wrap, rd_wrap;
 // Logic
 // ==================================================================================================================================================
 
-aggregation_buffer_sdp_bram fifo (
-  .clka     (core_clk),    // input wire clka
-  .ena      ('1),      // input wire ena
-  .wea      (push),      // input wire [0 : 0] wea
-  .addra    (wr_ptr),  // input wire [8 : 0] addra
-  .dina     (in_data),    // input wire [63 : 0] dina
-  
-  .clkb     (core_clk),    // input wire clkb
-  .enb      ('1),      // input wire enb
-  .addrb    (rd_ptr),  // input wire [9 : 0] addrb
-  .doutb    (out_data),  // output wire [31 : 0] doutb
-  
-  .sleep    ('0)  // input wire sleep
-);
+if (BRAM_TYPE == "SCALE_FACTOR") begin
+
+    scale_factor_queue bram (
+        .clka         (core_clk),
+        .ena          (1'b1),
+        .wea          (push),
+        .addra        (wr_ptr),
+        .dina         (in_data),
+        
+        .clkb         (core_clk),
+        .enb          (1'b1),
+        .addrb        (rd_ptr),
+        .doutb        (out_data),
+        
+        .sleep        (1'b0)
+    );
+    
+end else begin
+    
+    assign out_data = '0;
+
+end
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
@@ -91,8 +100,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
         pop1 <= pop;
         pop2 <= pop1;
 
-        if (wr_ptr == {AWIDTH{1'b1}} && push) wr_wrap <= !wr_wrap;
-        if (rd_ptr == {AWIDTH{1'b1}} && pop) rd_wrap <= !rd_wrap;
+        if (wr_ptr == {WRITE_ADDR_WIDTH{1'b1}} && push) wr_wrap <= !wr_wrap;
+        if (rd_ptr == {READ_ADDR_WIDTH{1'b1}} && pop) rd_wrap <= !rd_wrap;
     end
 end
 

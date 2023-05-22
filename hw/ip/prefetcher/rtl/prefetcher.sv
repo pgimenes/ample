@@ -194,6 +194,10 @@ logic layer_config_weights_address_lsb_strobe;
 logic [31:0] layer_config_weights_address_lsb_value;
 logic layer_config_weights_address_msb_strobe;
 logic [1:0] layer_config_weights_address_msb_value;
+logic layer_config_scale_factors_address_lsb_strobe;
+logic [31:0] layer_config_scale_factors_address_lsb_value;
+logic layer_config_scale_factors_address_msb_strobe;
+logic [1:0] layer_config_scale_factors_address_msb_value;
 
 // Feature Bank
 // --------------------------------------------------------------------------------------------
@@ -291,7 +295,11 @@ prefetcher_regbank_regs prefetcher_regbank_i (
     .layer_config_in_messages_address_lsb_strobe,
     .layer_config_in_messages_address_lsb_value,
     .layer_config_in_messages_address_msb_strobe,
-    .layer_config_in_messages_address_msb_value
+    .layer_config_in_messages_address_msb_value,
+    .layer_config_scale_factors_address_lsb_strobe,
+    .layer_config_scale_factors_address_lsb_value,
+    .layer_config_scale_factors_address_msb_strobe,
+    .layer_config_scale_factors_address_msb_value
 );
 
 // Feature Bank
@@ -345,7 +353,9 @@ prefetcher_feature_bank #(
 
     .layer_config_in_features_count                                     (layer_config_in_features_count),
     .layer_config_adjacency_list_address_lsb_value                      (layer_config_adjacency_list_address_lsb_value),
-    .layer_config_in_messages_address_lsb_value                         (layer_config_in_messages_address_lsb_value)
+    .layer_config_in_messages_address_lsb_value                         (layer_config_in_messages_address_lsb_value),
+    .layer_config_scale_factors_address_lsb_value,
+    .layer_config_scale_factors_address_msb_value
     
 );
 

@@ -142,13 +142,19 @@ class GraphTest extends Test;
         integer node_id, neighbour_count;
         string precision;
         integer adjacency_list_address_lsb, adjacency_list_address_msb;
+        integer scale_factors_address_lsb, scale_factors_address_msb;
         integer out_messages_address_lsb, out_messages_address_msb;
 
         // Obtain values from JSON object
         node_id = nodeslot.getByKey("node_id").asInt();
         neighbour_count = nodeslot.getByKey("neighbour_count").asInt();
+        
         adjacency_list_address_lsb = nodeslot.getByKey("adjacency_list_address_lsb").asInt();
         adjacency_list_address_msb = nodeslot.getByKey("adjacency_list_address_msb").asInt();
+        
+        scale_factors_address_lsb = nodeslot.getByKey("scale_factors_address_lsb").asInt();
+        scale_factors_address_msb = nodeslot.getByKey("scale_factors_address_msb").asInt();
+        
         out_messages_address_lsb = nodeslot.getByKey("out_messages_address_lsb").asInt();
         out_messages_address_msb = nodeslot.getByKey("out_messages_address_msb").asInt();
 
@@ -157,8 +163,13 @@ class GraphTest extends Test;
         this.write_nsb_regbank("Define Node ID",            NSB_NODESLOT_NODE_ID_OFFSET + 4*chosen_nodeslot, node_id); // node x goes into nodeslot x
         this.write_nsb_regbank("Define Neighbour count",    NSB_NODESLOT_NEIGHBOUR_COUNT_OFFSET + 4*chosen_nodeslot, neighbour_count);
         this.write_nsb_regbank("Define Precision",          NSB_NODESLOT_PRECISION_OFFSET + 4*chosen_nodeslot, 0); // 0 for float (MS2)
+        
         this.write_nsb_regbank("Define Adjacency List LSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB_OFFSET + 4*chosen_nodeslot, adjacency_list_address_lsb);
         this.write_nsb_regbank("Define Adjacency List MSB", NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB_OFFSET + 4*chosen_nodeslot, adjacency_list_address_msb);
+        
+        this.write_nsb_regbank("Define Scale Factors Address LSB", NSB_NODESLOT_SCALE_FACTORS_ADDRESS_LSB_OFFSET + 4*chosen_nodeslot, scale_factors_address_lsb);
+        this.write_nsb_regbank("Define Scale Factors Address MSB", NSB_NODESLOT_SCALE_FACTORS_ADDRESS_MSB_OFFSET + 4*chosen_nodeslot, scale_factors_address_msb);
+        
         this.write_nsb_regbank("Define Out Messages LSB",   NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB_OFFSET + 4*chosen_nodeslot, out_messages_address_lsb);
         this.write_nsb_regbank("Define Out Messages MSB",   NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB_OFFSET + 4*chosen_nodeslot, out_messages_address_msb);
 

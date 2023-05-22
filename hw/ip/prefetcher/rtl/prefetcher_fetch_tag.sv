@@ -66,9 +66,19 @@ module prefetcher_fetch_tag #(
     output logic                                        message_channel_resp_valid,
     input  logic                                        message_channel_resp_ready,
     output MESSAGE_CHANNEL_RESP_t                       message_channel_resp,
+
+    // Scale Factor Queue Interface: Fetch Tag -> AGE
+    output logic                                           scale_factor_queue_pop,
+    output logic                                           scale_factor_queue_out_valid,
+    output logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
+    output logic [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count,
+    output logic                                           scale_factor_queue_empty,
+    output logic                                           scale_factor_queue_full,
     
     input  logic [31:0] layer_config_adjacency_list_address_lsb_value,
-    input  logic [31:0] layer_config_in_messages_address_lsb_value
+    input  logic [31:0] layer_config_in_messages_address_lsb_value,
+    input  logic [31:0] layer_config_scale_factors_address_lsb_value,
+    input  logic [1:0] layer_config_scale_factors_address_msb_value
 );
 
 parameter BYTE_COUNT_PER_ADJ_QUEUE_SLOT = 4;
@@ -95,6 +105,10 @@ logic [$clog2(ADJ_QUEUE_DEPTH):0]                             adj_queue_count;
 
 logic [$clog2(ADJ_QUEUE_DEPTH):0]                             adj_queue_slots_available; // how many ID's can currently be stored
 
+logic                                                         adj_queue_manager_ready;
+logic                                                         adj_queue_fetch_resp_valid;
+logic                                                         adj_queue_fetch_resp_partial;
+
 // Message Queue
 logic                                                         push_message_queue, pop_message_queue;
 logic                                                         message_queue_head_valid;
@@ -107,6 +121,18 @@ logic                                                         accepting_adj_fetc
 logic                                                         accepting_message_fetch_req;
 logic                                                         accepting_adj_fetch_resp;
 logic                                                         accepting_msg_fetch_resp;
+
+// Scale Factor Queue
+logic                                        scale_factor_queue_push;
+logic [SCALE_FACTOR_QUEUE_WRITE_WIDTH-1:0]   scale_factor_queue_in_data;
+logic                                        scale_factor_fetch_req_ready;
+logic                                        scale_factor_fetch_resp_valid;
+logic                                        scale_factor_fetch_resp_partial;
+
+logic                                        scale_factor_read_master_req_valid;
+logic [AXI_ADDRESS_WIDTH-1:0]                scale_factor_read_master_start_address;
+logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0] scale_factor_read_master_byte_count;
+logic                                        scale_factor_read_master_resp_ready;
 
 // Message request logic
 top_pkg::NODE_PRECISION_e                                     msg_fetch_req_precision_q;
@@ -124,6 +150,9 @@ logic accepted_message_channel_req;
 // Instances
 // ==================================================================================================================================================
 
+// Adjacency Queue
+// -----------------------------------------------------------------------
+
 ultraram_fifo #(
     .WIDTH(ADJ_QUEUE_WIDTH),
     .DEPTH(ADJ_QUEUE_DEPTH)
@@ -140,12 +169,8 @@ ultraram_fifo #(
     .full           (adj_queue_full)
 );
 
-logic adj_queue_manager_ready;
-logic adj_queue_fetch_resp_valid;
-logic adj_queue_fetch_resp_partial;
-
 prefetcher_streaming_manager #(
-    .FETCH_TYPE (top_pkg::ADJACENCY_LIST),
+    .FETCH_TYPE          (top_pkg::ADJACENCY_LIST),
     .QUEUE_WIDTH         (ADJ_QUEUE_WIDTH),
     .QUEUE_DEPTH         (ADJ_QUEUE_DEPTH),
     .STREAMING_ENABLED   (1),
@@ -184,20 +209,92 @@ prefetcher_streaming_manager #(
     .queue_full                       (adj_queue_full)
 );
 
+// Message Queue
+// -----------------------------------------------------------------------
+
 ultraram_fifo #(
     .WIDTH(MESSAGE_QUEUE_WIDTH),
     .DEPTH(MESSAGE_QUEUE_DEPTH)
 ) message_queue (
     .core_clk       (core_clk),
     .resetn         (resetn),
+    
     .push           (push_message_queue),
     .in_data        (msg_queue_write_data),
+    
     .pop            (pop_message_queue),
     .out_valid      (message_queue_head_valid),
     .out_data       (message_queue_head),
+    
     .count          (message_queue_count),
     .empty          (message_queue_empty),
     .full           (message_queue_full)
+);
+
+// Scale Factor Queue
+// -----------------------------------------------------------------------
+
+bram_fifo #(
+    .WRITE_WIDTH (SCALE_FACTOR_QUEUE_WRITE_WIDTH),
+    .WRITE_DEPTH (SCALE_FACTOR_QUEUE_WRITE_DEPTH),
+    .READ_WIDTH  (SCALE_FACTOR_QUEUE_READ_WIDTH),
+    .READ_DEPTH  (SCALE_FACTOR_QUEUE_READ_DEPTH),
+    .BRAM_TYPE   ("SCALE_FACTOR")
+) scale_factor_queue (
+    .core_clk                   (core_clk),
+    .resetn                     (resetn),
+    
+    .push                       (scale_factor_queue_push),
+    .in_data                    (scale_factor_queue_in_data),
+
+    .pop                        (scale_factor_queue_pop),
+    .out_valid                  (scale_factor_queue_out_valid),
+    .out_data                   (scale_factor_queue_out_data),    
+    
+    .count                      (scale_factor_queue_count),
+    .empty                      (scale_factor_queue_empty),
+    .full                       (scale_factor_queue_full)
+);
+
+prefetcher_streaming_manager #(
+    .FETCH_TYPE          (top_pkg::SCALE_FACTOR),
+    .QUEUE_WIDTH         (SCALE_FACTOR_QUEUE_WRITE_WIDTH),
+    .QUEUE_DEPTH         (SCALE_FACTOR_QUEUE_WRITE_DEPTH),
+    .STREAMING_ENABLED   (0),
+    .UNPACKING_ENABLED   (0)
+) scale_factor_queue_manager (
+
+    .core_clk                         (core_clk),
+    .resetn                           (resetn),
+
+    .fetch_req_valid                  (!tag_free && nsb_prefetcher_req_valid),
+    .fetch_req_ready                  (scale_factor_fetch_req_ready),
+    .fetch_req_opcode                 (nsb_prefetcher_req.req_opcode),
+    .fetch_req_start_address          (nsb_prefetcher_req.start_address),
+    .fetch_req_obj_count              (nsb_prefetcher_req.neighbour_count),
+
+    .fetch_resp_valid                 (scale_factor_fetch_resp_valid),
+    .fetch_resp_partial               (scale_factor_fetch_resp_partial),
+
+    .fetch_memory_range_start_address ({layer_config_scale_factors_address_msb_value, layer_config_scale_factors_address_lsb_value}),
+
+    .read_master_req_valid            (scale_factor_read_master_req_valid),
+    .read_master_req_ready            (fetch_tag_msg_rm_req_ready),
+    .read_master_start_address        (scale_factor_read_master_start_address),
+    .read_master_byte_count           (scale_factor_read_master_byte_count),
+    
+    .read_master_resp_valid           (fetch_tag_msg_rm_resp_valid),
+    .read_master_resp_ready           (scale_factor_read_master_resp_ready),
+    .read_master_resp_last            (fetch_tag_msg_rm_resp_last),
+    .read_master_resp_data            (fetch_tag_msg_rm_resp_data),
+    .read_master_resp_axi_id          (fetch_tag_msg_rm_resp_axi_id),
+    
+    .push_queue                       (scale_factor_queue_push),
+    .push_data                        (scale_factor_queue_in_data),
+    
+    .queue_slots_available            ('1), // streaming disabled
+    .queue_empty                      (scale_factor_queue_empty),
+    .queue_full                       (scale_factor_queue_full)
 );
 
 // ==================================================================================================================================================
@@ -272,12 +369,19 @@ end
 // Message queue logic
 // ----------------------------------------------------
 
-always_comb begin
-    fetch_tag_msg_rm_req_valid      = (message_fetch_state == MSG_FETCH) && !adj_queue_empty && adj_queue_head_valid && !message_queue_full;
-    fetch_tag_msg_rm_start_address  = {2'd0, layer_config_in_messages_address_lsb_value} + 64*adj_queue_head;
-    fetch_tag_msg_rm_byte_count     = FEATURE_COUNT * top_pkg::bits_per_precision(msg_fetch_req_precision_q) / 8;
+// Message read master is shared between Message Queue and Scale Factor queue requests
 
-    fetch_tag_msg_rm_resp_ready = (message_fetch_state == MSG_STORE);
+always_comb begin
+    fetch_tag_msg_rm_req_valid      = scale_factor_read_master_req_valid || ((message_fetch_state == MSG_FETCH) && !adj_queue_empty && adj_queue_head_valid && !message_queue_full);
+    
+    fetch_tag_msg_rm_start_address  = scale_factor_read_master_req_valid ? scale_factor_read_master_start_address
+                                    : {2'd0, layer_config_in_messages_address_lsb_value} + 64*adj_queue_head;
+    
+    fetch_tag_msg_rm_byte_count     = scale_factor_read_master_req_valid ? scale_factor_read_master_byte_count
+                                    : FEATURE_COUNT * top_pkg::bits_per_precision(msg_fetch_req_precision_q) / 8;
+
+    fetch_tag_msg_rm_resp_ready = (message_fetch_state == MSG_STORE) || scale_factor_read_master_resp_ready;
+
     push_message_queue   = accepting_msg_fetch_resp;
     msg_queue_write_data = fetch_tag_msg_rm_resp_data;
     
@@ -321,19 +425,22 @@ logic trigger_msg_partial_resp;
 assign trigger_msg_partial_resp = (issue_nsb_partial_done_msg_fetch && !issue_nsb_partial_done_msg_fetch_q);
 
 always_comb begin
-    nsb_prefetcher_req_ready = !tag_free && (nsb_prefetcher_req.nodeslot == allocated_nodeslot)
-                                && (adj_queue_manager_ready                        
-                                    || (message_fetch_state == MSG_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) && !adj_queue_empty );
+    nsb_prefetcher_req_ready = !tag_free && (nsb_prefetcher_req.nodeslot == allocated_nodeslot) &&
+                                (nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST ? adj_queue_manager_ready
+                                : nsb_prefetcher_req.req_opcode == top_pkg::SCALE_FACTOR ? scale_factor_fetch_req_ready
+                                : nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES ? ((message_fetch_state == MSG_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) && !adj_queue_empty)
+                                : '0 );
 
     nsb_prefetcher_resp_valid = adj_queue_fetch_resp_valid
-                            || (message_fetch_state == MSG_DONE) || trigger_msg_partial_resp;
+                            || (message_fetch_state == MSG_DONE) || trigger_msg_partial_resp
+                            || scale_factor_fetch_resp_valid;
 
     nsb_prefetcher_resp.nodeslot = allocated_nodeslot;
     nsb_prefetcher_resp.response_type = adj_queue_fetch_resp_valid ? ADJACENCY_LIST
                                         : trigger_msg_partial_resp || (message_fetch_state == MSG_DONE) ? MESSAGES
-                                        : ERROR;
+                                        : FETCH_RESERVED;
 
-    nsb_prefetcher_resp.partial = adj_queue_fetch_resp_partial || trigger_msg_partial_resp;
+    nsb_prefetcher_resp.partial = adj_queue_fetch_resp_partial || trigger_msg_partial_resp || scale_factor_fetch_resp_partial;
 end
 
 // Message Channel interface
