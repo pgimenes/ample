@@ -353,7 +353,8 @@ always_comb begin
     buffer_manager_pkt_dest_col = age_pkg::BUFFER_MANAGER_COLUMN;
 
     // Packets from Aggregation manager
-    router_aggregation_core_ready = !(agc_state == AGC_FSM_UPDATE_ACCS) && !(agc_state == AGC_FSM_SEND_BUFF_MAN);
+    router_aggregation_core_ready = (agc_state == AGC_FSM_IDLE) || (agc_state == AGC_FSM_NODESLOT_ALLOCATION) || (agc_state == AGC_FSM_WAIT_FEATURE_HEAD) || (agc_state == AGC_FSM_WAIT_FEATURE_BODY) || (agc_state == AGC_FSM_WAIT_BUFFER_REQ);
+
     router_aggregation_core_on = router_aggregation_core_ready;
     
     aggregation_core_router_valid = (agc_state == AGC_FSM_SEND_BUFF_MAN);
@@ -406,7 +407,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         nodeslot_allocation_aggregation_function <= router_aggregation_core_data.data.bt_pl [ALLOCATION_PKT_AGGR_FUNC_OFFSET + $bits(top_pkg::AGGREGATION_FUNCTION_e) - 1 : ALLOCATION_PKT_AGGR_FUNC_OFFSET] == 2'd0 ? top_pkg::SUM
                                                 : router_aggregation_core_data.data.bt_pl [ALLOCATION_PKT_AGGR_FUNC_OFFSET + $bits(top_pkg::AGGREGATION_FUNCTION_e) - 1 : ALLOCATION_PKT_AGGR_FUNC_OFFSET] == 2'd1 ? top_pkg::MEAN
                                                 : router_aggregation_core_data.data.bt_pl [ALLOCATION_PKT_AGGR_FUNC_OFFSET + $bits(top_pkg::AGGREGATION_FUNCTION_e) - 1 : ALLOCATION_PKT_AGGR_FUNC_OFFSET] == 2'd2 ? top_pkg::WEIGHTED_SUM
-                                                : RESERVED;
+                                                : AGGR_FUNC_RESERVED;
 
     end
 end

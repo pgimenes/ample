@@ -17,13 +17,14 @@ module aggregation_core_allocator #(
 logic [NUM_CORES-1:0] allocatable_cores;
 
 // TO DO: replace with sequential round robin or multiple-grant round-robin
-onehot_to_binary #(
-    .INPUT_WIDTH    (NUM_CORES)
-) find_first_agc_float32_i (
+rr_arbiter #(
+    .NUM_REQUESTERS (NUM_CORES)
+) arbiter_i (
     .clk            (core_clk),
     .resetn         (resetn),
-    .input_data     (cores_free & allocatable_cores),
-    .output_data    (allocated_core)
+    .request        (cores_free & allocatable_cores),
+    .update_lru     (accept_allocation),
+    .grant_oh       (allocated_core)
 );
 
 // Keep snapshot of allocated aggregation cores when NSB request is accepted
@@ -36,7 +37,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
     
     // When accepting NSB request, AGC has been allocated
     end else if (accept_allocation) begin
-        allocatable_cores[allocated_core] <= '0;
+        allocatable_cores <= allocatable_cores & (~allocated_core);
 
     // When sending response to NSB, aggregation has completed for that nodeslot and AGCs have been cleared
     end else if (deallocation_valid) begin // valid only response

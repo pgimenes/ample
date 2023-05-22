@@ -302,10 +302,10 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
         end else begin
             nsb_nodeslot_node_state_state[nodeslot] <= nodeslot_state_n[nodeslot];
 
-            if ((nodeslot_state[nodeslot] == FETCH_NB_LIST) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::NSB_PREF_ADJACENCY_LIST)) begin
+            if ((nodeslot_state[nodeslot] == FETCH_NB_LIST) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST)) begin
                 fetch_nb_list_resp_received[nodeslot]         <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == FETCH_NEIGHBOURS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::NSB_PREF_MESSAGES)) begin
+            end else if ((nodeslot_state[nodeslot] == FETCH_NEIGHBOURS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::MESSAGES)) begin
                 fetch_nbs_resp_received[nodeslot]             <= 1'b1;
 
             end else if ((nodeslot_state[nodeslot] == AGGR) && nsb_age_resp_valid && (nsb_age_resp.nodeslot == nodeslot)) begin
@@ -330,12 +330,12 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
             end
 
             node_scoreboard_pkg::PROG_DONE: begin
-                nodeslot_state_n[nodeslot] = accepting_prefetch_request && (nsb_prefetcher_req.nodeslot == nodeslot) && (nsb_prefetcher_req.req_opcode == top_pkg::NSB_PREF_ADJACENCY_LIST) ? node_scoreboard_pkg::FETCH_NB_LIST
+                nodeslot_state_n[nodeslot] = accepting_prefetch_request && (nsb_prefetcher_req.nodeslot == nodeslot) && (nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST) ? node_scoreboard_pkg::FETCH_NB_LIST
                                     : node_scoreboard_pkg::PROG_DONE;
             end
 
             node_scoreboard_pkg::FETCH_NB_LIST: begin // move when resp received and pref ready
-                nodeslot_state_n[nodeslot] = fetch_nb_list_resp_received[nodeslot] && accepting_prefetch_request && (nsb_prefetcher_req.nodeslot == nodeslot) && (nsb_prefetcher_req.req_opcode == top_pkg::NSB_PREF_MESSAGES) ? node_scoreboard_pkg::FETCH_NEIGHBOURS
+                nodeslot_state_n[nodeslot] = fetch_nb_list_resp_received[nodeslot] && accepting_prefetch_request && (nsb_prefetcher_req.nodeslot == nodeslot) && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) ? node_scoreboard_pkg::FETCH_NEIGHBOURS
                                     : node_scoreboard_pkg::FETCH_NB_LIST;
             end
 
@@ -482,8 +482,8 @@ always_comb begin : nsb_prefetcher_req_logic
     nsb_prefetcher_req_valid         = |nodeslots_waiting_prefetcher || waiting_weights_fetch_req;
 
     nsb_prefetcher_req.req_opcode    = waiting_weights_fetch_req ? top_pkg::WEIGHTS
-                                        : |(nodeslots_waiting_nb_list_fetch & prefetcher_arbiter_grant_oh) ? top_pkg::NSB_PREF_ADJACENCY_LIST
-                                        : |(nodeslots_waiting_neighbour_fetch & prefetcher_arbiter_grant_oh) ? top_pkg::NSB_PREF_MESSAGES
+                                        : |(nodeslots_waiting_nb_list_fetch & prefetcher_arbiter_grant_oh) ? top_pkg::ADJACENCY_LIST
+                                        : |(nodeslots_waiting_neighbour_fetch & prefetcher_arbiter_grant_oh) ? top_pkg::MESSAGES
                                         : top_pkg::NSB_PREF_RESERVED;
     nsb_prefetcher_req.nodeslot      = prefetcher_arbiter_grant_bin;
     
