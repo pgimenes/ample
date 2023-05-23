@@ -437,6 +437,7 @@ always_comb begin
 
     nsb_prefetcher_resp.nodeslot = allocated_nodeslot;
     nsb_prefetcher_resp.response_type = adj_queue_fetch_resp_valid ? ADJACENCY_LIST
+                                        : scale_factor_fetch_resp_valid ? SCALE_FACTOR
                                         : trigger_msg_partial_resp || (message_fetch_state == MSG_DONE) ? MESSAGES
                                         : FETCH_RESERVED;
 

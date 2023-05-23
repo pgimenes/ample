@@ -533,7 +533,7 @@ axi_read_master #(
 // TO DO: when edge bank implemented, buffer responses from weight/feature/edge banks and send them to NSB in order
 
 always_comb begin 
-    nsb_prefetcher_feature_bank_req_valid = nsb_prefetcher_req_valid && ((nsb_prefetcher_req.req_opcode == ADJACENCY_LIST) || (nsb_prefetcher_req.req_opcode == MESSAGES));
+    nsb_prefetcher_feature_bank_req_valid = nsb_prefetcher_req_valid && ((nsb_prefetcher_req.req_opcode == ADJACENCY_LIST) || (nsb_prefetcher_req.req_opcode == MESSAGES) || (nsb_prefetcher_req.req_opcode == SCALE_FACTOR));
     nsb_prefetcher_weight_bank_req_valid  = nsb_prefetcher_req_valid && (nsb_prefetcher_req.req_opcode == WEIGHTS);
     nsb_prefetcher_req_ready              = (nsb_prefetcher_req.req_opcode == top_pkg::WEIGHTS) ? nsb_prefetcher_weight_bank_req_ready : nsb_prefetcher_feature_bank_req_ready;
     

@@ -357,7 +357,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
 
             node_scoreboard_pkg::FETCH_SCALE_FACTORS: begin // move when resp received and pref ready
                 nodeslot_state_n[nodeslot] = fetch_scale_factors_resp_received[nodeslot] && accepting_prefetch_request && (nsb_prefetcher_req.nodeslot == nodeslot) && (nsb_prefetcher_req.req_opcode == MESSAGES) ? node_scoreboard_pkg::FETCH_NEIGHBOURS
-                                    : node_scoreboard_pkg::FETCH_NB_LIST;
+                                    : node_scoreboard_pkg::FETCH_SCALE_FACTORS;
             end
 
             node_scoreboard_pkg::FETCH_NEIGHBOURS: begin // move when resp received and age ready
