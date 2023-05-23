@@ -55,7 +55,7 @@ class InitManager:
     def map_scale_factors(self):
         for node in self.trained_graph.nx_graph.nodes:
             self.trained_graph.nx_graph.nodes[node]['scale_factors_address'] = len(self.memory_hex)
-            self.memory_hex += self.float_list_to_byte_list(self.trained_graph.nx_graph.nodes[node]['scale_factors'], align=True, alignment=64)
+            self.memory_hex += self.float_list_to_byte_list(self.trained_graph.nx_graph.nodes[node]['scale_factors'], align=True, alignment=64, pad_side='left')
         
         # Set offset for next memory range
         self.offsets['in_messages'] = len(self.memory_hex)
@@ -148,13 +148,19 @@ class InitManager:
             memory_hex += ['00'] * zeros
         return memory_hex
 
-    def float_list_to_byte_list(self, in_list, align=False, alignment=None):
-        hex_list = [struct.pack('!f', i).hex() for i in in_list]
-        hex_list = [s[i:i+2] for s in hex_list for i in range(0, 8, 2)]
+    def float_list_to_byte_list(self, in_list, align=False, alignment=None, pad_side='right'):
+        
+        hex_list, new_elements = [], []
+
+        new_elements = [struct.pack('!f', i).hex() for i in in_list]
+        new_elements = [s[i:i+2] for s in new_elements for i in range(0, 8, 2)]
         if (align and alignment is not None):
-            zeros = (alignment - len(hex_list) % alignment)
+            zeros = (alignment - len(new_elements) % alignment)
             zeros = 0 if (zeros == 64) else zeros
-            hex_list += ['00'] * zeros
+            if (pad_side == 'right'):
+                hex_list = new_elements + ['00'] * zeros
+            elif (pad_side == 'left'):
+                hex_list = ['00'] * zeros + new_elements
         return hex_list
     
     # Graph info for debugging
