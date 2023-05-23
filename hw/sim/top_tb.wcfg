@@ -31,12 +31,16 @@
       <ZoomStartTime time="1937751fs"></ZoomStartTime>
       <ZoomEndTime time="1983502fs"></ZoomEndTime>
       <Cursor1Time time="1975876fs"></Cursor1Time>
+      <ZoomStartTime time="3133608fs"></ZoomStartTime>
+      <ZoomEndTime time="4319109fs"></ZoomEndTime>
+      <Cursor1Time time="3478608fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="295"></NameColumnWidth>
+      <NameColumnWidth column_width="267"></NameColumnWidth>
       <ValueColumnWidth column_width="66"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="42" />
+   <WVObjectSize size="46" />
    <wvobject type="logic" fp_name="/top_tb/sys_clk_i">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -55,6 +59,22 @@
       <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_config_make_valid_lsb_make_valid">
          <obj_property name="ElementShortName">nsb_nodeslot_config_make_valid_lsb_make_valid[31:0]</obj_property>
          <obj_property name="ObjectShortName">nsb_nodeslot_config_make_valid_lsb_make_valid[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_precision_precision[3]">
+         <obj_property name="ElementShortName">[3][1:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_precision_precision[2]">
+         <obj_property name="ElementShortName">[2][1:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_precision_precision[1]">
+         <obj_property name="ElementShortName">[1][1:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_nodeslot_precision_precision[0]">
+         <obj_property name="ElementShortName">[0][1:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][1:0]</obj_property>
       </wvobject>
       <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/node_scoreboard_regbank_i/nsb_nodeslot_config_make_valid_lsb_make_valid[0]">
          <obj_property name="ElementShortName">[0]</obj_property>
@@ -427,6 +447,7 @@
       <obj_property name="label">FETCH_TAG[3]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="isExpanded"></obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[3].fetch_tag_i /push_adj_queue">
          <obj_property name="ElementShortName">push_adj_queue</obj_property>
          <obj_property name="ObjectShortName">push_adj_queue</obj_property>
@@ -659,6 +680,7 @@
    <wvobject type="group" fp_name="group208">
       <obj_property name="label">AGE</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/nsb_age_req_valid">
          <obj_property name="ElementShortName">nsb_age_req_valid</obj_property>
          <obj_property name="ObjectShortName">nsb_age_req_valid</obj_property>
@@ -668,8 +690,8 @@
          <obj_property name="ObjectShortName">.nodeslot[5:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/age_agm_req.ac_count">
-         <obj_property name="ElementShortName">.ac_count[7:0]</obj_property>
-         <obj_property name="ObjectShortName">.ac_count[7:0]</obj_property>
+         <obj_property name="ElementShortName">.ac_count[5:0]</obj_property>
+         <obj_property name="ObjectShortName">.ac_count[5:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/agc_float32_free_mask">
@@ -677,8 +699,8 @@
          <obj_property name="ObjectShortName">agc_float32_free_mask[63:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/allocated_agc_float32">
-         <obj_property name="ElementShortName">allocated_agc_float32[5:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agc_float32[5:0]</obj_property>
+         <obj_property name="ElementShortName">allocated_agc_float32[63:0]</obj_property>
+         <obj_property name="ObjectShortName">allocated_agc_float32[63:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/allocatable_aggregation_cores_float32">
          <obj_property name="ElementShortName">allocatable_aggregation_cores_float32[63:0]</obj_property>
@@ -704,10 +726,27 @@
          <obj_property name="ElementShortName">agm_allocation_oh[63:0]</obj_property>
          <obj_property name="ObjectShortName">agm_allocation_oh[63:0]</obj_property>
       </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/agc_fixed16_allocator/accept_allocation">
+         <obj_property name="ElementShortName">accept_allocation</obj_property>
+         <obj_property name="ObjectShortName">accept_allocation</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/agc_fixed16_allocator/cores_free">
+         <obj_property name="ElementShortName">cores_free[63:0]</obj_property>
+         <obj_property name="ObjectShortName">cores_free[63:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/agc_fixed16_allocator/allocatable_cores">
+         <obj_property name="ElementShortName">allocatable_cores[63:0]</obj_property>
+         <obj_property name="ObjectShortName">allocatable_cores[63:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/agc_fixed16_allocator/allocated_core">
+         <obj_property name="ElementShortName">allocated_core[63:0]</obj_property>
+         <obj_property name="ObjectShortName">allocated_core[63:0]</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group359">
       <obj_property name="label">AGM [0]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[0].agm_i /agm_state">
          <obj_property name="ElementShortName">agm_state[4:0]</obj_property>
          <obj_property name="ObjectShortName">agm_state[4:0]</obj_property>
@@ -722,6 +761,7 @@
    <wvobject type="group" fp_name="group270">
       <obj_property name="label">AGM[1]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[1].agm_i /agm_state">
          <obj_property name="ElementShortName">agm_state[4:0]</obj_property>
          <obj_property name="ObjectShortName">agm_state[4:0]</obj_property>
@@ -772,6 +812,7 @@
    <wvobject type="group" fp_name="group271">
       <obj_property name="label">AGM[2]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[2].agm_i /agm_state">
          <obj_property name="ElementShortName">agm_state[4:0]</obj_property>
          <obj_property name="ObjectShortName">agm_state[4:0]</obj_property>
@@ -798,10 +839,23 @@
          <obj_property name="ElementShortName">router_aggregation_manager_valid</obj_property>
          <obj_property name="ObjectShortName">router_aggregation_manager_valid</obj_property>
       </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[2].agm_i /aggregation_manager_router_valid">
+         <obj_property name="ElementShortName">aggregation_manager_router_valid</obj_property>
+         <obj_property name="ObjectShortName">aggregation_manager_router_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[2].agm_i /aggregation_manager_router_data.data.head_data.x_dest">
+         <obj_property name="ElementShortName">.x_dest[6:0]</obj_property>
+         <obj_property name="ObjectShortName">.x_dest[6:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[2].agm_i /aggregation_manager_router_data.data.head_data.y_dest">
+         <obj_property name="ElementShortName">.y_dest[2:0]</obj_property>
+         <obj_property name="ObjectShortName">.y_dest[2:0]</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group272">
       <obj_property name="label">AGM[3]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[3].agm_i /agm_state">
          <obj_property name="ElementShortName">agm_state[4:0]</obj_property>
          <obj_property name="ObjectShortName">agm_state[4:0]</obj_property>
@@ -820,310 +874,226 @@
          <obj_property name="ElementShortName">buffer_manager_allocation_q[1:0]</obj_property>
          <obj_property name="ObjectShortName">buffer_manager_allocation_q[1:0]</obj_property>
       </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[3].agm_i /aggregation_manager_router_valid">
+         <obj_property name="ElementShortName">aggregation_manager_router_valid</obj_property>
+         <obj_property name="ObjectShortName">aggregation_manager_router_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[3].agm_i /aggregation_manager_router_data.flit_label">
+         <obj_property name="ElementShortName">.flit_label[1:0]</obj_property>
+         <obj_property name="ObjectShortName">.flit_label[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[3].agm_i /aggregation_manager_router_data.data.head_data.x_dest">
+         <obj_property name="ElementShortName">.x_dest[6:0]</obj_property>
+         <obj_property name="ObjectShortName">.x_dest[6:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[3].agm_i /aggregation_manager_router_data.data.head_data.y_dest">
+         <obj_property name="ElementShortName">.y_dest[2:0]</obj_property>
+         <obj_property name="ObjectShortName">.y_dest[2:0]</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group109">
-      <obj_property name="label">AGC[0]</obj_property>
+      <obj_property name="label">FLOAT AGC[0]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /aggregation_core_free">
-         <obj_property name="ElementShortName">aggregation_core_free</obj_property>
-         <obj_property name="ObjectShortName">aggregation_core_free</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /agc_state">
+         <obj_property name="ElementShortName">agc_state[3:0]</obj_property>
+         <obj_property name="ObjectShortName">agc_state[3:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /agc_state">
-         <obj_property name="ElementShortName">agc_state[2:0]</obj_property>
-         <obj_property name="ObjectShortName">agc_state[2:0]</obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /aggregation_core_router_valid">
+         <obj_property name="ElementShortName">aggregation_core_router_valid</obj_property>
+         <obj_property name="ObjectShortName">aggregation_core_router_valid</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /features[4]">
-         <obj_property name="ElementShortName">[4][31:0]</obj_property>
-         <obj_property name="ObjectShortName">[4][31:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /aggregation_core_router_data.data.head_data.x_dest">
+         <obj_property name="ElementShortName">.x_dest[6:0]</obj_property>
+         <obj_property name="ObjectShortName">.x_dest[6:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /features[3]">
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /aggregation_core_router_data.data.head_data.y_dest">
+         <obj_property name="ElementShortName">.y_dest[2:0]</obj_property>
+         <obj_property name="ObjectShortName">.y_dest[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /aggregation_core_router_data.flit_label">
+         <obj_property name="ElementShortName">.flit_label[1:0]</obj_property>
+         <obj_property name="ObjectShortName">.flit_label[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /buffer_manager_pkt_dest_row">
+         <obj_property name="ElementShortName">buffer_manager_pkt_dest_row[2:0]</obj_property>
+         <obj_property name="ObjectShortName">buffer_manager_pkt_dest_row[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /buffer_manager_pkt_dest_col">
+         <obj_property name="ElementShortName">buffer_manager_pkt_dest_col[6:0]</obj_property>
+         <obj_property name="ObjectShortName">buffer_manager_pkt_dest_col[6:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /features[3]">
          <obj_property name="ElementShortName">[3][31:0]</obj_property>
          <obj_property name="ObjectShortName">[3][31:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /features[2]">
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /features[2]">
          <obj_property name="ElementShortName">[2][31:0]</obj_property>
          <obj_property name="ObjectShortName">[2][31:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /features[1]">
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /features[1]">
          <obj_property name="ElementShortName">[1][31:0]</obj_property>
          <obj_property name="ObjectShortName">[1][31:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /features[0]">
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[0].agc_float32_i /features[0]">
          <obj_property name="ElementShortName">[0][31:0]</obj_property>
          <obj_property name="ObjectShortName">[0][31:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group289">
-      <obj_property name="label">AGC[1]</obj_property>
+      <obj_property name="label">FLOAT AGC[1]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /aggregation_core_free">
-         <obj_property name="ElementShortName">aggregation_core_free</obj_property>
-         <obj_property name="ObjectShortName">aggregation_core_free</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[1].agc_float32_i /agc_state">
+         <obj_property name="ElementShortName">agc_state[3:0]</obj_property>
+         <obj_property name="ObjectShortName">agc_state[3:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /agc_state">
-         <obj_property name="ElementShortName">agc_state[2:0]</obj_property>
-         <obj_property name="ObjectShortName">agc_state[2:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /router_aggregation_core_valid">
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[1].agc_float32_i /router_aggregation_core_valid">
          <obj_property name="ElementShortName">router_aggregation_core_valid</obj_property>
          <obj_property name="ObjectShortName">router_aggregation_core_valid</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /head_packet">
-         <obj_property name="ElementShortName">head_packet</obj_property>
-         <obj_property name="ObjectShortName">head_packet</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /aggregation_manager_pkt">
-         <obj_property name="ElementShortName">aggregation_manager_pkt</obj_property>
-         <obj_property name="ObjectShortName">aggregation_manager_pkt</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /correct_pkt_dest">
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[1].agc_float32_i /correct_pkt_dest">
          <obj_property name="ElementShortName">correct_pkt_dest</obj_property>
          <obj_property name="ObjectShortName">correct_pkt_dest</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /packet_dest_row">
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[1].agc_float32_i /packet_dest_row">
          <obj_property name="ElementShortName">packet_dest_row[2:0]</obj_property>
          <obj_property name="ObjectShortName">packet_dest_row[2:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /packet_dest_col">
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[1].agc_float32_i /packet_dest_col">
          <obj_property name="ElementShortName">packet_dest_col[6:0]</obj_property>
          <obj_property name="ObjectShortName">packet_dest_col[6:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /sent_flits_counter">
-         <obj_property name="ElementShortName">sent_flits_counter[2:0]</obj_property>
-         <obj_property name="ObjectShortName">sent_flits_counter[2:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[1].agc_float32_i /Y_COORD">
+         <obj_property name="ElementShortName">Y_COORD[31:0]</obj_property>
+         <obj_property name="ObjectShortName">Y_COORD[31:0]</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /aggregation_core_router_valid">
-         <obj_property name="ElementShortName">aggregation_core_router_valid</obj_property>
-         <obj_property name="ObjectShortName">aggregation_core_router_valid</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /aggregation_core_router_data.data.bt_pl">
-         <obj_property name="ElementShortName">.bt_pl[83:0]</obj_property>
-         <obj_property name="ObjectShortName">.bt_pl[83:0]</obj_property>
-         <obj_property name="Radix">BINARYRADIX</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /aggregation_core_router_data.data.head_data.x_dest">
-         <obj_property name="ElementShortName">.x_dest[6:0]</obj_property>
-         <obj_property name="ObjectShortName">.x_dest[6:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /aggregation_core_router_data.data.head_data.y_dest">
-         <obj_property name="ElementShortName">.y_dest[2:0]</obj_property>
-         <obj_property name="ObjectShortName">.y_dest[2:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /features">
-         <obj_property name="ElementShortName">features[15:0][31:0]</obj_property>
-         <obj_property name="ObjectShortName">features[15:0][31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /bm_chosen_data">
-         <obj_property name="ElementShortName">bm_chosen_data[63:0]</obj_property>
-         <obj_property name="ObjectShortName">bm_chosen_data[63:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /buffer_manager_pkt_dest_row">
-         <obj_property name="ElementShortName">buffer_manager_pkt_dest_row[2:0]</obj_property>
-         <obj_property name="ObjectShortName">buffer_manager_pkt_dest_row[2:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[1].agc_float32_i /buffer_manager_pkt_dest_col">
-         <obj_property name="ElementShortName">buffer_manager_pkt_dest_col[6:0]</obj_property>
-         <obj_property name="ObjectShortName">buffer_manager_pkt_dest_col[6:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[1].agc_float32_i /X_COORD">
+         <obj_property name="ElementShortName">X_COORD[31:0]</obj_property>
+         <obj_property name="ObjectShortName">X_COORD[31:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group290">
-      <obj_property name="label">AGC[2]</obj_property>
+      <obj_property name="label">FLOAT AGC[2]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[2].agc_float32_i /aggregation_core_free">
-         <obj_property name="ElementShortName">aggregation_core_free</obj_property>
-         <obj_property name="ObjectShortName">aggregation_core_free</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[2].agc_float32_i /agc_state">
-         <obj_property name="ElementShortName">agc_state[2:0]</obj_property>
-         <obj_property name="ObjectShortName">agc_state[2:0]</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[2].agc_float32_i /agc_state">
+         <obj_property name="ElementShortName">agc_state[3:0]</obj_property>
+         <obj_property name="ObjectShortName">agc_state[3:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group291">
-      <obj_property name="label">AGC[3]</obj_property>
+      <obj_property name="label">FLOAT AGC[3]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[3].agc_float32_i /aggregation_core_free">
-         <obj_property name="ElementShortName">aggregation_core_free</obj_property>
-         <obj_property name="ObjectShortName">aggregation_core_free</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\float32_row_gen[0].float32_col_gen[3].agc_float32_i /agc_state">
+         <obj_property name="ElementShortName">agc_state[3:0]</obj_property>
+         <obj_property name="ObjectShortName">agc_state[3:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[3].agc_float32_i /agc_state">
-         <obj_property name="ElementShortName">agc_state[2:0]</obj_property>
-         <obj_property name="ObjectShortName">agc_state[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="group" fp_name="group374">
+      <obj_property name="label">FIXED_16 AGC [0]</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /agc_state">
+         <obj_property name="ElementShortName">agc_state[3:0]</obj_property>
+         <obj_property name="ObjectShortName">agc_state[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /features[3]">
+         <obj_property name="ElementShortName">[3][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][15:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /features[2]">
+         <obj_property name="ElementShortName">[2][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][15:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /features[1]">
+         <obj_property name="ElementShortName">[1][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][15:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /features[0]">
+         <obj_property name="ElementShortName">[0][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][15:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /upsampled_features[3]">
+         <obj_property name="ElementShortName">[3][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /upsampled_features[2]">
+         <obj_property name="ElementShortName">[2][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /upsampled_features[1]">
+         <obj_property name="ElementShortName">[1][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /upsampled_features[0]">
+         <obj_property name="ElementShortName">[0][31:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group375">
+      <obj_property name="label">FIXED_16 AGC [1]</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[17].agc_fixed16_i /agc_state">
+         <obj_property name="ElementShortName">agc_state[3:0]</obj_property>
+         <obj_property name="ObjectShortName">agc_state[3:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group374">
+      <obj_property name="label">FIXED_16 AGC[2]</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[18].agc_fixed16_i /agc_state">
+         <obj_property name="ElementShortName">agc_state[3:0]</obj_property>
+         <obj_property name="ObjectShortName">agc_state[3:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group266">
       <obj_property name="label">BM[0]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /bm_state">
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[0].buffer_manager_i /bm_state">
          <obj_property name="ElementShortName">bm_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">bm_state[2:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /allocated_agm_q">
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[0].buffer_manager_i /allocated_agm_q">
          <obj_property name="ElementShortName">allocated_agm_q[63:0]</obj_property>
          <obj_property name="ObjectShortName">allocated_agm_q[63:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /agc_done">
-         <obj_property name="ElementShortName">agc_done[31:0]</obj_property>
-         <obj_property name="ObjectShortName">agc_done[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /allocated_agcs_x_coords_q">
-         <obj_property name="ElementShortName">allocated_agcs_x_coords_q[31:0][6:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agcs_x_coords_q[31:0][6:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /allocated_agcs_y_coords_q">
-         <obj_property name="ElementShortName">allocated_agcs_y_coords_q[31:0][2:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agcs_y_coords_q[31:0][2:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /allocated_agcs_count_q">
-         <obj_property name="ElementShortName">allocated_agcs_count_q[4:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agcs_count_q[4:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /agc_done">
-         <obj_property name="ElementShortName">agc_done[31:0]</obj_property>
-         <obj_property name="ObjectShortName">agc_done[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /flit_counter[0]">
-         <obj_property name="ElementShortName">[0][3:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][3:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /buffer_manager_router_valid">
-         <obj_property name="ElementShortName">buffer_manager_router_valid</obj_property>
-         <obj_property name="ObjectShortName">buffer_manager_router_valid</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[0].buffer_manager_i /buffer_manager_router_data.flit_label">
-         <obj_property name="ElementShortName">.flit_label[1:0]</obj_property>
-         <obj_property name="ObjectShortName">.flit_label[1:0]</obj_property>
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[0].buffer_manager_i /router_buffer_manager_valid">
+         <obj_property name="ElementShortName">router_buffer_manager_valid</obj_property>
+         <obj_property name="ObjectShortName">router_buffer_manager_valid</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group293">
       <obj_property name="label">BM[1]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /bm_state">
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[1].buffer_manager_i /bm_state">
          <obj_property name="ElementShortName">bm_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">bm_state[2:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /allocated_agm_q">
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[1].buffer_manager_i /allocated_agm_q">
          <obj_property name="ElementShortName">allocated_agm_q[63:0]</obj_property>
          <obj_property name="ObjectShortName">allocated_agm_q[63:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /agc_done">
-         <obj_property name="ElementShortName">agc_done[31:0]</obj_property>
-         <obj_property name="ObjectShortName">agc_done[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /allocated_agcs_x_coords_q">
-         <obj_property name="ElementShortName">allocated_agcs_x_coords_q[31:0][6:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agcs_x_coords_q[31:0][6:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /allocated_agcs_y_coords_q">
-         <obj_property name="ElementShortName">allocated_agcs_y_coords_q[31:0][2:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agcs_y_coords_q[31:0][2:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /allocated_agcs_count_q">
-         <obj_property name="ElementShortName">allocated_agcs_count_q[4:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agcs_count_q[4:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /allocated_agcs_oh">
-         <obj_property name="ElementShortName">allocated_agcs_oh[31:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agcs_oh[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /allocated_agcs">
-         <obj_property name="ElementShortName">allocated_agcs[31:0]</obj_property>
-         <obj_property name="ObjectShortName">allocated_agcs[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /agc_done">
-         <obj_property name="ElementShortName">agc_done[31:0]</obj_property>
-         <obj_property name="ObjectShortName">agc_done[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /agc_source_oh">
-         <obj_property name="ElementShortName">agc_source_oh[31:0]</obj_property>
-         <obj_property name="ObjectShortName">agc_source_oh[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /flit_counter[0]">
-         <obj_property name="ElementShortName">[0][3:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][3:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /router_buffer_manager_valid">
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[1].buffer_manager_i /router_buffer_manager_valid">
          <obj_property name="ElementShortName">router_buffer_manager_valid</obj_property>
          <obj_property name="ObjectShortName">router_buffer_manager_valid</obj_property>
       </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /router_buffer_manager_on">
-         <obj_property name="ElementShortName">router_buffer_manager_on</obj_property>
-         <obj_property name="ObjectShortName">router_buffer_manager_on</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /router_buffer_manager_ready">
-         <obj_property name="ElementShortName">router_buffer_manager_ready</obj_property>
-         <obj_property name="ObjectShortName">router_buffer_manager_ready</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /received_packet_source_row">
-         <obj_property name="ElementShortName">received_packet_source_row[2:0]</obj_property>
-         <obj_property name="ObjectShortName">received_packet_source_row[2:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /received_packet_source_col">
-         <obj_property name="ElementShortName">received_packet_source_col[6:0]</obj_property>
-         <obj_property name="ObjectShortName">received_packet_source_col[6:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /buffer_manager_router_valid">
-         <obj_property name="ElementShortName">buffer_manager_router_valid</obj_property>
-         <obj_property name="ObjectShortName">buffer_manager_router_valid</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /buffer_manager_router_data.flit_label">
-         <obj_property name="ElementShortName">.flit_label[1:0]</obj_property>
-         <obj_property name="ObjectShortName">.flit_label[1:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk4[1].buffer_manager_i /done_head_sent">
-         <obj_property name="ElementShortName">done_head_sent</obj_property>
-         <obj_property name="ObjectShortName">done_head_sent</obj_property>
+   </wvobject>
+   <wvobject type="group" fp_name="group362">
+      <obj_property name="label">BM[2]</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[2].buffer_manager_i /bm_state">
+         <obj_property name="ElementShortName">bm_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">bm_state[2:0]</obj_property>
       </wvobject>
    </wvobject>
-   <wvobject type="group" fp_name="group245">
-      <obj_property name="label">Feature aggregator [0]</obj_property>
+   <wvobject type="group" fp_name="group363">
+      <obj_property name="label">BM[3]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /core_clk">
-         <obj_property name="ElementShortName">core_clk</obj_property>
-         <obj_property name="ObjectShortName">core_clk</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /accumulator">
-         <obj_property name="ElementShortName">accumulator[31:0]</obj_property>
-         <obj_property name="ObjectShortName">accumulator[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /in_feature_valid">
-         <obj_property name="ElementShortName">in_feature_valid</obj_property>
-         <obj_property name="ObjectShortName">in_feature_valid</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /in_feature_ready">
-         <obj_property name="ElementShortName">in_feature_ready</obj_property>
-         <obj_property name="ObjectShortName">in_feature_ready</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /feature_updated">
-         <obj_property name="ElementShortName">feature_updated</obj_property>
-         <obj_property name="ObjectShortName">feature_updated</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /sum_aggregator_in_feature_valid">
-         <obj_property name="ElementShortName">sum_aggregator_in_feature_valid</obj_property>
-         <obj_property name="ObjectShortName">sum_aggregator_in_feature_valid</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /in_feature">
-         <obj_property name="ElementShortName">in_feature[31:0]</obj_property>
-         <obj_property name="ObjectShortName">in_feature[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /sum_aggregator_out_valid">
-         <obj_property name="ElementShortName">sum_aggregator_out_valid</obj_property>
-         <obj_property name="ObjectShortName">sum_aggregator_out_valid</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /sum_aggregator_out_feature">
-         <obj_property name="ElementShortName">sum_aggregator_out_feature[31:0]</obj_property>
-         <obj_property name="ObjectShortName">sum_aggregator_out_feature[31:0]</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /feature_accumulation_count">
-         <obj_property name="ElementShortName">feature_accumulation_count[9:0]</obj_property>
-         <obj_property name="ObjectShortName">feature_accumulation_count[9:0]</obj_property>
-      </wvobject>
-      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /passthrough_aggregator_out_valid">
-         <obj_property name="ElementShortName">passthrough_aggregator_out_valid</obj_property>
-         <obj_property name="ObjectShortName">passthrough_aggregator_out_valid</obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk2[0].genblk1[0].agc_float32_i /\genblk1[0].feature_aggregator_i /aggregation_function_sel">
-         <obj_property name="ElementShortName">aggregation_function_sel[1:0]</obj_property>
-         <obj_property name="ObjectShortName">aggregation_function_sel[1:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[3].buffer_manager_i /bm_state">
+         <obj_property name="ElementShortName">bm_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">bm_state[2:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group158">
@@ -1285,7 +1255,6 @@
    <wvobject type="group" fp_name="group385">
       <obj_property name="label">Aggregation Buffer</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_buffer_i/\genblk1[0].slot_i /write_enable">
          <obj_property name="ElementShortName">write_enable</obj_property>
          <obj_property name="ObjectShortName">write_enable</obj_property>
@@ -1314,7 +1283,6 @@
    <wvobject type="group" fp_name="group397">
       <obj_property name="label">Systolic Module [0]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="logic" fp_name="/top_tb/top_i/transformation_engine_i/pulse_systolic_module">
          <obj_property name="ElementShortName">pulse_systolic_module</obj_property>
          <obj_property name="ObjectShortName">pulse_systolic_module</obj_property>
@@ -1472,7 +1440,6 @@
    <wvobject type="group" fp_name="group359">
       <obj_property name="label">Transformation Buffer</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="vbus" fp_name="vbus484">
          <obj_property name="label">write_enable</obj_property>
          <obj_property name="DisplayName">label</obj_property>

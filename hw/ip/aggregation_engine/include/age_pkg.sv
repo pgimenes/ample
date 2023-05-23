@@ -6,7 +6,16 @@ package age_pkg;
 // Float 32 Aggregation Cores
 parameter AGC_FLOAT32_ROWS = 4;
 parameter AGC_FLOAT32_COLS = 16;
+parameter AGC_FLOAT32_COL_OFFSET = 0;
 parameter AGC_COUNT_FLOAT32 = AGC_FLOAT32_ROWS * AGC_FLOAT32_COLS;
+
+// Fixed 16 Aggregation Cores
+parameter AGC_FIXED16_ROWS = 4;
+parameter AGC_FIXED16_COLS = 16;
+parameter AGC_FIXED16_COL_OFFSET = 16;
+parameter AGC_COUNT_FIXED16 = AGC_FIXED16_ROWS * AGC_FIXED16_COLS;
+
+parameter AGC_UNUSED_COLS_OFFSET = 32;
 
 // Total Aggregation Cores
 parameter AGC_ROWS = 4;
@@ -33,24 +42,29 @@ parameter BUFFER_MANAGER_COLUMN = age_pkg::MESH_COLS - 1;
 parameter PAYLOAD_DATA_WIDTH = 64;
 parameter MESH_NODE_ID_WIDTH = $clog2(MESH_ROWS) + $clog2(MESH_COLS); // = 12
 
-parameter MAX_AC_PER_NODE = 32;
+parameter MAX_AGC_PER_NODE = top_pkg::MAX_FEATURE_COUNT / 16;
 
 // Types
 // -------------------------------------------------------------------------------------
 
 typedef struct packed {
     top_pkg::NSB_AGE_REQ_t nsb_req;
-    logic [MAX_AC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] coords_x;
-    logic [MAX_AC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] coords_y;
-    logic [$clog2(TOTAL_AGGREGATION_CORES)-1:0] ac_count;
+    
+    // Maximum number of AGCs per precision group is for float
+    // So mask of allocated cores needs to have width of AGC_COUNT_FLOAT32
+    logic [AGC_COUNT_FLOAT32-1:0] allocated_cores;
+    logic [$clog2(MAX_AGC_PER_NODE)-1:0] ac_count;
+    
+    logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] coords_x;
+    logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] coords_y;
 } AGE_AGM_REQ_t;
 
 typedef struct packed {
     logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0]     nodeslot;
     logic [$clog2(TOTAL_AGGREGATION_MANAGERS)-1:0]      aggregation_manager;
     
-    logic [MAX_AC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] allocated_agcs_x_coords;
-    logic [MAX_AC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] allocated_agcs_y_coords;
+    logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] allocated_agcs_x_coords;
+    logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] allocated_agcs_y_coords;
     logic [$clog2(TOTAL_AGGREGATION_CORES)-1:0]         allocated_agcs_count;
 } AGE_BUFF_MAN_ALLOC_t;
 

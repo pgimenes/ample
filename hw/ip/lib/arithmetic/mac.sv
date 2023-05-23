@@ -43,6 +43,8 @@ module mac #(
     input  logic                              overwrite
 );
 
+// TO DO: define bfp_msfp12_s, fv_fixed_point_s types
+
 `ifdef FLOAT_MAC
 
     float_mac #(

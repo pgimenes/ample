@@ -1,7 +1,8 @@
 import top_pkg::*;
 
 module passthrough_aggregator #(
-    parameter DATA_WIDTH = 32
+    parameter DATA_WIDTH = 32,
+    parameter PRECISION = "FLOAT_32"
 ) (
     input  logic core_clk,
     input  logic resetn,
