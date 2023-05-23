@@ -8,17 +8,18 @@ from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph
 import os
 
 '''
-    Build the Planetoid graphs with requested embedding size and generate memory file.
+    Build graphs with requested embedding size and generate memory file.
 '''
 
 graph_mapping = {
     'matrix': {
         'class': MatrixGraph,
-        'options': {'feature_count': 4},
+        'options': {'feature_count': 4,
+                    'graph_precision': 'FLOAT_32'},
     },
     'karate': { 
         'class': KarateClubGraph,
-        'options': {'feature_count': 64}
+        'options': {'feature_count': 16}
     },
     'pubmed': { 'class': lambda: PlanetoidGraph(name="Pubmed")},
     'cora': { 'class': lambda: PlanetoidGraph(name="Cora")},
@@ -27,7 +28,6 @@ graph_mapping = {
     'flickr': { 'class': FlickrGraph },
     'yelp': { 'class': YelpGraph }
 }
-
 
 def main(args):
     for arg, graph_info in graph_mapping.items():
@@ -50,15 +50,12 @@ def apply_options(graph, options):
         setattr(graph, key, value)
 
 def run_graph(graph, random_weights=True):
-    graph.random_embeddings(feature_size=graph.feature_count)
-
-    if (random_weights):
-        graph.random_weights()
+    init_manager = InitManager(graph, base_path=args.base_path)
+    
+    init_manager.trained_graph.random_embeddings(feature_size=graph.feature_count)
+    init_manager.trained_graph.random_weights()
 
     # Initialize Memory
-
-    base_path = os.environ.get("FYP_DIR") + "/hw/sim"
-    init_manager = InitManager(graph, base_path=base_path)
     init_manager.map_memory()
 
     # Dump
@@ -76,6 +73,9 @@ def parse_arguments():
     parser.add_argument('--reddit', action='store_true', help='Use Reddit graph')
     parser.add_argument('--flickr', action='store_true', help='Use Flickr graph')
     parser.add_argument('--yelp', action='store_true', help='Use Yelp graph')
+    default_base_path = os.environ.get("FYP_DIR") + "/hw/sim"
+    parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $FYP_DIR/hw/sim)')
+    
     return parser.parse_args()
 
 if (__name__ == "__main__"):

@@ -346,7 +346,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
             end
 
             node_scoreboard_pkg::PROG_DONE: begin
-                nodeslot_state_n[nodeslot] = accepting_prefetch_request && (nsb_prefetcher_req.nodeslot == nodeslot) && (nsb_prefetcher_req.req_opcode == ADJACENCY_LIST) ? node_scoreboard_pkg::FETCH_NB_LIST
+                nodeslot_state_n[nodeslot] = accepting_prefetch_request && (nsb_prefetcher_req.nodeslot == nodeslot) && (nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST) ? node_scoreboard_pkg::FETCH_NB_LIST
                                     : node_scoreboard_pkg::PROG_DONE;
             end
 
@@ -545,9 +545,9 @@ onehot_to_binary #(
 
 assign nsb_age_req_valid                = |nodeslots_waiting_aggregation;
 assign nsb_age_req.nodeslot             = age_arbiter_grant_bin;
-assign nsb_age_req.node_precision       = top_pkg::FLOAT_32; // TO DO: implement (MS3)
-assign nsb_age_req.aggregation_function = top_pkg::SUM; // TO DO: implement (MS3). Layer wise or node wise?
-assign nsb_age_req.fetch_tag = nsb_nodeslot_allocated_fetch_tag_fetch_tag[age_arbiter_grant_bin];
+assign nsb_age_req.node_precision       = NODE_PRECISION_e'(nsb_nodeslot_precision_precision[age_arbiter_grant_bin]);
+assign nsb_age_req.aggregation_function = AGGREGATION_FUNCTION_e'(nsb_nodeslot_aggregation_function_value[age_arbiter_grant_bin]);
+assign nsb_age_req.fetch_tag            = nsb_nodeslot_allocated_fetch_tag_fetch_tag[age_arbiter_grant_bin];
 
 // Transformation requests
 // ------------------------------------------------------------
