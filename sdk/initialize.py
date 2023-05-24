@@ -14,7 +14,7 @@ import os
 graph_mapping = {
     'matrix': {
         'class': MatrixGraph,
-        'options': {'feature_count': 4,
+        'options': {'feature_count': 64,
                     'graph_precision': 'mixed'},
     },
     'karate': { 

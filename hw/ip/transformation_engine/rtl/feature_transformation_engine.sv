@@ -6,36 +6,36 @@ module feature_transformation_engine #(
     parameter AXI_ADDR_WIDTH = 32,
     parameter MATRIX_N = 16
 ) (
-    input logic core_clk,
-    input logic resetn,
+    input logic                                                                                       core_clk,
+    input logic                                                                                       resetn,
 
     // Regbank Slave AXI interface
-    input  logic [AXI_ADDR_WIDTH-1:0]             s_axi_awaddr,
-    input  logic [2:0]                            s_axi_awprot,
-    input  logic                                  s_axi_awvalid,
-    output logic                                  s_axi_awready,
-    input  logic [31:0]                           s_axi_wdata,
-    input  logic [3:0]                            s_axi_wstrb,
-    input  logic                                  s_axi_wvalid,
-    output logic                                  s_axi_wready,
-    input  logic [AXI_ADDR_WIDTH-1:0]             s_axi_araddr,
-    input  logic [2:0]                            s_axi_arprot,
-    input  logic                                  s_axi_arvalid,
-    output logic                                  s_axi_arready,
-    output logic [31:0]                           s_axi_rdata,
-    output logic [1:0]                            s_axi_rresp,
-    output logic                                  s_axi_rvalid,
-    input  logic                                  s_axi_rready,
-    output logic [1:0]                            s_axi_bresp,
-    output logic                                  s_axi_bvalid,
-    input  logic                                  s_axi_bready,
+    input  logic [AXI_ADDR_WIDTH-1:0]                                                                 s_axi_awaddr,
+    input  logic [2:0]                                                                                s_axi_awprot,
+    input  logic                                                                                      s_axi_awvalid,
+    output logic                                                                                      s_axi_awready,
+    input  logic [31:0]                                                                               s_axi_wdata,
+    input  logic [3:0]                                                                                s_axi_wstrb,
+    input  logic                                                                                      s_axi_wvalid,
+    output logic                                                                                      s_axi_wready,
+    input  logic [AXI_ADDR_WIDTH-1:0]                                                                 s_axi_araddr,
+    input  logic [2:0]                                                                                s_axi_arprot,
+    input  logic                                                                                      s_axi_arvalid,
+    output logic                                                                                      s_axi_arready,
+    output logic [31:0]                                                                               s_axi_rdata,
+    output logic [1:0]                                                                                s_axi_rresp,
+    output logic                                                                                      s_axi_rvalid,
+    input  logic                                                                                      s_axi_rready,
+    output logic [1:0]                                                                                s_axi_bresp,
+    output logic                                                                                      s_axi_bvalid,
+    input  logic                                                                                      s_axi_bready,
 
     // Node Scoreboard -> Transformation Engine Interface
-    input  logic                                  nsb_fte_req_valid,
-    output logic                                  nsb_fte_req_ready,
-    input  NSB_FTE_REQ_t                          nsb_fte_req,
-    output logic                                  nsb_fte_resp_valid, // valid only for now
-    output NSB_FTE_RESP_t                         nsb_fte_resp,
+    input  logic                                                                                      nsb_fte_req_valid,
+    output logic                                                                                      nsb_fte_req_ready,
+    input  NSB_FTE_REQ_t                                                                              nsb_fte_req,
+    output logic                                                                                      nsb_fte_resp_valid, // valid only for now
+    output NSB_FTE_RESP_t                                                                             nsb_fte_resp,
 
     // Aggregation Buffer Interface
     output logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              fte_aggregation_buffer_pop,
@@ -44,18 +44,17 @@ module feature_transformation_engine #(
     input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_fte_slot_free,
 
     // Weight Channels: FTE -> Prefetcher Weight Bank (REQ)
-    output logic                                              weight_channel_req_valid,
-    input  logic                                              weight_channel_req_ready,
-    output WEIGHT_CHANNEL_REQ_t                               weight_channel_req,
+    output logic                                                                                      weight_channel_req_valid,
+    input  logic                                                                                      weight_channel_req_ready,
+    output WEIGHT_CHANNEL_REQ_t                                                                       weight_channel_req,
+    input  logic                                                                                      weight_channel_resp_valid,
+    output logic                                                                                      weight_channel_resp_ready,
+    input  WEIGHT_CHANNEL_RESP_t                                                                      weight_channel_resp,
 
-    input  logic                                              weight_channel_resp_valid,
-    output logic                                              weight_channel_resp_ready,
-    input  WEIGHT_CHANNEL_RESP_t                              weight_channel_resp,
-
-    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                 fte_transformation_buffer_write_enable,
-    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0] fte_transformation_buffer_write_address,
-    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]         fte_transformation_buffer_write_data,
-    input  logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                 transformation_buffer_slot_free
+    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    fte_transformation_buffer_write_enable,
+    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0]    fte_transformation_buffer_write_address,
+    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]            fte_transformation_buffer_write_data,
+    input  logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_slot_free
 
 );
 
