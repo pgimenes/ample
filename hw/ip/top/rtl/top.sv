@@ -27,48 +27,7 @@ module top
     output logic [31 : 0]                 host_axil_rdata,
     output logic [1 : 0]                  host_axil_rresp,
     output logic [0 : 0]                  host_axil_rvalid,
-
-    // TOP -> AXI Memory Interconnect (for TB programming)
-    input logic [3:0]                     top_axi_interconnect_axi_awid,
-    input logic [33:0]                    top_axi_interconnect_axi_awaddr,
-    input logic [7:0]                     top_axi_interconnect_axi_awlen,
-    input logic [2:0]                     top_axi_interconnect_axi_awsize,
-    input logic [1:0]                     top_axi_interconnect_axi_awburst,
-    input logic [0:0]                     top_axi_interconnect_axi_awlock,
-    input logic [3:0]                     top_axi_interconnect_axi_awcache,
-    input logic [2:0]                     top_axi_interconnect_axi_awprot,
-    input logic [3:0]                     top_axi_interconnect_axi_awqos,
-    input logic                           top_axi_interconnect_axi_awvalid,
-    output logic                          top_axi_interconnect_axi_awready,
-    input logic [511:0]                   top_axi_interconnect_axi_wdata,
-    input logic [63:0]                    top_axi_interconnect_axi_wstrb,
-    input logic                           top_axi_interconnect_axi_wlast,
-    input logic                           top_axi_interconnect_axi_wvalid,
-    output logic                          top_axi_interconnect_axi_wready,
-    
-    output logic [3:0]                    top_axi_interconnect_axi_bid,
-    output logic [1:0]                    top_axi_interconnect_axi_bresp,
-    output logic                          top_axi_interconnect_axi_bvalid,
-    input logic                           top_axi_interconnect_axi_bready,
-    
-    input logic [3:0]                     top_axi_interconnect_axi_arid,
-    input logic [33:0]                    top_axi_interconnect_axi_araddr,
-    input logic [7:0]                     top_axi_interconnect_axi_arlen,
-    input logic [2:0]                     top_axi_interconnect_axi_arsize,
-    input logic [1:0]                     top_axi_interconnect_axi_arburst,
-    input logic [0:0]                     top_axi_interconnect_axi_arlock,
-    input logic [3:0]                     top_axi_interconnect_axi_arcache,
-    input logic [2:0]                     top_axi_interconnect_axi_arprot,
-    input logic [3:0]                     top_axi_interconnect_axi_arqos,
-    input logic                           top_axi_interconnect_axi_arvalid,
-    output logic                          top_axi_interconnect_axi_arready,
-    output logic [3:0]                    top_axi_interconnect_axi_rid,
-    output logic [511:0]                  top_axi_interconnect_axi_rdata,
-    output logic [1:0]                    top_axi_interconnect_axi_rresp,
-    output logic                          top_axi_interconnect_axi_rlast,
-    output logic                          top_axi_interconnect_axi_rvalid,
-    input logic                           top_axi_interconnect_axi_rready,
-    
+       
     // AXI Memory Interconnect -> Memory (Routed to DRAM Controller if `DRAM_CONTROLLER defined)
     output logic  [7:0]                   c0_ddr4_s_axi_awid,
     output logic  [33:0]                  c0_ddr4_s_axi_awaddr,
@@ -165,12 +124,12 @@ logic [7 : 0]                     axil_interconnect_m_axi_rresp;
 logic [3 : 0]                     axil_interconnect_m_axi_rvalid;
 logic [3 : 0]                     axil_interconnect_m_axi_rready;
 
-
+`ifdef DRAM_CONTROLLER
 // Debug Bus
 logic [511:0]                         dbg_bus;
+`endif
 
 logic c0_ddr4_reset_n_int;
-
 assign c0_ddr4_reset_n = c0_ddr4_reset_n_int;
 
 // Prefetcher Adj RM -> AXI Memory Interconnect (Read Only)
@@ -333,6 +292,10 @@ logic S00_AXI_ARESET_OUT_N;
 logic S01_AXI_ARESET_OUT_N;
 logic S02_AXI_ARESET_OUT_N;
 logic S03_AXI_ARESET_OUT_N;
+logic S04_AXI_ARESET_OUT_N;
+logic S05_AXI_ARESET_OUT_N;
+logic S06_AXI_ARESET_OUT_N;
+logic S07_AXI_ARESET_OUT_N;
 logic M00_AXI_ARESET_OUT_N;
 
 // NSB -> Aggregation Engine Interface
@@ -1032,43 +995,43 @@ axi_memory_interconnect axi_memory_interconnect_i (
     .S02_AXI_ACLK                 (sys_clk),                  // input wire S02_AXI_ACLK
     .S02_AXI_ARESET_OUT_N         (S02_AXI_ARESET_OUT_N),  // output wire S02_AXI_ARESET_OUT_N
 
-    .S02_AXI_AWID                 (top_axi_interconnect_axi_awid),                  // input wire [0 : 0] S02_AXI_AWID
-    .S02_AXI_AWADDR               (top_axi_interconnect_axi_awaddr),              // input wire [33 : 0] S02_AXI_AWADDR
-    .S02_AXI_AWLEN                (top_axi_interconnect_axi_awlen),                // input wire [7 : 0] S02_AXI_AWLEN
-    .S02_AXI_AWSIZE               (top_axi_interconnect_axi_awsize),              // input wire [2 : 0] S02_AXI_AWSIZE
-    .S02_AXI_AWBURST              (top_axi_interconnect_axi_awburst),            // input wire [1 : 0] S02_AXI_AWBURST
-    .S02_AXI_AWLOCK               (top_axi_interconnect_axi_awlock),              // input wire S02_AXI_AWLOCK
-    .S02_AXI_AWCACHE              (top_axi_interconnect_axi_awcache),            // input wire [3 : 0] S02_AXI_AWCACHE
-    .S02_AXI_AWPROT               (top_axi_interconnect_axi_awprot),              // input wire [2 : 0] S02_AXI_AWPROT
-    .S02_AXI_AWQOS                (top_axi_interconnect_axi_awqos),                // input wire [3 : 0] S02_AXI_AWQOS
-    .S02_AXI_AWVALID              (top_axi_interconnect_axi_awvalid),            // input wire S02_AXI_AWVALID
-    .S02_AXI_AWREADY              (top_axi_interconnect_axi_awready),            // output wire S02_AXI_AWREADY
-    .S02_AXI_WDATA                (top_axi_interconnect_axi_wdata),                // input wire [511 : 0] S02_AXI_WDATA
-    .S02_AXI_WSTRB                (top_axi_interconnect_axi_wstrb),                // input wire [63 : 0] S02_AXI_WSTRB
-    .S02_AXI_WLAST                (top_axi_interconnect_axi_wlast),                // input wire S02_AXI_WLAST
-    .S02_AXI_WVALID               (top_axi_interconnect_axi_wvalid),              // input wire S02_AXI_WVALID
-    .S02_AXI_WREADY               (top_axi_interconnect_axi_wready),              // output wire S02_AXI_WREADY
-    .S02_AXI_BID                  (top_axi_interconnect_axi_bid),                    // output wire [0 : 0] S02_AXI_BID
-    .S02_AXI_BRESP                (top_axi_interconnect_axi_bresp),                // output wire [1 : 0] S02_AXI_BRESP
-    .S02_AXI_BVALID               (top_axi_interconnect_axi_bvalid),              // output wire S02_AXI_BVALID
-    .S02_AXI_BREADY               (top_axi_interconnect_axi_bready),              // input wire S02_AXI_BREADY
-    .S02_AXI_ARID                 (top_axi_interconnect_axi_arid),                  // input wire [0 : 0] S02_AXI_ARID
-    .S02_AXI_ARADDR               (top_axi_interconnect_axi_araddr),              // input wire [33 : 0] S02_AXI_ARADDR
-    .S02_AXI_ARLEN                (top_axi_interconnect_axi_arlen),                // input wire [7 : 0] S02_AXI_ARLEN
-    .S02_AXI_ARSIZE               (top_axi_interconnect_axi_arsize),              // input wire [2 : 0] S02_AXI_ARSIZE
-    .S02_AXI_ARBURST              (top_axi_interconnect_axi_arburst),            // input wire [1 : 0] S02_AXI_ARBURST
-    .S02_AXI_ARLOCK               (top_axi_interconnect_axi_arlock),              // input wire S02_AXI_ARLOCK
-    .S02_AXI_ARCACHE              (top_axi_interconnect_axi_arcache),            // input wire [3 : 0] S02_AXI_ARCACHE
-    .S02_AXI_ARPROT               (top_axi_interconnect_axi_arprot),              // input wire [2 : 0] S02_AXI_ARPROT
-    .S02_AXI_ARQOS                (top_axi_interconnect_axi_arqos),                // input wire [3 : 0] S02_AXI_ARQOS
-    .S02_AXI_ARVALID              (top_axi_interconnect_axi_arvalid),            // input wire S02_AXI_ARVALID
-    .S02_AXI_ARREADY              (top_axi_interconnect_axi_arready),            // output wire S02_AXI_ARREADY
-    .S02_AXI_RID                  (top_axi_interconnect_axi_rid),                    // output wire [0 : 0] S02_AXI_RID
-    .S02_AXI_RDATA                (top_axi_interconnect_axi_rdata),                // output wire [511 : 0] S02_AXI_RDATA
-    .S02_AXI_RRESP                (top_axi_interconnect_axi_rresp),                // output wire [1 : 0] S02_AXI_RRESP
-    .S02_AXI_RLAST                (top_axi_interconnect_axi_rlast),                // output wire S02_AXI_RLAST
-    .S02_AXI_RVALID               (top_axi_interconnect_axi_rvalid),              // output wire S02_AXI_RVALID
-    .S02_AXI_RREADY               (top_axi_interconnect_axi_rready),              // input wire S02_AXI_RREADY
+    .S02_AXI_AWID                 ('0),                  // input wire [0 : 0] S02_AXI_AWID
+    .S02_AXI_AWADDR               ('0),              // input wire [33 : 0] S02_AXI_AWADDR
+    .S02_AXI_AWLEN                ('0),                // input wire [7 : 0] S02_AXI_AWLEN
+    .S02_AXI_AWSIZE               ('0),              // input wire [2 : 0] S02_AXI_AWSIZE
+    .S02_AXI_AWBURST              ('0),            // input wire [1 : 0] S02_AXI_AWBURST
+    .S02_AXI_AWLOCK               ('0),              // input wire S02_AXI_AWLOCK
+    .S02_AXI_AWCACHE              ('0),            // input wire [3 : 0] S02_AXI_AWCACHE
+    .S02_AXI_AWPROT               ('0),              // input wire [2 : 0] S02_AXI_AWPROT
+    .S02_AXI_AWQOS                ('0),                // input wire [3 : 0] S02_AXI_AWQOS
+    .S02_AXI_AWVALID              ('0),            // input wire S02_AXI_AWVALID
+    .S02_AXI_AWREADY              (),            // output wire S02_AXI_AWREADY
+    .S02_AXI_WDATA                ('0),                // input wire [511 : 0] S02_AXI_WDATA
+    .S02_AXI_WSTRB                ('0),                // input wire [63 : 0] S02_AXI_WSTRB
+    .S02_AXI_WLAST                ('0),                // input wire S02_AXI_WLAST
+    .S02_AXI_WVALID               ('0),              // input wire S02_AXI_WVALID
+    .S02_AXI_WREADY               (),              // output wire S02_AXI_WREADY
+    .S02_AXI_BID                  (),                    // output wire [0 : 0] S02_AXI_BID
+    .S02_AXI_BRESP                (),                // output wire [1 : 0] S02_AXI_BRESP
+    .S02_AXI_BVALID               (),              // output wire S02_AXI_BVALID
+    .S02_AXI_BREADY               ('0),              // input wire S02_AXI_BREADY
+    .S02_AXI_ARID                 ('0),                  // input wire [0 : 0] S02_AXI_ARID
+    .S02_AXI_ARADDR               ('0),              // input wire [33 : 0] S02_AXI_ARADDR
+    .S02_AXI_ARLEN                ('0),                // input wire [7 : 0] S02_AXI_ARLEN
+    .S02_AXI_ARSIZE               ('0),              // input wire [2 : 0] S02_AXI_ARSIZE
+    .S02_AXI_ARBURST              ('0),            // input wire [1 : 0] S02_AXI_ARBURST
+    .S02_AXI_ARLOCK               ('0),              // input wire S02_AXI_ARLOCK
+    .S02_AXI_ARCACHE              ('0),            // input wire [3 : 0] S02_AXI_ARCACHE
+    .S02_AXI_ARPROT               ('0),              // input wire [2 : 0] S02_AXI_ARPROT
+    .S02_AXI_ARQOS                ('0),                // input wire [3 : 0] S02_AXI_ARQOS
+    .S02_AXI_ARVALID              ('0),            // input wire S02_AXI_ARVALID
+    .S02_AXI_ARREADY              (),            // output wire S02_AXI_ARREADY
+    .S02_AXI_RID                  (),                    // output wire [0 : 0] S02_AXI_RID
+    .S02_AXI_RDATA                (),                // output wire [511 : 0] S02_AXI_RDATA
+    .S02_AXI_RRESP                (),                // output wire [1 : 0] S02_AXI_RRESP
+    .S02_AXI_RLAST                (),                // output wire S02_AXI_RLAST
+    .S02_AXI_RVALID               (),              // output wire S02_AXI_RVALID
+    .S02_AXI_RREADY               ('0),              // input wire S02_AXI_RREADY
 
     // S03: OUTPUT BUFFER
     .S03_AXI_ACLK                 (sys_clk),                  // input wire S02_AXI_ACLK
@@ -1114,7 +1077,7 @@ axi_memory_interconnect axi_memory_interconnect_i (
 
     // S04: PREFETCHER (MSG RM)
     .S04_AXI_ACLK                 (sys_clk),         // input wire S00_AXI_ACLK
-    .S04_AXI_ARESET_OUT_N         (S00_AXI_ARESET_OUT_N),  // outpmsg_rm_ut wire S00_AXI_ARESET_OUT_N
+    .S04_AXI_ARESET_OUT_N         (S04_AXI_ARESET_OUT_N),  // outpmsg_rm_ut wire S00_AXI_ARESET_OUT_N
     .S04_AXI_ARADDR               (prefetcher_msg_rm_axi_interconnect_axi_araddr     ),              // input wire [33 : 0] S00_AXI_ARADDR
     .S04_AXI_ARBURST              (prefetcher_msg_rm_axi_interconnect_axi_arburst        ),            // input wire [1 : 0] S00_AXI_ARBURST
     .S04_AXI_ARCACHE              (prefetcher_msg_rm_axi_interconnect_axi_arcache        ),            // input wire [3 : 0] S00_AXI_ARCACHE
@@ -1155,7 +1118,7 @@ axi_memory_interconnect axi_memory_interconnect_i (
 
     // S05: unused
     .S05_AXI_ACLK                 (sys_clk), // input wire S00_AXI_ACLK
-    .S05_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
+    .S05_AXI_ARESET_OUT_N         (S05_AXI_ARESET_OUT_N),   // output wire S00_AXI_ARESET_OUT_N
     .S05_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
     .S05_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
     .S05_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
@@ -1196,7 +1159,7 @@ axi_memory_interconnect axi_memory_interconnect_i (
 
     // S06: unused
     .S06_AXI_ACLK                 (sys_clk), // input wire S00_AXI_ACLK
-    .S06_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
+    .S06_AXI_ARESET_OUT_N         (S06_AXI_ARESET_OUT_N),   // output wire S00_AXI_ARESET_OUT_N
     .S06_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
     .S06_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
     .S06_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE
@@ -1237,7 +1200,7 @@ axi_memory_interconnect axi_memory_interconnect_i (
 
     // S07: unused
     .S07_AXI_ACLK                 (sys_clk), // input wire S00_AXI_ACLK
-    .S07_AXI_ARESET_OUT_N         (),   // output wire S00_AXI_ARESET_OUT_N
+    .S07_AXI_ARESET_OUT_N         (S07_AXI_ARESET_OUT_N),   // output wire S00_AXI_ARESET_OUT_N
     .S07_AXI_ARADDR               ('0), // input wire [33 : 0] S00_AXI_ARADDR
     .S07_AXI_ARBURST              ('0), // input wire [1 : 0] S00_AXI_ARBURST
     .S07_AXI_ARCACHE              ('0), // input wire [3 : 0] S00_AXI_ARCACHE

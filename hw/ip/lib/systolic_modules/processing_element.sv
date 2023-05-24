@@ -67,7 +67,7 @@ logic [FLOAT_WIDTH-1:0] activated_feature;
 // ==================================================================================================================================================
 
 mac #(
-    .FLOAT_WIDTH(FLOAT_WIDTH)
+    .FLOAT_WIDTH        (FLOAT_WIDTH)
 ) mac_i (
     .core_clk,            
     .resetn,

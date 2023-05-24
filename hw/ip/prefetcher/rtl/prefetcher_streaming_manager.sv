@@ -1,3 +1,4 @@
+import top_pkg::*;
 
 module prefetcher_streaming_manager #(
     parameter NSB_PREF_OPCODE_e FETCH_TYPE = top_pkg::ADJACENCY_LIST,
@@ -13,6 +14,8 @@ module prefetcher_streaming_manager #(
 
     input  logic core_clk,
     input  logic resetn,
+
+    output logic free,
 
     // REQ/RESP interface
     input  logic                                        fetch_req_valid,
@@ -148,6 +151,7 @@ always_comb begin
 end
 
 assign fetch_req_ready = (fetch_state == FETCH_IDLE) && fetch_req_opcode == FETCH_TYPE;
+assign free = (fetch_state == FETCH_IDLE);
 
 // Fetch counters
 // ----------------------------------------------------
@@ -194,7 +198,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
 
             if (push_queue) begin
                 buffered_fetch_resp_offset <= buffered_fetch_resp_offset + 1'b1;
-                obj_remaining_store = obj_remaining_store - 1'b1;
+                obj_remaining_store <= obj_remaining_store - 1'b1;
             end
 
             if (fetch_state_n == FETCH_PAUSE) begin
@@ -257,6 +261,7 @@ always_comb begin
     trigger_partial_resp = issue_partial_done && !issue_partial_done_q;
 
     fetch_resp_valid = (fetch_state == FETCH_DONE);
+    fetch_resp_partial = '0;
 end
 
 endmodule
