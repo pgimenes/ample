@@ -90,8 +90,13 @@ class InitManager:
         layer = {
             'in_feature_count': self.trained_graph.feature_count,
             'out_feature_count': self.trained_graph.feature_count,
+
             'transformation_activation': self.trained_graph.transformation_activation,
+            'leaky_relu_alpha': self.trained_graph.leaky_relu_alpha,
             'transformation_bias': self.trained_graph.transformation_bias,
+
+            'dequantization_parameter': self.trained_graph.dequantization_parameter,
+            
             'adjacency_list_address': self.offsets['adj_list'],
             'in_messages_address': self.offsets['in_messages'],
             'weights_address': self.offsets['weights'],
@@ -102,6 +107,8 @@ class InitManager:
     def program_nodeslots(self, ignore_isolated_nodes=False):
         for node in self.trained_graph.nx_graph.nodes:
             nb_cnt = self.trained_graph.nx_graph.nodes[node]['neighbour_count']
+            # if (nb_cnt > 64):
+            #     print(f"node {node} has neighbour count {nb_cnt}")
             if (ignore_isolated_nodes and nb_cnt == 0):
                 continue
             nodeslot = {'node_id' : node,

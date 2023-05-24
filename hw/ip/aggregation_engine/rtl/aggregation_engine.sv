@@ -52,12 +52,16 @@ module aggregation_engine #(
     output logic [TOTAL_BUFFER_MANAGERS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] age_buffer_manager_buffer_slot_write_address,
     output logic [TOTAL_BUFFER_MANAGERS-1:0] [age_pkg::PAYLOAD_DATA_WIDTH-1:0]                     age_buffer_manager_buffer_slot_write_data,
     input  logic [TOTAL_BUFFER_MANAGERS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0]  buffer_slot_age_buffer_manager_feature_count,
-    input  logic [TOTAL_BUFFER_MANAGERS-1:0]                                                       buffer_slot_age_buffer_manager_slot_free
+    input  logic [TOTAL_BUFFER_MANAGERS-1:0]                                                       buffer_slot_age_buffer_manager_slot_free,
+
+    output logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                                  scale_factor_queue_pop,
+    input  logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                                  scale_factor_queue_out_valid,
+    input  logic [TOTAL_AGGREGATION_MANAGERS-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]              scale_factor_queue_out_data,
+    input  logic [TOTAL_AGGREGATION_MANAGERS-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0]        scale_factor_queue_count,
+    input  logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                                  scale_factor_queue_empty,
+    input  logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                                  scale_factor_queue_full
 
 );
-
-// parameter LAYER_CONFIG_IN_FEATURES = top_pkg::MAX_FEATURE_COUNT;
-parameter LAYER_CONFIG_IN_FEATURES = 4; // for MS2
 
 // ==================================================================================================================================================
 // Declarations
@@ -70,6 +74,8 @@ logic layer_config_in_features_strobe;
 logic [9:0] layer_config_in_features_count;
 logic layer_config_out_features_strobe;
 logic [3:0] layer_config_out_features_count;
+logic layer_config_upsampling_parameter_strobe;
+logic [31:0] layer_config_upsampling_parameter_value;
 
 // NOC Mesh
 // ----------------------------------------------------
@@ -87,9 +93,20 @@ noc_params::flit_t [MESH_COLS-1:0][MESH_ROWS-1:0]  router_node_data;
 // Aggregation Managers
 // ----------------------------------------------------
 
+logic allocation_req_ready_float32;
+logic allocation_req_ready_fixed16;
+
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_req_valid;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_req_valid_float32;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_req_valid_fixed16;
+
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_req_ready;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_req_ready_float32;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_req_ready_fixed16;
+
 AGE_AGM_REQ_t                                                              age_agm_req;
+AGE_AGM_REQ_t                                                              age_agm_req_float32;
+AGE_AGM_REQ_t                                                              age_agm_req_fixed16;
 
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_resp_valid;
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_resp_ready;
@@ -153,21 +170,11 @@ logic  [BM_ROWS-1:0] [BM_COLS-1:0] router_buffer_manager_valid;
 logic  [BM_ROWS-1:0] [BM_COLS-1:0] router_buffer_manager_ready;
 flit_t [BM_ROWS-1:0] [BM_COLS-1:0] router_buffer_manager_data;
 
-// FLOAT_32 AGC Allocation
+// AGC Allocation
 // ----------------------------------------------------
 
 logic [AGC_COUNT_FLOAT32-1:0]           agc_float32_free_mask;
-logic [AGC_COUNT_FLOAT32-1:0]           allocated_agc_float32;
-logic [$clog2(AGC_COUNT_FLOAT32)-1:0]   allocated_agc_float32_bin;
-logic [AGC_COUNT_FLOAT32-1:0]           allocatable_aggregation_cores_float32;
-
-// FIXED_16 AGC Allocation
-// ----------------------------------------------------
-
 logic [AGC_COUNT_FIXED16-1:0]           agc_fixed16_free_mask;
-logic [AGC_COUNT_FIXED16-1:0]           allocated_agc_fixed16;
-logic [$clog2(AGC_COUNT_FIXED16)-1:0]   allocated_agc_fixed16_bin;
-logic [AGC_COUNT_FIXED16-1:0]           allocatable_aggregation_cores_fixed16;
 
 // (Aggregation <-> Buffer Manager) Allocation
 logic [TOTAL_BUFFER_MANAGERS-1:0] buffer_master_allocation_oh;
@@ -218,6 +225,9 @@ aggregation_engine_regbank_regs #(
 
     .layer_config_out_features_strobe,
     .layer_config_out_features_count,
+
+    .layer_config_upsampling_parameter_strobe,
+    .layer_config_upsampling_parameter_value,
     .*
 );
 
@@ -291,12 +301,18 @@ for (genvar agm = 0; agm < TOTAL_AGGREGATION_MANAGERS; agm = agm + 1) begin
         .agm_allocated_agcs                                      (agm_allocated_agcs [agm]),
         .agm_allocated_agcs_count                                (agm_allocated_agcs_count [agm]),
         .coords_buffer_x                                         (agm_coords_buffer_x [agm]),
-        .coords_buffer_y                                         (agm_coords_buffer_y [agm])
+        .coords_buffer_y                                         (agm_coords_buffer_y [agm]),
+
+        .scale_factor_queue_pop                                  (scale_factor_queue_pop             [agm]),
+        .scale_factor_queue_out_valid                            (scale_factor_queue_out_valid       [agm]),
+        .scale_factor_queue_out_data                             (scale_factor_queue_out_data        [agm]),
+        .scale_factor_queue_count                                (scale_factor_queue_count           [agm]),
+        .scale_factor_queue_empty                                (scale_factor_queue_empty           [agm]),
+        .scale_factor_queue_full                                 (scale_factor_queue_full            [agm])
     );
 
 
     always_comb begin
-        age_agm_req_valid[agm] = nsb_age_req_valid && (nsb_age_req.nodeslot == agm);
         age_agm_resp_ready[agm] = aggregation_manager_resp_arbitration_oh [agm];
 
         // Last row of NOC mesh is taken by message channels
@@ -348,7 +364,9 @@ for (genvar agc_float32_row = 0; agc_float32_row < AGC_FLOAT32_ROWS; agc_float32
             .router_aggregation_core_on     (router_aggregation_core_on     [agc_float32_row][agc_float32_col]),
             .router_aggregation_core_valid  (router_aggregation_core_valid  [agc_float32_row][agc_float32_col]),
             .router_aggregation_core_ready  (router_aggregation_core_ready  [agc_float32_row][agc_float32_col]),
-            .router_aggregation_core_data   (router_aggregation_core_data   [agc_float32_row][agc_float32_col])
+            .router_aggregation_core_data   (router_aggregation_core_data   [agc_float32_row][agc_float32_col]),
+
+            .layer_config_upsampling_parameter  (layer_config_upsampling_parameter_value)
         );
 
         always_comb begin
@@ -481,89 +499,73 @@ end
 // ----------------------------------------------------
 
 aggregation_core_allocator #(
-    .NUM_CORES (age_pkg::AGC_COUNT_FLOAT32)
+    .NUM_CORES            (age_pkg::AGC_COUNT_FLOAT32),
+    .PRECISION_COL_OFFSET (AGC_FLOAT32_COL_OFFSET)
+
 ) agc_float32_allocator (
     .core_clk               (core_clk),
     .resetn                 (resetn),
 
+    .allocation_req_valid   (nsb_age_req_valid && (nsb_age_req.node_precision == top_pkg::FLOAT_32)),
+    .allocation_req_ready   (allocation_req_ready_float32),
+    .allocation_req         (nsb_age_req),
+
     .cores_free             (agc_float32_free_mask),
-    .accept_allocation      (nsb_age_req_valid && nsb_age_req_ready && (nsb_age_req.node_precision == top_pkg::FLOAT_32)),
-    .allocated_core         (allocated_agc_float32),
+    .layer_config_in_features_count (layer_config_in_features_count),
 
     .deallocation_valid     (nsb_age_resp_valid && agm_allocation[aggregation_manager_resp_arbitration_bin].node_precision == top_pkg::FLOAT_32),
+    .deallocation_cores     (agm_allocated_agcs [aggregation_manager_resp_arbitration_bin]),
 
-    // Deallocate the AGCs associated with the AGM sending NSB response
-    .deallocation_cores     (agm_allocated_agcs [aggregation_manager_resp_arbitration_bin])
-);
-
-onehot_to_binary #(
-    .INPUT_WIDTH (age_pkg::AGC_COUNT_FLOAT32)
-) allocated_agc_float32_oh2bin (
-	.clk            (core_clk),
-  	.resetn         (resetn),
-	.input_data     (allocated_agc_float32),
-  	.output_data    (allocated_agc_float32_bin)
+    .age_agm_req_valid      (age_agm_req_valid_float32),
+    .age_agm_req_ready      (age_agm_req_ready),
+    .age_agm_req            (age_agm_req_float32)
 );
 
 // Aggregation Core (FIXED_16) Allocation
 // ----------------------------------------------------
 
 aggregation_core_allocator #(
-    .NUM_CORES (age_pkg::AGC_COUNT_FIXED16)
+    .NUM_CORES            (age_pkg::AGC_COUNT_FIXED16),
+    .PRECISION_COL_OFFSET (AGC_FIXED16_COL_OFFSET)
+
 ) agc_fixed16_allocator (
     .core_clk               (core_clk),
     .resetn                 (resetn),
 
-    .cores_free             (agc_fixed16_free_mask),
-    .accept_allocation      (nsb_age_req_valid && nsb_age_req_ready && (nsb_age_req.node_precision == top_pkg::FIXED_16)),
-    .allocated_core         (allocated_agc_fixed16),
+    .allocation_req_valid   (nsb_age_req_valid && (nsb_age_req.node_precision == top_pkg::FIXED_16)),
+    .allocation_req_ready   (allocation_req_ready_fixed16),
+    .allocation_req         (nsb_age_req),
+
+    .cores_free                     (agc_fixed16_free_mask),
+    .layer_config_in_features_count (layer_config_in_features_count),
 
     .deallocation_valid     (nsb_age_resp_valid && agm_allocation[aggregation_manager_resp_arbitration_bin].node_precision == top_pkg::FIXED_16),
+    .deallocation_cores     (agm_allocated_agcs [aggregation_manager_resp_arbitration_bin]),
 
-    // Deallocate the AGCs associated with the AGM sending NSB response
-    .deallocation_cores     (agm_allocated_agcs [aggregation_manager_resp_arbitration_bin])
-);
-
-onehot_to_binary #(
-    .INPUT_WIDTH (age_pkg::AGC_COUNT_FIXED16)
-) allocated_agc_fixed16_oh2bin (
-	.clk            (core_clk),
-  	.resetn         (resetn),
-	.input_data     (allocated_agc_fixed16),
-  	.output_data    (allocated_agc_fixed16_bin)
+    .age_agm_req_valid      (age_agm_req_valid_fixed16),
+    .age_agm_req_ready      (age_agm_req_ready),
+    .age_agm_req            (age_agm_req_fixed16)
 );
 
 // ==================================================================================================================================================
 // Logic
 // ==================================================================================================================================================
 
-// NSB -> Message Channel (Aggregation Manager) requests
+// Allocation Managers -> AGM requests
 // ----------------------------------------------------
 
 always_comb begin
-    nsb_age_req_ready = age_agm_req_ready[nsb_age_req.nodeslot];
 
-    age_agm_req.nsb_req = nsb_age_req;
-    age_agm_req.ac_count = layer_config_in_features_count[9:4] + (|layer_config_in_features_count[3:0] ? 1'b1 : '0);
+    // Accept NSB request when correct AGC allocator accepts it
+    nsb_age_req_ready = (nsb_age_req.node_precision == top_pkg::FLOAT_32) ? allocation_req_ready_float32
+                        : (nsb_age_req.node_precision == top_pkg::FIXED_16) ? allocation_req_ready_fixed16
+                        : '0;
 
-    case (nsb_age_req.node_precision)
-
-    FLOAT_32: begin
-        age_agm_req.allocated_cores = allocated_agc_float32;
-
-        age_agm_req.coords_x [0] = allocated_agc_float32_bin [3:0]; // % 16
-        age_agm_req.coords_y [0] = allocated_agc_float32_bin [$clog2(AGC_COUNT_FLOAT32)-1:4]; // div 16
-    end
-
-    FIXED_16: begin
-        age_agm_req.allocated_cores = allocated_agc_fixed16;
-        
-        age_agm_req.coords_x [0] = AGC_FIXED16_COL_OFFSET[$clog2(MESH_COLS)-1:0] + allocated_agc_fixed16_bin [3:0]; // % 16
-        age_agm_req.coords_y [0] = allocated_agc_fixed16_bin [$clog2(AGC_COUNT_FIXED16)-1:4]; // div 16
-    end
-
-    endcase
-    
+    // Drive AGM request from either allocator
+    age_agm_req_valid = age_agm_req_valid_float32 | age_agm_req_valid_fixed16;
+    age_agm_req = (nsb_age_req.node_precision == FLOAT_32) ? age_agm_req_float32
+                : (nsb_age_req.node_precision == FIXED_16) ? age_agm_req_fixed16
+                : '0;
 end
 
 assign nsb_age_resp_valid = |age_agm_resp_valid;

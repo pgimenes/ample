@@ -45,7 +45,9 @@ module systolic_module #(
     // One more row than required to shift in zeros into last row during SHIFT phase
     output logic [MATRIX_N:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0] sys_module_pe_acc,
 
-    output logic                                                 diagonal_flush_done
+    output logic                                                 diagonal_flush_done,
+
+    input logic [31:0]                                           layer_config_leaky_relu_alpha_value
 );
 
 // ============================================================================================
@@ -97,7 +99,9 @@ for (genvar row = 0; row < MATRIX_N; row++) begin : rows_gen
             .shift_valid                (shift_valid                                     ),
             .shift_data                 (sys_module_pe_acc                [row+1]   [col]),
 
-            .pe_acc                     (sys_module_pe_acc                [row]   [col]   )
+            .pe_acc                     (sys_module_pe_acc                [row]   [col]   ),
+
+            .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value)
         );
 
     end : cols_gen

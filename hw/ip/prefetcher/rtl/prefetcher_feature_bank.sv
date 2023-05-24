@@ -49,6 +49,14 @@ module prefetcher_feature_bank #(
     input  logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_resp_ready,
     output MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp,
 
+    // Fetch tag -> AGM interface for scale factor queue
+    input  logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_pop,
+    output logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_out_valid,
+    output logic [FETCH_TAG_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
+    output logic [FETCH_TAG_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count,
+    output logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_empty,
+    output logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_full,
+
     input  logic [9:0] layer_config_in_features_count,
     input  logic [31:0] layer_config_adjacency_list_address_lsb_value,
     input  logic [31:0] layer_config_in_messages_address_lsb_value,
@@ -180,6 +188,13 @@ for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 
         .message_channel_resp_valid                     (message_channel_resp_valid   [fetch_tag]),
         .message_channel_resp_ready                     (message_channel_resp_ready   [fetch_tag]),
         .message_channel_resp                           (message_channel_resp         [fetch_tag]),
+
+        .scale_factor_queue_pop                         (scale_factor_queue_pop       [fetch_tag]),   
+        .scale_factor_queue_out_valid                   (scale_factor_queue_out_valid [fetch_tag]), 
+        .scale_factor_queue_out_data                    (scale_factor_queue_out_data  [fetch_tag]),  
+        .scale_factor_queue_count                       (scale_factor_queue_count     [fetch_tag]), 
+        .scale_factor_queue_empty                       (scale_factor_queue_empty     [fetch_tag]), 
+        .scale_factor_queue_full                        (scale_factor_queue_full      [fetch_tag]),  
 
         .layer_config_adjacency_list_address_lsb_value  (layer_config_adjacency_list_address_lsb_value),
         .layer_config_in_messages_address_lsb_value     (layer_config_in_messages_address_lsb_value),

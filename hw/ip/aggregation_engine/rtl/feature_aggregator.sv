@@ -14,6 +14,8 @@ module feature_aggregator #(
     output logic                   in_feature_ready,
     input  logic [DATA_WIDTH-1:0]  in_feature,
 
+    input  logic [FLOAT_WIDTH-1:0] scale_factor,
+
     output logic                   feature_updated,
     output logic [DATA_WIDTH-1:0]  accumulator,
     
@@ -21,7 +23,9 @@ module feature_aggregator #(
 
     input  logic                   upsample,
     output logic                   upsampled_accumulator_valid,
-    output logic [FLOAT_WIDTH-1:0] upsampled_accumulator
+    output logic [FLOAT_WIDTH-1:0] upsampled_accumulator,
+
+    input  logic [31:0]            layer_config_upsampling_parameter
 
 );
 
@@ -35,39 +39,68 @@ logic                                         passthrough_aggregator_out_valid;
 logic [DATA_WIDTH-1:0]                        sum_aggregator_out_feature;
 logic                                         sum_aggregator_out_valid;
 
+logic [FLOAT_WIDTH-1:0]                       scaled_feature;
+
 // === ADD AGGREGATOR DECLARATIONS
 
 logic[$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0] feature_accumulation_count;
 
 logic                                         busy;
 
-logic                   upsampled_accumulator_valid_comb;
+logic                   accumulator_float_valid;
+logic [FLOAT_WIDTH-1:0] accumulator_float;
+
+logic upsampled_accumulator_valid_comb;
 logic [FLOAT_WIDTH-1:0] upsampled_accumulator_comb;
 
 // ==================================================================================================================================================
-// Aggregators
+// Instances
 // ==================================================================================================================================================
 
+// Scale factor multipliers
+// -----------------------------------------------------------------------------------
+
+if (PRECISION == "FLOAT_32") begin
+    fp_mult scale_factor_mult (
+        .s_axis_a_tvalid      (in_feature_valid),            // input wire s_axis_a_tvalid
+        .s_axis_a_tdata       (scale_factor),              // input wire [31 : 0] s_axis_a_tdata
+        
+        .s_axis_b_tvalid      (in_feature_valid),            // input wire s_axis_b_tvalid
+        .s_axis_b_tdata       (in_feature),              // input wire [31 : 0] s_axis_b_tdata
+        
+        .m_axis_result_tvalid (),  // output wire m_axis_result_tvalid
+        .m_axis_result_tdata  (scaled_feature)    // output wire [31 : 0] m_axis_result_tdata
+    );
+end else begin
+    assign scaled_feature = scale_factor [DATA_WIDTH-1:0] * in_feature [DATA_WIDTH-1:0];
+end
+
+// Aggregators
+// -----------------------------------------------------------------------------------
+
 passthrough_aggregator #(
-    .DATA_WIDTH (DATA_WIDTH),
-    .PRECISION  (PRECISION)
+    .DATA_WIDTH        (DATA_WIDTH),
+    .PRECISION         (PRECISION)
 ) passthrough_aggregator_i (
     .core_clk          (core_clk),
     .resetn            (resetn),
-    .in_feature        (in_feature),
+    
     .in_feature_valid  (passthrough_aggregator_in_feature_valid),
+    .in_feature        (scaled_feature [DATA_WIDTH-1:0]),
+    
     .out_feature       (passthrough_aggregator_out_feature),
     .out_feature_valid (passthrough_aggregator_out_valid)
 );
 
 sum_aggregator #(
-    .DATA_WIDTH (DATA_WIDTH),
-    .PRECISION  (PRECISION)
+    .DATA_WIDTH        (DATA_WIDTH),
+    .PRECISION         (PRECISION)
 ) sum_aggregator_i (
-    .core_clk,
-    .resetn,
+    .core_clk          (core_clk),
+    .resetn            (resetn),
+
     .in_feature_valid  (sum_aggregator_in_feature_valid),
-    .in_feature        (in_feature),
+    .in_feature        (scaled_feature [DATA_WIDTH-1:0]),
 
     .acc_feature       (accumulator),
     
@@ -77,9 +110,8 @@ sum_aggregator #(
 
 // === ADD AGGREGATOR INSTANCE
 
-// ==================================================================================================================================================
 // Upsamplers
-// ==================================================================================================================================================
+// -----------------------------------------------------------------------------------
 
 if (PRECISION == "FIXED_16") begin
     
@@ -90,8 +122,8 @@ if (PRECISION == "FIXED_16") begin
         .s_axis_a_tvalid    (upsample),
         .s_axis_a_tdata     (accumulator),
         
-        .m_axis_result_tvalid (upsampled_accumulator_valid_comb),
-        .m_axis_result_tdata  (upsampled_accumulator_comb)
+        .m_axis_result_tvalid (accumulator_float_valid),
+        .m_axis_result_tdata  (accumulator_float)
     );
 
 end else if (PRECISION == "FIXED_8") begin
@@ -103,8 +135,8 @@ end else if (PRECISION == "FIXED_8") begin
         .s_axis_a_tvalid    (upsample),
         .s_axis_a_tdata     (accumulator),
         
-        .m_axis_result_tvalid (upsampled_accumulator_valid_comb),
-        .m_axis_result_tdata  (upsampled_accumulator_comb)
+        .m_axis_result_tvalid (accumulator_float_valid),
+        .m_axis_result_tdata  (accumulator_float)
     );
 
 end else if (PRECISION == "FIXED_4") begin
@@ -116,11 +148,22 @@ end else if (PRECISION == "FIXED_4") begin
         .s_axis_a_tvalid    (upsample),
         .s_axis_a_tdata     (accumulator),
         
-        .m_axis_result_tvalid (upsampled_accumulator_valid_comb),
-        .m_axis_result_tdata  (upsampled_accumulator_comb)
+        .m_axis_result_tvalid (accumulator_float_valid),
+        .m_axis_result_tdata  (accumulator_float)
     );
 
 end
+
+fp_mult upsampler_mult (
+    .s_axis_a_tvalid      (accumulator_float_valid),
+    .s_axis_a_tdata       (accumulator_float),
+
+    .s_axis_b_tvalid      ('1),
+    .s_axis_b_tdata       (layer_config_upsampling_parameter),
+    
+    .m_axis_result_tvalid (upsampled_accumulator_valid_comb),
+    .m_axis_result_tdata  (upsampled_accumulator_comb)
+);
 
 // ==================================================================================================================================================
 // Logic
@@ -200,7 +243,7 @@ if (PRECISION == "FIXED_16" || PRECISION == "FIXED_8" || PRECISION == "FIXED_4")
         
         end else if (upsampled_accumulator_valid_comb) begin
             upsampled_accumulator       <= upsampled_accumulator_comb;
-            upsampled_accumulator_valid <= upsampled_accumulator_valid_comb;
+            upsampled_accumulator_valid <= '1;
         end
     end
 

@@ -8,12 +8,6 @@ parameter ADJ_QUEUE_DEPTH   = 64;
 parameter MESSAGE_QUEUE_WIDTH = 512;
 parameter MESSAGE_QUEUE_DEPTH = 4096;
 
-// Scale factor queue
-parameter SCALE_FACTOR_QUEUE_WRITE_WIDTH = 512;
-parameter SCALE_FACTOR_QUEUE_WRITE_DEPTH = 64;
-parameter SCALE_FACTOR_QUEUE_READ_WIDTH = 32;
-parameter SCALE_FACTOR_QUEUE_READ_DEPTH = 1024;
-
 parameter MAX_ADJ_FETCH_RESPONSES = `divide_round_up(ADJ_QUEUE_DEPTH * ADJ_QUEUE_WIDTH, top_pkg::AXI_DATA_WIDTH);
 parameter MAX_MSG_FETCH_RESPONSES = `divide_round_up(top_pkg::MAX_FEATURE_COUNT * top_pkg::MAX_PRECISION_BYTE_COUNT,  (top_pkg::AXI_DATA_WIDTH/8));
 parameter MAX_SCALE_FACTOR_FETCH_RESPONSES = `divide_round_up(top_pkg::MAX_NEIGHBOURS * top_pkg::MAX_PRECISION_BYTE_COUNT,  (top_pkg::AXI_DATA_WIDTH/8));

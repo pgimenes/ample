@@ -53,7 +53,7 @@ typedef struct packed {
     // Maximum number of AGCs per precision group is for float
     // So mask of allocated cores needs to have width of AGC_COUNT_FLOAT32
     logic [AGC_COUNT_FLOAT32-1:0] allocated_cores;
-    logic [$clog2(MAX_AGC_PER_NODE)-1:0] ac_count;
+    logic [$clog2(MAX_AGC_PER_NODE)-1:0] required_agcs;
     
     logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] coords_x;
     logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] coords_y;

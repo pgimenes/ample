@@ -57,6 +57,12 @@ parameter TRANSFORMATION_BUFFER_WRITE_WIDTH = 512;
 parameter TRANSFORMATION_BUFFER_READ_DEPTH = MAX_FEATURE_COUNT * 4 / 4; // 4 bytes per float
 parameter TRANSFORMATION_BUFFER_READ_WIDTH = 32;
 
+// Scale factor queues
+parameter SCALE_FACTOR_QUEUE_WRITE_WIDTH = 512;
+parameter SCALE_FACTOR_QUEUE_WRITE_DEPTH = 64;
+parameter SCALE_FACTOR_QUEUE_READ_WIDTH = 32;
+parameter SCALE_FACTOR_QUEUE_READ_DEPTH = 1024;
+
 // Supported modes
 // ----------------------------------------------------
 
@@ -74,8 +80,8 @@ typedef enum logic [1:0] {
     AGGR_FUNC_RESERVED
 } AGGREGATION_FUNCTION_e;
 
-typedef enum logic {
-    NONE, RELU
+typedef enum logic [1:0] {
+    NONE, RELU, LEAKY_RELU, RESERVED_ACTIVATION
 } ACTIVATION_FUNCTION_e;
 
 // Utilities

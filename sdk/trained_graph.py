@@ -28,6 +28,10 @@ class TrainedGraph:
         # TO DO: read activation from model object
         self.transformation_activation = 1 # relu
         self.transformation_bias = 0
+        self.leaky_relu_alpha = 0.2
+
+        # TO DO: read dequantization parameter from QAT
+        self.dequantization_parameter = 1
 
         # Trained weights
         self.weights = weights

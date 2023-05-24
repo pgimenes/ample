@@ -42,7 +42,9 @@ module processing_element #(
     input  logic                            shift_valid,
     input  logic [FLOAT_WIDTH-1:0]          shift_data,
     
-    output logic [FLOAT_WIDTH-1:0]          pe_acc
+    output logic [FLOAT_WIDTH-1:0]          pe_acc,
+
+    input  logic [31:0]                     layer_config_leaky_relu_alpha_value
 );
 
 // ==================================================================================================================================================
@@ -50,11 +52,15 @@ module processing_element #(
 // ==================================================================================================================================================
 
 logic                   update_accumulator;
+
 logic                   overwrite_accumulator;
 logic [FLOAT_WIDTH-1:0] overwrite_data;
-logic [FLOAT_WIDTH-1:0] feature_activation;
+
+logic                   bias_out_valid;
 logic [FLOAT_WIDTH-1:0] pe_acc_add_bias;
-logic                   adder_out_valid;
+
+logic                   activated_feature_valid;
+logic [FLOAT_WIDTH-1:0] activated_feature;
 
 // ==================================================================================================================================================
 // Accumulator
@@ -76,26 +82,36 @@ mac #(
     .acc                (pe_acc)
 );
 
-activation_core activation_core_i (
-    .core_clk    (core_clk),
-    .resetn      (resetn),
-
-    .activation  (activation),
-
-    .in_feature  (pe_acc),
-    .out_feature (feature_activation)
-);
-
 // Bias addition
+// -------------------------------------------------------------
+
 fp_add bias_adder (
   .s_axis_a_tvalid              ('1),
   .s_axis_a_tdata               (pe_acc),
   
-  .s_axis_b_tvalid              ('1),
+  .s_axis_b_tvalid              (bias_valid),
   .s_axis_b_tdata               (bias),
 
-  .m_axis_result_tvalid         (adder_out_valid),
+  .m_axis_result_tvalid         (bias_out_valid),
   .m_axis_result_tdata          (pe_acc_add_bias)
+);
+
+// Activations
+// -------------------------------------------------------------
+
+activation_core activation_core_i (
+    .core_clk         (core_clk),
+    .resetn           (resetn),
+
+    .sel_activation   (activation),
+
+    .in_feature_valid (activation_valid),
+    .in_feature       (pe_acc),
+
+    .activated_feature_valid (activated_feature_valid),
+    .activated_feature       (activated_feature),
+
+    .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value)
 );
 
 // ==================================================================================================================================================
@@ -125,10 +141,10 @@ end
 
 // Overwrite accumulator for activation, bias and shifting
 always_comb begin
-    overwrite_accumulator = (bias_valid && adder_out_valid) || activation_valid || shift_valid;
+    overwrite_accumulator = bias_out_valid || activated_feature_valid || shift_valid;
 
     overwrite_data        = bias_valid ? pe_acc_add_bias
-                            : activation_valid ? feature_activation
+                            : activated_feature_valid ? activated_feature
                             : shift_valid ? shift_data
                             : '0;
 end

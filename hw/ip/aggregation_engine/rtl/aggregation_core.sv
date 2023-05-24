@@ -28,7 +28,9 @@ module aggregation_core #(
     output logic                                        router_aggregation_core_on,
     input  logic                                        router_aggregation_core_valid,
     output logic                                        router_aggregation_core_ready,
-    input  flit_t                                       router_aggregation_core_data
+    input  flit_t                                       router_aggregation_core_data,
+
+    input  logic [31:0]                                 layer_config_upsampling_parameter
 );
 
 parameter ALLOCATION_PKT_AGGR_FUNC_OFFSET = $clog2(top_pkg::MAX_NODESLOT_COUNT);
@@ -122,6 +124,8 @@ logic                                       upsample;
 logic [FEATURE_COUNT-1:0]                   upsampled_accumulator_valid;
 logic [FEATURE_COUNT-1:0] [FLOAT_WIDTH-1:0] upsampled_features;
 
+logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_q;
+
 // ==================================================================================================================================================
 // Instantiations
 // ==================================================================================================================================================
@@ -140,6 +144,8 @@ for (genvar feature = 0; feature < FEATURE_COUNT; feature = feature + 1) begin
         .in_feature_ready              (feature_aggregator_in_feature_ready      [feature]),
         .in_feature                    (feature_aggregator_in_feature            [feature]),
 
+        .scale_factor                  (scale_factor_q),
+
         .feature_updated               (feature_aggregator_feature_updated       [feature]),
         .accumulator                   (features                                 [feature]),
         
@@ -147,7 +153,9 @@ for (genvar feature = 0; feature < FEATURE_COUNT; feature = feature + 1) begin
 
         .upsample                       (upsample),
         .upsampled_accumulator_valid    (upsampled_accumulator_valid             [feature]),
-        .upsampled_accumulator          (upsampled_features                      [feature])
+        .upsampled_accumulator          (upsampled_features                      [feature]),
+
+        .layer_config_upsampling_parameter  (layer_config_upsampling_parameter)
     );
 
     // Update mask of updated features for the current packet
@@ -278,6 +286,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         aggregation_manager_packet_last_q <= '0;
         received_buffer_req_head          <= '0;
         sent_flits_counter                <= '0;
+        scale_factor_q                    <= '0;
 
     // Nodeslot allocation finished OR finished updating accumulators, wait for next packet
     end else if ((agc_state_n == AGC_FSM_IDLE) || (agc_state_n == AGC_FSM_WAIT_FEATURE_HEAD)) begin
@@ -286,12 +295,14 @@ always_ff @(posedge core_clk or negedge resetn) begin
         aggregation_manager_packet_last_q <= '0;
         received_buffer_req_head          <= '0;
         sent_flits_counter                <= '0;
+        scale_factor_q                    <= '0;
 
     // Accepting packet from router - either nodeslot allocation or feature packet
     end else if (router_aggregation_core_valid && router_aggregation_core_ready && aggregation_manager_pkt) begin
         if (head_packet) begin
             aggregation_manager_packet_last_q <= aggregation_manager_packet_last; // last packet flag
-            received_buffer_req_head <= (aggregation_manager_packet_type == BM_BUFFER_REQUEST); // buffer request head flag
+            received_buffer_req_head          <= (aggregation_manager_packet_type == BM_BUFFER_REQUEST); // buffer request head flag
+            scale_factor_q                    <= router_aggregation_core_data.data.bt_pl [FLOAT_WIDTH-1:0];
         
         end else begin
             // Only update flits counter for body and tail flits

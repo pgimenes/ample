@@ -165,9 +165,17 @@ module prefetcher #(
     input  logic                                              weight_channel_req_valid,
     output logic                                              weight_channel_req_ready,
     input  WEIGHT_CHANNEL_REQ_t                               weight_channel_req,
+
     output logic                                              weight_channel_resp_valid,
     input  logic                                              weight_channel_resp_ready,
-    output WEIGHT_CHANNEL_RESP_t                              weight_channel_resp
+    output WEIGHT_CHANNEL_RESP_t                              weight_channel_resp,
+
+    input  logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_pop,
+    output logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_out_valid,
+    output logic [FETCH_TAG_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
+    output logic [FETCH_TAG_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count,
+    output logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_empty,
+    output logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_full
     
 );
 
@@ -350,6 +358,13 @@ prefetcher_feature_bank #(
     .message_channel_resp_valid                                         (message_channel_resp_valid),
     .message_channel_resp_ready                                         (message_channel_resp_ready),
     .message_channel_resp                                               (message_channel_resp),
+
+    .scale_factor_queue_pop                                             (scale_factor_queue_pop),
+    .scale_factor_queue_out_valid                                       (scale_factor_queue_out_valid),
+    .scale_factor_queue_out_data                                        (scale_factor_queue_out_data),
+    .scale_factor_queue_count                                           (scale_factor_queue_count),
+    .scale_factor_queue_empty                                           (scale_factor_queue_empty),
+    .scale_factor_queue_full                                            (scale_factor_queue_full),
 
     .layer_config_in_features_count                                     (layer_config_in_features_count),
     .layer_config_adjacency_list_address_lsb_value                      (layer_config_adjacency_list_address_lsb_value),

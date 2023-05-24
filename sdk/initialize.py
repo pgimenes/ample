@@ -15,7 +15,7 @@ graph_mapping = {
     'matrix': {
         'class': MatrixGraph,
         'options': {'feature_count': 4,
-                    'graph_precision': 'FLOAT_32'},
+                    'graph_precision': 'mixed'},
     },
     'karate': { 
         'class': KarateClubGraph,
