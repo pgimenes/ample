@@ -91,13 +91,15 @@ class GraphTest extends Test;
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to AGE regbank.", $time, TESTNAME);
         this.write_age_regbank("Define IN Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_age_regbank("Define OUT Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
+        this.write_age_regbank("Define Upsampling parameter", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_UPSAMPLING_PARAMETER_OFFSET, $realtobits(layer_config.getByKey("dequantization_parameter").asReal()));
         
         // FTE regbank
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to FTE regbank.", $time, TESTNAME);
         this.write_fte_regbank("Define IN Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_fte_regbank("Define OUT Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
         this.write_fte_regbank("Define transformation activation function", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_ACTIVATION_FUNCTION_OFFSET, layer_config.getByKey("transformation_activation").asInt());
-        this.write_fte_regbank("Define transformation bias term", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_BIAS_OFFSET, layer_config.getByKey("transformation_bias").asInt());
+        this.write_fte_regbank("Define transformation leaky ReLU activation parameter", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_ACTIVATION_FUNCTION_OFFSET, layer_config.getByKey("transformation_activation").asInt());
+        this.write_fte_regbank("Define transformation bias term", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_LEAKY_RELU_ALPHA_OFFSET, $realtobits(layer_config.getByKey("leaky_relu_alpha").asReal()));
 
         // NSB regbank
         // NSB Layer configuration

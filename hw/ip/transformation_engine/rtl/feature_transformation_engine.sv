@@ -81,9 +81,11 @@ logic [9:0] layer_config_in_features_count;
 logic layer_config_out_features_strobe;
 logic [9:0] layer_config_out_features_count;
 logic layer_config_activation_function_strobe;
-logic [0:0] layer_config_activation_function_value;
+logic [1:0] layer_config_activation_function_value;
 logic layer_config_bias_strobe;
 logic [31:0] layer_config_bias_value;
+logic layer_config_leaky_relu_alpha_strobe;
+logic [31:0] layer_config_leaky_relu_alpha_value;
 
 // NSB requests
 logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslot_count;
@@ -159,7 +161,9 @@ feature_transformation_engine_regbank_regs feature_transformation_engine_regbank
     .layer_config_activation_function_strobe,
     .layer_config_activation_function_value,
     .layer_config_bias_strobe,
-    .layer_config_bias_value
+    .layer_config_bias_value,
+    .layer_config_leaky_relu_alpha_strobe,
+    .layer_config_leaky_relu_alpha_value
 );
 
 // Systolic Modules
@@ -197,7 +201,9 @@ for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) be
 
         .sys_module_pe_acc        (sys_module_pe_acc        [sys_module]),
 
-        .diagonal_flush_done      (sys_module_flush_done)
+        .diagonal_flush_done      (sys_module_flush_done),
+
+        .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value)
     );
 
 end

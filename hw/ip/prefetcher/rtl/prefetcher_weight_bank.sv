@@ -156,7 +156,7 @@ always_comb begin
     WEIGHT_BANK_FSM_WRITE: begin
         weight_bank_state_n = 
                             // Finished writing all features for entire matrix
-                            (feature_offset == 4'd15) && (rows_fetched == nsb_prefetcher_weight_bank_req_q.out_features) ? WEIGHT_BANK_FSM_WEIGHTS_WAITING
+                            (feature_offset == 4'd15) && (rows_fetched == nsb_prefetcher_weight_bank_req_q.out_features) && (expected_responses == '0) ? WEIGHT_BANK_FSM_WEIGHTS_WAITING
                             
                             // Finished writing all features for current row
                             : (feature_offset == 4'd15) && (expected_responses == '0) ? WEIGHT_BANK_FSM_FETCH_REQ

@@ -405,6 +405,14 @@ logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                        m
 logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                        transformation_buffer_mpe_out_feature_valid;
 logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_READ_WIDTH-1:0] transformation_buffer_mpe_out_feature;
 
+// Prefetcher -> AGE: Scale Factor interface
+logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_pop;
+logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_out_valid;
+logic [FETCH_TAG_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data;
+logic [FETCH_TAG_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count;
+logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_empty;
+logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_full;
+
 // ====================================================================================
 // Node Scoreboard
 // ====================================================================================
@@ -633,7 +641,14 @@ prefetcher #(
 
     .weight_channel_resp_valid                                 (weight_channel_resp_valid),
     .weight_channel_resp_ready                                 (weight_channel_resp_ready),
-    .weight_channel_resp                                       (weight_channel_resp)
+    .weight_channel_resp                                       (weight_channel_resp),
+
+    .scale_factor_queue_pop                                    (scale_factor_queue_pop),
+    .scale_factor_queue_out_valid                              (scale_factor_queue_out_valid),
+    .scale_factor_queue_out_data                               (scale_factor_queue_out_data),
+    .scale_factor_queue_count                                  (scale_factor_queue_count),
+    .scale_factor_queue_empty                                  (scale_factor_queue_empty),
+    .scale_factor_queue_full                                   (scale_factor_queue_full)
 );
 
 // ====================================================================================
@@ -739,7 +754,14 @@ aggregation_engine aggregation_engine_i (
     .age_buffer_manager_buffer_slot_write_address (age_aggregation_buffer_write_address),
     .age_buffer_manager_buffer_slot_write_data    (age_aggregation_buffer_write_data),
     .buffer_slot_age_buffer_manager_feature_count (aggregation_buffer_age_feature_count),
-    .buffer_slot_age_buffer_manager_slot_free     (aggregation_buffer_slot_free)
+    .buffer_slot_age_buffer_manager_slot_free     (aggregation_buffer_slot_free),
+
+    .scale_factor_queue_pop                       (scale_factor_queue_pop),
+    .scale_factor_queue_out_valid                 (scale_factor_queue_out_valid),
+    .scale_factor_queue_out_data                  (scale_factor_queue_out_data),
+    .scale_factor_queue_count                     (scale_factor_queue_count),
+    .scale_factor_queue_empty                     (scale_factor_queue_empty),
+    .scale_factor_queue_full                      (scale_factor_queue_full)
 );
 
 // ====================================================================================

@@ -9,7 +9,6 @@ class MatrixDataset(InMemoryDataset):
         super(MatrixDataset, self).__init__(".", transform=None, pre_transform=None)
         
         self.data, self.slices = self.process()
-        self.num_nodes = 4
         
     @property
     def raw_file_names(self):

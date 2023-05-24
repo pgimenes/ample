@@ -68,7 +68,7 @@ module prefetcher_fetch_tag #(
     output MESSAGE_CHANNEL_RESP_t                       message_channel_resp,
 
     // Scale Factor Queue Interface: Fetch Tag -> AGE
-    output logic                                           scale_factor_queue_pop,
+    input  logic                                           scale_factor_queue_pop,
     output logic                                           scale_factor_queue_out_valid,
     output logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
     output logic [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count,
@@ -382,10 +382,10 @@ always_comb begin
 
     fetch_tag_msg_rm_resp_ready = (message_fetch_state == MSG_STORE) || scale_factor_read_master_resp_ready;
 
-    push_message_queue   = accepting_msg_fetch_resp;
+    push_message_queue   = (message_fetch_state == MSG_STORE) && accepting_msg_fetch_resp;
     msg_queue_write_data = fetch_tag_msg_rm_resp_data;
     
-    pop_adj_queue = accepting_message_fetch_req;
+    pop_adj_queue = (message_fetch_state == MSG_STORE) && accepting_message_fetch_req;
 end
 
 always_ff @(posedge core_clk or negedge resetn) begin

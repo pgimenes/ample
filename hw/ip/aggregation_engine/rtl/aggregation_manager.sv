@@ -51,7 +51,14 @@ module aggregation_manager #(
     output logic [AGC_COUNT_FLOAT32-1:0]                        agm_allocated_agcs,
     output logic [$clog2(TOTAL_AGGREGATION_CORES)-1:0]          agm_allocated_agcs_count,
     output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] coords_buffer_x,
-    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] coords_buffer_y
+    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] coords_buffer_y,
+
+    output logic                                                scale_factor_queue_pop,
+    input  logic                                                scale_factor_queue_out_valid,
+    input  logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]            scale_factor_queue_out_data,
+    input  logic [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0]      scale_factor_queue_count,
+    input  logic                                                scale_factor_queue_empty,
+    input  logic                                                scale_factor_queue_full
 );
 
 typedef enum logic [4:0] {
@@ -182,21 +189,22 @@ end
 // Buffer NSB request payloads
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
-        agm_allocation.nodeslot           <= '0;
-        agm_allocation.node_precision <= top_pkg::FLOAT_32;
-        agm_allocation.aggregation_function   <= top_pkg::SUM;
+        agm_allocation.nodeslot               <= '0;
         agm_allocation.fetch_tag              <= '0;
+        agm_allocation.node_precision         <= top_pkg::FLOAT_32;
+        agm_allocation.aggregation_function   <= top_pkg::SUM;
         
         agm_allocated_agcs               <= '0;
         agm_allocated_agcs_count         <= '0;
         
 
     end else if (age_aggregation_manager_req_valid && age_aggregation_manager_req_ready) begin
-        agm_allocation.nodeslot         <= age_aggregation_manager_req.nsb_req.nodeslot;
-        agm_allocation.aggregation_function <= age_aggregation_manager_req.nsb_req.aggregation_function;
+        agm_allocation.nodeslot             <= age_aggregation_manager_req.nsb_req.nodeslot;
         agm_allocation.fetch_tag            <= age_aggregation_manager_req.nsb_req.fetch_tag;
-        agm_allocated_agcs_count       <= age_aggregation_manager_req.ac_count;
-        agm_allocated_agcs             <= age_aggregation_manager_req.allocated_cores;
+        agm_allocation.node_precision       <= age_aggregation_manager_req.nsb_req.node_precision;
+        agm_allocation.aggregation_function <= age_aggregation_manager_req.nsb_req.aggregation_function;
+        agm_allocated_agcs_count            <= age_aggregation_manager_req.required_agcs;
+        agm_allocated_agcs                  <= age_aggregation_manager_req.allocated_cores;
     end
 end
 
@@ -243,7 +251,7 @@ always_comb begin
 
     case(packet_state)
 
-    age_pkg::PKT_FSM_IDLE: packet_state_n  = (aggregation_manager_router_on && (agm_state == AGM_FSM_SEND_AGC) && noc_router_waiting) ? PKT_FSM_HEAD : PKT_FSM_IDLE;
+    age_pkg::PKT_FSM_IDLE: packet_state_n  = (aggregation_manager_router_on && (agm_state == AGM_FSM_SEND_AGC) && noc_router_waiting && scale_factor_queue_out_valid) ? PKT_FSM_HEAD : PKT_FSM_IDLE;
     age_pkg::PKT_FSM_HEAD: packet_state_n  = PKT_FSM_BODY1;
     age_pkg::PKT_FSM_BODY1: packet_state_n = PKT_FSM_BODY2;
     age_pkg::PKT_FSM_BODY2: packet_state_n = PKT_FSM_BODY3;
@@ -314,7 +322,8 @@ always_comb begin
                                                                                     x_coord, y_coord, // source node coordinates
 
                                                                                     age_pkg::AGC_FEATURE_PACKET, message_channel_resp_q.last,
-                                                                                    {(PAYLOAD_DATA_WIDTH - $bits(aggregation_manager_packet_type_e) - 1){1'b0}} // 61 zeros
+                                                                                    {(PAYLOAD_DATA_WIDTH - $bits(aggregation_manager_packet_type_e) - 1 - SCALE_FACTOR_QUEUE_READ_WIDTH){1'b0}},
+                                                                                    scale_factor_queue_out_data
                                                                                 }
 
                                             // Subsequent packets contain message channel response split into 64-bit chunks
@@ -372,7 +381,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end else if (age_aggregation_manager_req_valid && age_aggregation_manager_req_ready) begin
         coords_buffer_x      <= age_aggregation_manager_req.coords_x;
         coords_buffer_y      <= age_aggregation_manager_req.coords_y;
-        coord_ptr          <= '0;
+        coord_ptr            <= '0;
         
         agc_pkt_head_sent <= '0;
 
@@ -392,8 +401,10 @@ always_ff @(posedge core_clk or negedge resetn) begin
                                     : agc_pkt_head_sent; // latch
         end
     end
-
 end
+
+// Pop the scale factor queue when sending the last feature to the last AGC
+assign scale_factor_queue_pop = (agm_state == AGM_FSM_SEND_AGC) && aggregation_manager_router_valid && (packet_state == PKT_FSM_TAIL) && (coord_ptr == agm_allocated_agcs_count - 1'b1);
 
 // AGC buffering requests
 // -----------------------------------------------
