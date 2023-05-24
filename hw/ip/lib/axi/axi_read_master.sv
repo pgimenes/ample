@@ -68,7 +68,6 @@ typedef enum logic [2:0] {
 
 fetch_fsm_e                                 fetch_state, fetch_state_n;
 
-logic [31:0]                                req_fetch_start_address;
 logic [$clog2(MAX_BYTE_COUNT)-1:0]          req_fetch_byte_count;
 
 logic                                       accepting_fetch_request;
@@ -116,7 +115,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         fetch_state                         <= IDLE;
 
-        req_fetch_start_address             <= '0;
         req_fetch_byte_count                <= '0;
         current_transaction_address         <= '0;
 
@@ -129,7 +127,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end else if (fetch_state_n == IDLE) begin
         fetch_state                         <= fetch_state_n;
         
-        req_fetch_start_address             <= '0;
         req_fetch_byte_count                <= '0;
         current_transaction_address         <= '0;
 
@@ -144,7 +141,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
         fetch_state <= fetch_state_n;
 
         if (accepting_fetch_request) begin
-            req_fetch_start_address         <= fetch_start_address;
             req_fetch_byte_count            <= fetch_byte_count;
             current_transaction_address     <= fetch_start_address; // gets incremented for subsequent transactions
         end

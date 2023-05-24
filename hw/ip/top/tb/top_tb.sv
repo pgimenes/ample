@@ -104,47 +104,47 @@ module top_tb;
     logic [1 : 0]     host_axil_rresp;
     logic [0 : 0]     host_axil_rvalid;
 
-    // logic  [7:0]                   axi_interconnect_memory_axi_awid; // output 
-    // logic  [33:0]                  axi_interconnect_memory_axi_awaddr; // output 
-    // logic  [7:0]                   axi_interconnect_memory_axi_awlen; // output 
-    // logic  [2:0]                   axi_interconnect_memory_axi_awsize; // output 
-    // logic  [1:0]                   axi_interconnect_memory_axi_awburst; // output 
-    // logic  [0:0]                   axi_interconnect_memory_axi_awlock; // output 
-    // logic  [3:0]                   axi_interconnect_memory_axi_awcache; // output 
-    // logic  [2:0]                   axi_interconnect_memory_axi_awprot; // output 
-    // logic  [3:0]                   axi_interconnect_memory_axi_awqos; // output 
-    // logic                          axi_interconnect_memory_axi_awvalid; // output 
-    // logic                          axi_interconnect_memory_axi_awready; // input  
+    logic  [7:0]                   axi_interconnect_memory_axi_awid; // output 
+    logic  [33:0]                  axi_interconnect_memory_axi_awaddr; // output 
+    logic  [7:0]                   axi_interconnect_memory_axi_awlen; // output 
+    logic  [2:0]                   axi_interconnect_memory_axi_awsize; // output 
+    logic  [1:0]                   axi_interconnect_memory_axi_awburst; // output 
+    logic  [0:0]                   axi_interconnect_memory_axi_awlock; // output 
+    logic  [3:0]                   axi_interconnect_memory_axi_awcache; // output 
+    logic  [2:0]                   axi_interconnect_memory_axi_awprot; // output 
+    logic  [3:0]                   axi_interconnect_memory_axi_awqos; // output 
+    logic                          axi_interconnect_memory_axi_awvalid; // output 
+    logic                          axi_interconnect_memory_axi_awready; // input  
     
-    // logic  [511:0]                 axi_interconnect_memory_axi_wdata; // output 
-    // logic  [63:0]                  axi_interconnect_memory_axi_wstrb; // output 
-    // logic                          axi_interconnect_memory_axi_wlast; // output 
-    // logic                          axi_interconnect_memory_axi_wvalid; // output 
-    // logic                          axi_interconnect_memory_axi_wready; // input  
+    logic  [511:0]                 axi_interconnect_memory_axi_wdata; // output 
+    logic  [63:0]                  axi_interconnect_memory_axi_wstrb; // output 
+    logic                          axi_interconnect_memory_axi_wlast; // output 
+    logic                          axi_interconnect_memory_axi_wvalid; // output 
+    logic                          axi_interconnect_memory_axi_wready; // input  
     
-    // logic [7:0]                    axi_interconnect_memory_axi_bid; // input  
-    // logic [1:0]                    axi_interconnect_memory_axi_bresp; // input  
-    // logic                          axi_interconnect_memory_axi_bvalid; // input  
-    // logic                          axi_interconnect_memory_axi_bready; // output 
+    logic [7:0]                    axi_interconnect_memory_axi_bid; // input  
+    logic [1:0]                    axi_interconnect_memory_axi_bresp; // input  
+    logic                          axi_interconnect_memory_axi_bvalid; // input  
+    logic                          axi_interconnect_memory_axi_bready; // output 
     
-    // logic  [7:0]                   axi_interconnect_memory_axi_arid; // output 
-    // logic  [33:0]                  axi_interconnect_memory_axi_araddr; // output 
-    // logic  [7:0]                   axi_interconnect_memory_axi_arlen; // output 
-    // logic  [2:0]                   axi_interconnect_memory_axi_arsize; // output 
-    // logic  [1:0]                   axi_interconnect_memory_axi_arburst; // output 
-    // logic  [0:0]                   axi_interconnect_memory_axi_arlock; // output 
-    // logic  [3:0]                   axi_interconnect_memory_axi_arcache; // output 
-    // logic  [2:0]                   axi_interconnect_memory_axi_arprot; // output 
-    // logic  [3:0]                   axi_interconnect_memory_axi_arqos; // output 
-    // logic                          axi_interconnect_memory_axi_arvalid; // output 
-    // logic                          axi_interconnect_memory_axi_arready; // input  
+    logic  [7:0]                   axi_interconnect_memory_axi_arid; // output 
+    logic  [33:0]                  axi_interconnect_memory_axi_araddr; // output 
+    logic  [7:0]                   axi_interconnect_memory_axi_arlen; // output 
+    logic  [2:0]                   axi_interconnect_memory_axi_arsize; // output 
+    logic  [1:0]                   axi_interconnect_memory_axi_arburst; // output 
+    logic  [0:0]                   axi_interconnect_memory_axi_arlock; // output 
+    logic  [3:0]                   axi_interconnect_memory_axi_arcache; // output 
+    logic  [2:0]                   axi_interconnect_memory_axi_arprot; // output 
+    logic  [3:0]                   axi_interconnect_memory_axi_arqos; // output 
+    logic                          axi_interconnect_memory_axi_arvalid; // output 
+    logic                          axi_interconnect_memory_axi_arready; // input  
     
-    // logic [7:0]                    axi_interconnect_memory_axi_rid; // input  
-    // logic [511:0]                  axi_interconnect_memory_axi_rdata; // input  
-    // logic [1:0]                    axi_interconnect_memory_axi_rresp; // input  
-    // logic                          axi_interconnect_memory_axi_rlast; // input  
-    // logic                          axi_interconnect_memory_axi_rvalid; // input  
-    // logic                          axi_interconnect_memory_axi_rready; // output 
+    logic [7:0]                    axi_interconnect_memory_axi_rid; // input  
+    logic [511:0]                  axi_interconnect_memory_axi_rdata; // input  
+    logic [1:0]                    axi_interconnect_memory_axi_rresp; // input  
+    logic                          axi_interconnect_memory_axi_rlast; // input  
+    logic                          axi_interconnect_memory_axi_rvalid; // input  
+    logic                          axi_interconnect_memory_axi_rready; // output 
 
   // ============================================================================
   // Reset Generation
