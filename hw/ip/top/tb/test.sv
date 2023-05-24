@@ -1,9 +1,9 @@
 import axi_vip_pkg::*;
 import axil_master_vip_pkg::*;
-import axi_memory_master_vip_pkg::*;
+// import axi_memory_master_vip_pkg::*;
 
 `define AXIL_MASTER_VIP_IF top_tb.axil_master_vip_i.inst.IF
-`define AXI_MEMORY_MASTER_VIP_IF top_tb.axi_memory_master_vip_i.inst.IF
+// `define AXI_MEMORY_MASTER_VIP_IF top_tb.axi_memory_master_vip_i.inst.IF
 
 class Test;
 
@@ -12,7 +12,7 @@ class Test;
     virtual prefetcher_interface prefetcher_intf;
 
     axil_master_vip_mst_t axil_agent;
-    axi_memory_master_vip_mst_t axi_memory_agent;
+    // axi_memory_master_vip_mst_t axi_memory_agent;
     
     // Environment
     node_scoreboard_tb_monitor nsb_monitor_i;
@@ -39,7 +39,7 @@ class Test;
             this.axil_agent = new("AXI-L VIP Agent", `AXIL_MASTER_VIP_IF);
 
             // Initialize AXI Memory Master VIP agent
-            this.axi_memory_agent = new("AXI Memory Master VIP Agent", `AXI_MEMORY_MASTER_VIP_IF);
+            // this.axi_memory_agent = new("AXI Memory Master VIP Agent", `AXI_MEMORY_MASTER_VIP_IF);
 
             // Initialize nodeslots mask as all free
             this.busy_nodeslots_mask = '0;
@@ -53,7 +53,7 @@ class Test;
     task automatic start_environment();
         // Initialize AXI VIP agents
         this.axil_agent.start_master();
-        this.axi_memory_agent.start_master();
+        // this.axi_memory_agent.start_master();
 
         // Run monitors
         fork

@@ -43,7 +43,7 @@ module systolic_module #(
 
     // Accumulators for each Processing Element, from which output matrix can be constructed
     // One more row than required to shift in zeros into last row during SHIFT phase
-    output logic [MATRIX_N:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0] sys_module_pe_acc,
+    output logic [MATRIX_N:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0]   sys_module_pe_acc,
 
     output logic                                                 diagonal_flush_done,
 

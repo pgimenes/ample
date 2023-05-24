@@ -101,7 +101,7 @@ logic [MATRIX_N-1:0] [31:0]          sys_module_forward;
 logic [MAX_FEATURE_COUNT-1:0]        sys_module_down_valid; // 1024
 logic [MAX_FEATURE_COUNT-1:0] [31:0] sys_module_down;
 
-logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0] sys_module_pe_acc;
+logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0] sys_module_pe_acc;
 logic [SYSTOLIC_MODULE_COUNT-1:0] shift_sys_module;
 logic                             bias_valid;
 logic                             activation_valid;

@@ -104,47 +104,47 @@ module top_tb;
     logic [1 : 0]     host_axil_rresp;
     logic [0 : 0]     host_axil_rvalid;
 
-    logic  [7:0]                   axi_interconnect_memory_axi_awid; // output 
-    logic  [33:0]                  axi_interconnect_memory_axi_awaddr; // output 
-    logic  [7:0]                   axi_interconnect_memory_axi_awlen; // output 
-    logic  [2:0]                   axi_interconnect_memory_axi_awsize; // output 
-    logic  [1:0]                   axi_interconnect_memory_axi_awburst; // output 
-    logic  [0:0]                   axi_interconnect_memory_axi_awlock; // output 
-    logic  [3:0]                   axi_interconnect_memory_axi_awcache; // output 
-    logic  [2:0]                   axi_interconnect_memory_axi_awprot; // output 
-    logic  [3:0]                   axi_interconnect_memory_axi_awqos; // output 
-    logic                          axi_interconnect_memory_axi_awvalid; // output 
-    logic                          axi_interconnect_memory_axi_awready; // input  
+    // logic  [7:0]                   axi_interconnect_memory_axi_awid; // output 
+    // logic  [33:0]                  axi_interconnect_memory_axi_awaddr; // output 
+    // logic  [7:0]                   axi_interconnect_memory_axi_awlen; // output 
+    // logic  [2:0]                   axi_interconnect_memory_axi_awsize; // output 
+    // logic  [1:0]                   axi_interconnect_memory_axi_awburst; // output 
+    // logic  [0:0]                   axi_interconnect_memory_axi_awlock; // output 
+    // logic  [3:0]                   axi_interconnect_memory_axi_awcache; // output 
+    // logic  [2:0]                   axi_interconnect_memory_axi_awprot; // output 
+    // logic  [3:0]                   axi_interconnect_memory_axi_awqos; // output 
+    // logic                          axi_interconnect_memory_axi_awvalid; // output 
+    // logic                          axi_interconnect_memory_axi_awready; // input  
     
-    logic  [511:0]                 axi_interconnect_memory_axi_wdata; // output 
-    logic  [63:0]                  axi_interconnect_memory_axi_wstrb; // output 
-    logic                          axi_interconnect_memory_axi_wlast; // output 
-    logic                          axi_interconnect_memory_axi_wvalid; // output 
-    logic                          axi_interconnect_memory_axi_wready; // input  
+    // logic  [511:0]                 axi_interconnect_memory_axi_wdata; // output 
+    // logic  [63:0]                  axi_interconnect_memory_axi_wstrb; // output 
+    // logic                          axi_interconnect_memory_axi_wlast; // output 
+    // logic                          axi_interconnect_memory_axi_wvalid; // output 
+    // logic                          axi_interconnect_memory_axi_wready; // input  
     
-    logic [7:0]                    axi_interconnect_memory_axi_bid; // input  
-    logic [1:0]                    axi_interconnect_memory_axi_bresp; // input  
-    logic                          axi_interconnect_memory_axi_bvalid; // input  
-    logic                          axi_interconnect_memory_axi_bready; // output 
+    // logic [7:0]                    axi_interconnect_memory_axi_bid; // input  
+    // logic [1:0]                    axi_interconnect_memory_axi_bresp; // input  
+    // logic                          axi_interconnect_memory_axi_bvalid; // input  
+    // logic                          axi_interconnect_memory_axi_bready; // output 
     
-    logic  [7:0]                   axi_interconnect_memory_axi_arid; // output 
-    logic  [33:0]                  axi_interconnect_memory_axi_araddr; // output 
-    logic  [7:0]                   axi_interconnect_memory_axi_arlen; // output 
-    logic  [2:0]                   axi_interconnect_memory_axi_arsize; // output 
-    logic  [1:0]                   axi_interconnect_memory_axi_arburst; // output 
-    logic  [0:0]                   axi_interconnect_memory_axi_arlock; // output 
-    logic  [3:0]                   axi_interconnect_memory_axi_arcache; // output 
-    logic  [2:0]                   axi_interconnect_memory_axi_arprot; // output 
-    logic  [3:0]                   axi_interconnect_memory_axi_arqos; // output 
-    logic                          axi_interconnect_memory_axi_arvalid; // output 
-    logic                          axi_interconnect_memory_axi_arready; // input  
+    // logic  [7:0]                   axi_interconnect_memory_axi_arid; // output 
+    // logic  [33:0]                  axi_interconnect_memory_axi_araddr; // output 
+    // logic  [7:0]                   axi_interconnect_memory_axi_arlen; // output 
+    // logic  [2:0]                   axi_interconnect_memory_axi_arsize; // output 
+    // logic  [1:0]                   axi_interconnect_memory_axi_arburst; // output 
+    // logic  [0:0]                   axi_interconnect_memory_axi_arlock; // output 
+    // logic  [3:0]                   axi_interconnect_memory_axi_arcache; // output 
+    // logic  [2:0]                   axi_interconnect_memory_axi_arprot; // output 
+    // logic  [3:0]                   axi_interconnect_memory_axi_arqos; // output 
+    // logic                          axi_interconnect_memory_axi_arvalid; // output 
+    // logic                          axi_interconnect_memory_axi_arready; // input  
     
-    logic [7:0]                    axi_interconnect_memory_axi_rid; // input  
-    logic [511:0]                  axi_interconnect_memory_axi_rdata; // input  
-    logic [1:0]                    axi_interconnect_memory_axi_rresp; // input  
-    logic                          axi_interconnect_memory_axi_rlast; // input  
-    logic                          axi_interconnect_memory_axi_rvalid; // input  
-    logic                          axi_interconnect_memory_axi_rready; // output 
+    // logic [7:0]                    axi_interconnect_memory_axi_rid; // input  
+    // logic [511:0]                  axi_interconnect_memory_axi_rdata; // input  
+    // logic [1:0]                    axi_interconnect_memory_axi_rresp; // input  
+    // logic                          axi_interconnect_memory_axi_rlast; // input  
+    // logic                          axi_interconnect_memory_axi_rvalid; // input  
+    // logic                          axi_interconnect_memory_axi_rready; // output 
 
   // ============================================================================
   // Reset Generation
@@ -224,43 +224,43 @@ top top_i (
     .host_axil_rvalid       (host_axil_rvalid       ),
 
     // AXI Memory Master
-    .top_axi_interconnect_axi_awid            (memory_intf.top_axi_interconnect_axi_awid),
-    .top_axi_interconnect_axi_awaddr          (memory_intf.top_axi_interconnect_axi_awaddr),
-    .top_axi_interconnect_axi_awlen           (memory_intf.top_axi_interconnect_axi_awlen),
-    .top_axi_interconnect_axi_awsize          (memory_intf.top_axi_interconnect_axi_awsize),
-    .top_axi_interconnect_axi_awburst         (memory_intf.top_axi_interconnect_axi_awburst),
-    .top_axi_interconnect_axi_awlock          (memory_intf.top_axi_interconnect_axi_awlock),
-    .top_axi_interconnect_axi_awcache         (memory_intf.top_axi_interconnect_axi_awcache),
-    .top_axi_interconnect_axi_awprot          (memory_intf.top_axi_interconnect_axi_awprot),
-    .top_axi_interconnect_axi_awqos           (memory_intf.top_axi_interconnect_axi_awqos),
-    .top_axi_interconnect_axi_awvalid         (memory_intf.top_axi_interconnect_axi_awvalid),
-    .top_axi_interconnect_axi_awready         (memory_intf.top_axi_interconnect_axi_awready),
-    .top_axi_interconnect_axi_wdata           (memory_intf.top_axi_interconnect_axi_wdata),
-    .top_axi_interconnect_axi_wstrb           (memory_intf.top_axi_interconnect_axi_wstrb),
-    .top_axi_interconnect_axi_wlast           (memory_intf.top_axi_interconnect_axi_wlast),
-    .top_axi_interconnect_axi_wvalid          (memory_intf.top_axi_interconnect_axi_wvalid),
-    .top_axi_interconnect_axi_wready          (memory_intf.top_axi_interconnect_axi_wready),
-    .top_axi_interconnect_axi_bid             (memory_intf.top_axi_interconnect_axi_bid),
-    .top_axi_interconnect_axi_bresp           (memory_intf.top_axi_interconnect_axi_bresp),
-    .top_axi_interconnect_axi_bvalid          (memory_intf.top_axi_interconnect_axi_bvalid),
-    .top_axi_interconnect_axi_bready          (memory_intf.top_axi_interconnect_axi_bready),
-    .top_axi_interconnect_axi_arid            (memory_intf.top_axi_interconnect_axi_arid),
-    .top_axi_interconnect_axi_araddr          (memory_intf.top_axi_interconnect_axi_araddr),
-    .top_axi_interconnect_axi_arlen           (memory_intf.top_axi_interconnect_axi_arlen),
-    .top_axi_interconnect_axi_arsize          (memory_intf.top_axi_interconnect_axi_arsize),
-    .top_axi_interconnect_axi_arburst         (memory_intf.top_axi_interconnect_axi_arburst),
-    .top_axi_interconnect_axi_arlock          (memory_intf.top_axi_interconnect_axi_arlock),
-    .top_axi_interconnect_axi_arcache         (memory_intf.top_axi_interconnect_axi_arcache),
-    .top_axi_interconnect_axi_arprot          (memory_intf.top_axi_interconnect_axi_arprot),
-    .top_axi_interconnect_axi_arqos           (memory_intf.top_axi_interconnect_axi_arqos),
-    .top_axi_interconnect_axi_arvalid         (memory_intf.top_axi_interconnect_axi_arvalid),
-    .top_axi_interconnect_axi_arready         (memory_intf.top_axi_interconnect_axi_arready),
-    .top_axi_interconnect_axi_rid             (memory_intf.top_axi_interconnect_axi_rid),
-    .top_axi_interconnect_axi_rdata           (memory_intf.top_axi_interconnect_axi_rdata),
-    .top_axi_interconnect_axi_rresp           (memory_intf.top_axi_interconnect_axi_rresp),
-    .top_axi_interconnect_axi_rlast           (memory_intf.top_axi_interconnect_axi_rlast),
-    .top_axi_interconnect_axi_rvalid          (memory_intf.top_axi_interconnect_axi_rvalid),
-    .top_axi_interconnect_axi_rready          (memory_intf.top_axi_interconnect_axi_rready),
+    // .top_axi_interconnect_axi_awid            (memory_intf.top_axi_interconnect_axi_awid),
+    // .top_axi_interconnect_axi_awaddr          (memory_intf.top_axi_interconnect_axi_awaddr),
+    // .top_axi_interconnect_axi_awlen           (memory_intf.top_axi_interconnect_axi_awlen),
+    // .top_axi_interconnect_axi_awsize          (memory_intf.top_axi_interconnect_axi_awsize),
+    // .top_axi_interconnect_axi_awburst         (memory_intf.top_axi_interconnect_axi_awburst),
+    // .top_axi_interconnect_axi_awlock          (memory_intf.top_axi_interconnect_axi_awlock),
+    // .top_axi_interconnect_axi_awcache         (memory_intf.top_axi_interconnect_axi_awcache),
+    // .top_axi_interconnect_axi_awprot          (memory_intf.top_axi_interconnect_axi_awprot),
+    // .top_axi_interconnect_axi_awqos           (memory_intf.top_axi_interconnect_axi_awqos),
+    // .top_axi_interconnect_axi_awvalid         (memory_intf.top_axi_interconnect_axi_awvalid),
+    // .top_axi_interconnect_axi_awready         (memory_intf.top_axi_interconnect_axi_awready),
+    // .top_axi_interconnect_axi_wdata           (memory_intf.top_axi_interconnect_axi_wdata),
+    // .top_axi_interconnect_axi_wstrb           (memory_intf.top_axi_interconnect_axi_wstrb),
+    // .top_axi_interconnect_axi_wlast           (memory_intf.top_axi_interconnect_axi_wlast),
+    // .top_axi_interconnect_axi_wvalid          (memory_intf.top_axi_interconnect_axi_wvalid),
+    // .top_axi_interconnect_axi_wready          (memory_intf.top_axi_interconnect_axi_wready),
+    // .top_axi_interconnect_axi_bid             (memory_intf.top_axi_interconnect_axi_bid),
+    // .top_axi_interconnect_axi_bresp           (memory_intf.top_axi_interconnect_axi_bresp),
+    // .top_axi_interconnect_axi_bvalid          (memory_intf.top_axi_interconnect_axi_bvalid),
+    // .top_axi_interconnect_axi_bready          (memory_intf.top_axi_interconnect_axi_bready),
+    // .top_axi_interconnect_axi_arid            (memory_intf.top_axi_interconnect_axi_arid),
+    // .top_axi_interconnect_axi_araddr          (memory_intf.top_axi_interconnect_axi_araddr),
+    // .top_axi_interconnect_axi_arlen           (memory_intf.top_axi_interconnect_axi_arlen),
+    // .top_axi_interconnect_axi_arsize          (memory_intf.top_axi_interconnect_axi_arsize),
+    // .top_axi_interconnect_axi_arburst         (memory_intf.top_axi_interconnect_axi_arburst),
+    // .top_axi_interconnect_axi_arlock          (memory_intf.top_axi_interconnect_axi_arlock),
+    // .top_axi_interconnect_axi_arcache         (memory_intf.top_axi_interconnect_axi_arcache),
+    // .top_axi_interconnect_axi_arprot          (memory_intf.top_axi_interconnect_axi_arprot),
+    // .top_axi_interconnect_axi_arqos           (memory_intf.top_axi_interconnect_axi_arqos),
+    // .top_axi_interconnect_axi_arvalid         (memory_intf.top_axi_interconnect_axi_arvalid),
+    // .top_axi_interconnect_axi_arready         (memory_intf.top_axi_interconnect_axi_arready),
+    // .top_axi_interconnect_axi_rid             (memory_intf.top_axi_interconnect_axi_rid),
+    // .top_axi_interconnect_axi_rdata           (memory_intf.top_axi_interconnect_axi_rdata),
+    // .top_axi_interconnect_axi_rresp           (memory_intf.top_axi_interconnect_axi_rresp),
+    // .top_axi_interconnect_axi_rlast           (memory_intf.top_axi_interconnect_axi_rlast),
+    // .top_axi_interconnect_axi_rvalid          (memory_intf.top_axi_interconnect_axi_rvalid),
+    // .top_axi_interconnect_axi_rready          (memory_intf.top_axi_interconnect_axi_rready),
 
     // DDR4
     .c0_sys_clk_p           (c0_sys_clk_p),
@@ -321,10 +321,10 @@ top top_i (
     .c0_init_calib_complete (c0_init_calib_complete)
 );
 
-top_memory_axi_interface memory_intf (
-    .clk                 (sys_clk_i),                    // input wire aclk
-    .resetn              (!sys_rst)              // input wire aresetn
-);
+// top_memory_axi_interface memory_intf (
+//     .clk                 (sys_clk_i),                    // input wire aclk
+//     .resetn              (!sys_rst)              // input wire aresetn
+// );
 
 //===========================================================================
 // AXI-L VIP
@@ -359,48 +359,48 @@ axil_master_vip axil_master_vip_i (
 // AXI Memory Master VIP
 //===========================================================================
 
-axi_memory_master_vip axi_memory_master_vip_i (
-  .aclk               (sys_clk_i),                    // input wire aclk
-  .aresetn            (!sys_rst),              // input wire aresetn
+// axi_memory_master_vip axi_memory_master_vip_i (
+//   .aclk               (sys_clk_i),                    // input wire aclk
+//   .aresetn            (!sys_rst),              // input wire aresetn
 
-  .m_axi_awid         (memory_intf.top_axi_interconnect_axi_awid),        // output wire [3 : 0] m_axi_awid
-  .m_axi_awaddr       (memory_intf.top_axi_interconnect_axi_awaddr),    // output wire [33 : 0] m_axi_awaddr
-  .m_axi_awlen        (memory_intf.top_axi_interconnect_axi_awlen),      // output wire [7 : 0] m_axi_awlen
-  .m_axi_awsize       (memory_intf.top_axi_interconnect_axi_awsize),    // output wire [2 : 0] m_axi_awsize
-  .m_axi_awburst      (memory_intf.top_axi_interconnect_axi_awburst),  // output wire [1 : 0] m_axi_awburst
-  .m_axi_awlock       (memory_intf.top_axi_interconnect_axi_awlock),    // output wire [0 : 0] m_axi_awlock
-  .m_axi_awcache      (memory_intf.top_axi_interconnect_axi_awcache),  // output wire [3 : 0] m_axi_awcache
-  .m_axi_awprot       (memory_intf.top_axi_interconnect_axi_awprot),    // output wire [2 : 0] m_axi_awprot
-  .m_axi_awqos        (memory_intf.top_axi_interconnect_axi_awqos),      // output wire [3 : 0] m_axi_awqos
-  .m_axi_awvalid      (memory_intf.top_axi_interconnect_axi_awvalid),  // output wire m_axi_awvalid
-  .m_axi_awready      (memory_intf.top_axi_interconnect_axi_awready),  // input wire m_axi_awready
-  .m_axi_wdata        (memory_intf.top_axi_interconnect_axi_wdata),      // output wire [511 : 0] m_axi_wdata
-  .m_axi_wstrb        (memory_intf.top_axi_interconnect_axi_wstrb),      // output wire [63 : 0] m_axi_wstrb
-  .m_axi_wlast        (memory_intf.top_axi_interconnect_axi_wlast),      // output wire m_axi_wlast
-  .m_axi_wvalid       (memory_intf.top_axi_interconnect_axi_wvalid),    // output wire m_axi_wvalid
-  .m_axi_wready       (memory_intf.top_axi_interconnect_axi_wready),    // input wire m_axi_wready
-  .m_axi_bid          (memory_intf.top_axi_interconnect_axi_bid),          // input wire [3 : 0] m_axi_bid
-  .m_axi_bresp        (memory_intf.top_axi_interconnect_axi_bresp),      // input wire [1 : 0] m_axi_bresp
-  .m_axi_bvalid       (memory_intf.top_axi_interconnect_axi_bvalid),    // input wire m_axi_bvalid
-  .m_axi_bready       (memory_intf.top_axi_interconnect_axi_bready),    // output wire m_axi_bready
-  .m_axi_arid         (memory_intf.top_axi_interconnect_axi_arid),        // output wire [3 : 0] m_axi_arid
-  .m_axi_araddr       (memory_intf.top_axi_interconnect_axi_araddr),    // output wire [33 : 0] m_axi_araddr
-  .m_axi_arlen        (memory_intf.top_axi_interconnect_axi_arlen),      // output wire [7 : 0] m_axi_arlen
-  .m_axi_arsize       (memory_intf.top_axi_interconnect_axi_arsize),    // output wire [2 : 0] m_axi_arsize
-  .m_axi_arburst      (memory_intf.top_axi_interconnect_axi_arburst),  // output wire [1 : 0] m_axi_arburst
-  .m_axi_arlock       (memory_intf.top_axi_interconnect_axi_arlock),    // output wire [0 : 0] m_axi_arlock
-  .m_axi_arcache      (memory_intf.top_axi_interconnect_axi_arcache),  // output wire [3 : 0] m_axi_arcache
-  .m_axi_arprot       (memory_intf.top_axi_interconnect_axi_arprot),    // output wire [2 : 0] m_axi_arprot
-  .m_axi_arqos        (memory_intf.top_axi_interconnect_axi_arqos),      // output wire [3 : 0] m_axi_arqos
-  .m_axi_arvalid      (memory_intf.top_axi_interconnect_axi_arvalid),  // output wire m_axi_arvalid
-  .m_axi_arready      (memory_intf.top_axi_interconnect_axi_arready),  // input wire m_axi_arready
-  .m_axi_rid          (memory_intf.top_axi_interconnect_axi_rid),          // input wire [3 : 0] m_axi_rid
-  .m_axi_rdata        (memory_intf.top_axi_interconnect_axi_rdata),      // input wire [511 : 0] m_axi_rdata
-  .m_axi_rresp        (memory_intf.top_axi_interconnect_axi_rresp),      // input wire [1 : 0] m_axi_rresp
-  .m_axi_rlast        (memory_intf.top_axi_interconnect_axi_rlast),      // input wire m_axi_rlast
-  .m_axi_rvalid       (memory_intf.top_axi_interconnect_axi_rvalid),    // input wire m_axi_rvalid
-  .m_axi_rready       (memory_intf.top_axi_interconnect_axi_rready)    // output wire m_axi_rready
-);
+//   .m_axi_awid         (memory_intf.top_axi_interconnect_axi_awid),        // output wire [3 : 0] m_axi_awid
+//   .m_axi_awaddr       (memory_intf.top_axi_interconnect_axi_awaddr),    // output wire [33 : 0] m_axi_awaddr
+//   .m_axi_awlen        (memory_intf.top_axi_interconnect_axi_awlen),      // output wire [7 : 0] m_axi_awlen
+//   .m_axi_awsize       (memory_intf.top_axi_interconnect_axi_awsize),    // output wire [2 : 0] m_axi_awsize
+//   .m_axi_awburst      (memory_intf.top_axi_interconnect_axi_awburst),  // output wire [1 : 0] m_axi_awburst
+//   .m_axi_awlock       (memory_intf.top_axi_interconnect_axi_awlock),    // output wire [0 : 0] m_axi_awlock
+//   .m_axi_awcache      (memory_intf.top_axi_interconnect_axi_awcache),  // output wire [3 : 0] m_axi_awcache
+//   .m_axi_awprot       (memory_intf.top_axi_interconnect_axi_awprot),    // output wire [2 : 0] m_axi_awprot
+//   .m_axi_awqos        (memory_intf.top_axi_interconnect_axi_awqos),      // output wire [3 : 0] m_axi_awqos
+//   .m_axi_awvalid      (memory_intf.top_axi_interconnect_axi_awvalid),  // output wire m_axi_awvalid
+//   .m_axi_awready      (memory_intf.top_axi_interconnect_axi_awready),  // input wire m_axi_awready
+//   .m_axi_wdata        (memory_intf.top_axi_interconnect_axi_wdata),      // output wire [511 : 0] m_axi_wdata
+//   .m_axi_wstrb        (memory_intf.top_axi_interconnect_axi_wstrb),      // output wire [63 : 0] m_axi_wstrb
+//   .m_axi_wlast        (memory_intf.top_axi_interconnect_axi_wlast),      // output wire m_axi_wlast
+//   .m_axi_wvalid       (memory_intf.top_axi_interconnect_axi_wvalid),    // output wire m_axi_wvalid
+//   .m_axi_wready       (memory_intf.top_axi_interconnect_axi_wready),    // input wire m_axi_wready
+//   .m_axi_bid          (memory_intf.top_axi_interconnect_axi_bid),          // input wire [3 : 0] m_axi_bid
+//   .m_axi_bresp        (memory_intf.top_axi_interconnect_axi_bresp),      // input wire [1 : 0] m_axi_bresp
+//   .m_axi_bvalid       (memory_intf.top_axi_interconnect_axi_bvalid),    // input wire m_axi_bvalid
+//   .m_axi_bready       (memory_intf.top_axi_interconnect_axi_bready),    // output wire m_axi_bready
+//   .m_axi_arid         (memory_intf.top_axi_interconnect_axi_arid),        // output wire [3 : 0] m_axi_arid
+//   .m_axi_araddr       (memory_intf.top_axi_interconnect_axi_araddr),    // output wire [33 : 0] m_axi_araddr
+//   .m_axi_arlen        (memory_intf.top_axi_interconnect_axi_arlen),      // output wire [7 : 0] m_axi_arlen
+//   .m_axi_arsize       (memory_intf.top_axi_interconnect_axi_arsize),    // output wire [2 : 0] m_axi_arsize
+//   .m_axi_arburst      (memory_intf.top_axi_interconnect_axi_arburst),  // output wire [1 : 0] m_axi_arburst
+//   .m_axi_arlock       (memory_intf.top_axi_interconnect_axi_arlock),    // output wire [0 : 0] m_axi_arlock
+//   .m_axi_arcache      (memory_intf.top_axi_interconnect_axi_arcache),  // output wire [3 : 0] m_axi_arcache
+//   .m_axi_arprot       (memory_intf.top_axi_interconnect_axi_arprot),    // output wire [2 : 0] m_axi_arprot
+//   .m_axi_arqos        (memory_intf.top_axi_interconnect_axi_arqos),      // output wire [3 : 0] m_axi_arqos
+//   .m_axi_arvalid      (memory_intf.top_axi_interconnect_axi_arvalid),  // output wire m_axi_arvalid
+//   .m_axi_arready      (memory_intf.top_axi_interconnect_axi_arready),  // input wire m_axi_arready
+//   .m_axi_rid          (memory_intf.top_axi_interconnect_axi_rid),          // input wire [3 : 0] m_axi_rid
+//   .m_axi_rdata        (memory_intf.top_axi_interconnect_axi_rdata),      // input wire [511 : 0] m_axi_rdata
+//   .m_axi_rresp        (memory_intf.top_axi_interconnect_axi_rresp),      // input wire [1 : 0] m_axi_rresp
+//   .m_axi_rlast        (memory_intf.top_axi_interconnect_axi_rlast),      // input wire m_axi_rlast
+//   .m_axi_rvalid       (memory_intf.top_axi_interconnect_axi_rvalid),    // input wire m_axi_rvalid
+//   .m_axi_rready       (memory_intf.top_axi_interconnect_axi_rready)    // output wire m_axi_rready
+// );
 
 //===========================================================================
 // Tests

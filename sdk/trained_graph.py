@@ -2,6 +2,7 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 
+import torch
 from torch_geometric.utils import to_networkx
 
 import random
@@ -79,6 +80,9 @@ class TrainedGraph:
 
             self.nx_graph.nodes[node]['embedding'] = embd
             self.embeddings[node] = self.nx_graph.nodes[node]['embedding']
+
+        self.dataset.x = torch.tensor(self.embeddings, dtype=torch.float)
+        return self.embeddings
 
     def random_weights(self):
         self.weights = np.zeros((self.feature_count, self.feature_count))
