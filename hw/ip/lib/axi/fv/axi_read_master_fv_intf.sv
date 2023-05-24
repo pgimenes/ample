@@ -3,7 +3,7 @@ parameter DATA_WIDTH     = 512;
 parameter ADDRESS_WIDTH  = 34;
 
 interface axi_read_master_fv_intf (
-    input logic clk,
+    input logic core_clk,
     input logic resetn,
 
     // Request interface
@@ -50,7 +50,7 @@ assign accept_axi_req = axi_arvalid && axi_arready;
 // assign beats_expectation = (byte_count % 64 > 0) ? (byte_count / 64) + 1 : (byte_count / 64);
 // assign trans_expectation = (beats_expectation % 64 > 0) ? (beats_expectation / 64) + 1 : (beats_expectation / 64);
 
-always_ff @(posedge clk or negedge resetn) begin
+always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         byte_count          = 0;
         transaction_count   = 0;
@@ -82,17 +82,17 @@ always_ff @(posedge clk or negedge resetn) begin
 end
 
 P_Drive_AXI_after_fetch_request: assert property (
-  @(posedge clk) disable iff (!resetn)
+  @(posedge core_clk) disable iff (!resetn)
   (accept_req && fetch_byte_count > 0) |=> axi_arvalid );
 
 // If making a request, burst size should not exceed 64
 P_Never_overflow_data_bus: assert property (
-  @(posedge clk) disable iff (!resetn)
+  @(posedge core_clk) disable iff (!resetn)
   (axi_arvalid && axi_arready) |=> !(axi_arlen > 63) );
 
 // If making a request, burst size should not exceed 64
 P_Fill_data_bus: assert property (
-  @(posedge clk) disable iff (!resetn)
+  @(posedge core_clk) disable iff (!resetn)
   (axi_arvalid && axi_arready) |=> (axi_arsize == 3'b110) );
 
 // C_Eventually_Drain: cover property (
@@ -101,21 +101,21 @@ P_Fill_data_bus: assert property (
 
 // When responses begin, number of beats requested should equal expectation from byte count
 P_Correct_Beat_Count: assert property (
-  @(posedge clk) disable iff (!resetn)
+  @(posedge core_clk) disable iff (!resetn)
   fetch_resp_valid && fetch_resp_ready |-> beat_count == beats_expectation );
 
 // When responses begin, number of issued transactions should equal expectation from byte count
 P_Correct_Transaction_Count: assert property (
-  @(posedge clk) disable iff (!resetn)
+  @(posedge core_clk) disable iff (!resetn)
   fetch_resp_valid && fetch_resp_ready |-> transaction_count == trans_expectation );
 
 // Multiple transactions
 C_Multiple_Transactions: cover property (
-  @(posedge clk) disable iff (!resetn)
+  @(posedge core_clk) disable iff (!resetn)
   (trans_expectation == 10) && (transaction_count == trans_expectation) );
 
 P_example: assert property (
-  @(posedge clk) disable iff (!resetn)
+  @(posedge core_clk) disable iff (!resetn)
   byte_count == 8000 && fetch_resp_valid |-> transaction_count == 2 );
 
 endinterface

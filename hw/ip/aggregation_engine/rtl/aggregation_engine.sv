@@ -419,7 +419,9 @@ for (genvar agc_fixed16_row = 0; agc_fixed16_row < AGC_FIXED16_ROWS; agc_fixed16
             .router_aggregation_core_on     (router_aggregation_core_on     [agc_fixed16_row][agc_fixed16_col]),
             .router_aggregation_core_valid  (router_aggregation_core_valid  [agc_fixed16_row][agc_fixed16_col]),
             .router_aggregation_core_ready  (router_aggregation_core_ready  [agc_fixed16_row][agc_fixed16_col]),
-            .router_aggregation_core_data   (router_aggregation_core_data   [agc_fixed16_row][agc_fixed16_col])
+            .router_aggregation_core_data   (router_aggregation_core_data   [agc_fixed16_row][agc_fixed16_col]),
+
+            .layer_config_upsampling_parameter  (layer_config_upsampling_parameter_value)
         );
 
         always_comb begin

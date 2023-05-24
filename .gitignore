@@ -46,3 +46,6 @@ layer_config.json
 hw/build/
 hw/sim/xsim.ini
 hw/update_regbanks.tcl
+
+# DVT
+.dvt/
