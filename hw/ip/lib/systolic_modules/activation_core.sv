@@ -3,18 +3,18 @@ import top_pkg::*;
 module activation_core #(
     parameter FLOAT_WIDTH = 32
 ) (
-    input  logic core_clk,
-    input  logic resetn,
+    input  logic                                    core_clk,
+    input  logic                                    resetn,
 
     input  logic [$bits(ACTIVATION_FUNCTION_e)-1:0] sel_activation,
     
-    input  logic                   in_feature_valid,
-    input  logic [FLOAT_WIDTH-1:0] in_feature,
+    input  logic                                    in_feature_valid,
+    input  logic [FLOAT_WIDTH-1:0]                  in_feature,
     
-    output logic                   activated_feature_valid,
-    output logic [FLOAT_WIDTH-1:0] activated_feature,
+    output logic                                    activated_feature_valid,
+    output logic [FLOAT_WIDTH-1:0]                  activated_feature,
 
-    input  logic layer_config_leaky_relu_alpha_value
+    input  logic [31:0]                             layer_config_leaky_relu_alpha_value
 );
 
 logic                   leaky_relu_activation_valid;

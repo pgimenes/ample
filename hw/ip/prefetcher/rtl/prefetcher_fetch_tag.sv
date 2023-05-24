@@ -9,9 +9,8 @@ module prefetcher_fetch_tag #(
     parameter int ADJ_QUEUE_WIDTH   = 32,
     parameter int ADJ_QUEUE_DEPTH   = 64,
     parameter int MESSAGE_QUEUE_WIDTH = 512,
-    parameter int MESSAGE_QUEUE_DEPTH = 4096,
+    parameter int MESSAGE_QUEUE_DEPTH = 4096
 
-    parameter FEATURE_COUNT = 4 // for MS2. TO DO: read from regbank
 ) (
     input logic core_clk,
     input logic resetn,
@@ -81,8 +80,6 @@ module prefetcher_fetch_tag #(
     input  logic [1:0] layer_config_scale_factors_address_msb_value
 );
 
-parameter BYTE_COUNT_PER_ADJ_QUEUE_SLOT = 4;
-
 // ==================================================================================================================================================
 // Declarations
 // ==================================================================================================================================================
@@ -92,7 +89,6 @@ logic [$clog2(MAX_NODESLOT_COUNT)-1:0]                        allocated_nodeslot
 logic [$clog2(MAX_FEATURE_COUNT)-1:0]                         allocated_feature_count;
 logic                                                         make_tag_free;
 
-FETCH_TAG_ADJ_QUEUE_FETCH_FSM_e                               adj_queue_fetch_state, adj_queue_fetch_state_n;
 FETCH_TAG_MESSAGE_FETCH_FSM_e                                 message_fetch_state, message_fetch_state_n;
 
 // Address Queue
@@ -102,9 +98,9 @@ logic                                                         adj_queue_head_val
 logic [ADJ_QUEUE_WIDTH-1:0]                                   adj_queue_head;
 logic                                                         adj_queue_empty, adj_queue_full;
 logic [$clog2(ADJ_QUEUE_DEPTH):0]                             adj_queue_count;
-
 logic [$clog2(ADJ_QUEUE_DEPTH):0]                             adj_queue_slots_available; // how many ID's can currently be stored
 
+logic                                                         adj_queue_manager_free;
 logic                                                         adj_queue_manager_ready;
 logic                                                         adj_queue_fetch_resp_valid;
 logic                                                         adj_queue_fetch_resp_partial;
@@ -114,12 +110,10 @@ logic                                                         push_message_queue
 logic                                                         message_queue_head_valid;
 logic [MESSAGE_QUEUE_WIDTH-1:0]                               message_queue_head;
 logic                                                         message_queue_empty, message_queue_full;
-logic [$clog2(MESSAGE_QUEUE_DEPTH)-1:0]                       message_queue_count;
+logic [$clog2(MESSAGE_QUEUE_DEPTH):0]                         message_queue_count;
 
 logic                                                         accepting_nsb_req;
-logic                                                         accepting_adj_fetch_req;
 logic                                                         accepting_message_fetch_req;
-logic                                                         accepting_adj_fetch_resp;
 logic                                                         accepting_msg_fetch_resp;
 
 // Scale Factor Queue
@@ -179,6 +173,8 @@ prefetcher_streaming_manager #(
 
     .core_clk                         (core_clk),
     .resetn                           (resetn),
+
+    .free                             (adj_queue_manager_free),
 
     .fetch_req_valid                  (!tag_free && nsb_prefetcher_req_valid),
     .fetch_req_ready                  (adj_queue_manager_ready),
@@ -267,6 +263,8 @@ prefetcher_streaming_manager #(
     .core_clk                         (core_clk),
     .resetn                           (resetn),
 
+    .free                             (),
+
     .fetch_req_valid                  (!tag_free && nsb_prefetcher_req_valid),
     .fetch_req_ready                  (scale_factor_fetch_req_ready),
     .fetch_req_opcode                 (nsb_prefetcher_req.req_opcode),
@@ -304,10 +302,7 @@ prefetcher_streaming_manager #(
 always_comb begin
     accepting_nsb_req           = nsb_prefetcher_req_valid && nsb_prefetcher_req_ready;
 
-    accepting_adj_fetch_req     = fetch_tag_adj_rm_req_valid && fetch_tag_adj_rm_req_ready;
-    accepting_message_fetch_req = fetch_tag_msg_rm_req_valid && fetch_tag_msg_rm_req_ready;
-    
-    accepting_adj_fetch_resp    = fetch_tag_adj_rm_resp_valid && fetch_tag_adj_rm_resp_ready;
+    accepting_message_fetch_req = fetch_tag_msg_rm_req_valid && fetch_tag_msg_rm_req_ready;    
     accepting_msg_fetch_resp    = fetch_tag_msg_rm_resp_valid && fetch_tag_msg_rm_resp_ready;
 end
 
@@ -378,7 +373,7 @@ always_comb begin
                                     : {2'd0, layer_config_in_messages_address_lsb_value} + 64*adj_queue_head;
     
     fetch_tag_msg_rm_byte_count     = scale_factor_read_master_req_valid ? scale_factor_read_master_byte_count
-                                    : FEATURE_COUNT * top_pkg::bits_per_precision(msg_fetch_req_precision_q) / 8;
+                                    : allocated_feature_count * top_pkg::bits_per_precision(msg_fetch_req_precision_q) / 8;
 
     fetch_tag_msg_rm_resp_ready = (message_fetch_state == MSG_STORE) || scale_factor_read_master_resp_ready;
 
@@ -480,7 +475,7 @@ end
 // ----------------------------------------------------
 
 assign make_tag_free = deallocation_valid && adj_queue_empty && message_queue_empty
-            && (adj_queue_fetch_state == ADJ_IDLE)
+            && adj_queue_manager_free
             && (message_fetch_state == MSG_IDLE);
 
 always_ff @(posedge core_clk or negedge resetn) begin
