@@ -385,7 +385,7 @@ always_comb begin
     push_message_queue   = (message_fetch_state == MSG_STORE) && accepting_msg_fetch_resp;
     msg_queue_write_data = fetch_tag_msg_rm_resp_data;
     
-    pop_adj_queue = (message_fetch_state == MSG_STORE) && accepting_message_fetch_req;
+    pop_adj_queue = (message_fetch_state == MSG_FETCH) && accepting_message_fetch_req;
 end
 
 always_ff @(posedge core_clk or negedge resetn) begin
