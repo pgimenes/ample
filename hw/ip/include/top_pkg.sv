@@ -147,6 +147,7 @@ typedef struct packed {
 typedef struct packed {
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
     NSB_PREF_OPCODE_e                      response_type;
+    logic [$clog2(FETCH_TAG_COUNT)-1:0]    allocated_fetch_tag;
     logic                                  partial;
 } NSB_PREF_RESP_t;
 
@@ -157,7 +158,8 @@ typedef struct packed {
 
 typedef struct packed {
     logic [AXI_DATA_WIDTH-1:0] data;
-    logic last;
+    logic last_neighbour;
+    logic last_feature;
 } MESSAGE_CHANNEL_RESP_t;
 
 typedef struct packed {

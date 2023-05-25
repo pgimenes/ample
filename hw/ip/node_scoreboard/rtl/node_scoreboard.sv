@@ -138,7 +138,7 @@ logic nsb_config_transformation_wait_count_strobe; // strobe signal for register
 logic [5:0] nsb_config_transformation_wait_count_count;// value of field 'NSB_CONFIG_TRANSFORMATION_WAIT_COUNT.COUNT'
 
 logic [63:0] nsb_nodeslot_allocated_fetch_tag_strobe;
-logic [63:0] [31:0] nsb_nodeslot_allocated_fetch_tag_fetch_tag;
+logic [63:0] [5:0] nsb_nodeslot_allocated_fetch_tag_fetch_tag;
 
 // Other
 // ------------------------------------------------------------
@@ -404,17 +404,15 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
     // Read-only status flags
     always_ff @(posedge core_clk or negedge resetn) begin
         if (!resetn) begin
-            nsb_nodeslot_allocated_fetch_tag_fetch_tag <= '0;
+            nsb_nodeslot_allocated_fetch_tag_fetch_tag [nodeslot] <= '0;
         
         // Reset flags if clearing nodeslot
         end else if (nodeslot_state_n[nodeslot] == EMPTY) begin
-            nsb_nodeslot_allocated_fetch_tag_fetch_tag <= '0;
+            nsb_nodeslot_allocated_fetch_tag_fetch_tag [nodeslot] <= '0;
             
-        end else begin
-            // TO DO: update this to use dynamically allocated fetch tags (MS3)
-            if (nsb_prefetcher_resp_valid) begin
-                nsb_nodeslot_allocated_fetch_tag_fetch_tag[nsb_prefetcher_resp.nodeslot] <= nsb_prefetcher_resp.nodeslot;
-            end
+        end else if (nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == ADJACENCY_LIST) && (nsb_prefetcher_resp.nodeslot == nodeslot)) begin
+                // TO DO: update this to use dynamically allocated fetch tags (MS3)
+                nsb_nodeslot_allocated_fetch_tag_fetch_tag[nodeslot] <= nsb_prefetcher_resp.allocated_fetch_tag;
         end
     end
 
