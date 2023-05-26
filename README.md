@@ -13,7 +13,7 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a> -->
 
-  <h3 align="center">GraphBoost</h3>
+  <h3 align="center">AMPLE: Accelerated Message Passing Learning Engine</h3>
 
   <p align="center">
     An FPGA accelerator for Graph Neural Networks following the Message Passing Mechanism.
