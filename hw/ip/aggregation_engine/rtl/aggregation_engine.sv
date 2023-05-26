@@ -101,22 +101,18 @@ logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_a
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_req_valid_fixed16;
 
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_req_ready;
-logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_req_ready_float32;
-logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_req_ready_fixed16;
 
-AGE_AGM_REQ_t                                                              age_agm_req;
+AGE_AGM_REQ_t [TOTAL_AGGREGATION_MANAGERS-1:0]                             age_agm_req;
 AGE_AGM_REQ_t                                                              age_agm_req_float32;
 AGE_AGM_REQ_t                                                              age_agm_req_fixed16;
 
-logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_resp_valid;
-logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_resp_ready;
-NSB_AGE_RESP_t [TOTAL_AGGREGATION_MANAGERS-1:0]                            age_agm_resp;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     aggregation_manager_age_done_valid;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     aggregation_manager_age_done_ready;
 
 // Buffer Manager Allocation
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_buffer_manager_allocation_valid;
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     age_agm_buffer_manager_allocation_ready;
 logic [$clog2(TOTAL_BUFFER_MANAGERS)-1:0]                                  age_agm_buffer_manager_allocation;
-logic [$clog2(TOTAL_BUFFER_MANAGERS)-1:0]                                  buffer_manager_receiving_allocation;
 
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     aggregation_manager_router_on;
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     aggregation_manager_router_valid;
@@ -269,11 +265,10 @@ for (genvar agm = 0; agm < TOTAL_AGGREGATION_MANAGERS; agm = agm + 1) begin
 
         .age_aggregation_manager_req_valid                       (age_agm_req_valid [agm]),
         .age_aggregation_manager_req_ready                       (age_agm_req_ready [agm]),
-        .age_aggregation_manager_req                             (age_agm_req),
+        .age_aggregation_manager_req                             (age_agm_req       [agm]),
 
-        .age_aggregation_manager_resp_valid                      (age_agm_resp_valid [agm]),
-        .age_aggregation_manager_resp_ready                      (age_agm_resp_ready [agm]),
-        .age_aggregation_manager_resp                            (age_agm_resp [agm]),
+        .aggregation_manager_age_done_valid                      (aggregation_manager_age_done_valid [agm]),
+        .aggregation_manager_age_done_ready                      (aggregation_manager_age_done_ready [agm]),
 
         .age_aggregation_manager_buffer_manager_allocation_valid (age_agm_buffer_manager_allocation_valid [agm]),
         .age_aggregation_manager_buffer_manager_allocation_ready (age_agm_buffer_manager_allocation_ready [agm]),
@@ -313,19 +308,23 @@ for (genvar agm = 0; agm < TOTAL_AGGREGATION_MANAGERS; agm = agm + 1) begin
 
 
     always_comb begin
-        age_agm_resp_ready[agm] = aggregation_manager_resp_arbitration_oh [agm];
+        aggregation_manager_age_done_ready[agm] = aggregation_manager_resp_arbitration_oh [agm];
 
         // Last row of NOC mesh is taken by message channels
-        aggregation_manager_router_on    [agm]              = node_router_on                   [agm][MESH_ROWS-1];
-        aggregation_manager_router_ready [agm]              = node_router_ready                [agm][MESH_ROWS-1];
+        aggregation_manager_router_on    [agm]              = node_router_on                   [agm][MESH_ROWS-1][0];
+        aggregation_manager_router_ready [agm]              = node_router_ready                [agm][MESH_ROWS-1][0];
         node_router_valid                [agm][MESH_ROWS-1] = aggregation_manager_router_valid [agm];
         node_router_data                 [agm][MESH_ROWS-1] = aggregation_manager_router_data  [agm];
 
-        router_aggregation_manager_valid [agm]              = router_node_valid                [agm][MESH_ROWS-1];
-        router_aggregation_manager_data  [agm]              = router_node_data                 [agm][MESH_ROWS-1];
-        router_node_on                   [agm][MESH_ROWS-1] = router_aggregation_manager_on    [agm];
-        router_node_ready                [agm][MESH_ROWS-1] = router_aggregation_manager_ready [agm];
+        router_aggregation_manager_valid [agm]                 = router_node_valid                [agm][MESH_ROWS-1];
+        router_aggregation_manager_data  [agm]                 = router_node_data                 [agm][MESH_ROWS-1];
+        router_node_on                   [agm][MESH_ROWS-1][0] = router_aggregation_manager_on    [agm];
+        router_node_ready                [agm][MESH_ROWS-1][0] = router_aggregation_manager_ready [agm];
     end
+
+    assign age_agm_req [agm] = age_agm_req_valid_float32 [agm] ? age_agm_req_float32
+                            : age_agm_req_valid_fixed16 [agm] ? age_agm_req_fixed16
+                            : '0;
 
 end
 
@@ -370,15 +369,15 @@ for (genvar agc_float32_row = 0; agc_float32_row < AGC_FLOAT32_ROWS; agc_float32
         );
 
         always_comb begin
-            aggregation_core_router_on    [agc_float32_row][agc_float32_col] = node_router_on                [agc_float32_col][agc_float32_row];
-            aggregation_core_router_ready [agc_float32_row][agc_float32_col] = node_router_ready             [agc_float32_col][agc_float32_row];
+            aggregation_core_router_on    [agc_float32_row][agc_float32_col] = node_router_on                [agc_float32_col][agc_float32_row][0];
+            aggregation_core_router_ready [agc_float32_row][agc_float32_col] = node_router_ready             [agc_float32_col][agc_float32_row][0];
             node_router_valid             [agc_float32_col][agc_float32_row] = aggregation_core_router_valid [agc_float32_row][agc_float32_col];
             node_router_data              [agc_float32_col][agc_float32_row] = aggregation_core_router_data  [agc_float32_row][agc_float32_col];
             
             router_aggregation_core_valid [agc_float32_row][agc_float32_col] = router_node_valid             [agc_float32_col][agc_float32_row];
             router_aggregation_core_data  [agc_float32_row][agc_float32_col] = router_node_data              [agc_float32_col][agc_float32_row];
-            router_node_on                [agc_float32_col][agc_float32_row] = router_aggregation_core_on    [agc_float32_row][agc_float32_col];
-            router_node_ready             [agc_float32_col][agc_float32_row] = router_aggregation_core_ready [agc_float32_row][agc_float32_col];
+            router_node_on                [agc_float32_col][agc_float32_row][0] = router_aggregation_core_on    [agc_float32_row][agc_float32_col];
+            router_node_ready             [agc_float32_col][agc_float32_row][0] = router_aggregation_core_ready [agc_float32_row][agc_float32_col];
         end
     end : float32_col_gen
 end : float32_row_gen
@@ -425,15 +424,15 @@ for (genvar agc_fixed16_row = 0; agc_fixed16_row < AGC_FIXED16_ROWS; agc_fixed16
         );
 
         always_comb begin
-            aggregation_core_router_on    [agc_fixed16_row][agc_fixed16_col] = node_router_on                [agc_fixed16_col][agc_fixed16_row];
-            aggregation_core_router_ready [agc_fixed16_row][agc_fixed16_col] = node_router_ready             [agc_fixed16_col][agc_fixed16_row];
+            aggregation_core_router_on    [agc_fixed16_row][agc_fixed16_col] = node_router_on                [agc_fixed16_col][agc_fixed16_row][0];
+            aggregation_core_router_ready [agc_fixed16_row][agc_fixed16_col] = node_router_ready             [agc_fixed16_col][agc_fixed16_row][0];
             node_router_valid             [agc_fixed16_col][agc_fixed16_row] = aggregation_core_router_valid [agc_fixed16_row][agc_fixed16_col];
             node_router_data              [agc_fixed16_col][agc_fixed16_row] = aggregation_core_router_data  [agc_fixed16_row][agc_fixed16_col];
             
             router_aggregation_core_valid [agc_fixed16_row][agc_fixed16_col] = router_node_valid             [agc_fixed16_col][agc_fixed16_row];
             router_aggregation_core_data  [agc_fixed16_row][agc_fixed16_col] = router_node_data              [agc_fixed16_col][agc_fixed16_row];
-            router_node_on                [agc_fixed16_col][agc_fixed16_row] = router_aggregation_core_on    [agc_fixed16_row][agc_fixed16_col];
-            router_node_ready             [agc_fixed16_col][agc_fixed16_row] = router_aggregation_core_ready [agc_fixed16_row][agc_fixed16_col];
+            router_node_on                [agc_fixed16_col][agc_fixed16_row][0] = router_aggregation_core_on    [agc_fixed16_row][agc_fixed16_col];
+            router_node_ready             [agc_fixed16_col][agc_fixed16_row][0] = router_aggregation_core_ready [agc_fixed16_row][agc_fixed16_col];
         end
     end : fixed16_col_gen
 end : fixed16_row_gen
@@ -485,15 +484,15 @@ for (genvar bm = 0; bm < TOTAL_BUFFER_MANAGERS; bm++) begin
     );
     
     always_comb begin
-        buffer_manager_router_on    [bm]           = node_router_on              [AGC_COLS][bm];
-        buffer_manager_router_ready [bm]           = node_router_ready           [AGC_COLS][bm];
+        buffer_manager_router_on    [bm]           = node_router_on              [AGC_COLS][bm][0];
+        buffer_manager_router_ready [bm]           = node_router_ready           [AGC_COLS][bm][0];
         node_router_valid           [AGC_COLS][bm] = buffer_manager_router_valid [bm];
         node_router_data            [AGC_COLS][bm] = buffer_manager_router_data  [bm];
 
         router_buffer_manager_valid [bm]           = router_node_valid           [AGC_COLS][bm];
         router_buffer_manager_data  [bm]           = router_node_data            [AGC_COLS][bm];
-        router_node_on              [AGC_COLS][bm] = router_buffer_manager_on    [bm];
-        router_node_ready           [AGC_COLS][bm] = router_buffer_manager_ready [bm];
+        router_node_on              [AGC_COLS][bm][0] = router_buffer_manager_on    [bm];
+        router_node_ready           [AGC_COLS][bm][0] = router_buffer_manager_ready [bm];
     end
 end
 
@@ -565,12 +564,9 @@ always_comb begin
 
     // Drive AGM request from either allocator
     age_agm_req_valid = age_agm_req_valid_float32 | age_agm_req_valid_fixed16;
-    age_agm_req = (nsb_age_req.node_precision == FLOAT_32) ? age_agm_req_float32
-                : (nsb_age_req.node_precision == FIXED_16) ? age_agm_req_fixed16
-                : '0;
 end
 
-assign nsb_age_resp_valid = |age_agm_resp_valid;
+assign nsb_age_resp_valid = |aggregation_manager_age_done_valid;
 assign nsb_age_resp.nodeslot = agm_allocation[aggregation_manager_resp_arbitration_bin].nodeslot;
 
 rr_arbiter #(
@@ -579,8 +575,8 @@ rr_arbiter #(
     .clk        (core_clk),
     .resetn     (resetn),
     
-    .request    (age_agm_resp_valid),
-    .update_lru (|age_agm_resp_valid),
+    .request    (aggregation_manager_age_done_valid),
+    .update_lru (|aggregation_manager_age_done_valid),
     .grant_oh   (aggregation_manager_resp_arbitration_oh)
 );
 

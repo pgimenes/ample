@@ -3,6 +3,7 @@ import top_pkg::*;
 import prefetcher_pkg::*;
 
 module prefetcher_fetch_tag #(
+    parameter TAG = 0,
     parameter AXI_ADDRESS_WIDTH = 34,
     parameter AXI_DATA_WIDTH    = 512,
 
@@ -434,6 +435,8 @@ always_comb begin
                                         : trigger_msg_partial_resp || (message_fetch_state == MSG_DONE) ? MESSAGES
                                         : FETCH_RESERVED;
 
+    nsb_prefetcher_resp.allocated_fetch_tag = TAG[$clog2(FETCH_TAG_COUNT)-1:0];
+
     nsb_prefetcher_resp.partial = adj_queue_fetch_resp_partial || trigger_msg_partial_resp || scale_factor_fetch_resp_partial;
 end
 
@@ -463,7 +466,12 @@ always_comb begin
 
     message_channel_resp.data = message_queue_head;
     // message_channel_resp.last = (message_queue_count == {{($clog2(MESSAGE_QUEUE_DEPTH)-1){1'b0}}, 1'b1});
-    message_channel_resp.last = (message_queue_count[$clog2(MESSAGE_QUEUE_DEPTH)-1:1] == '0) && message_queue_count[0];
+    
+    // When message queue count reaches feature count / 16 (rounded up), sending last neighbour's features
+    message_channel_resp.last_neighbour = message_queue_count <= ({allocated_feature_count[$clog2(MAX_FEATURE_COUNT)-1:4], 4'd0} + (|allocated_feature_count[3:0] ? 1'b1 : 1'b0));
+
+    // Sending last feature when message queue count == 1
+    message_channel_resp.last_feature = (message_queue_count[$clog2(MESSAGE_QUEUE_DEPTH)-1:1] == '0) && message_queue_count[0];
 
     // Pop message queue when accepting message channel resp
     pop_message_queue = message_channel_resp_valid && message_channel_resp_ready;
