@@ -116,9 +116,6 @@ sum_aggregator #(
 if (PRECISION == "FIXED_16") begin
     
     fixed16_upsampler upsampler_i (
-        .aclk               (core_clk),
-        .aresetn            (resetn),
-
         .s_axis_a_tvalid    (upsample),
         .s_axis_a_tdata     (accumulator),
         
@@ -129,9 +126,6 @@ if (PRECISION == "FIXED_16") begin
 end else if (PRECISION == "FIXED_8") begin
     
     fixed8_upsampler upsampler_i (
-        .aclk               (core_clk),
-        .aresetn            (resetn),
-
         .s_axis_a_tvalid    (upsample),
         .s_axis_a_tdata     (accumulator),
         
@@ -142,9 +136,6 @@ end else if (PRECISION == "FIXED_8") begin
 end else if (PRECISION == "FIXED_4") begin
     
     fixed4_upsampler upsampler_i (
-        .aclk               (core_clk),
-        .aresetn            (resetn),
-
         .s_axis_a_tvalid    (upsample),
         .s_axis_a_tdata     (accumulator),
         

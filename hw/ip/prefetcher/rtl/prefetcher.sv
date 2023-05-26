@@ -171,7 +171,6 @@ module prefetcher #(
     output WEIGHT_CHANNEL_RESP_t                              weight_channel_resp,
 
     input  logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_pop,
-    output logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_out_valid,
     output logic [FETCH_TAG_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
     output logic [FETCH_TAG_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count,
     output logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_empty,
@@ -360,7 +359,6 @@ prefetcher_feature_bank #(
     .message_channel_resp                                               (message_channel_resp),
 
     .scale_factor_queue_pop                                             (scale_factor_queue_pop),
-    .scale_factor_queue_out_valid                                       (scale_factor_queue_out_valid),
     .scale_factor_queue_out_data                                        (scale_factor_queue_out_data),
     .scale_factor_queue_count                                           (scale_factor_queue_count),
     .scale_factor_queue_empty                                           (scale_factor_queue_empty),

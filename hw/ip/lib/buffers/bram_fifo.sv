@@ -20,7 +20,6 @@ module bram_fifo #(
     input  logic [WRITE_WIDTH-1:0]      in_data,
     
     input  logic                        pop,
-    output logic                        out_valid,
     output logic [READ_WIDTH-1:0]       out_data,
     
     output logic [$clog2(READ_DEPTH):0] count,
@@ -38,7 +37,6 @@ parameter READ_ADDR_WIDTH = $clog2(READ_DEPTH);
 logic [WRITE_ADDR_WIDTH-1:0] wr_ptr;
 logic [READ_ADDR_WIDTH-1:0] rd_ptr;
 
-logic pop1, pop2;
 logic wr_wrap, rd_wrap;
 
 // ==================================================================================================================================================
@@ -62,20 +60,32 @@ if (BRAM_TYPE == "SCALE_FACTOR") begin
         .sleep        (1'b0)
     );
     
-end else begin
+end else if (BRAM_TYPE == "ROUTER_FIFO") begin
     
-    assign out_data = '0;
+    router_fifo_bram bram (
+        .clka         (core_clk),
+        .ena          (1'b1),
 
+        .wea          (push),
+        .addra        (wr_ptr),
+        .dina         (in_data),
+        
+        .clkb         (core_clk),
+        .enb          (1'b1),
+        .addrb        (rd_ptr),
+        .doutb        (out_data),
+        
+        .sleep        (1'b0)
+    );
+
+end else begin
+    assign out_data = '0;
 end
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         wr_ptr <= '0;
         rd_ptr <= '0;
-
-        pop1      <= '0;
-        pop2      <= '0;
-        out_valid <= '1;
 
         wr_wrap   <= '0;
         rd_wrap   <= '0;
@@ -91,14 +101,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
             rd_ptr <= rd_ptr + 1'b1;
             count <= count - 1'b1;
         end
-
-        // Latch out_valid to 0 when pop or to 1, 3 cycles later
-        // This accounts for RAM delay
-        if (pop) out_valid <= '0;
-        else if (pop2) out_valid <= '1;
-
-        pop1 <= pop;
-        pop2 <= pop1;
 
         if (wr_ptr == {WRITE_ADDR_WIDTH{1'b1}} && push) wr_wrap <= !wr_wrap;
         if (rd_ptr == {READ_ADDR_WIDTH{1'b1}} && pop) rd_wrap <= !rd_wrap;

@@ -48,11 +48,14 @@ ultraram #(
 ) fifo (
     .core_clk           (core_clk),
     .resetn             (resetn),
-    .write_enable       (push),
-    .regceb             ('1), // TO DO: change for power savings
+    
     .mem_en             ('1), // TO DO: change for power savings
-    .dina               (in_data),
+    
+    .write_enable       (push),
     .addra              (wr_ptr),
+    .dina               (in_data),
+    
+    .regceb             ('1), // TO DO: change for power savings
     .addrb              (rd_ptr),
     .doutb              (out_data)
 );

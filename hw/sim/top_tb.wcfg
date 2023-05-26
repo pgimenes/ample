@@ -9,7 +9,6 @@
             <top_module name="age_pkg" />
             <top_module name="aggregation_engine_regbank_regs_pkg" />
             <top_module name="arch_package" />
-            <top_module name="axi_memory_master_vip_pkg" />
             <top_module name="axi_vip_pkg" />
             <top_module name="axil_master_vip_pkg" />
             <top_module name="feature_transformation_engine_regbank_regs_pkg" />
@@ -28,13 +27,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="31399028fs"></ZoomStartTime>
-      <ZoomEndTime time="31449457fs"></ZoomEndTime>
-      <Cursor1Time time="31407432fs"></Cursor1Time>
+      <ZoomStartTime time="17624043fs"></ZoomStartTime>
+      <ZoomEndTime time="17697444fs"></ZoomEndTime>
+      <Cursor1Time time="17636276fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="373"></NameColumnWidth>
-      <ValueColumnWidth column_width="173"></ValueColumnWidth>
+      <ValueColumnWidth column_width="169"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="44" />
    <wvobject type="logic" fp_name="/top_tb/sys_clk_i">
@@ -254,7 +253,6 @@
    <wvobject type="group" fp_name="group16">
       <obj_property name="label">FETCH_TAG[0]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /adj_queue_manager_i/fetch_state">
          <obj_property name="ElementShortName">fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">fetch_state[2:0]</obj_property>
@@ -285,8 +283,8 @@
          <obj_property name="ObjectShortName">push_message_queue</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /message_queue_count">
-         <obj_property name="ElementShortName">message_queue_count[11:0]</obj_property>
-         <obj_property name="ObjectShortName">message_queue_count[11:0]</obj_property>
+         <obj_property name="ElementShortName">message_queue_count[12:0]</obj_property>
+         <obj_property name="ObjectShortName">message_queue_count[12:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[0].fetch_tag_i /msg_queue_write_data">
@@ -322,7 +320,6 @@
    <wvobject type="group" fp_name="group235">
       <obj_property name="label">FETCH_TAG[1]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /push_adj_queue">
          <obj_property name="ElementShortName">push_adj_queue</obj_property>
          <obj_property name="ObjectShortName">push_adj_queue</obj_property>
@@ -344,8 +341,8 @@
          <obj_property name="ObjectShortName">adj_queue_count[6:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/feature_bank_i/\genblk1[1].fetch_tag_i /message_queue_count">
-         <obj_property name="ElementShortName">message_queue_count[11:0]</obj_property>
-         <obj_property name="ObjectShortName">message_queue_count[11:0]</obj_property>
+         <obj_property name="ElementShortName">message_queue_count[12:0]</obj_property>
+         <obj_property name="ObjectShortName">message_queue_count[12:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
    </wvobject>
@@ -576,10 +573,6 @@
          <obj_property name="ElementShortName">fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">fetch_state[2:0]</obj_property>
       </wvobject>
-      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/req_fetch_start_address">
-         <obj_property name="ElementShortName">req_fetch_start_address[31:0]</obj_property>
-         <obj_property name="ObjectShortName">req_fetch_start_address[31:0]</obj_property>
-      </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/req_fetch_byte_count">
          <obj_property name="ElementShortName">req_fetch_byte_count[17:0]</obj_property>
          <obj_property name="ObjectShortName">req_fetch_byte_count[17:0]</obj_property>
@@ -688,6 +681,7 @@
    <wvobject type="group" fp_name="group359">
       <obj_property name="label">AGM [0]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[0].agm_i /agm_state">
          <obj_property name="ElementShortName">agm_state[4:0]</obj_property>
          <obj_property name="ObjectShortName">agm_state[4:0]</obj_property>
@@ -717,6 +711,14 @@
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[0].agm_i /age_aggregation_manager_req.coords_y">
          <obj_property name="ElementShortName">.coords_y[63:0][2:0]</obj_property>
          <obj_property name="ObjectShortName">.coords_y[63:0][2:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[0].agm_i /coord_ptr">
+         <obj_property name="ElementShortName">coord_ptr[5:0]</obj_property>
+         <obj_property name="ObjectShortName">coord_ptr[5:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk1[0].agm_i /message_channel_resp_q.last">
+         <obj_property name="ElementShortName">.last</obj_property>
+         <obj_property name="ObjectShortName">.last</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group270">
@@ -957,10 +959,19 @@
          <obj_property name="ElementShortName">agc_state[3:0]</obj_property>
          <obj_property name="ObjectShortName">agc_state[3:0]</obj_property>
       </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /router_aggregation_core_valid">
+         <obj_property name="ElementShortName">router_aggregation_core_valid</obj_property>
+         <obj_property name="ObjectShortName">router_aggregation_core_valid</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[16].agc_fixed16_i /received_flits">
+         <obj_property name="ElementShortName">received_flits[3:0]</obj_property>
+         <obj_property name="ObjectShortName">received_flits[3:0]</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group375">
       <obj_property name="label">FIXED_16 AGC [1]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[17].agc_fixed16_i /agc_state">
          <obj_property name="ElementShortName">agc_state[3:0]</obj_property>
          <obj_property name="ObjectShortName">agc_state[3:0]</obj_property>
@@ -969,6 +980,7 @@
    <wvobject type="group" fp_name="group374">
       <obj_property name="label">FIXED_16 AGC[2]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\fixed16_row_gen[0].fixed16_col_gen[18].agc_fixed16_i /agc_state">
          <obj_property name="ElementShortName">agc_state[3:0]</obj_property>
          <obj_property name="ObjectShortName">agc_state[3:0]</obj_property>
@@ -994,7 +1006,6 @@
    <wvobject type="group" fp_name="group293">
       <obj_property name="label">BM[1]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[1].buffer_manager_i /bm_state">
          <obj_property name="ElementShortName">bm_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">bm_state[2:0]</obj_property>
@@ -1011,7 +1022,6 @@
    <wvobject type="group" fp_name="group362">
       <obj_property name="label">BM[2]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[2].buffer_manager_i /bm_state">
          <obj_property name="ElementShortName">bm_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">bm_state[2:0]</obj_property>
@@ -1020,7 +1030,6 @@
    <wvobject type="group" fp_name="group363">
       <obj_property name="label">BM[3]</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/aggregation_engine_i/\genblk5[3].buffer_manager_i /bm_state">
          <obj_property name="ElementShortName">bm_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">bm_state[2:0]</obj_property>
