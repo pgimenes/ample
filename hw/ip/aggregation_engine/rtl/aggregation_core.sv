@@ -67,10 +67,6 @@ endfunction
 // Declarations
 // ==================================================================================================================================================
 
-// Coordinates of this aggregation core
-logic [$clog2(MESH_COLS)-1:0]                   x_coord;
-logic [$clog2(MESH_ROWS)-1:0]                   y_coord;
-
 aggregation_core_fsm_e                          agc_state, agc_state_n;
 
 // Payloads from nodeslot allocation packet
@@ -178,10 +174,6 @@ end
 // Logic
 // ==================================================================================================================================================
 
-// Coordinates of this aggregation core
-assign x_coord = X_COORD;
-assign y_coord = Y_COORD;
-
 // Aggregation Core state machine
 // --------------------------------------------
 
@@ -199,26 +191,26 @@ always_comb begin
     case(agc_state)
 
     AGC_FSM_IDLE: begin
-        agc_state_n <= router_aggregation_core_valid && head_packet && aggregation_manager_pkt && correct_pkt_dest && (aggregation_manager_packet_type == AGC_NODESLOT_ALLOCATION) ? AGC_FSM_NODESLOT_ALLOCATION : AGC_FSM_IDLE;
+        agc_state_n = router_aggregation_core_valid && head_packet && aggregation_manager_pkt && correct_pkt_dest && (aggregation_manager_packet_type == AGC_NODESLOT_ALLOCATION) ? AGC_FSM_NODESLOT_ALLOCATION : AGC_FSM_IDLE;
     end
 
     AGC_FSM_NODESLOT_ALLOCATION: begin
-        agc_state_n <= router_aggregation_core_valid && tail_packet && aggregation_manager_pkt && correct_pkt_dest ? AGC_FSM_WAIT_FEATURE_HEAD
+        agc_state_n = router_aggregation_core_valid && tail_packet && aggregation_manager_pkt && correct_pkt_dest ? AGC_FSM_WAIT_FEATURE_HEAD
                     : AGC_FSM_NODESLOT_ALLOCATION;
     end
 
     AGC_FSM_WAIT_FEATURE_HEAD: begin
-        agc_state_n <= router_aggregation_core_valid && head_packet && aggregation_manager_pkt && correct_pkt_dest && (aggregation_manager_packet_type == AGC_FEATURE_PACKET) ? AGC_FSM_WAIT_FEATURE_BODY // receiving feature packet
+        agc_state_n = router_aggregation_core_valid && head_packet && aggregation_manager_pkt && correct_pkt_dest && (aggregation_manager_packet_type == AGC_FEATURE_PACKET) ? AGC_FSM_WAIT_FEATURE_BODY // receiving feature packet
                     : AGC_FSM_WAIT_FEATURE_HEAD;
     end
 
     AGC_FSM_WAIT_FEATURE_BODY: begin
-        agc_state_n <= router_aggregation_core_valid && aggregation_manager_pkt && correct_pkt_dest ? AGC_FSM_UPDATE_ACCS // receiving feature packet
+        agc_state_n = router_aggregation_core_valid && aggregation_manager_pkt && correct_pkt_dest ? AGC_FSM_UPDATE_ACCS // receiving feature packet
                     : AGC_FSM_WAIT_FEATURE_BODY;
     end
     
     AGC_FSM_UPDATE_ACCS: begin
-        agc_state_n <= 
+        agc_state_n = 
                     // Updating last feature accumulator and last packet flag has already been received
                     (received_flits == 4'd8) && feature_updated[FEATURE_COUNT-1] && feature_updated[FEATURE_COUNT-2] && aggregation_manager_packet_last_q ? AGC_FSM_UPSAMPLE // updating final features
 
@@ -231,20 +223,20 @@ always_comb begin
     end
 
     AGC_FSM_UPSAMPLE: begin
-        agc_state_n <= &upsampled_accumulator_valid ? AGC_FSM_WAIT_BUFFER_REQ : AGC_FSM_UPSAMPLE;
+        agc_state_n = &upsampled_accumulator_valid ? AGC_FSM_WAIT_BUFFER_REQ : AGC_FSM_UPSAMPLE;
     end
     
     AGC_FSM_WAIT_BUFFER_REQ: begin
-        agc_state_n <= router_aggregation_core_valid && aggregation_manager_pkt && received_buffer_req_head && tail_packet && correct_pkt_dest ? AGC_FSM_SEND_BUFF_MAN
+        agc_state_n = router_aggregation_core_valid && aggregation_manager_pkt && received_buffer_req_head && tail_packet && correct_pkt_dest ? AGC_FSM_SEND_BUFF_MAN
                     : AGC_FSM_WAIT_BUFFER_REQ;
     end
 
     AGC_FSM_SEND_BUFF_MAN: begin
-        agc_state_n <= (sent_flits_counter == 'd7) ? AGC_FSM_IDLE : AGC_FSM_SEND_BUFF_MAN;
+        agc_state_n = (sent_flits_counter == 'd7) ? AGC_FSM_IDLE : AGC_FSM_SEND_BUFF_MAN;
     end
 
     AGC_FSM_WAIT_DRAIN: begin
-        agc_state_n <= noc_router_waiting ? AGC_FSM_IDLE : AGC_FSM_WAIT_DRAIN;
+        agc_state_n = noc_router_waiting ? AGC_FSM_IDLE : AGC_FSM_WAIT_DRAIN;
     end
 
     default: agc_state_n = AGC_FSM_IDLE;

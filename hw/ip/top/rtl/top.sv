@@ -370,7 +370,6 @@ logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_READ_WIDTH-1:0] t
 
 // Prefetcher -> AGE: Scale Factor interface
 logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_pop;
-logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_out_valid;
 logic [FETCH_TAG_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data;
 logic [FETCH_TAG_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count;
 logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_empty;
@@ -607,7 +606,6 @@ prefetcher #(
     .weight_channel_resp                                       (weight_channel_resp),
 
     .scale_factor_queue_pop                                    (scale_factor_queue_pop),
-    .scale_factor_queue_out_valid                              (scale_factor_queue_out_valid),
     .scale_factor_queue_out_data                               (scale_factor_queue_out_data),
     .scale_factor_queue_count                                  (scale_factor_queue_count),
     .scale_factor_queue_empty                                  (scale_factor_queue_empty),
@@ -720,7 +718,6 @@ aggregation_engine aggregation_engine_i (
     .buffer_slot_age_buffer_manager_slot_free     (aggregation_buffer_slot_free),
 
     .scale_factor_queue_pop                       (scale_factor_queue_pop),
-    .scale_factor_queue_out_valid                 (scale_factor_queue_out_valid),
     .scale_factor_queue_out_data                  (scale_factor_queue_out_data),
     .scale_factor_queue_count                     (scale_factor_queue_count),
     .scale_factor_queue_empty                     (scale_factor_queue_empty),
