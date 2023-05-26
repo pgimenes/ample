@@ -14,10 +14,9 @@ module aggregation_manager #(
     output logic                                                age_aggregation_manager_req_ready,
     input  AGE_AGM_REQ_t                                        age_aggregation_manager_req,
 
-    // Generated NSB responses
-    output logic                                                age_aggregation_manager_resp_valid,
-    input  logic                                                age_aggregation_manager_resp_ready,
-    output NSB_AGE_RESP_t                                       age_aggregation_manager_resp,
+    // Done signals to pulse NSB response
+    output logic                                                aggregation_manager_age_done_valid,
+    input  logic                                                aggregation_manager_age_done_ready,
 
     // Buffer Manager Allocation
     input  logic                                                age_aggregation_manager_buffer_manager_allocation_valid,
@@ -146,7 +145,7 @@ always_comb begin
     end
 
     AGM_FSM_SEND_AGC: begin
-        agm_state_n = pkt_done && message_channel_resp_q.last ? AGM_FSM_WAIT_DRAIN1
+        agm_state_n = pkt_done && message_channel_resp_q.last_feature ? AGM_FSM_WAIT_DRAIN1
                     : pkt_done ? AGM_FSM_WAIT_PREF_RESP
                     : AGM_FSM_SEND_AGC;
     end
@@ -174,7 +173,7 @@ always_comb begin
     end
 
     AGM_FSM_NSB_RESP: begin
-        agm_state_n = age_aggregation_manager_resp_ready ? AGM_FSM_IDLE
+        agm_state_n = aggregation_manager_age_done_ready ? AGM_FSM_IDLE
                     : AGM_FSM_NSB_RESP;
     end
 
@@ -211,8 +210,7 @@ end
 always_comb begin
     age_aggregation_manager_req_ready = (agm_state == AGM_FSM_IDLE) && (packet_state == PKT_FSM_IDLE);
 
-    age_aggregation_manager_resp_valid = (agm_state == AGM_FSM_NSB_RESP);
-    age_aggregation_manager_resp.nodeslot = agm_allocation.nodeslot;
+    aggregation_manager_age_done_valid = (agm_state == AGM_FSM_NSB_RESP);
 end
 
 // Message channel REQ/RESP interface
@@ -321,7 +319,7 @@ always_comb begin
                                             (packet_state == PKT_FSM_HEAD)   ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], // destination node coordinates
                                                                                     x_coord, y_coord, // source node coordinates
 
-                                                                                    age_pkg::AGC_FEATURE_PACKET, message_channel_resp_q.last,
+                                                                                    age_pkg::AGC_FEATURE_PACKET, message_channel_resp_q.last_neighbour,
                                                                                     {(PAYLOAD_DATA_WIDTH - $bits(aggregation_manager_packet_type_e) - 1 - SCALE_FACTOR_QUEUE_READ_WIDTH){1'b0}},
                                                                                     scale_factor_queue_out_data
                                                                                 }

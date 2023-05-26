@@ -131,6 +131,7 @@ logic [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_msg_rm_req_bin_q;
 
 for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 1) begin
     prefetcher_fetch_tag #(
+        .TAG                  (fetch_tag),
         .ADJ_QUEUE_WIDTH      (32),
         .ADJ_QUEUE_DEPTH      (64),
         .MESSAGE_QUEUE_WIDTH  (512),
@@ -217,7 +218,7 @@ for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 
             deallocation_valid[fetch_tag] <= '0;
         end else begin
             // If last beat sent to AGE, deallocate fetch tag
-            deallocation_valid[fetch_tag] <= message_channel_resp_valid[fetch_tag] && message_channel_resp_ready[fetch_tag] && message_channel_resp[fetch_tag].last ? '1
+            deallocation_valid[fetch_tag] <= message_channel_resp_valid[fetch_tag] && message_channel_resp_ready[fetch_tag] && message_channel_resp[fetch_tag].last_feature ? '1
                                 : '0;
         end
     end
