@@ -92,8 +92,6 @@ module top
     output                                c0_data_compare_error
 );
 
-parameter SIMULATION = "TRUE";
-
 // ====================================================================================
 // Declarations
 // ====================================================================================
@@ -345,28 +343,26 @@ logic                                              weight_channel_resp_ready;
 WEIGHT_CHANNEL_RESP_t                              weight_channel_resp;
 
 // AGE -> Aggregation Buffer Interface
-logic [AGGREGATION_BUFFER_SLOTS-1:0]                                              age_aggregation_buffer_write_enable;
-logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] age_aggregation_buffer_write_address;
-logic [AGGREGATION_BUFFER_SLOTS-1:0] [AGGREGATION_BUFFER_WRITE_WIDTH-1:0]         age_aggregation_buffer_write_data;
-logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_READ_DEPTH)-1:0]  aggregation_buffer_age_feature_count;
-logic [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free;
+logic [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_write_enable;
+logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] aggregation_buffer_write_address;
+logic [AGGREGATION_BUFFER_SLOTS-1:0] [AGGREGATION_BUFFER_WRITE_WIDTH-1:0]         aggregation_buffer_write_data;
+logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_READ_DEPTH)-1:0]  aggregation_buffer_feature_count;
 
 // FTE -> Aggregation Buffer Interface
-logic [AGGREGATION_BUFFER_SLOTS-1:0]                                     fte_aggregation_buffer_pop;
-logic [AGGREGATION_BUFFER_SLOTS-1:0]                                     aggregation_buffer_fte_out_feature_valid;
-logic [AGGREGATION_BUFFER_SLOTS-1:0] [AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_fte_out_feature;
+logic [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_pop;
+logic [AGGREGATION_BUFFER_SLOTS-1:0] [AGGREGATION_BUFFER_READ_WIDTH-1:0]          aggregation_buffer_out_feature;
+logic [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free;
 
 // FTE -> Transformation Buffer Interface
-logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                 fte_transformation_buffer_write_enable;
-logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0] fte_transformation_buffer_write_address;
-logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]         fte_transformation_buffer_write_data;
-logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_READ_DEPTH)-1:0]  transformation_buffer_fte_feature_count;
-logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                 transformation_buffer_slot_free;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                 transformation_buffer_write_enable;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0] transformation_buffer_write_address;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]         transformation_buffer_write_data;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_READ_DEPTH)-1:0]  transformation_buffer_feature_count;
 
 // MPE -> TRANSFORMATION Buffer Interface
-logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                        mpe_transformation_buffer_pop;
-logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                        transformation_buffer_mpe_out_feature_valid;
-logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_READ_WIDTH-1:0] transformation_buffer_mpe_out_feature;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                 transformation_buffer_pop;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_READ_WIDTH-1:0]          transformation_buffer_out_feature;
+logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                 transformation_buffer_slot_free;
 
 // Prefetcher -> AGE: Scale Factor interface
 logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_pop;
@@ -711,11 +707,11 @@ aggregation_engine aggregation_engine_i (
     .message_channel_resp_ready                   (message_channel_resp_ready),
     .message_channel_resp                         (message_channel_resp),
 
-    .age_buffer_manager_buffer_slot_write_enable  (age_aggregation_buffer_write_enable),
-    .age_buffer_manager_buffer_slot_write_address (age_aggregation_buffer_write_address),
-    .age_buffer_manager_buffer_slot_write_data    (age_aggregation_buffer_write_data),
-    .buffer_slot_age_buffer_manager_feature_count (aggregation_buffer_age_feature_count),
-    .buffer_slot_age_buffer_manager_slot_free     (aggregation_buffer_slot_free),
+    .aggregation_buffer_slot_write_enable         (aggregation_buffer_write_enable),
+    .aggregation_buffer_slot_write_address        (aggregation_buffer_write_address),
+    .aggregation_buffer_slot_write_data           (aggregation_buffer_write_data),
+    .aggregation_buffer_slot_feature_count        (aggregation_buffer_feature_count),
+    .aggregation_buffer_slot_slot_free            (aggregation_buffer_slot_free),
 
     .scale_factor_queue_pop                       (scale_factor_queue_pop),
     .scale_factor_queue_out_data                  (scale_factor_queue_out_data),
@@ -738,16 +734,15 @@ hybrid_buffer #(
     .core_clk           (sys_clk),
     .resetn             (!sys_rst),
 
-    .write_enable       (age_aggregation_buffer_write_enable),
-    .write_address      (age_aggregation_buffer_write_address),
-    .write_data         (age_aggregation_buffer_write_data),
+    .write_enable       (aggregation_buffer_write_enable),
+    .write_address      (aggregation_buffer_write_address),
+    .write_data         (aggregation_buffer_write_data),
+    .feature_count      (aggregation_buffer_feature_count),
 
-    .pop                (fte_aggregation_buffer_pop),
-    .out_feature_valid  (aggregation_buffer_fte_out_feature_valid),
-    .out_feature        (aggregation_buffer_fte_out_feature),
-
-    .feature_count      (aggregation_buffer_age_feature_count),
+    .pop                (aggregation_buffer_pop),
+    .out_feature        (aggregation_buffer_out_feature),
     .slot_free          (aggregation_buffer_slot_free)
+
 );
 
 // ====================================================================================
@@ -786,10 +781,9 @@ feature_transformation_engine transformation_engine_i (
     .nsb_fte_resp_valid                                 (nsb_fte_resp_valid),
     .nsb_fte_resp                                       (nsb_fte_resp),
 
-    .fte_aggregation_buffer_pop                         (fte_aggregation_buffer_pop),
-    .aggregation_buffer_fte_out_feature_valid           (aggregation_buffer_fte_out_feature_valid),
-    .aggregation_buffer_fte_out_feature                 (aggregation_buffer_fte_out_feature),
-    .aggregation_buffer_fte_slot_free                   (aggregation_buffer_slot_free),
+    .aggregation_buffer_pop                             (aggregation_buffer_pop),
+    .aggregation_buffer_out_feature                     (aggregation_buffer_out_feature),
+    .aggregation_buffer_slot_free                       (aggregation_buffer_slot_free),
 
     .weight_channel_req_valid                           (weight_channel_req_valid),
     .weight_channel_req_ready                           (weight_channel_req_ready),
@@ -798,12 +792,13 @@ feature_transformation_engine transformation_engine_i (
     .weight_channel_resp_ready                          (weight_channel_resp_ready),
     .weight_channel_resp                                (weight_channel_resp),
 
-    .fte_transformation_buffer_write_enable             (fte_transformation_buffer_write_enable),
-    .fte_transformation_buffer_write_address            (fte_transformation_buffer_write_address),
-    .fte_transformation_buffer_write_data               (fte_transformation_buffer_write_data),
+    .transformation_buffer_write_enable                 (transformation_buffer_write_enable),
+    .transformation_buffer_write_address                (transformation_buffer_write_address),
+    .transformation_buffer_write_data                   (transformation_buffer_write_data),
 
     .transformation_buffer_slot_free                    (transformation_buffer_slot_free)
 );
+
 
 // ====================================================================================
 // Transformation Buffer
@@ -820,14 +815,13 @@ hybrid_buffer #(
     .core_clk           (sys_clk),
     .resetn             (!sys_rst),
 
-    .write_enable       (fte_transformation_buffer_write_enable),
-    .write_address      (fte_transformation_buffer_write_address),
-    .write_data         (fte_transformation_buffer_write_data),
+    .write_enable       (transformation_buffer_write_enable),
+    .write_address      (transformation_buffer_write_address),
+    .write_data         (transformation_buffer_write_data),
+    .feature_count      (transformation_buffer_feature_count),
 
-    .pop                (mpe_transformation_buffer_pop),
-    .out_feature_valid  (transformation_buffer_mpe_out_feature_valid),
-    .out_feature        (transformation_buffer_mpe_out_feature),
-    .feature_count      (transformation_buffer_fte_feature_count),
+    .pop                (transformation_buffer_pop),
+    .out_feature        (transformation_buffer_out_feature),
     .slot_free          (transformation_buffer_slot_free)
 );
 

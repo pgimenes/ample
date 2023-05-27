@@ -48,12 +48,11 @@ module aggregation_manager #(
     // Output AGM allocation payloads for AGE visibility
     output NSB_AGE_REQ_t                                        agm_allocation,
     output logic [AGC_COUNT_FLOAT32-1:0]                        agm_allocated_agcs,
-    output logic [$clog2(TOTAL_AGGREGATION_CORES)-1:0]          agm_allocated_agcs_count,
+    output logic [$clog2(MAX_AGC_PER_NODE)-1:0]                 agm_allocated_agcs_count,
     output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] coords_buffer_x,
     output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] coords_buffer_y,
 
     output logic                                                scale_factor_queue_pop,
-    input  logic                                                scale_factor_queue_out_valid,
     input  logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]            scale_factor_queue_out_data,
     input  logic [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0]      scale_factor_queue_count,
     input  logic                                                scale_factor_queue_empty,
@@ -249,7 +248,7 @@ always_comb begin
 
     case(packet_state)
 
-    age_pkg::PKT_FSM_IDLE: packet_state_n  = (aggregation_manager_router_on && (agm_state == AGM_FSM_SEND_AGC) && noc_router_waiting && scale_factor_queue_out_valid) ? PKT_FSM_HEAD : PKT_FSM_IDLE;
+    age_pkg::PKT_FSM_IDLE: packet_state_n  = (aggregation_manager_router_on && (agm_state == AGM_FSM_SEND_AGC) && noc_router_waiting) ? PKT_FSM_HEAD : PKT_FSM_IDLE;
     age_pkg::PKT_FSM_HEAD: packet_state_n  = PKT_FSM_BODY1;
     age_pkg::PKT_FSM_BODY1: packet_state_n = PKT_FSM_BODY2;
     age_pkg::PKT_FSM_BODY2: packet_state_n = PKT_FSM_BODY3;

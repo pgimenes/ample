@@ -90,11 +90,9 @@ binary_to_onehot #(
 );
 
 // Convert one hot mask of AGC source to AGC offset for buffer address
-onehot_to_binary #(
+onehot_to_binary_comb #(
     .INPUT_WIDTH    (MAX_AGC_PER_NODE)
 ) agc_offset_oh2bin (
-    .clk            (core_clk),
-    .resetn         (resetn),
     .input_data     (agc_source_oh),
     .output_data    (agc_offset)
 );

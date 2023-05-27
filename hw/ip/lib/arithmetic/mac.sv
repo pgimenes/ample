@@ -20,50 +20,64 @@
 
 module mac #(
     parameter FLOAT_WIDTH = 32,
-    parameter PRECISION = "FLOAT_32"
+    parameter DATA_WIDTH  = 32,
+    parameter PRECISION   = "FLOAT_32"
 ) (
     input  logic                              core_clk,            
     input  logic                              resetn,
 
-    input  logic                              en,
+    input  logic                              in_valid,
+    output logic                              in_ready,
 
-    input  logic [FLOAT_WIDTH-1:0]            a,
-    input  logic [FLOAT_WIDTH-1:0]            b,
+    input  logic [DATA_WIDTH-1:0]             a,
+    input  logic [DATA_WIDTH-1:0]             b,
 
-    output logic [FLOAT_WIDTH-1:0]            acc,
+    output logic [DATA_WIDTH-1:0]             accumulator,
     
     input  logic                              overwrite,
-    input  logic [FLOAT_WIDTH-1:0]            overwrite_data
+    input  logic [DATA_WIDTH-1:0]             overwrite_data
     
 );
 
 if (PRECISION == "FLOAT_32") begin
+
     float_mac #(
         .FLOAT_WIDTH(FLOAT_WIDTH)
     ) float_mac_i (
-        .core_clk,
+        .core_clk,            
         .resetn,
-
-        .en,
+        
+        .in_valid,
+        .in_ready,
+        
         .a,
         .b,
         
         .overwrite,
         .overwrite_data,
-
-        .acc 
+        
+        .accumulator
     );
+
 end else if (PRECISION == "FIXED_16") begin
 
     fixed_point_mac #(
-        .WIDTH          (FLOAT_WIDTH)
+        .WIDTH          (FLOAT_WIDTH),
+        .DATA_WIDTH     (DATA_WIDTH)
     ) fixed_point_mac_i (
-        .core_clk,
+        .core_clk,            
         .resetn,
-        .en,
+        
+        .in_valid,
+        .in_ready,
+        
         .a,
         .b,
-        .acc 
+        
+        .overwrite,
+        .overwrite_data,
+        
+        .accumulator
     );
 
 end
@@ -72,14 +86,9 @@ end
 // Assertions
 // ======================================================================================================
 
-P_acc_grows: assert property (
-    @(posedge core_clk) disable iff (!resetn)
-    en |=> acc >= $past(acc, 1)
-);
-
 P_acc_constant: cover property (
     @(posedge core_clk) disable iff (!resetn)
-    en |=> acc == $past(acc, 1)
+    (in_valid && in_ready) |=> (accumulator == $past(accumulator, 1))
 );
 
 endmodule

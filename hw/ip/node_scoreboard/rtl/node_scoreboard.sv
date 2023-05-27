@@ -482,11 +482,9 @@ rr_arbiter #(
     .grant_oh           (prefetcher_arbiter_grant_oh)
 );
 
-onehot_to_binary #(
+onehot_to_binary_comb #(
     .INPUT_WIDTH    (NODESLOT_COUNT)
 ) prefetcher_req_oh2bin (
-    .clk            (core_clk), // not registered for now
-    .resetn         (resetn),
     .input_data     (prefetcher_arbiter_grant_oh),
     .output_data    (prefetcher_arbiter_grant_bin)
 );
@@ -532,11 +530,9 @@ rr_arbiter #(
     .grant_oh           (age_arbiter_grant_oh)
 );
 
-onehot_to_binary #(
+onehot_to_binary_comb #(
     .INPUT_WIDTH    (NODESLOT_COUNT)
 ) age_req_oh2bin (
-    .clk            (core_clk), // not registered for now
-    .resetn         (resetn),
     .input_data     (age_arbiter_grant_oh),
     .output_data    (age_arbiter_grant_bin)
 );

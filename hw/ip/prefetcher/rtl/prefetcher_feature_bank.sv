@@ -191,7 +191,6 @@ for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 
         .message_channel_resp                           (message_channel_resp         [fetch_tag]),
 
         .scale_factor_queue_pop                         (scale_factor_queue_pop       [fetch_tag]),   
-        .scale_factor_queue_out_valid                   (scale_factor_queue_out_valid [fetch_tag]), 
         .scale_factor_queue_out_data                    (scale_factor_queue_out_data  [fetch_tag]),  
         .scale_factor_queue_count                       (scale_factor_queue_count     [fetch_tag]), 
         .scale_factor_queue_empty                       (scale_factor_queue_empty     [fetch_tag]), 
@@ -264,12 +263,9 @@ rr_arbiter #(
     .grant_oh   (fetch_tag_resp_arb)
 );
 
-onehot_to_binary #(
+onehot_to_binary_comb #(
     .INPUT_WIDTH (FETCH_TAG_COUNT)
 ) fetch_tag_resp_arb_oh2bin (
-	.clk        (core_clk),
-  	.resetn     (resetn),
-
 	.input_data     (fetch_tag_resp_arb),
   	.output_data    (fetch_tag_resp_arb_bin)
 );
@@ -288,12 +284,9 @@ rr_arbiter #(
     .grant_oh   (chosen_fetch_tag_adj_rm_req)
 );
 
-onehot_to_binary #(
+onehot_to_binary_comb #(
     .INPUT_WIDTH (FETCH_TAG_COUNT)
 ) adj_rm_req_arb_oh2bin (
-	.clk        (core_clk),
-  	.resetn     (resetn),
-
 	.input_data     (chosen_fetch_tag_adj_rm_req),
   	.output_data    (chosen_fetch_tag_adj_rm_req_bin)
 );
@@ -313,12 +306,9 @@ rr_arbiter #(
     .grant_oh   (chosen_fetch_tag_msg_rm_req)
 );
 
-onehot_to_binary #(
+onehot_to_binary_comb #(
     .INPUT_WIDTH (FETCH_TAG_COUNT)
 ) msg_rm_req_arb_oh2bin (
-	.clk        (core_clk),
-  	.resetn     (resetn),
-
 	.input_data     (chosen_fetch_tag_msg_rm_req),
   	.output_data    (chosen_fetch_tag_msg_rm_req_bin)
 );
