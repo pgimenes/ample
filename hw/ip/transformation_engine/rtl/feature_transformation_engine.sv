@@ -38,10 +38,9 @@ module feature_transformation_engine #(
     output NSB_FTE_RESP_t                                                                             nsb_fte_resp,
 
     // Aggregation Buffer Interface
-    output logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              fte_aggregation_buffer_pop,
-    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_fte_out_feature_valid,
-    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_fte_out_feature,
-    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_fte_slot_free,
+    output logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_pop,
+    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_out_feature,
+    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free,
 
     // Weight Channels: FTE -> Prefetcher Weight Bank (REQ)
     output logic                                                                                      weight_channel_req_valid,
@@ -51,9 +50,10 @@ module feature_transformation_engine #(
     output logic                                                                                      weight_channel_resp_ready,
     input  WEIGHT_CHANNEL_RESP_t                                                                      weight_channel_resp,
 
-    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    fte_transformation_buffer_write_enable,
-    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0]    fte_transformation_buffer_write_address,
-    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]            fte_transformation_buffer_write_data,
+    // Transformation Buffer Interface
+    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_write_enable,
+    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0]    transformation_buffer_write_address,
+    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]            transformation_buffer_write_data,
     input  logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_slot_free
 
 );
@@ -305,7 +305,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
     
     // Starting multiplication
     end else if ((fte_state == FTE_FSM_IDLE) && (fte_state_n == FTE_FSM_REQ_WC)) begin
-        busy_aggregation_slots_snapshot <= ~aggregation_buffer_fte_slot_free;
+        busy_aggregation_slots_snapshot <= ~aggregation_buffer_slot_free;
     end
 end
 
@@ -317,13 +317,13 @@ always_comb begin
     begin_feature_dump = (fte_state == FTE_FSM_REQ_WC) && (fte_state_n == FTE_FSM_MULT);
 
     // Pulse module when features ready in aggregation buffer and weights ready in weight channel
-    pulse_systolic_module = (fte_state_n == FTE_FSM_MULT) && (&aggregation_buffer_fte_out_feature_valid) && weight_channel_resp_valid;
+    pulse_systolic_module = (fte_state_n == FTE_FSM_MULT) && weight_channel_resp_valid;
 
     // Drive systolic module from aggregation buffer (on the left)
     sys_module_forward_valid      = slot_pop_shift & {MATRIX_N{pulse_systolic_module}} & busy_aggregation_slots_snapshot;
-    sys_module_forward            = aggregation_buffer_fte_out_feature;
+    sys_module_forward            = aggregation_buffer_out_feature;
 
-    fte_aggregation_buffer_pop = slot_pop_shift & {MATRIX_N{pulse_systolic_module}} & busy_aggregation_slots_snapshot;
+    aggregation_buffer_pop = slot_pop_shift & {MATRIX_N{pulse_systolic_module}} & busy_aggregation_slots_snapshot;
 end
     
 always_comb begin
@@ -340,9 +340,9 @@ end
 
 for (genvar slot = 0; slot < TRANSFORMATION_BUFFER_SLOTS; slot++) begin
     always_comb begin
-        fte_transformation_buffer_write_enable  [slot] = transformation_buffer_slot_arb_oh[slot] && (fte_state == FTE_FSM_FLUSH);
-        fte_transformation_buffer_write_address [slot] = '0;
-        fte_transformation_buffer_write_data    [slot] = sys_module_pe_acc [0] [0]; // 16*32 bits = 512b
+        transformation_buffer_write_enable  [slot] = transformation_buffer_slot_arb_oh[slot] && (fte_state == FTE_FSM_FLUSH);
+        transformation_buffer_write_address [slot] = '0;
+        transformation_buffer_write_data    [slot] = sys_module_pe_acc [0] [0]; // 16*32 bits = 512b
     end    
 end
 

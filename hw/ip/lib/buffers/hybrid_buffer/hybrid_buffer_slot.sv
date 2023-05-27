@@ -14,7 +14,6 @@ module hybrid_buffer_slot #(
     input  logic [WRITE_WIDTH-1:0]         write_data,
 
     input  logic                           pop,
-    output logic                           out_feature_valid,
     output logic [READ_WIDTH-1:0]          out_feature,
     
     output logic [$clog2(READ_DEPTH)-1:0]  feature_count,
@@ -22,7 +21,6 @@ module hybrid_buffer_slot #(
 );
 
 logic [$clog2(READ_DEPTH)-1:0] rd_ptr;
-logic pop1, pop2;
 
 // Instances
 // ------------------------------------------------------------
@@ -59,22 +57,6 @@ end else if (BUFFER_TYPE == "TRANSFORMATION") begin
         .doutb          (out_feature)    // output wire [31 : 0] doutb
     );
 
-end else if (BUFFER_TYPE == "SCALE_FACTOR") begin
-    
-    scale_factor_queue fifo (
-        .clka         (core_clk),  // input wire clka
-        .ena          ('1),        // input wire ena
-        .wea          (write_enable),       // input wire [0 : 0] wea
-        .addra        (write_address),     // input wire [5 : 0] addra
-        .dina         (write_data),      // input wire [511 : 0] dina
-        
-        .clkb         (core_clk), // input wire clkb
-        .enb          ('1),       // input wire enb
-        .addrb        (rd_ptr),    // input wire [9 : 0] addrb
-        .doutb        (out_feature),    // output wire [31 : 0] doutb
-        
-        .sleep        ('0)     // input wire sleep
-    );
 end
 
 // Logic
@@ -83,9 +65,6 @@ end
 always_ff @( posedge core_clk or negedge resetn ) begin
     if ( !resetn ) begin
         rd_ptr            <= '0;
-        out_feature_valid <= '1;
-        pop1              <= '0;
-        pop2              <= '0;
         feature_count     <= 0;
 
     end else begin
@@ -97,14 +76,9 @@ always_ff @( posedge core_clk or negedge resetn ) begin
         // This accounts for RAM delay
         if (pop) begin
             rd_ptr <= rd_ptr + 1;
-            out_feature_valid <= '0;
             feature_count <= feature_count - 1'b1;
         end
 
-        else if (pop2) out_feature_valid <= '1;
-
-        pop1 <= pop;
-        pop2 <= pop1;
     end
 end
 

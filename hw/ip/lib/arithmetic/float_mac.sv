@@ -24,55 +24,112 @@ module float_mac #(
     input  logic                              core_clk,            
     input  logic                              resetn,
 
-    input  logic                              en,             // enable accumulator update
+    input  logic                              in_valid,
+    output logic                              in_ready,
     input  logic [FLOAT_WIDTH-1:0]            a,
     input  logic [FLOAT_WIDTH-1:0]            b,
 
     input  logic                              overwrite,
     input  logic [FLOAT_WIDTH-1:0]            overwrite_data,
     
-    output logic [FLOAT_WIDTH-1:0]            acc             // accumulator
+    output logic [FLOAT_WIDTH-1:0]            accumulator             // accumulator
 );
+
+// ==================================================================================================================================================
+// Declarations
+// ==================================================================================================================================================
 
 logic [FLOAT_WIDTH-1:0] acc_reg;
-logic [FLOAT_WIDTH-1:0] fp_add_result;
-logic             fp_add_result_valid;
-logic [FLOAT_WIDTH-1:0] fp_mult_result;
-logic             fp_mult_result_valid;
 
-fp_mult fp_mult_i (
-  .s_axis_a_tvalid(en),
+logic                   fp_mult_result_valid_comb;
+logic [FLOAT_WIDTH-1:0] fp_mult_result_comb;
+
+logic                   fp_mult_result_valid_q;
+logic [FLOAT_WIDTH-1:0] fp_mult_result_q;
+
+logic                   fp_add_result_valid;
+logic [FLOAT_WIDTH-1:0] fp_add_result;
+
+
+logic                   busy;
+
+// ==================================================================================================================================================
+// Instances
+// ==================================================================================================================================================
+
+fp_mult multiplier_i (
+  .s_axis_a_tvalid(in_valid && in_ready),
   .s_axis_a_tdata(a),
 
-  .s_axis_b_tvalid(en),
+  .s_axis_b_tvalid(in_valid && in_ready),
   .s_axis_b_tdata(b),
   
-  .m_axis_result_tvalid(fp_mult_result_valid),
-  .m_axis_result_tdata(fp_mult_result)
+  .m_axis_result_tvalid(fp_mult_result_valid_comb),
+  .m_axis_result_tdata(fp_mult_result_comb)
 );
 
-fp_add fp_add_i (
-  .s_axis_a_tvalid              (en),
-  .s_axis_a_tdata               (fp_mult_result),
+fp_add adder_i (
+  .s_axis_a_tvalid              (busy && fp_mult_result_valid_q),
+  .s_axis_a_tdata               (fp_mult_result_q),
   
-  .s_axis_b_tvalid              (en),
+  .s_axis_b_tvalid              (busy && fp_mult_result_valid_q),
   .s_axis_b_tdata               (acc_reg),
 
   .m_axis_result_tvalid         (fp_add_result_valid),
   .m_axis_result_tdata          (fp_add_result)
 );
 
+// ==================================================================================================================================================
+// Logic
+// ==================================================================================================================================================
+
+// Register multiplication output
+// -----------------------------------
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        fp_mult_result_valid_q <= '0;
+        fp_mult_result_q       <= '0;
+    end else begin
+        fp_mult_result_valid_q <= fp_mult_result_valid_comb;
+        fp_mult_result_q       <= fp_mult_result_comb;
+    end
+end
+
 // Accumulator
+// -----------------------------------
+
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         acc_reg <= '0;
     end else begin
         acc_reg <= overwrite ? overwrite_data
-                    : en && fp_mult_result_valid && fp_add_result_valid ? fp_add_result 
+                    : busy && fp_add_result_valid ? fp_add_result 
                     : acc_reg;
     end
 end
 
-assign acc = acc_reg;
+assign accumulator = acc_reg;
+
+// Handle backpressure
+// -----------------------------------
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        busy <= '0;
+
+    end else if (in_valid && in_ready) begin
+        busy <= 
+                // Accepting new update request
+                in_valid && in_ready ? 1'b1
+                
+                // Done with update request
+                : busy && fp_add_result_valid ? 1'b0
+
+                : busy;
+    end
+end
+
+assign in_ready = !busy;
 
 endmodule

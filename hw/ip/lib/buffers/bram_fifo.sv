@@ -62,7 +62,7 @@ if (BRAM_TYPE == "SCALE_FACTOR") begin
     
 end else if (BRAM_TYPE == "ROUTER_FIFO") begin
     
-    router_fifo_bram bram (
+    router_fifo_sdp_bram bram (
         .clka         (core_clk),
         .ena          (1'b1),
 
@@ -73,9 +73,7 @@ end else if (BRAM_TYPE == "ROUTER_FIFO") begin
         .clkb         (core_clk),
         .enb          (1'b1),
         .addrb        (rd_ptr),
-        .doutb        (out_data),
-        
-        .sleep        (1'b0)
+        .doutb        (out_data)
     );
 
 end else begin

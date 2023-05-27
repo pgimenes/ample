@@ -1,11 +1,11 @@
 // will not work if input not onehot
 
-// TO DO: make registered again, fix timing in NSB
+// TO DO: make registered
 
 module onehot_to_binary #(
     parameter INPUT_WIDTH = 32
 ) (
-	input logic                             clk,
+	input logic                             core_clk,
   	input logic                             resetn,
 	input logic [INPUT_WIDTH-1:0]           input_data,
   	output logic [$clog2(INPUT_WIDTH)-1:0]  output_data
@@ -23,18 +23,5 @@ module onehot_to_binary #(
 //         end
 //     end
 // end
-
-always_comb begin
-    if (input_data == '0) output_data = '0;
-    else begin
-        for (int i = 0; i < INPUT_WIDTH; i++) begin
-            if (input_data[i]) begin
-                output_data = i;
-                break;
-            end
-        end
-    end
-end
-
 
 endmodule

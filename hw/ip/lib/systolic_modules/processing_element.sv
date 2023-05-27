@@ -22,15 +22,19 @@ module processing_element #(
     input  logic                            pulse_systolic_module,
 
     input  logic                            pe_forward_in_valid,
+    output logic                            pe_forward_in_ready,
     input  logic [FLOAT_WIDTH-1:0]          pe_forward_in,
 
     input  logic                            pe_down_in_valid,
+    output logic                            pe_down_in_ready,
     input  logic [FLOAT_WIDTH-1:0]          pe_down_in,
     
     output logic                            pe_forward_out_valid,
+    input  logic                            pe_forward_out_ready,
     output logic [FLOAT_WIDTH-1:0]          pe_forward_out,
     
     output logic                            pe_down_out_valid,
+    input  logic                            pe_down_out_ready,
     output logic [FLOAT_WIDTH-1:0]          pe_down_out,
 
     input  logic                            bias_valid,
@@ -66,21 +70,28 @@ logic [FLOAT_WIDTH-1:0] activated_feature;
 // Accumulator
 // ==================================================================================================================================================
 
+logic mac_ready;
+
 mac #(
     .FLOAT_WIDTH        (FLOAT_WIDTH)
 ) mac_i (
     .core_clk,            
     .resetn,
     
-    .en                 (update_accumulator),
+    .in_valid           (update_accumulator),
+    .in_ready           (mac_ready),
+
     .a                  (pe_forward_in),
     .b                  (pe_down_in),
 
     .overwrite          (overwrite_accumulator),
     .overwrite_data     (overwrite_data),
     
-    .acc                (pe_acc)
+    .accumulator        (pe_acc)
 );
+
+assign pe_forward_in_ready = mac_ready;
+assign pe_down_in_ready = mac_ready;
 
 // Bias addition
 // -------------------------------------------------------------
@@ -129,7 +140,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         pe_down_out_valid           <= '0;
         pe_down_out                 <= '0;
 
-    end else if (update_accumulator) begin
+    end else if (update_accumulator && mac_ready) begin
         // Register incoming messages when updating the accumulator
         pe_forward_out_valid        <= pe_forward_in_valid;
         pe_forward_out              <= pe_forward_in;
@@ -143,7 +154,7 @@ end
 always_comb begin
     overwrite_accumulator = bias_out_valid || activated_feature_valid || shift_valid;
 
-    overwrite_data        = bias_valid ? pe_acc_add_bias
+    overwrite_data        = (bias_valid && bias_out_valid) ? pe_acc_add_bias
                             : activated_feature_valid ? activated_feature
                             : shift_valid ? shift_data
                             : '0;
@@ -153,9 +164,9 @@ end
 // Assertions
 // ======================================================================================================
 
-// P_update_acc_both_valid: assert property (
-//     @(posedge core_clk) disable iff (!resetn)
-//     (!pe_forward_in_valid || !pe_down_in_valid) |=> pe_acc == $past(pe_acc, 1)
-// );
+P_update_acc_both_valid: assert property (
+    @(posedge core_clk) disable iff (!resetn)
+    (!pe_forward_in_valid || !pe_down_in_valid) |=> pe_acc == $past(pe_acc, 1)
+);
 
 endmodule

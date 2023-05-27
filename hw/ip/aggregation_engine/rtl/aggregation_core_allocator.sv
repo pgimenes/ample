@@ -56,11 +56,9 @@ rr_arbiter #(
     .grant_oh       (allocated_core)
 );
 
-onehot_to_binary #(
+onehot_to_binary_comb #(
     .INPUT_WIDTH (NUM_CORES)
 ) allocated_core_oh2bin (
-	.clk            (core_clk),
-  	.resetn         (resetn),
 	.input_data     (allocated_core),
   	.output_data    (allocated_core_bin)
 );

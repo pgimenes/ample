@@ -17,6 +17,7 @@ import_ip -files $env(FYP_DIR)/hw/xilinx/fixed4_upsampler.xci
 import_ip -files $env(FYP_DIR)/hw/xilinx/fixed8_upsampler.xci
 import_ip -files $env(FYP_DIR)/hw/xilinx/fixed16_upsampler.xci
 import_ip -files $env(FYP_DIR)/hw/xilinx/scale_factor_queue.xci
+import_ip -files $env(FYP_DIR)/hw/xilinx/router_fifo_sdp_bram.xci
 
 generate_target all [get_ips]
 

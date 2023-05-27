@@ -65,7 +65,7 @@ typedef struct packed {
     
     logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] allocated_agcs_x_coords;
     logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] allocated_agcs_y_coords;
-    logic [$clog2(TOTAL_AGGREGATION_CORES)-1:0]         allocated_agcs_count;
+    logic [$clog2(MAX_AGC_PER_NODE)-1:0]                 allocated_agcs_count;
 } AGE_BUFF_MAN_ALLOC_t;
 
 typedef enum logic [3:0] {
@@ -91,14 +91,14 @@ typedef enum logic [1:0] {
 // Utilities
 // -------------------------------------------------------------------------------------
 
-function logic [4:0] features_per_aggregation_core (input top_pkg::NODE_PRECISION_e precision);
-    logic [4:0] features;
+function logic [7:0] features_per_aggregation_core (input top_pkg::NODE_PRECISION_e precision);
+    logic [7:0] features;
     case(precision)
-        top_pkg::FLOAT_32: features = 5'd16;
-        top_pkg::FIXED_16: features = 5'd32;
-        top_pkg::FIXED_8:  features = 5'd64;
-        top_pkg::FIXED_4:  features = 5'd128;
-        default:           features = 5'd0;
+        top_pkg::FLOAT_32: features = 'd16;
+        top_pkg::FIXED_16: features = 'd32;
+        top_pkg::FIXED_8:  features = 'd64;
+        top_pkg::FIXED_4:  features = 'd128;
+        default:           features = 'd0;
     endcase
     return features;
 endfunction

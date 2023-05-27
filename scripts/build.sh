@@ -2,7 +2,7 @@
 
 set -e
 
-exec > build_log.log
+exec > $FYP_DIR/build_log.log
 
 cd $FYP_DIR
 
@@ -13,12 +13,14 @@ echo "======================================================="
 
 git submodule update --init --recursive
 git submodule foreach git pull origin master
+git submodule foreach git checkour master
 
 # Build Xilinx IP
 echo "======================================================="
 echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Building Xilinx IP."
 echo "======================================================="
 
+cd $FYP_DIR/hw/build
 vivado -mode batch -source $FYP_DIR/scripts/generate_ip.tcl
 
 # Build register banks

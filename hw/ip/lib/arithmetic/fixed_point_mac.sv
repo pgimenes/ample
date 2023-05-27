@@ -19,30 +19,39 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module fixed_point_mac #(
-    parameter WIDTH = 32
+    parameter DATA_WIDTH = 16
 ) (
     input  logic                              core_clk,            
     input  logic                              resetn,
 
-    input  logic                              en,             // enable accumulator update
-    input  logic [WIDTH-1:0]                  a,
-    input  logic [WIDTH-1:0]                  b,
+    input  logic                              in_valid,
+    output logic                              in_ready,
 
-    output logic [WIDTH-1:0]                  acc             // accumulator
+    input  logic [DATA_WIDTH-1:0]             a,
+    input  logic [DATA_WIDTH-1:0]             b,
+
+    output logic [DATA_WIDTH-1:0]             accumulator,
+    
+    input  logic                              overwrite,
+    input  logic [DATA_WIDTH-1:0]            overwrite_data
 );
 
-logic [WIDTH-1:0] acc_reg;
+logic [DATA_WIDTH-1:0] acc_reg;
 
 // Accumulator
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         acc_reg <= '0;
     end else begin
-        acc_reg <= en ? (acc_reg + a*b) : acc_reg;
+        acc_reg <= overwrite ? overwrite_data
+                    : in_valid && in_ready ? (acc_reg + a*b) 
+                    : acc_reg;
     end
 end
 
-assign acc = acc_reg;
+assign accumulator = acc_reg;
+
+assign in_ready = '1;
 
 
 endmodule

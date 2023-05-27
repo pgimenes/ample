@@ -48,14 +48,13 @@ module aggregation_engine #(
     input  MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp,
 
     // AGE -> Aggregation Buffer
-    output logic [TOTAL_BUFFER_MANAGERS-1:0]                                                       age_buffer_manager_buffer_slot_write_enable,
-    output logic [TOTAL_BUFFER_MANAGERS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] age_buffer_manager_buffer_slot_write_address,
-    output logic [TOTAL_BUFFER_MANAGERS-1:0] [age_pkg::PAYLOAD_DATA_WIDTH-1:0]                     age_buffer_manager_buffer_slot_write_data,
-    input  logic [TOTAL_BUFFER_MANAGERS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0]  buffer_slot_age_buffer_manager_feature_count,
-    input  logic [TOTAL_BUFFER_MANAGERS-1:0]                                                       buffer_slot_age_buffer_manager_slot_free,
+    output logic [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_write_enable,
+    output logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] aggregation_buffer_slot_write_address,
+    output logic [AGGREGATION_BUFFER_SLOTS-1:0] [age_pkg::PAYLOAD_DATA_WIDTH-1:0]                     aggregation_buffer_slot_write_data,
+    input  logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0]  aggregation_buffer_slot_feature_count,
+    input  logic [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_slot_free,
 
     output logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                                  scale_factor_queue_pop,
-    input  logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                                  scale_factor_queue_out_valid,
     input  logic [TOTAL_AGGREGATION_MANAGERS-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]              scale_factor_queue_out_data,
     input  logic [TOTAL_AGGREGATION_MANAGERS-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0]        scale_factor_queue_count,
     input  logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                                  scale_factor_queue_empty,
@@ -124,9 +123,9 @@ logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     route
 logic [TOTAL_AGGREGATION_MANAGERS-1:0]                                     router_aggregation_manager_ready;
 flit_t [TOTAL_AGGREGATION_MANAGERS-1:0]                                    router_aggregation_manager_data;
 
-top_pkg::NSB_AGE_REQ_t [TOTAL_AGGREGATION_MANAGERS-1:0]                              agm_allocation;
-logic [TOTAL_AGGREGATION_MANAGERS-1:0] [AGC_COUNT_FLOAT32-1:0]                       agm_allocated_agcs;
-logic [TOTAL_AGGREGATION_MANAGERS-1:0] [$clog2(TOTAL_AGGREGATION_CORES)-1:0]         agm_allocated_agcs_count;
+top_pkg::NSB_AGE_REQ_t [TOTAL_AGGREGATION_MANAGERS-1:0]                               agm_allocation;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0] [AGC_COUNT_FLOAT32-1:0]                        agm_allocated_agcs;
+logic [TOTAL_AGGREGATION_MANAGERS-1:0] [$clog2(MAX_AGC_PER_NODE)-1:0]                 agm_allocated_agcs_count;
 logic [TOTAL_AGGREGATION_MANAGERS-1:0] [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] agm_coords_buffer_x;
 logic [TOTAL_AGGREGATION_MANAGERS-1:0] [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0] agm_coords_buffer_y;
 
@@ -299,7 +298,6 @@ for (genvar agm = 0; agm < TOTAL_AGGREGATION_MANAGERS; agm = agm + 1) begin
         .coords_buffer_y                                         (agm_coords_buffer_y [agm]),
 
         .scale_factor_queue_pop                                  (scale_factor_queue_pop             [agm]),
-        .scale_factor_queue_out_valid                            (scale_factor_queue_out_valid       [agm]),
         .scale_factor_queue_out_data                             (scale_factor_queue_out_data        [agm]),
         .scale_factor_queue_count                                (scale_factor_queue_count           [agm]),
         .scale_factor_queue_empty                                (scale_factor_queue_empty           [agm]),
@@ -476,11 +474,11 @@ for (genvar bm = 0; bm < TOTAL_BUFFER_MANAGERS; bm++) begin
         .router_buffer_manager_ready  (router_buffer_manager_ready   [bm]),
         .router_buffer_manager_data   (router_buffer_manager_data    [bm]),
 
-        .bm_buffer_slot_write_enable  (age_buffer_manager_buffer_slot_write_enable  [bm]),
-        .bm_buffer_slot_write_address (age_buffer_manager_buffer_slot_write_address [bm]),
-        .bm_buffer_slot_write_data    (age_buffer_manager_buffer_slot_write_data    [bm]),
-        .buffer_slot_bm_feature_count (buffer_slot_age_buffer_manager_feature_count [bm]),
-        .buffer_slot_bm_slot_free     (buffer_slot_age_buffer_manager_slot_free     [bm])
+        .bm_buffer_slot_write_enable  (aggregation_buffer_slot_write_enable  [bm]),
+        .bm_buffer_slot_write_address (aggregation_buffer_slot_write_address [bm]),
+        .bm_buffer_slot_write_data    (aggregation_buffer_slot_write_data    [bm]),
+        .buffer_slot_bm_feature_count (aggregation_buffer_slot_feature_count [bm]),
+        .buffer_slot_bm_slot_free     (aggregation_buffer_slot_slot_free     [bm])
     );
     
     always_comb begin
@@ -494,6 +492,15 @@ for (genvar bm = 0; bm < TOTAL_BUFFER_MANAGERS; bm++) begin
         router_node_on              [AGC_COLS][bm][0] = router_buffer_manager_on    [bm];
         router_node_ready           [AGC_COLS][bm][0] = router_buffer_manager_ready [bm];
     end
+end
+
+// Unused aggregation buffer slots
+for (genvar row = TOTAL_BUFFER_MANAGERS; row < AGGREGATION_BUFFER_SLOTS; row++) begin
+
+    assign aggregation_buffer_slot_write_enable = '0;
+    assign aggregation_buffer_slot_write_address = '0;
+    assign aggregation_buffer_slot_write_data = '0;
+
 end
 
 // Aggregation Core (FLOAT32) Allocation
@@ -580,12 +587,9 @@ rr_arbiter #(
     .grant_oh   (aggregation_manager_resp_arbitration_oh)
 );
 
-onehot_to_binary #(
+onehot_to_binary_comb #(
     .INPUT_WIDTH    (TOTAL_AGGREGATION_MANAGERS)
 ) bm_alloc_oh2bin (
-    .clk            (core_clk), // not registered for now
-    .resetn         (resetn),
-    
     .input_data     (aggregation_manager_resp_arbitration_oh),
     .output_data    (aggregation_manager_resp_arbitration_bin)
 );
@@ -610,12 +614,9 @@ rr_arbiter #(
     .grant_oh   (agm_allocation_oh)
 );
 
-onehot_to_binary #(
+onehot_to_binary_comb #(
     .INPUT_WIDTH    (TOTAL_AGGREGATION_MANAGERS)
 ) agm_alloc_req_oh2bin (
-    .clk            (core_clk), // not registered for now
-    .resetn         (resetn),
-    
     .input_data     (agm_allocation_oh),
     .output_data    (agm_receiving_buffer_manager_allocation)
 );
@@ -627,7 +628,7 @@ assign age_agm_buffer_manager_allocation_valid = agm_allocation_oh & {TOTAL_AGGR
 // ----------------------------------------------------
 
 rr_arbiter #(
-    .NUM_REQUESTERS(TOTAL_BUFFER_MANAGERS)
+    .NUM_REQUESTERS (TOTAL_BUFFER_MANAGERS)
 ) free_buffer_manager_arbiter (
     .clk        (core_clk),
     .resetn     (resetn),
@@ -637,12 +638,9 @@ rr_arbiter #(
     .grant_oh   (buffer_master_allocation_oh)
 );
 
-onehot_to_binary #(
-    .INPUT_WIDTH    (TOTAL_AGGREGATION_MANAGERS)
+onehot_to_binary_comb #(
+    .INPUT_WIDTH    (TOTAL_BUFFER_MANAGERS)
 ) agm_resp_arb_oh2bin (
-    .clk            (core_clk), // not registered for now
-    .resetn         (resetn),
-    
     .input_data     (buffer_master_allocation_oh),
     .output_data    (age_agm_buffer_manager_allocation) // buffer manager receiving allocation
 );
