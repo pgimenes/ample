@@ -35,7 +35,6 @@ top_pkg::NSB_AGE_REQ_t                        allocation_req_q;
 logic [NUM_CORES-1:0]                         allocatable_cores;
 
 logic [$clog2(age_pkg::MAX_AGC_PER_NODE)-1:0] agc_counter;
-logic [$clog2(age_pkg::MAX_AGC_PER_NODE)-1:0] required_agcs;
 
 logic [NUM_CORES-1:0]                         allocated_core;
 logic [$clog2(NUM_CORES)-1:0]                 allocated_core_bin;

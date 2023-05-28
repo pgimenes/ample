@@ -3,9 +3,6 @@ import top_pkg::*;
 module activation_core #(
     parameter FLOAT_WIDTH = 32
 ) (
-    input  logic                                    core_clk,
-    input  logic                                    resetn,
-
     input  logic [$bits(ACTIVATION_FUNCTION_e)-1:0] sel_activation,
     
     input  logic                                    in_feature_valid,

@@ -375,7 +375,9 @@ logic [FETCH_TAG_COUNT-1:0]                                           scale_fact
 // Node Scoreboard
 // ====================================================================================
 
-node_scoreboard node_scoreboard_i (
+node_scoreboard #(
+    .NODESLOT_COUNT (top_pkg::MAX_NODESLOT_COUNT)
+) node_scoreboard_i (
     .core_clk                       (sys_clk),
     .resetn                         (!sys_rst),
     

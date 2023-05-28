@@ -278,7 +278,7 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
 
 // Masks
 assign nodeslot_make_valid[31:0] = nsb_nodeslot_config_make_valid_lsb_make_valid;
-assign nodeslot_make_valid[63:32] = nsb_nodeslot_config_make_valid_msb_make_valid;
+// assign nodeslot_make_valid[63:32] = nsb_nodeslot_config_make_valid_msb_make_valid;
 
 assign accepting_prefetch_request = nsb_prefetcher_req_valid && nsb_prefetcher_req_ready;
 assign accepting_aggr_request = nsb_age_req_valid && nsb_age_req_ready;
@@ -295,22 +295,22 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
 
     always_ff @( posedge core_clk or negedge resetn) begin
         if (!resetn) begin
-            nsb_nodeslot_node_state_state[nodeslot] <= node_scoreboard_pkg::EMPTY;
-            fetch_nb_list_resp_received[nodeslot]   <= '0;
+            nsb_nodeslot_node_state_state     [nodeslot] <= node_scoreboard_pkg::EMPTY;
+            fetch_nb_list_resp_received       [nodeslot] <= '0;
             fetch_scale_factors_resp_received [nodeslot] <= '0;
-            fetch_nbs_resp_received[nodeslot]       <= '0;
-            aggregation_done [nodeslot]                    <= '0;
-            transformation_done [nodeslot]                 <= '0;
+            fetch_nbs_resp_received           [nodeslot] <= '0;
+            aggregation_done                  [nodeslot] <= '0;
+            transformation_done               [nodeslot] <= '0;
 
         end else if (nodeslot_state_n[nodeslot] == EMPTY) begin
             nsb_nodeslot_node_state_state[nodeslot] <= nodeslot_state_n[nodeslot];
 
             // Update done mask from prefetcher response
-            fetch_nb_list_resp_received [nodeslot]         <= '0;
-            fetch_scale_factors_resp_received [nodeslot]   <= '0;
-            fetch_nbs_resp_received [nodeslot]             <= '0;
-            aggregation_done [nodeslot]                    <= '0;
-            transformation_done [nodeslot]                 <= '0;
+            fetch_nb_list_resp_received       [nodeslot] <= '0;
+            fetch_scale_factors_resp_received [nodeslot] <= '0;
+            fetch_nbs_resp_received           [nodeslot] <= '0;
+            aggregation_done                  [nodeslot] <= '0;
+            transformation_done               [nodeslot] <= '0;
 
         end else begin
             nsb_nodeslot_node_state_state[nodeslot] <= nodeslot_state_n[nodeslot];
@@ -512,9 +512,8 @@ always_comb begin : nsb_prefetcher_req_logic
     // nsb_prefetcher_req.nodeslot_precision = nsb_nodeslot_precision_precision[prefetcher_arbiter_grant_bin];
     nsb_prefetcher_req.nodeslot_precision = top_pkg::FLOAT_32;
 
-    // TO DO: read from regbank
-    nsb_prefetcher_req.in_features <= layer_config_in_features_count;
-    nsb_prefetcher_req.out_features <= layer_config_out_features_count;
+    nsb_prefetcher_req.in_features  = layer_config_in_features_count;
+    nsb_prefetcher_req.out_features = layer_config_out_features_count;
 end
 
 // Aggregation requests

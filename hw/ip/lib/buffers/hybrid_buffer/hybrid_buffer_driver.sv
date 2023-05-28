@@ -1,17 +1,20 @@
 
 module hybrid_buffer_driver #(
-    parameter BUFFER_SLOTS = 16
+    parameter BUFFER_SLOTS = 16,
+    parameter MAX_PULSES_PER_SLOT = top_pkg::MAX_FEATURE_COUNT
 ) (
-    input  logic                  core_clk,
-    input  logic                  resetn,
+    input  logic                                   core_clk,
+    input  logic                                   resetn,
 
-    input  logic                  begin_dump,
-    input  logic                  pulse,
+    input  logic                                   begin_dump,
+    input  logic                                   pulse,
 
-    output logic [BUFFER_SLOTS-1:0] slot_pop_shift
+    input  logic [$clog2(MAX_PULSES_PER_SLOT)-1:0] pulse_limit,
+
+    output logic [BUFFER_SLOTS-1:0]                slot_pop_shift
 );
 
-logic [$clog2(BUFFER_SLOTS)-1:0] slot_pop_counter;
+logic [$clog2(MAX_PULSES_PER_SLOT)-1:0] slot_pop_counter;
 
 // Shift register to flush through weights matrix diagonally
 for (genvar slot = 1; slot < BUFFER_SLOTS; slot++) begin
@@ -42,10 +45,10 @@ always_ff @(posedge core_clk or negedge resetn) begin
 
     end else if (pulse) begin
         // Increment when popping any slots, but latch at '1
-        slot_pop_counter <= (slot_pop_counter == (BUFFER_SLOTS-1)) ? slot_pop_counter : (slot_pop_counter + 1'b1);
+        slot_pop_counter <= (slot_pop_counter == (pulse_limit-1)) ? slot_pop_counter : (slot_pop_counter + 1'b1);
 
         // If accepting weight channel response, new data is available on all slot FIFOs so shift register
-        slot_pop_shift[0] <= (slot_pop_counter != (BUFFER_SLOTS-1));
+        slot_pop_shift[0] <= (slot_pop_counter != (pulse_limit-1));
 
     end
 end

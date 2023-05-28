@@ -11,7 +11,7 @@ module bram_fifo #(
     parameter WRITE_DEPTH = 512,
     parameter READ_WIDTH = 32,
     parameter READ_DEPTH = 1024,
-    parameter BRAM_TYPE = "SCALE_FACTOR"
+    parameter BRAM_TYPE = 0
 ) (
     input  logic                        core_clk,
     input  logic                        resetn,
@@ -37,15 +37,21 @@ parameter READ_ADDR_WIDTH = $clog2(READ_DEPTH);
 logic [WRITE_ADDR_WIDTH-1:0] wr_ptr;
 logic [READ_ADDR_WIDTH-1:0] rd_ptr;
 
+
+logic [READ_ADDR_WIDTH-1:0] read_address;
+
+// Drive address 1 cycle early to account for read latency
+assign read_address = pop ? rd_ptr + 1'b1 : rd_ptr;
+
 logic wr_wrap, rd_wrap;
 
 // ==================================================================================================================================================
 // Logic
 // ==================================================================================================================================================
 
-if (BRAM_TYPE == "SCALE_FACTOR") begin
+if (BRAM_TYPE == 0) begin
 
-    scale_factor_queue bram (
+    scale_factor_queue scale_factor_queue_i (
         .clka         (core_clk),
         .ena          (1'b1),
         .wea          (push),
@@ -54,15 +60,15 @@ if (BRAM_TYPE == "SCALE_FACTOR") begin
         
         .clkb         (core_clk),
         .enb          (1'b1),
-        .addrb        (rd_ptr),
+        .addrb        (read_address),
         .doutb        (out_data),
         
         .sleep        (1'b0)
     );
     
-end else if (BRAM_TYPE == "ROUTER_FIFO") begin
+end else if (BRAM_TYPE == 1) begin
     
-    router_fifo_sdp_bram bram (
+    router_fifo_sdp_bram router_fifo_sdp_bram_i (
         .clka         (core_clk),
         .ena          (1'b1),
 

@@ -5,26 +5,26 @@ package age_pkg;
 
 // Float 32 Aggregation Cores
 parameter AGC_FLOAT32_ROWS = 4;
-parameter AGC_FLOAT32_COLS = 16;
+parameter AGC_FLOAT32_COLS = top_pkg::MAX_NODESLOT_COUNT/4;
 parameter AGC_FLOAT32_COL_OFFSET = 0;
 parameter AGC_COUNT_FLOAT32 = AGC_FLOAT32_ROWS * AGC_FLOAT32_COLS;
 
 // Fixed 16 Aggregation Cores
 parameter AGC_FIXED16_ROWS = 4;
-parameter AGC_FIXED16_COLS = 16;
-parameter AGC_FIXED16_COL_OFFSET = 16;
+parameter AGC_FIXED16_COLS = top_pkg::MAX_NODESLOT_COUNT/4;
+parameter AGC_FIXED16_COL_OFFSET = AGC_FLOAT32_COLS;
 parameter AGC_COUNT_FIXED16 = AGC_FIXED16_ROWS * AGC_FIXED16_COLS;
 
-parameter AGC_UNUSED_COLS_OFFSET = 32;
+parameter AGC_UNUSED_COLS_OFFSET = AGC_FIXED16_COL_OFFSET + AGC_FIXED16_COLS;
 
 // Total Aggregation Cores
 parameter AGC_ROWS = 4;
-parameter AGC_COLS = 64;
-parameter TOTAL_AGGREGATION_CORES = AGC_ROWS * AGC_COLS; // TO DO: change (MS3), MS2 only supports float 32
+parameter AGC_COLS = top_pkg::MAX_NODESLOT_COUNT;
+parameter TOTAL_AGGREGATION_CORES = AGC_ROWS * AGC_COLS;
 
 // Aggregation Managers
 parameter AGM_ROWS = 1;
-parameter AGM_COLS = 64;
+parameter AGM_COLS = top_pkg::MAX_NODESLOT_COUNT;
 parameter TOTAL_AGGREGATION_MANAGERS = AGM_ROWS * AGM_COLS;
 
 // Buffer Managers

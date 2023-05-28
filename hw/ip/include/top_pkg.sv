@@ -13,7 +13,7 @@ package top_pkg;
 
 // Graph parameters
 parameter MAX_NODES = 1024*1024; // 1M
-parameter MAX_NODESLOT_COUNT = 64;
+parameter MAX_NODESLOT_COUNT = 32;
 parameter MAX_NEIGHBOURS = 1024;
 parameter MAX_FEATURE_COUNT = 1024;
 

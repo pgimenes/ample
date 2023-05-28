@@ -62,13 +62,14 @@ module aggregation_manager #(
 typedef enum logic [4:0] {
     AGM_FSM_IDLE,
     AGM_FSM_AGC_ALLOC_PKT,
+    AGM_FSM_WAIT_DRAIN1,
     AGM_FSM_PREF_REQ,
     AGM_FSM_WAIT_PREF_RESP,
     AGM_FSM_SEND_AGC,
-    AGM_FSM_WAIT_DRAIN1,
+    AGM_FSM_WAIT_DRAIN2,
     AGM_FSM_WAIT_BUFF_MAN_ALLOC,
     AGM_FSM_AGC_BUFFER_REQ,
-    AGM_FSM_WAIT_DRAIN2,
+    AGM_FSM_WAIT_DRAIN3,
     AGM_FSM_WAIT_BUFFER_DONE,
     AGM_FSM_NSB_RESP
 } agm_state_e;
@@ -129,8 +130,12 @@ always_comb begin
     end
 
     AGM_FSM_AGC_ALLOC_PKT: begin
-        agm_state_n = (aggregation_manager_router_data.flit_label == noc_params::TAIL) && (coord_ptr == agm_allocated_agcs_count - 1'b1) ? AGM_FSM_PREF_REQ
+        agm_state_n = (aggregation_manager_router_data.flit_label == noc_params::TAIL) && (coord_ptr == agm_allocated_agcs_count - 1'b1) ? AGM_FSM_WAIT_DRAIN1
                     : AGM_FSM_AGC_ALLOC_PKT;
+    end
+
+    AGM_FSM_WAIT_DRAIN1: begin
+        agm_state_n = noc_router_waiting ? AGM_FSM_PREF_REQ : AGM_FSM_WAIT_DRAIN1;
     end
 
     AGM_FSM_PREF_REQ: begin
@@ -144,13 +149,13 @@ always_comb begin
     end
 
     AGM_FSM_SEND_AGC: begin
-        agm_state_n = pkt_done && message_channel_resp_q.last_feature ? AGM_FSM_WAIT_DRAIN1
+        agm_state_n = pkt_done && message_channel_resp_q.last_feature ? AGM_FSM_WAIT_DRAIN2
                     : pkt_done ? AGM_FSM_WAIT_PREF_RESP
                     : AGM_FSM_SEND_AGC;
     end
 
-    AGM_FSM_WAIT_DRAIN1: begin
-        agm_state_n = noc_router_waiting ? AGM_FSM_WAIT_BUFF_MAN_ALLOC : AGM_FSM_WAIT_DRAIN1;
+    AGM_FSM_WAIT_DRAIN2: begin
+        agm_state_n = noc_router_waiting ? AGM_FSM_WAIT_BUFF_MAN_ALLOC : AGM_FSM_WAIT_DRAIN2;
     end
 
     AGM_FSM_WAIT_BUFF_MAN_ALLOC: begin
@@ -158,12 +163,12 @@ always_comb begin
     end
 
     AGM_FSM_AGC_BUFFER_REQ: begin
-        agm_state_n = (coord_ptr == agm_allocated_agcs_count - 1'b1) && agc_pkt_head_sent ? AGM_FSM_WAIT_DRAIN2
+        agm_state_n = (coord_ptr == agm_allocated_agcs_count - 1'b1) && agc_pkt_head_sent ? AGM_FSM_WAIT_DRAIN3
                     : AGM_FSM_AGC_BUFFER_REQ;
     end
 
-    AGM_FSM_WAIT_DRAIN2: begin
-        agm_state_n = noc_router_waiting ? AGM_FSM_WAIT_BUFFER_DONE : AGM_FSM_WAIT_DRAIN2;
+    AGM_FSM_WAIT_DRAIN3: begin
+        agm_state_n = noc_router_waiting ? AGM_FSM_WAIT_BUFFER_DONE : AGM_FSM_WAIT_DRAIN3;
     end
 
     AGM_FSM_WAIT_BUFFER_DONE: begin

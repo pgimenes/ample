@@ -27,11 +27,17 @@ module systolic_module #(
 
     input  logic                                                 pulse_systolic_module,
     
-    input  logic [MATRIX_N-1:0]                                  sys_module_forward_valid,
-    input  logic [MATRIX_N-1:0] [31:0]                           sys_module_forward,
+    input  logic [MATRIX_N-1:0]                                  sys_module_forward_in_valid,
+    input  logic [MATRIX_N-1:0] [31:0]                           sys_module_forward_in,
     
-    input  logic [MATRIX_N-1:0]                                  sys_module_down_valid,
-    input  logic [MATRIX_N-1:0] [31:0]                           sys_module_down,
+    input  logic [MATRIX_N-1:0]                                  sys_module_down_in_valid,
+    input  logic [MATRIX_N-1:0] [31:0]                           sys_module_down_in,
+
+    output logic [MATRIX_N-1:0]                                  sys_module_forward_out_valid,
+    output logic [MATRIX_N-1:0] [31:0]                           sys_module_forward_out,
+    
+    output logic [MATRIX_N-1:0]                                  sys_module_down_out_valid,
+    output logic [MATRIX_N-1:0] [31:0]                           sys_module_down_out,
 
     input  logic                                                 bias_valid,
     input  logic [FLOAT_WIDTH-1:0]                               bias,
@@ -115,21 +121,35 @@ assign sys_module_pe_acc [MATRIX_N] = '0;
 // ============================================================================================
 
 for (genvar row=0; row < MATRIX_N; row++) begin
-    assign sys_module_pe_forward         [row][0] = sys_module_forward      [row];
-    assign sys_module_pe_forward_valid   [row][0] = sys_module_forward_valid[row];
+    always_comb begin
+        // Drive forward inputs
+        sys_module_pe_forward         [row][0] = sys_module_forward_in      [row];
+        sys_module_pe_forward_valid   [row][0] = sys_module_forward_in_valid[row];
 
-    assign forward_flush_done [row] = !sys_module_pe_forward_valid [row] [MATRIX_N-1];
+        // Drive forward outputs
+        sys_module_forward_out_valid [row] = sys_module_pe_forward_valid [row] [MATRIX_N-1];
+        sys_module_forward_out [row] = sys_module_pe_forward [row] [MATRIX_N-1];
+    end
 end
+
+assign forward_flush_done = ~sys_module_forward_out_valid;
 
 for (genvar col=0; col < MATRIX_N; col++) begin
-    assign sys_module_pe_down            [0][col] = sys_module_down      [col];
-    assign sys_module_pe_down_valid      [0][col] = sys_module_down_valid[col];
     
-    assign down_flush_done [col] = !sys_module_pe_down_valid [MATRIX_N-1] [col];
+    always_comb begin
+        // Drive down inputs
+        sys_module_pe_down            [0][col] = sys_module_down_in      [col];
+        sys_module_pe_down_valid      [0][col] = sys_module_down_in_valid[col];
+
+        // Drive down outputs
+        sys_module_down_out_valid [col] = sys_module_pe_down_valid [MATRIX_N-1] [col];
+        sys_module_down_out       [col] = sys_module_pe_down [MATRIX_N-1] [col];
+    end
 end
 
-assign diagonal_flush_done = &forward_flush_done && &down_flush_done;
+assign down_flush_done = ~sys_module_down_out_valid;
 
+assign diagonal_flush_done = &forward_flush_done && &down_flush_done;
 
 // ============================================================================================
 // Assertions
@@ -139,7 +159,7 @@ assign diagonal_flush_done = &forward_flush_done && &down_flush_done;
 
 //     P_forward_valid_propagates: assert property (
 //         @(posedge core_clk) disable iff (!resetn)
-//         sys_module_forward_valid[row] |-> ##(MATRIX_N) sys_module_pe_forward_valid[row][MATRIX_N]
+//         sys_module_forward_in_valid[row] |-> ##(MATRIX_N) sys_module_pe_forward_valid[row][MATRIX_N]
 //     );
 
 // end
@@ -148,7 +168,7 @@ assign diagonal_flush_done = &forward_flush_done && &down_flush_done;
 
 //     P_down_valid_propagates: assert property (
 //         @(posedge core_clk) disable iff (!resetn)
-//         sys_module_down_valid[col] |-> ##(MATRIX_N) sys_module_pe_down_valid[MATRIX_N][col]
+//         sys_module_down_in_valid[col] |-> ##(MATRIX_N) sys_module_pe_down_valid[MATRIX_N][col]
 //     );
 
 // end

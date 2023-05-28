@@ -235,7 +235,7 @@ bram_fifo #(
     .WRITE_DEPTH (SCALE_FACTOR_QUEUE_WRITE_DEPTH),
     .READ_WIDTH  (SCALE_FACTOR_QUEUE_READ_WIDTH),
     .READ_DEPTH  (SCALE_FACTOR_QUEUE_READ_DEPTH),
-    .BRAM_TYPE   ("SCALE_FACTOR")
+    .BRAM_TYPE   (0)
 ) scale_factor_queue (
     .core_clk                   (core_clk),
     .resetn                     (resetn),

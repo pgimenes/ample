@@ -59,10 +59,10 @@ module feature_transformation_engine #(
 );
 
 // parameter SYSTOLIC_MODULE_COUNT = top_pkg::MAX_FEATURE_COUNT / MATRIX_N; // = 64
-parameter SYSTOLIC_MODULE_COUNT = 1;
+parameter SYSTOLIC_MODULE_COUNT = 4;
 
 typedef enum logic [3:0] { 
-    FTE_FSM_IDLE, FTE_FSM_REQ_WC, FTE_FSM_MULT, FTE_FSM_BIAS, FTE_FSM_ACTIVATION, FTE_FSM_FLUSH, FTE_FSM_SHIFT, FTE_FSM_NSB_RESP
+    FTE_FSM_IDLE, FTE_FSM_REQ_WC, FTE_FSM_MULT_SLOW, FTE_FSM_MULT_FAST, FTE_FSM_BIAS, FTE_FSM_ACTIVATION, FTE_FSM_FLUSH, FTE_FSM_SHIFT, FTE_FSM_NSB_RESP
 } FTE_FSM_e;
 
 // ==================================================================================================================================================
@@ -94,18 +94,22 @@ logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslots_to_flush;
 // -------------------------------------------------------------------------------------
 
 // Driven from aggregation buffer
-logic [MATRIX_N-1:0]                 sys_module_forward_valid; // 16
-logic [MATRIX_N-1:0] [31:0]          sys_module_forward;
+logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0]                 sys_module_forward_valid; // 16
+logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0] [31:0]          sys_module_forward;
 
 // Driven from weight channel
-logic [MAX_FEATURE_COUNT-1:0]        sys_module_down_valid; // 1024
-logic [MAX_FEATURE_COUNT-1:0] [31:0] sys_module_down;
+logic [MAX_FEATURE_COUNT-1:0]        sys_module_down_in_valid;
+logic [MAX_FEATURE_COUNT-1:0] [31:0] sys_module_down_in;
+
+logic [MAX_FEATURE_COUNT-1:0]        sys_module_down_out_valid;
+logic [MAX_FEATURE_COUNT-1:0] [31:0] sys_module_down_out;
+
+logic [SYSTOLIC_MODULE_COUNT-1:0] sys_module_flush_done;
 
 logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0] sys_module_pe_acc;
 logic [SYSTOLIC_MODULE_COUNT-1:0] shift_sys_module;
 logic                             bias_valid;
 logic                             activation_valid;
-logic sys_module_flush_done;
 
 
 // Driving systolic modules
@@ -115,6 +119,7 @@ logic                                                 begin_feature_dump;
 logic                                                 pulse_systolic_module;
 logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]         slot_pop_shift;
 logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]         busy_aggregation_slots_snapshot;
+logic                                                 pe_delay_counter;
 
 // Flushing logic
 logic [top_pkg::TRANSFORMATION_BUFFER_SLOTS-1:0]         transformation_buffer_slot_arb_oh;
@@ -171,36 +176,42 @@ feature_transformation_engine_regbank_regs feature_transformation_engine_regbank
 for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) begin
     // Driving from weight channel
     always_comb begin
-        sys_module_down_valid    [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = {MATRIX_N{pulse_systolic_module}} & weight_channel_resp.valid_mask[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
-        sys_module_down          [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = weight_channel_resp.data[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
+        sys_module_down_in_valid [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = {MATRIX_N{weight_channel_resp_valid}} & weight_channel_resp.valid_mask[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
+        sys_module_down_in       [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = weight_channel_resp.data[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
     end
     
     systolic_module #(
         .FLOAT_WIDTH (FLOAT_WIDTH),
         .MATRIX_N    (MATRIX_N)
     ) sys_module_i (
-        .core_clk                 (core_clk),
-        .resetn                   (resetn),
+        .core_clk                            (core_clk),
+        .resetn                              (resetn),
 
-        .pulse_systolic_module    (pulse_systolic_module),
+        .pulse_systolic_module               (pulse_systolic_module),
 
-        .sys_module_forward_valid (sys_module_forward_valid), // TO DO: support >1 sys module
-        .sys_module_forward       (sys_module_forward      ), // TO DO: support >1 sys module
+        .sys_module_forward_in_valid         (sys_module_forward_valid  [sys_module]),
+        .sys_module_forward_in               (sys_module_forward        [sys_module]),
 
-        .sys_module_down_valid    (sys_module_down_valid    [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]),
-        .sys_module_down          (sys_module_down          [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]),
+        .sys_module_down_in_valid            (sys_module_down_in_valid  [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]),
+        .sys_module_down_in                  (sys_module_down_in        [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]),
+
+        .sys_module_forward_out_valid        (sys_module_forward_valid  [sys_module+1]),
+        .sys_module_forward_out              (sys_module_forward        [sys_module+1]),
+
+        .sys_module_down_out_valid           (sys_module_down_out_valid [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]),
+        .sys_module_down_out                 (sys_module_down_out       [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]),
         
-        .bias_valid               (bias_valid),
-        .bias                     (layer_config_bias_value),
+        .bias_valid                          (bias_valid),
+        .bias                                (layer_config_bias_value),
         
-        .activation_valid         (activation_valid),
-        .activation               (layer_config_activation_function_value),
+        .activation_valid                    (activation_valid),
+        .activation                          (layer_config_activation_function_value),
 
-        .shift_valid              (shift_sys_module         [sys_module]),
+        .shift_valid                         (shift_sys_module         [sys_module]),
 
-        .sys_module_pe_acc        (sys_module_pe_acc        [sys_module]),
+        .sys_module_pe_acc                   (sys_module_pe_acc        [sys_module]),
 
-        .diagonal_flush_done      (sys_module_flush_done),
+        .diagonal_flush_done                 (sys_module_flush_done    [sys_module]),
 
         .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value)
     );
@@ -226,13 +237,16 @@ rr_arbiter #(
 // --------------------------------------------------------------------------------
 
 hybrid_buffer_driver #(
-    .BUFFER_SLOTS (16)
+    .BUFFER_SLOTS (top_pkg::AGGREGATION_BUFFER_SLOTS),
+    .MAX_PULSES_PER_SLOT (top_pkg::MAX_FEATURE_COUNT)
 ) aggregation_buffer_driver_i (
     .core_clk,
     .resetn,
 
     .begin_dump     (begin_feature_dump),
     .pulse          (pulse_systolic_module),
+
+    .pulse_limit    (layer_config_in_features_count),
 
     .slot_pop_shift (slot_pop_shift)
 );
@@ -262,11 +276,15 @@ always_comb begin
         end
 
         FTE_FSM_REQ_WC: begin
-            fte_state_n = weight_channel_req_ready ? FTE_FSM_MULT : FTE_FSM_REQ_WC;
+            fte_state_n = weight_channel_req_ready ? FTE_FSM_MULT_SLOW : FTE_FSM_REQ_WC;
         end
 
-        FTE_FSM_MULT: begin
-            fte_state_n = last_weight_resp_received && sys_module_flush_done ? FTE_FSM_BIAS : FTE_FSM_MULT;
+        FTE_FSM_MULT_SLOW: begin
+            fte_state_n = last_weight_resp_received && sys_module_flush_done[SYSTOLIC_MODULE_COUNT-1] ? FTE_FSM_MULT_FAST : FTE_FSM_MULT_SLOW;
+        end
+
+        FTE_FSM_MULT_FAST: begin
+            fte_state_n = FTE_FSM_BIAS;
         end
 
         FTE_FSM_BIAS: begin
@@ -314,21 +332,36 @@ end
 
 always_comb begin
     // Begin feature dump when weight channel request accepted
-    begin_feature_dump = (fte_state == FTE_FSM_REQ_WC) && (fte_state_n == FTE_FSM_MULT);
+    begin_feature_dump = (fte_state == FTE_FSM_REQ_WC) && (fte_state_n == FTE_FSM_MULT_SLOW);
 
     // Pulse module when features ready in aggregation buffer and weights ready in weight channel
-    pulse_systolic_module = (fte_state_n == FTE_FSM_MULT) && weight_channel_resp_valid;
+    pulse_systolic_module = (fte_state_n == FTE_FSM_MULT_SLOW) && weight_channel_resp_valid && pe_delay_counter;
 
     // Drive systolic module from aggregation buffer (on the left)
-    sys_module_forward_valid      = slot_pop_shift & {MATRIX_N{pulse_systolic_module}} & busy_aggregation_slots_snapshot;
-    sys_module_forward            = aggregation_buffer_out_feature;
+    sys_module_forward_valid [0] = slot_pop_shift & busy_aggregation_slots_snapshot;
+    sys_module_forward       [0] = aggregation_buffer_out_feature;
 
-    aggregation_buffer_pop = slot_pop_shift & {MATRIX_N{pulse_systolic_module}} & busy_aggregation_slots_snapshot;
+    aggregation_buffer_pop = slot_pop_shift & {MATRIX_N{pulse_systolic_module}} & busy_aggregation_slots_snapshot & ~aggregation_buffer_slot_free;
+end
+
+// 1-bit toggle to account for PE delay
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        pe_delay_counter <= '1;
+    end else begin
+        pe_delay_counter <= begin_feature_dump ? 1'b1
+                            
+                            // Don't toggle before starting MULT
+                            : !(fte_state == FTE_FSM_MULT_SLOW) ? pe_delay_counter
+
+                            // Toggle every cycle during MULT
+                            : !pe_delay_counter;
+    end
 end
     
 always_comb begin
     // Bias and activation after multiplication finished
-    bias_valid = (fte_state == FTE_FSM_BIAS);
+    bias_valid       = (fte_state == FTE_FSM_BIAS);
     activation_valid = (fte_state == FTE_FSM_ACTIVATION);
     
     // Shift systolic module upwards when done flushing top row
@@ -390,7 +423,7 @@ always_comb begin
     weight_channel_req.out_features = top_pkg::MAX_FEATURE_COUNT;
 
     // Accept weight bank response when pulsing systolic module (i.e. aggregation buffer is also ready)
-    weight_channel_resp_ready = (fte_state == FTE_FSM_MULT) && (pulse_systolic_module || weight_channel_resp.done);
+    weight_channel_resp_ready = (fte_state == FTE_FSM_MULT_SLOW) && (pulse_systolic_module || weight_channel_resp.done);
 end
 
 // Raise flag as pre-condition for transitioning from MULT state
