@@ -490,9 +490,11 @@ aggregation_engine_interface aggregation_engine_interface_i
     .message_channel_resp_valid ('0),
     .message_channel_resp_ready ('0),
     .message_channel_resp ('0),
-    .age_buffer_manager_buffer_slot_write_enable ('0),
-    .age_buffer_manager_buffer_slot_write_address ('0),
-    .age_buffer_manager_buffer_slot_write_data ('0)
+    .aggregation_buffer_slot_write_enable ('0),
+    .aggregation_buffer_slot_write_address ('0),
+    .aggregation_buffer_slot_write_data ('0),
+    .aggregation_buffer_slot_feature_count ('0),
+    .aggregation_buffer_slot_slot_free ('0)
 );
 
 prefetcher_interface prefetcher_interface_i 

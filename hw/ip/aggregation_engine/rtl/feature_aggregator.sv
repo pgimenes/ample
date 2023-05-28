@@ -31,7 +31,6 @@ module feature_aggregator #(
 
 logic                                         passthrough_aggregator_in_feature_valid;
 logic                                         sum_aggregator_in_feature_valid;
-logic                                         mean_aggregator_in_feature_valid;
 
 logic [DATA_WIDTH-1:0]                        passthrough_aggregator_out_feature;
 logic                                         passthrough_aggregator_out_valid;
@@ -39,6 +38,9 @@ logic                                         passthrough_aggregator_out_valid;
 logic [DATA_WIDTH-1:0]                        sum_aggregator_out_feature;
 logic                                         sum_aggregator_out_valid;
 
+logic                                         scaled_feature_valid_comb;
+logic                                         scaled_feature_valid;
+logic [FLOAT_WIDTH-1:0]                       scaled_feature_comb;
 logic [FLOAT_WIDTH-1:0]                       scaled_feature;
 
 // === ADD AGGREGATOR DECLARATIONS
@@ -47,11 +49,11 @@ logic[$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0] feature_accumulation_count;
 
 logic                                         busy;
 
-logic                   accumulator_float_valid;
-logic [FLOAT_WIDTH-1:0] accumulator_float;
-
-logic upsampled_accumulator_valid_comb;
-logic [FLOAT_WIDTH-1:0] upsampled_accumulator_comb;
+// Upsampling
+logic                                         accumulator_float_valid;
+logic [FLOAT_WIDTH-1:0]                       accumulator_float;
+logic                                         upsampled_accumulator_valid_comb;
+logic [FLOAT_WIDTH-1:0]                       upsampled_accumulator_comb;
 
 // ==================================================================================================================================================
 // Instances
@@ -61,18 +63,33 @@ logic [FLOAT_WIDTH-1:0] upsampled_accumulator_comb;
 // -----------------------------------------------------------------------------------
 
 if (PRECISION == "FLOAT_32") begin
+
     fp_mult scale_factor_mult (
-        .s_axis_a_tvalid      (in_feature_valid),            // input wire s_axis_a_tvalid
-        .s_axis_a_tdata       (scale_factor),              // input wire [31 : 0] s_axis_a_tdata
+        .s_axis_a_tvalid      (in_feature_valid && in_feature_ready),
+        .s_axis_a_tdata       (scale_factor),
         
-        .s_axis_b_tvalid      (in_feature_valid),            // input wire s_axis_b_tvalid
-        .s_axis_b_tdata       (in_feature),              // input wire [31 : 0] s_axis_b_tdata
+        .s_axis_b_tvalid      (in_feature_valid && in_feature_ready),
+        .s_axis_b_tdata       (in_feature),
         
-        .m_axis_result_tvalid (),  // output wire m_axis_result_tvalid
-        .m_axis_result_tdata  (scaled_feature)    // output wire [31 : 0] m_axis_result_tdata
+        .m_axis_result_tvalid (scaled_feature_valid_comb),
+        .m_axis_result_tdata  (scaled_feature_comb) 
     );
+
 end else begin
-    assign scaled_feature = scale_factor [DATA_WIDTH-1:0] * in_feature [DATA_WIDTH-1:0];
+    assign scaled_feature_valid_comb = in_feature_valid && in_feature_ready;
+    assign scaled_feature_comb = scale_factor [DATA_WIDTH-1:0] * in_feature [DATA_WIDTH-1:0];
+end
+
+// Register scaled feature
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        scaled_feature_valid <= '0;
+        scaled_feature <= '0;
+    
+    end else begin
+        scaled_feature_valid <= scaled_feature_valid_comb;
+        scaled_feature       <= scaled_feature_comb;
+    end
 end
 
 // Aggregators
@@ -85,7 +102,7 @@ passthrough_aggregator #(
     .core_clk          (core_clk),
     .resetn            (resetn),
     
-    .in_feature_valid  (passthrough_aggregator_in_feature_valid),
+    .in_feature_valid  (busy && passthrough_aggregator_in_feature_valid),
     .in_feature        (scaled_feature [DATA_WIDTH-1:0]),
     
     .out_feature       (passthrough_aggregator_out_feature),
@@ -99,7 +116,7 @@ sum_aggregator #(
     .core_clk          (core_clk),
     .resetn            (resetn),
 
-    .in_feature_valid  (sum_aggregator_in_feature_valid),
+    .in_feature_valid  (busy && sum_aggregator_in_feature_valid),
     .in_feature        (scaled_feature [DATA_WIDTH-1:0]),
 
     .acc_feature       (accumulator),
@@ -176,8 +193,8 @@ end
 
 always_comb begin
     // Write first feature into accumulator directly regardless of chosen aggregation function
-    passthrough_aggregator_in_feature_valid = (feature_accumulation_count == '0) && in_feature_valid && in_feature_ready;
-    sum_aggregator_in_feature_valid = |feature_accumulation_count && in_feature_valid && in_feature_ready && (aggregation_function_sel == top_pkg::SUM);
+    passthrough_aggregator_in_feature_valid = (feature_accumulation_count == '0) && scaled_feature_valid;
+    sum_aggregator_in_feature_valid = |feature_accumulation_count && scaled_feature_valid && (aggregation_function_sel == top_pkg::SUM);
 
     // === ADD AGGREGATOR VALID DRIVER
 
