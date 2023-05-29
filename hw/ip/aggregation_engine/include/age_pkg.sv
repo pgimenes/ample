@@ -60,7 +60,8 @@ typedef struct packed {
 } AGE_AGM_REQ_t;
 
 typedef struct packed {
-    logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0]     nodeslot;
+    logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0]     nodeslot;    
+    logic [top_pkg::NODE_ID_WIDTH-1:0]                  node_id;
     logic [$clog2(TOTAL_AGGREGATION_MANAGERS)-1:0]      aggregation_manager;
     
     logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0] allocated_agcs_x_coords;

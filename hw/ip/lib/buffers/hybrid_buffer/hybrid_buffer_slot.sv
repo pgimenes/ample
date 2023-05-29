@@ -21,6 +21,9 @@ module hybrid_buffer_slot #(
 );
 
 logic [$clog2(READ_DEPTH)-1:0] rd_ptr;
+logic [$clog2(READ_DEPTH)-1:0] read_address;
+
+assign read_address = pop ? rd_ptr + 1'b1 : rd_ptr;
 
 // Instances
 // ------------------------------------------------------------
@@ -36,7 +39,7 @@ if (BUFFER_TYPE == "AGGREGATION") begin
         
         .clkb     (core_clk),    // input wire clkb
         .enb      ('1),      // input wire enb
-        .addrb    (rd_ptr),  // input wire [9 : 0] addrb
+        .addrb    (read_address),  // input wire [9 : 0] addrb
         .doutb    (out_feature),  // output wire [31 : 0] doutb
         
         .sleep    ('0)  // input wire sleep
@@ -53,7 +56,7 @@ end else if (BUFFER_TYPE == "TRANSFORMATION") begin
         
         .clkb           (core_clk),      // input wire clkb
         .enb            ('1),      // input wire enb
-        .addrb          (rd_ptr),    // input wire [9 : 0] addrb
+        .addrb          (read_address),    // input wire [9 : 0] addrb
         .doutb          (out_feature)    // output wire [31 : 0] doutb
     );
 
