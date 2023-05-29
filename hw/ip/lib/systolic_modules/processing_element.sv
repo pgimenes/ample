@@ -56,6 +56,8 @@ logic                   update_accumulator;
 logic                   overwrite_accumulator;
 logic [FLOAT_WIDTH-1:0] overwrite_data;
 
+logic                   bias_out_valid_comb;
+logic [FLOAT_WIDTH-1:0] pe_acc_add_bias_comb;
 logic                   bias_out_valid;
 logic [FLOAT_WIDTH-1:0] pe_acc_add_bias;
 
@@ -94,9 +96,20 @@ fp_add bias_adder (
   .s_axis_b_tvalid              (bias_valid),
   .s_axis_b_tdata               (bias),
 
-  .m_axis_result_tvalid         (bias_out_valid),
-  .m_axis_result_tdata          (pe_acc_add_bias)
+  .m_axis_result_tvalid         (bias_out_valid_comb),
+  .m_axis_result_tdata          (pe_acc_add_bias_comb)
 );
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        bias_out_valid <= '0;
+        pe_acc_add_bias <= '0;
+
+    end else begin
+        bias_out_valid <= bias_out_valid_comb;
+        pe_acc_add_bias <= pe_acc_add_bias_comb;
+    end
+end
 
 // Activations
 // -------------------------------------------------------------
@@ -142,7 +155,7 @@ end
 always_comb begin
     overwrite_accumulator = bias_out_valid || activated_feature_valid || shift_valid;
 
-    overwrite_data        = (bias_valid && bias_out_valid) ? pe_acc_add_bias
+    overwrite_data        = bias_out_valid ? pe_acc_add_bias
                             : activated_feature_valid ? activated_feature
                             : shift_valid ? shift_data
                             : '0;
