@@ -104,6 +104,7 @@ endfunction
 
 typedef struct packed {
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
+    logic [NODE_ID_WIDTH-1:0]              node_id;
     logic [$clog2(FETCH_TAG_COUNT)-1:0]    fetch_tag;
 
     NODE_PRECISION_e                       node_precision;

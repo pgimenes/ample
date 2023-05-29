@@ -13,7 +13,7 @@ echo "======================================================="
 
 git submodule update --init --recursive
 git submodule foreach git pull origin master
-git submodule foreach git checkour master
+git submodule foreach git checkout master
 
 # Build Xilinx IP
 echo "======================================================="

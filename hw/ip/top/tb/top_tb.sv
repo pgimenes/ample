@@ -262,24 +262,6 @@ top top_i (
     // .top_axi_interconnect_axi_rvalid          (memory_intf.top_axi_interconnect_axi_rvalid),
     // .top_axi_interconnect_axi_rready          (memory_intf.top_axi_interconnect_axi_rready),
 
-    // DDR4
-    .c0_sys_clk_p           (c0_sys_clk_p),
-    .c0_sys_clk_n           (c0_sys_clk_n),
-    .c0_ddr4_act_n          (c0_ddr4_act_n),
-    .c0_ddr4_adr            (c0_ddr4_adr),
-    .c0_ddr4_ba             (c0_ddr4_ba),
-    .c0_ddr4_bg             (c0_ddr4_bg),
-    .c0_ddr4_cke            (c0_ddr4_cke),
-    .c0_ddr4_odt            (c0_ddr4_odt),
-    .c0_ddr4_cs_n           (c0_ddr4_cs_n),
-    .c0_ddr4_ck_t           (c0_ddr4_ck_t_int),
-    .c0_ddr4_ck_c           (c0_ddr4_ck_c_int),
-    .c0_ddr4_reset_n        (c0_ddr4_reset_n),
-    .c0_ddr4_parity         (c0_ddr4_parity),
-    .c0_ddr4_dq             (c0_ddr4_dq),
-    .c0_ddr4_dqs_c          (c0_ddr4_dqs_c),
-    .c0_ddr4_dqs_t          (c0_ddr4_dqs_t),
-
     .c0_ddr4_s_axi_awid         (axi_interconnect_memory_axi_awid),
     .c0_ddr4_s_axi_awaddr       (axi_interconnect_memory_axi_awaddr),
     .c0_ddr4_s_axi_awlen        (axi_interconnect_memory_axi_awlen),
@@ -316,9 +298,7 @@ top top_i (
     .c0_ddr4_s_axi_rresp        (axi_interconnect_memory_axi_rresp),
     .c0_ddr4_s_axi_rlast        (axi_interconnect_memory_axi_rlast),
     .c0_ddr4_s_axi_rvalid       (axi_interconnect_memory_axi_rvalid),
-    .c0_ddr4_s_axi_rready       (axi_interconnect_memory_axi_rready),
-
-    .c0_init_calib_complete (c0_init_calib_complete)
+    .c0_ddr4_s_axi_rready       (axi_interconnect_memory_axi_rready)
 );
 
 // top_memory_axi_interface memory_intf (

@@ -38,6 +38,7 @@ module feature_transformation_engine #(
     output NSB_FTE_RESP_t                                                                             nsb_fte_resp,
 
     // Aggregation Buffer Interface
+    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::NODE_ID_WIDTH-1:0]                 aggregation_buffer_node_id,
     output logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_pop,
     input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_out_feature,
     input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free,
@@ -54,7 +55,51 @@ module feature_transformation_engine #(
     output logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_write_enable,
     output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0]    transformation_buffer_write_address,
     output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]            transformation_buffer_write_data,
-    input  logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_slot_free
+    input  logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_slot_free,
+
+    // Feature Transformation Engine -> AXI Interconnect
+    output logic [33:0]                       transformation_engine_axi_interconnect_axi_araddr,
+    output logic [1:0]                        transformation_engine_axi_interconnect_axi_arburst,
+    output logic [3:0]                        transformation_engine_axi_interconnect_axi_arcache,
+    output logic [3:0]                        transformation_engine_axi_interconnect_axi_arid,
+    output logic [7:0]                        transformation_engine_axi_interconnect_axi_arlen,
+    output logic [0:0]                        transformation_engine_axi_interconnect_axi_arlock,
+    output logic [2:0]                        transformation_engine_axi_interconnect_axi_arprot,
+    output logic [3:0]                        transformation_engine_axi_interconnect_axi_arqos,
+    output logic [2:0]                        transformation_engine_axi_interconnect_axi_arsize,
+    output logic                              transformation_engine_axi_interconnect_axi_arvalid,
+    input  logic                              transformation_engine_axi_interconnect_axi_arready,
+
+    input  logic [511:0]                      transformation_engine_axi_interconnect_axi_rdata,
+    input  logic [3:0]                        transformation_engine_axi_interconnect_axi_rid,
+    input  logic                              transformation_engine_axi_interconnect_axi_rlast,
+    output logic                              transformation_engine_axi_interconnect_axi_rready,
+    input  logic [1:0]                        transformation_engine_axi_interconnect_axi_rresp,
+    input  logic                              transformation_engine_axi_interconnect_axi_rvalid,
+    
+    output logic [33:0]                       transformation_engine_axi_interconnect_axi_awaddr,
+    output logic [1:0]                        transformation_engine_axi_interconnect_axi_awburst,
+    output logic [3:0]                        transformation_engine_axi_interconnect_axi_awcache,
+    output logic [3:0]                        transformation_engine_axi_interconnect_axi_awid,
+    output logic [7:0]                        transformation_engine_axi_interconnect_axi_awlen,
+    output logic [0:0]                        transformation_engine_axi_interconnect_axi_awlock,
+    output logic [2:0]                        transformation_engine_axi_interconnect_axi_awprot,
+    output logic [3:0]                        transformation_engine_axi_interconnect_axi_awqos,
+    input  logic                              transformation_engine_axi_interconnect_axi_awready,
+    output logic [2:0]                        transformation_engine_axi_interconnect_axi_awsize,
+    output logic                              transformation_engine_axi_interconnect_axi_awvalid,
+    
+    output logic [511:0]                      transformation_engine_axi_interconnect_axi_wdata,
+    output logic                              transformation_engine_axi_interconnect_axi_wlast,
+    input  logic                              transformation_engine_axi_interconnect_axi_wready,
+    output logic [63:0]                       transformation_engine_axi_interconnect_axi_wstrb,
+    output logic                              transformation_engine_axi_interconnect_axi_wvalid,
+
+    input  logic [3:0]                        transformation_engine_axi_interconnect_axi_bid,
+    output logic                              transformation_engine_axi_interconnect_axi_bready,
+    input  logic [1:0]                        transformation_engine_axi_interconnect_axi_bresp,
+    input  logic                              transformation_engine_axi_interconnect_axi_bvalid
+    
 
 );
 
@@ -62,8 +107,12 @@ module feature_transformation_engine #(
 parameter SYSTOLIC_MODULE_COUNT = 4;
 
 typedef enum logic [3:0] { 
-    FTE_FSM_IDLE, FTE_FSM_REQ_WC, FTE_FSM_MULT_SLOW, FTE_FSM_MULT_FAST, FTE_FSM_BIAS, FTE_FSM_ACTIVATION, FTE_FSM_FLUSH, FTE_FSM_SHIFT, FTE_FSM_NSB_RESP
+    FTE_FSM_IDLE, FTE_FSM_REQ_WC, FTE_FSM_MULT_SLOW, FTE_FSM_MULT_FAST, FTE_FSM_BIAS, FTE_FSM_ACTIVATION, FTE_FSM_BUFFER, FTE_FSM_WRITEBACK, FTE_FSM_SHIFT, FTE_FSM_NSB_RESP
 } FTE_FSM_e;
+
+typedef enum logic [1:0] {
+    AXI_IDLE, AXI_AW, AXI_W, AXI_B
+} AXI_WRITE_STATE_e;
 
 // ==================================================================================================================================================
 // Declarations
@@ -79,16 +128,30 @@ logic layer_config_in_features_strobe;
 logic [9:0] layer_config_in_features_count;
 logic layer_config_out_features_strobe;
 logic [9:0] layer_config_out_features_count;
+
 logic layer_config_activation_function_strobe;
 logic [1:0] layer_config_activation_function_value;
+
 logic layer_config_bias_strobe;
 logic [31:0] layer_config_bias_value;
+
 logic layer_config_leaky_relu_alpha_strobe;
 logic [31:0] layer_config_leaky_relu_alpha_value;
 
+logic layer_config_out_features_address_msb_strobe;
+logic [1:0] layer_config_out_features_address_msb_value;
+logic layer_config_out_features_address_lsb_strobe;
+logic [31:0] layer_config_out_features_address_lsb_value;
+
+logic ctrl_buffering_enable_strobe;
+logic [0:0] ctrl_buffering_enable_value;
+logic ctrl_writeback_enable_strobe;
+logic [0:0] ctrl_writeback_enable_value;
+
 // NSB requests
 logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslot_count;
-logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslots_to_flush;
+logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslots_to_buffer;
+logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslots_to_writeback;
 
 // Systolic modules
 // -------------------------------------------------------------------------------------
@@ -123,6 +186,14 @@ logic                                                 pe_delay_counter;
 
 // Flushing logic
 logic [top_pkg::TRANSFORMATION_BUFFER_SLOTS-1:0]         transformation_buffer_slot_arb_oh;
+
+// Writeback logic
+logic                                                start_memory_dump;
+AXI_WRITE_STATE_e                                    axi_write_state, axi_write_state_n;
+logic [$clog2(SYSTOLIC_MODULE_COUNT)-1:0]            sys_module_counter;
+logic [MATRIX_N:0] [top_pkg::NODE_ID_WIDTH-1:0]      sys_module_node_id_snapshot;
+logic [$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1:0] out_features_required_bytes;
+
 
 // ==================================================================================================================================================
 // Instances
@@ -167,7 +238,11 @@ feature_transformation_engine_regbank_regs feature_transformation_engine_regbank
     .layer_config_bias_strobe,
     .layer_config_bias_value,
     .layer_config_leaky_relu_alpha_strobe,
-    .layer_config_leaky_relu_alpha_value
+    .layer_config_leaky_relu_alpha_value,
+    .layer_config_out_features_address_msb_strobe,
+    .layer_config_out_features_address_msb_value,
+    .layer_config_out_features_address_lsb_strobe,
+    .layer_config_out_features_address_lsb_value
 );
 
 // Systolic Modules
@@ -229,7 +304,7 @@ rr_arbiter #(
     .request            (transformation_buffer_slot_free),
 
     // update when starting to flush new row
-    .update_lru         (fte_state == FTE_FSM_FLUSH),
+    .update_lru         (fte_state == FTE_FSM_WRITEBACK),
     .grant_oh           (transformation_buffer_slot_arb_oh)
 );
 
@@ -292,15 +367,23 @@ always_comb begin
         end
 
         FTE_FSM_ACTIVATION: begin
-            fte_state_n = FTE_FSM_FLUSH;
+            fte_state_n = ctrl_buffering_enable_value ? FTE_FSM_BUFFER : FTE_FSM_WRITEBACK;
+        end
+        
+        FTE_FSM_BUFFER: begin
+            fte_state_n = FTE_FSM_WRITEBACK; // buffering takes a single cycle
         end
 
-        FTE_FSM_FLUSH: begin
-            fte_state_n = (nodeslots_to_flush == 'd1) ? FTE_FSM_NSB_RESP : FTE_FSM_SHIFT;
+        FTE_FSM_WRITEBACK: begin
+            fte_state_n = (nodeslots_to_writeback == 'd1) && (sys_module_counter == SYSTOLIC_MODULE_COUNT) && transformation_engine_axi_interconnect_axi_bvalid ? FTE_FSM_NSB_RESP 
+                        : (sys_module_counter == SYSTOLIC_MODULE_COUNT) && transformation_engine_axi_interconnect_axi_bvalid ? FTE_FSM_SHIFT
+                        : FTE_FSM_WRITEBACK;
         end
 
         FTE_FSM_SHIFT: begin
-            fte_state_n = FTE_FSM_FLUSH;
+            fte_state_n = ctrl_buffering_enable_value ? FTE_FSM_BUFFER
+                        : ctrl_writeback_enable_value ? FTE_FSM_WRITEBACK
+                        : FTE_FSM_NSB_RESP;
         end
 
         FTE_FSM_NSB_RESP: begin
@@ -314,18 +397,36 @@ always_comb begin
     endcase
 end
 
-// Take snapshot of busy slots after NSB request
+// Take snapshot of busy slots and respective node IDs after NSB request
 // -------------------------------------------------------------------------------------
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         busy_aggregation_slots_snapshot <= '0;
-    
+        
     // Starting multiplication
     end else if ((fte_state == FTE_FSM_IDLE) && (fte_state_n == FTE_FSM_REQ_WC)) begin
-        busy_aggregation_slots_snapshot <= ~aggregation_buffer_slot_free;
+        busy_aggregation_slots_snapshot <= ~aggregation_buffer_slot_free;    
     end
 end
+
+for (genvar row = 0; row < MATRIX_N; row++) begin
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            sys_module_node_id_snapshot [row]          <= '0;
+            
+        // Starting multiplication
+        end else if ((fte_state == FTE_FSM_IDLE) && (fte_state_n == FTE_FSM_REQ_WC)) begin
+            sys_module_node_id_snapshot [row]          <= aggregation_buffer_node_id [row];
+        
+        // Shift node IDs
+        end else if (fte_state == FTE_FSM_SHIFT) begin
+            sys_module_node_id_snapshot [row]          <= sys_module_node_id_snapshot [row+1];
+        end
+    end
+end
+
+assign sys_module_node_id_snapshot [MATRIX_N] = '0;
 
 // Driving systolic module
 // -------------------------------------------------------------------------------------
@@ -368,12 +469,12 @@ always_comb begin
     shift_sys_module = (fte_state == FTE_FSM_SHIFT) ? '1 : '0;
 end
 
-// Buffer updated features
+// Buffering Logic
 // -------------------------------------------------------------------------------------
 
 for (genvar slot = 0; slot < TRANSFORMATION_BUFFER_SLOTS; slot++) begin
     always_comb begin
-        transformation_buffer_write_enable  [slot] = transformation_buffer_slot_arb_oh[slot] && (fte_state == FTE_FSM_FLUSH);
+        transformation_buffer_write_enable  [slot] = transformation_buffer_slot_arb_oh[slot] && (fte_state == FTE_FSM_BUFFER);
         transformation_buffer_write_address [slot] = '0;
         transformation_buffer_write_data    [slot] = sys_module_pe_acc [0] [0]; // 16*32 bits = 512b
     end    
@@ -381,16 +482,20 @@ end
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
-        nodeslots_to_flush <= '0;
-    
-    // Accepting NSB request
+        nodeslots_to_buffer <= '0;
+        nodeslots_to_writeback <= '0;
+        
+        // Accepting NSB request
     end else if (nsb_fte_req_valid && nsb_fte_req_ready) begin
-        nodeslots_to_flush <= nodeslot_count;
+        nodeslots_to_buffer    <= nodeslot_count;
+        nodeslots_to_writeback <= nodeslot_count;
     
     // Done flushing a row of features
-    end else if (fte_state == FTE_FSM_FLUSH) begin
-        nodeslots_to_flush <= nodeslots_to_flush - 1'b1;
-        
+    end else if (fte_state == FTE_FSM_BUFFER) begin
+        nodeslots_to_buffer <= nodeslots_to_buffer - 1'b1;
+    
+    end else if (fte_state == FTE_FSM_WRITEBACK && transformation_engine_axi_interconnect_axi_bvalid) begin
+        nodeslots_to_writeback <= nodeslots_to_writeback - 1'b1;
     end
 end
 
@@ -400,6 +505,89 @@ count_ones #(
     .data (nsb_fte_req.nodeslots),
     .count (nodeslot_count)
 );
+
+// Writeback Logic
+// -------------------------------------------------------------------------------------
+
+assign start_memory_dump = (fte_state == FTE_FSM_BUFFER) && (fte_state_n == FTE_FSM_WRITEBACK);
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        sys_module_counter <= '0;
+        
+    // Starting to flush row from systolic array
+    end else if (fte_state == FTE_FSM_BUFFER && fte_state_n == FTE_FSM_WRITEBACK) begin
+        sys_module_counter <= '0;
+    
+    // Finished current systolic module
+    end else if (transformation_engine_axi_interconnect_axi_wvalid && transformation_engine_axi_interconnect_axi_wready) begin
+        sys_module_counter <= sys_module_counter + 1'b1;
+    end
+end
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        axi_write_state <= AXI_IDLE;
+    end else begin
+        axi_write_state <= axi_write_state_n;
+    end
+end
+
+always_comb begin
+    axi_write_state_n = axi_write_state;
+
+    case (axi_write_state)
+        AXI_IDLE: begin
+            axi_write_state_n = start_memory_dump ? AXI_AW
+                              : AXI_IDLE;
+        end
+
+        AXI_AW: begin
+            axi_write_state_n = transformation_engine_axi_interconnect_axi_awready ? AXI_W
+                              : AXI_AW;
+        end
+
+        AXI_W: begin
+            axi_write_state_n = transformation_engine_axi_interconnect_axi_wvalid && transformation_engine_axi_interconnect_axi_wready && transformation_engine_axi_interconnect_axi_wlast ? AXI_B
+                              : AXI_W;
+        end
+
+        AXI_B: begin
+            axi_write_state_n = transformation_engine_axi_interconnect_axi_bvalid ? AXI_IDLE
+                              : AXI_B;
+        end
+
+    endcase
+
+end
+
+always_comb begin
+    out_features_required_bytes = layer_config_out_features_count * 4; // 4 bytes per feature
+    out_features_required_bytes = {out_features_required_bytes[$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1 : 6], 6'd0} + (out_features_required_bytes[5:0] ? 'd64 : 1'b0); // nearest multiple of 64
+    
+    transformation_engine_axi_interconnect_axi_awvalid = (axi_write_state == AXI_AW);
+    
+    transformation_engine_axi_interconnect_axi_awaddr = {layer_config_out_features_address_msb_value, layer_config_out_features_address_lsb_value}
+                                                        + sys_module_node_id_snapshot[0] * out_features_required_bytes;
+
+    transformation_engine_axi_interconnect_axi_awsize = 3'b110; // 64 bytes
+    transformation_engine_axi_interconnect_axi_awburst = 2'b01; // INCR mode (increment by 64 bytes for each beat)
+    transformation_engine_axi_interconnect_axi_awlen = (SYSTOLIC_MODULE_COUNT[7:0] - 1'b1);
+    
+    // Unused features
+    transformation_engine_axi_interconnect_axi_awcache = '0;
+    transformation_engine_axi_interconnect_axi_awid = '0;
+    transformation_engine_axi_interconnect_axi_awlock = '0;
+    transformation_engine_axi_interconnect_axi_awprot = '0;
+    transformation_engine_axi_interconnect_axi_awqos = '0;
+
+    transformation_engine_axi_interconnect_axi_wvalid = (axi_write_state == AXI_W);
+    transformation_engine_axi_interconnect_axi_wdata = sys_module_pe_acc [sys_module_counter] [0]; // Top row of systolic module
+    transformation_engine_axi_interconnect_axi_wlast = (sys_module_counter == (SYSTOLIC_MODULE_COUNT-1));
+    transformation_engine_axi_interconnect_axi_wstrb = '1;
+
+    transformation_engine_axi_interconnect_axi_bready = (axi_write_state == AXI_B);
+end
 
 // NSB Interface
 // -------------------------------------------------------------------------------------
@@ -434,6 +622,20 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end else if (weight_channel_resp_valid && weight_channel_resp.done) begin
         last_weight_resp_received <= '1;
     end
+end
+
+always_comb begin
+    transformation_engine_axi_interconnect_axi_araddr = '0;
+    transformation_engine_axi_interconnect_axi_arburst = '0;
+    transformation_engine_axi_interconnect_axi_arcache = '0;
+    transformation_engine_axi_interconnect_axi_arid = '0;
+    transformation_engine_axi_interconnect_axi_arlen = '0;
+    transformation_engine_axi_interconnect_axi_arlock = '0;
+    transformation_engine_axi_interconnect_axi_arprot = '0;
+    transformation_engine_axi_interconnect_axi_arqos = '0;
+    transformation_engine_axi_interconnect_axi_arsize = '0;
+    transformation_engine_axi_interconnect_axi_arvalid = '0;
+    transformation_engine_axi_interconnect_axi_rready = '0;
 end
 
 endmodule

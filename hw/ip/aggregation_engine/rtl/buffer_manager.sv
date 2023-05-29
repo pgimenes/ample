@@ -29,6 +29,8 @@ module buffer_manager #(
     input  flit_t                                                     router_buffer_manager_data,
 
     // Buffer Manager -> Aggregation Buffer slot
+    output logic                                                      buffer_slot_set_node_id_valid,
+    output logic [NODE_ID_WIDTH-1:0]                                  buffer_slot_set_node_id,
     output logic                                                      bm_buffer_slot_write_enable,
     output logic [$clog2(BUFFER_SLOT_WRITE_DEPTH)-1:0]                bm_buffer_slot_write_address,
     output logic [BUFFER_SLOT_WRITE_WIDTH-1:0]                        bm_buffer_slot_write_data,
@@ -36,15 +38,11 @@ module buffer_manager #(
     input  logic                                                      buffer_slot_bm_slot_free
 );
 
-typedef enum logic [2:0] { IDLE, WAIT_FEATURES, WRITE, SEND_DONE, WAIT_DRAIN, WAIT_TRANSFORMATION} BM_FSM_e;
+typedef enum logic [2:0] { BM_FSM_IDLE, BM_FSM_WAIT_FEATURES, BM_FSM_WRITE, BM_FSM_SEND_DONE, BM_FSM_WAIT_DRAIN, BM_FSM_WAIT_TRANSFORMATION} BM_FSM_e;
 
 // ==================================================================================================================================================
 // Declarations
 // ==================================================================================================================================================
-
-// Coordinates of this buffer manager
-logic [$clog2(MESH_COLS)-1:0]                             x_coord;
-logic [$clog2(MESH_ROWS)-1:0]                             y_coord;
 
 BM_FSM_e                                                  bm_state, bm_state_n;
 
@@ -101,13 +99,13 @@ onehot_to_binary_comb #(
 // Logic
 // ==================================================================================================================================================
 
-// Coordinates of this buffer manager
-assign x_coord = X_COORD;
-assign y_coord = Y_COORD;
+// Set node ID for buffer slot
+assign buffer_slot_set_node_id = age_buffer_manager_nodeslot_allocation.node_id;
+assign buffer_slot_set_node_id_valid = (bm_state == BM_FSM_IDLE) && age_buffer_manager_nodeslot_allocation_valid;
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
-        bm_state <= IDLE;
+        bm_state <= BM_FSM_IDLE;
     end else begin
         bm_state <= bm_state_n;
     end
@@ -118,32 +116,32 @@ always_comb begin
 
     case(bm_state)
 
-        IDLE: begin
-            bm_state_n = age_buffer_manager_nodeslot_allocation_valid ? WAIT_FEATURES : IDLE;
+        BM_FSM_IDLE: begin
+            bm_state_n = age_buffer_manager_nodeslot_allocation_valid ? BM_FSM_WAIT_FEATURES : BM_FSM_IDLE;
         end
 
-        WAIT_FEATURES: begin
-            bm_state_n = router_buffer_manager_valid ? WRITE : WAIT_FEATURES;
+        BM_FSM_WAIT_FEATURES: begin
+            bm_state_n = router_buffer_manager_valid ? BM_FSM_WRITE : BM_FSM_WAIT_FEATURES;
         end
 
-        WRITE: begin
-            bm_state_n = &agc_done ? SEND_DONE : WAIT_FEATURES;
+        BM_FSM_WRITE: begin
+            bm_state_n = &agc_done ? BM_FSM_SEND_DONE : BM_FSM_WAIT_FEATURES;
         end
 
-        SEND_DONE: begin
-            bm_state_n = noc_router_waiting && done_head_sent ? WAIT_DRAIN : SEND_DONE;
+        BM_FSM_SEND_DONE: begin
+            bm_state_n = noc_router_waiting && done_head_sent ? BM_FSM_WAIT_DRAIN : BM_FSM_SEND_DONE;
         end
 
-        WAIT_DRAIN: begin
-            bm_state_n = noc_router_waiting ? IDLE : WAIT_TRANSFORMATION;
+        BM_FSM_WAIT_DRAIN: begin
+            bm_state_n = noc_router_waiting ? BM_FSM_IDLE : BM_FSM_WAIT_TRANSFORMATION;
         end
 
-        WAIT_TRANSFORMATION: begin
-            bm_state_n = buffer_slot_bm_slot_free ? IDLE : WAIT_TRANSFORMATION;
+        BM_FSM_WAIT_TRANSFORMATION: begin
+            bm_state_n = buffer_slot_bm_slot_free ? BM_FSM_IDLE : BM_FSM_WAIT_TRANSFORMATION;
         end
 
         default: begin
-            bm_state_n = IDLE;
+            bm_state_n = BM_FSM_IDLE;
         end
 
     endcase
@@ -152,7 +150,7 @@ end
 // AGE buffer requests (nodeslot allocation)
 // -------------------------------------------------------------------------------------
 
-assign age_buffer_manager_nodeslot_allocation_ready = (bm_state == IDLE);
+assign age_buffer_manager_nodeslot_allocation_ready = (bm_state == BM_FSM_IDLE);
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
@@ -186,8 +184,8 @@ end
 // -------------------------------------------------------------------------------------
 
 always_comb begin
-    router_buffer_manager_on = (bm_state == WAIT_FEATURES);
-    router_buffer_manager_ready = (bm_state == WAIT_FEATURES);
+    router_buffer_manager_on = (bm_state == BM_FSM_WAIT_FEATURES);
+    router_buffer_manager_ready = (bm_state == BM_FSM_WAIT_FEATURES);
 end
 
 always_ff @(posedge core_clk or negedge resetn) begin
@@ -216,7 +214,7 @@ for (genvar agc_source = 0; agc_source < MAX_AGC_PER_NODE; agc_source++) begin
             flit_counter[agc_source] <= '0;
 
         // Receiving new nodeslot allocation
-        end else if ((bm_state == IDLE) && age_buffer_manager_nodeslot_allocation_valid) begin
+        end else if ((bm_state == BM_FSM_IDLE) && age_buffer_manager_nodeslot_allocation_valid) begin
             flit_counter[agc_source] <= '0;
 
         // Accepting the feature flit from an AGC
@@ -233,7 +231,7 @@ end
 // -------------------------------------------------------------------------------------
 
 always_comb begin
-    bm_buffer_slot_write_enable = (bm_state == WRITE);
+    bm_buffer_slot_write_enable = (bm_state == BM_FSM_WRITE);
     bm_buffer_slot_write_address = {agc_offset, flit_counter[agc_offset] - 1'b1};
     bm_buffer_slot_write_data = received_flit.data.bt_pl[63:0];
 end
@@ -242,7 +240,7 @@ end
 // -------------------------------------------------------------------------------------
 
 always_comb begin
-    buffer_manager_router_valid = (bm_state == SEND_DONE);
+    buffer_manager_router_valid = (bm_state == BM_FSM_SEND_DONE);
 
     outgoing_packet_dest_col = allocated_agm_q;
     outgoing_packet_dest_row = age_pkg::MESH_ROWS - 1;
@@ -251,7 +249,7 @@ always_comb begin
     buffer_manager_router_data.flit_label = done_head_sent ? noc_params::TAIL : noc_params::HEAD;
 
     buffer_manager_router_data.data.bt_pl = { outgoing_packet_dest_col, outgoing_packet_dest_row,
-                                                x_coord, y_coord,
+                                                X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_COLS)-1:0],
                                                 // packet is empty since any packet received by an AGM from a BM indicates buffering done
                                                 {PAYLOAD_DATA_WIDTH{1'b0}} }; // 64 zeros
 end

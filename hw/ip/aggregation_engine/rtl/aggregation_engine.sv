@@ -48,6 +48,9 @@ module aggregation_engine #(
     input  MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp,
 
     // AGE -> Aggregation Buffer
+    output logic [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_set_node_id_valid,
+    output logic [AGGREGATION_BUFFER_SLOTS-1:0] [NODE_ID_WIDTH-1:0]                                   aggregation_buffer_slot_set_node_id,
+
     output logic [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_write_enable,
     output logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] aggregation_buffer_slot_write_address,
     output logic [AGGREGATION_BUFFER_SLOTS-1:0] [age_pkg::PAYLOAD_DATA_WIDTH-1:0]                     aggregation_buffer_slot_write_data,
@@ -474,6 +477,8 @@ for (genvar bm = 0; bm < TOTAL_BUFFER_MANAGERS; bm++) begin
         .router_buffer_manager_ready  (router_buffer_manager_ready   [bm]),
         .router_buffer_manager_data   (router_buffer_manager_data    [bm]),
 
+        .buffer_slot_set_node_id_valid (aggregation_buffer_slot_set_node_id_valid [bm]),
+        .buffer_slot_set_node_id       (aggregation_buffer_slot_set_node_id  [bm]),
         .bm_buffer_slot_write_enable  (aggregation_buffer_slot_write_enable  [bm]),
         .bm_buffer_slot_write_address (aggregation_buffer_slot_write_address [bm]),
         .bm_buffer_slot_write_data    (aggregation_buffer_slot_write_data    [bm]),
@@ -652,6 +657,7 @@ assign age_bm_nodeslot_allocation_valid = buffer_master_allocation_oh & {TOTAL_B
 always_comb begin
     // Tell the chosen buffer manager which AGM was chosen
     age_bm_nodeslot_allocation.nodeslot                = agm_receiving_buffer_manager_allocation;
+    age_bm_nodeslot_allocation.node_id                 = agm_allocation[agm_receiving_buffer_manager_allocation].node_id;
     age_bm_nodeslot_allocation.aggregation_manager     = agm_receiving_buffer_manager_allocation;
     age_bm_nodeslot_allocation.allocated_agcs_x_coords = agm_coords_buffer_x       [agm_receiving_buffer_manager_allocation];
     age_bm_nodeslot_allocation.allocated_agcs_y_coords = agm_coords_buffer_y       [agm_receiving_buffer_manager_allocation];
