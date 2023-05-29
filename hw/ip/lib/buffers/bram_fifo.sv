@@ -36,8 +36,6 @@ parameter READ_ADDR_WIDTH = $clog2(READ_DEPTH);
 
 logic [WRITE_ADDR_WIDTH-1:0] wr_ptr;
 logic [READ_ADDR_WIDTH-1:0] rd_ptr;
-
-
 logic [READ_ADDR_WIDTH-1:0] read_address;
 
 // Drive address 1 cycle early to account for read latency
@@ -78,7 +76,7 @@ end else if (BRAM_TYPE == 1) begin
         
         .clkb         (core_clk),
         .enb          (1'b1),
-        .addrb        (rd_ptr),
+        .addrb        (read_address),
         .doutb        (out_data)
     );
 
@@ -97,17 +95,22 @@ always_ff @(posedge core_clk or negedge resetn) begin
         count     <= '0;
     end else begin
         if (push) begin
-            wr_ptr <= wr_ptr + 1'b1;
-            count <= count + 1'b1;
+            wr_ptr <= wr_ptr == WRITE_DEPTH - 1 ? '0 :
+                        wr_ptr + 1'b1;
         end
         
         if (pop) begin
-            rd_ptr <= rd_ptr + 1'b1;
-            count <= count - 1'b1;
+            rd_ptr <= rd_ptr == READ_DEPTH - 1 ? '0 :
+                        rd_ptr + 1'b1;
         end
 
-        if (wr_ptr == {WRITE_ADDR_WIDTH{1'b1}} && push) wr_wrap <= !wr_wrap;
-        if (rd_ptr == {READ_ADDR_WIDTH{1'b1}} && pop) rd_wrap <= !rd_wrap;
+        count <= push && pop ? count
+                : push ? count + 1'b1
+                : pop ? count - 1'b1
+                : count;
+
+        if ((wr_ptr == (WRITE_DEPTH - 1)) && push) wr_wrap <= !wr_wrap;
+        if ((rd_ptr == (READ_DEPTH - 1)) && pop) rd_wrap <= !rd_wrap;
     end
 end
 

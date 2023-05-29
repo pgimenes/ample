@@ -538,6 +538,7 @@ onehot_to_binary_comb #(
 
 assign nsb_age_req_valid                = |nodeslots_waiting_aggregation;
 assign nsb_age_req.nodeslot             = age_arbiter_grant_bin;
+assign nsb_age_req.node_id              = nsb_nodeslot_node_id_id [age_arbiter_grant_bin];
 assign nsb_age_req.node_precision       = NODE_PRECISION_e'(nsb_nodeslot_precision_precision[age_arbiter_grant_bin]);
 assign nsb_age_req.aggregation_function = AGGREGATION_FUNCTION_e'(nsb_nodeslot_aggregation_function_value[age_arbiter_grant_bin]);
 assign nsb_age_req.fetch_tag            = nsb_nodeslot_allocated_fetch_tag_fetch_tag[age_arbiter_grant_bin];

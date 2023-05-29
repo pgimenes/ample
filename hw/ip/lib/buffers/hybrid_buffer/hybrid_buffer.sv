@@ -14,10 +14,15 @@ module hybrid_buffer #(
     input  logic                                           core_clk,
     input  logic                                           resetn,
 
+    input  logic [NUM_SLOTS-1:0]                           set_node_id_valid,
+    input  logic [NUM_SLOTS-1:0] [NODE_ID_WIDTH-1:0]       set_node_id,
+
+    output logic [NUM_SLOTS-1:0] [NODE_ID_WIDTH-1:0]       slot_node_id,
+
     input  logic [NUM_SLOTS-1:0]                           write_enable,
     input  logic [NUM_SLOTS-1:0] [$clog2(WRITE_DEPTH)-1:0] write_address,
     input  logic [NUM_SLOTS-1:0] [WRITE_WIDTH-1:0]         write_data,
-
+    
     input  logic [NUM_SLOTS-1:0]                           pop,
     output logic [NUM_SLOTS-1:0] [READ_WIDTH-1:0]          out_feature,
     
@@ -46,6 +51,16 @@ for (genvar slot = 0; slot < NUM_SLOTS; slot++) begin
         .feature_count      (feature_count     [slot]),
         .slot_free          (slot_free         [slot])
     );
+
+    // Node IDs
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            slot_node_id [slot] <= 0;
+        
+        end else if (set_node_id && set_node_id_valid [slot]) begin
+            slot_node_id [slot] <= set_node_id [slot];
+        end
+    end
 end
 
 endmodule
