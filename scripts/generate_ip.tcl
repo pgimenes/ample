@@ -3,7 +3,6 @@ catch {exec mkdir $env(FYP_DIR)/hw/build}
 cd $env(FYP_DIR)/hw/build
 
 create_project build_project -part xcu250-figd2104-2L-e -force
-set_property board_part xilinx.com:au250:part0:1.3 [current_project]
 
 # Import IP
 import_ip -files $env(FYP_DIR)/hw/xilinx/axi_L_register_control_crossbar.xci
