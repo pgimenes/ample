@@ -23,7 +23,11 @@ module hybrid_buffer_slot #(
 logic [$clog2(READ_DEPTH)-1:0] rd_ptr;
 logic [$clog2(READ_DEPTH)-1:0] read_address;
 
-assign read_address = pop ? rd_ptr + 1'b1 : rd_ptr;
+// Pre-increment read address to account for read latency
+assign read_address = 
+                    pop && (rd_ptr == READ_DEPTH - 1) ? '0 // account for wraparound
+                    : pop ? rd_ptr + 1'b1 
+                    : rd_ptr;
 
 // Instances
 // ------------------------------------------------------------

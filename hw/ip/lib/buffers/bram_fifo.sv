@@ -38,8 +38,11 @@ logic [WRITE_ADDR_WIDTH-1:0] wr_ptr;
 logic [READ_ADDR_WIDTH-1:0] rd_ptr;
 logic [READ_ADDR_WIDTH-1:0] read_address;
 
-// Drive address 1 cycle early to account for read latency
-assign read_address = pop ? rd_ptr + 1'b1 : rd_ptr;
+// Pre-increment read address to account for read latency
+assign read_address = 
+                    pop && (rd_ptr == READ_DEPTH - 1) ? '0 // account for wraparound
+                    : pop ? rd_ptr + 1'b1 
+                    : rd_ptr;
 
 logic wr_wrap, rd_wrap;
 
