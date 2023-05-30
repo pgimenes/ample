@@ -372,7 +372,7 @@ always_comb begin
                     : (sent_flits_counter == 'd7) ? {upsampled_features[15], upsampled_features[14]}
                     : '0;
 
-    aggregation_core_router_data.vc_id = '0; // TO DO: consider using both VCs?
+    aggregation_core_router_data.vc_id = '0;
     
     aggregation_core_router_data.flit_label = sent_flits_counter == '0 ? noc_params::HEAD
                                             : sent_flits_counter == 'd7 ? noc_params::TAIL
