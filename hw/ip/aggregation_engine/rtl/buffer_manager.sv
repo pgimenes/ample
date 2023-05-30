@@ -46,7 +46,7 @@ typedef enum logic [2:0] { BM_FSM_IDLE, BM_FSM_WAIT_FEATURES, BM_FSM_WRITE, BM_F
 
 BM_FSM_e                                                  bm_state, bm_state_n;
 
-logic [TOTAL_AGGREGATION_MANAGERS-1:0]                    allocated_agm_q;
+logic [$clog2(TOTAL_AGGREGATION_MANAGERS)-1:0]             allocated_agm_q;
 logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0]       allocated_agcs_x_coords_q;
 logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0]       allocated_agcs_y_coords_q;
 logic [$clog2(MAX_AGC_PER_NODE)-1:0]                       allocated_agcs_count_q;
@@ -242,14 +242,14 @@ end
 always_comb begin
     buffer_manager_router_valid = (bm_state == BM_FSM_SEND_DONE);
 
-    outgoing_packet_dest_col = allocated_agm_q;
+    outgoing_packet_dest_col = allocated_agm_q[$clog2(age_pkg::MESH_COLS)-1:0];
     outgoing_packet_dest_row = age_pkg::MESH_ROWS - 1;
 
     buffer_manager_router_data.vc_id = '0;
     buffer_manager_router_data.flit_label = done_head_sent ? noc_params::TAIL : noc_params::HEAD;
 
     buffer_manager_router_data.data.bt_pl = { outgoing_packet_dest_col, outgoing_packet_dest_row,
-                                                X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_COLS)-1:0],
+                                                X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0],
                                                 // packet is empty since any packet received by an AGM from a BM indicates buffering done
                                                 {PAYLOAD_DATA_WIDTH{1'b0}} }; // 64 zeros
 end
