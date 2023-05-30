@@ -70,7 +70,6 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 "../ip/lib/base_components/rr_arbiter.sv" \
 "../ip/node_scoreboard/include/node_scoreboard_pkg.sv" \
 "../ip/node_scoreboard/rtl/node_scoreboard.sv" \
-"../ip/output_buffer/rtl/output_buffer.sv" \
 "../ip/prefetcher/include/prefetcher_pkg.sv" \
 "../ip/lib/buffers/ultraram_fifo.sv" \
 "../ip/prefetcher/rtl/prefetcher_streaming_manager.sv" \

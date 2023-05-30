@@ -3,7 +3,16 @@ catch {exec mkdir $env(FYP_DIR)/hw/build}
 cd $env(FYP_DIR)/hw/build
 
 create_project build_project -part xcu250-figd2104-2L-e -force
+
 set_property board_part xilinx.com:au250:part0:1.3 [current_project]
+add_files $env(FYP_DIR)/hw/ip/aggregation_engine/rtl
+add_files $env(FYP_DIR)/hw/ip/include
+add_files $env(FYP_DIR)/hw/ip/lib
+add_files $env(FYP_DIR)/hw/ip/node_scoreboard/rtl
+add_files $env(FYP_DIR)/hw/ip/prefetcher/rtl
+add_files $env(FYP_DIR)/hw/ip/top/rtl
+add_files $env(FYP_DIR)/hw/ip/transformation_engine/rtl
+set_property top top [current_fileset]
 
 # Import IP
 import_ip -files $env(FYP_DIR)/hw/xilinx/axi_L_register_control_crossbar.xci
@@ -18,7 +27,6 @@ import_ip -files $env(FYP_DIR)/hw/xilinx/fixed4_upsampler.xci
 import_ip -files $env(FYP_DIR)/hw/xilinx/fixed8_upsampler.xci
 import_ip -files $env(FYP_DIR)/hw/xilinx/fixed16_upsampler.xci
 import_ip -files $env(FYP_DIR)/hw/xilinx/scale_factor_queue.xci
-import_ip -files $env(FYP_DIR)/hw/xilinx/router_fifo_sdp_bram.xci
 import_ip -files $env(FYP_DIR)/hw/xilinx/ddr4_0.xcix
 
 generate_target all [get_ips]
