@@ -35,7 +35,7 @@ always_comb begin
     endcase
 end
 
-fp_mult upsampler_mult (
+fp_mult activation_mult (
     .s_axis_a_tvalid      (in_feature_valid),
     .s_axis_a_tdata       (in_feature),
 

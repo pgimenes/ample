@@ -83,7 +83,7 @@ logic [$clog2(MAX_TOTAL_BEATS)-1:0]         beats_requested;
 logic [$clog2(MAX_TOTAL_BEATS)-1:0]         beats_received;
 logic [7:0]                                 received_read_responses;
 
-logic [AXI_ADDRESS_WIDTH-1:0]                   current_transaction_address;
+logic [AXI_ADDRESS_WIDTH-1:0]               current_transaction_address;
 
 logic                                       last_transaction_pending;
 logic                                       last_read_response_pending;

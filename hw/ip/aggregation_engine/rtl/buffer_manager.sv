@@ -245,7 +245,7 @@ always_comb begin
     outgoing_packet_dest_col = allocated_agm_q;
     outgoing_packet_dest_row = age_pkg::MESH_ROWS - 1;
 
-    buffer_manager_router_data.vc_id = '0; // TO DO: consider using both VCs?
+    buffer_manager_router_data.vc_id = '0;
     buffer_manager_router_data.flit_label = done_head_sent ? noc_params::TAIL : noc_params::HEAD;
 
     buffer_manager_router_data.data.bt_pl = { outgoing_packet_dest_col, outgoing_packet_dest_row,
