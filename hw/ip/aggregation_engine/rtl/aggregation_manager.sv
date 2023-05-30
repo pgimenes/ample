@@ -62,14 +62,12 @@ module aggregation_manager #(
 typedef enum logic [4:0] {
     AGM_FSM_IDLE,
     AGM_FSM_AGC_ALLOC_PKT,
-    AGM_FSM_WAIT_DRAIN1,
     AGM_FSM_PREF_REQ,
     AGM_FSM_WAIT_PREF_RESP,
     AGM_FSM_SEND_AGC,
-    AGM_FSM_WAIT_DRAIN2,
     AGM_FSM_WAIT_BUFF_MAN_ALLOC,
     AGM_FSM_AGC_BUFFER_REQ,
-    AGM_FSM_WAIT_DRAIN3,
+    AGM_FSM_WAIT_DRAIN,
     AGM_FSM_WAIT_BUFFER_DONE,
     AGM_FSM_NSB_RESP
 } agm_state_e;
@@ -77,10 +75,6 @@ typedef enum logic [4:0] {
 // ==================================================================================================================================================
 // Declarations
 // ==================================================================================================================================================
-
-// Coordinates of this aggregation manager
-logic [$clog2(MESH_COLS)-1:0]                       x_coord;
-logic [$clog2(MESH_ROWS)-1:0]                       y_coord;
 
 // Circular buffer for coordinates of the allocated aggregation cores
 logic [$clog2(MAX_AGC_PER_NODE)-1:0] coord_ptr;
@@ -104,10 +98,6 @@ logic                                               noc_router_waiting;
 // Logic
 // ==================================================================================================================================================
 
-// Coordinates of this aggregation manager
-assign x_coord = X_COORD;
-assign y_coord = Y_COORD;
-
 // Message channel state machine
 // --------------------------------------------
 
@@ -130,12 +120,10 @@ always_comb begin
     end
 
     AGM_FSM_AGC_ALLOC_PKT: begin
-        agm_state_n = (aggregation_manager_router_data.flit_label == noc_params::TAIL) && (coord_ptr == agm_allocated_agcs_count - 1'b1) ? AGM_FSM_WAIT_DRAIN1
+        agm_state_n = 
+                    // Draining not required since SEND_AGC waits for noc_router_waiting
+                    aggregation_manager_router_valid && (aggregation_manager_router_data.flit_label == noc_params::TAIL) && (coord_ptr == agm_allocated_agcs_count - 1'b1) ? AGM_FSM_PREF_REQ
                     : AGM_FSM_AGC_ALLOC_PKT;
-    end
-
-    AGM_FSM_WAIT_DRAIN1: begin
-        agm_state_n = noc_router_waiting ? AGM_FSM_PREF_REQ : AGM_FSM_WAIT_DRAIN1;
     end
 
     AGM_FSM_PREF_REQ: begin
@@ -149,13 +137,11 @@ always_comb begin
     end
 
     AGM_FSM_SEND_AGC: begin
-        agm_state_n = pkt_done && message_channel_resp_q.last_feature ? AGM_FSM_WAIT_DRAIN2
+        agm_state_n = 
+                    // Draining not required since AGM_FSM_AGC_BUFFER_REQ waits for noc_router_waiting
+                    pkt_done && message_channel_resp_q.last_feature ? AGM_FSM_WAIT_BUFF_MAN_ALLOC
                     : pkt_done ? AGM_FSM_WAIT_PREF_RESP
                     : AGM_FSM_SEND_AGC;
-    end
-
-    AGM_FSM_WAIT_DRAIN2: begin
-        agm_state_n = noc_router_waiting ? AGM_FSM_WAIT_BUFF_MAN_ALLOC : AGM_FSM_WAIT_DRAIN2;
     end
 
     AGM_FSM_WAIT_BUFF_MAN_ALLOC: begin
@@ -163,12 +149,14 @@ always_comb begin
     end
 
     AGM_FSM_AGC_BUFFER_REQ: begin
-        agm_state_n = (coord_ptr == agm_allocated_agcs_count - 1'b1) && agc_pkt_head_sent ? AGM_FSM_WAIT_DRAIN3
+        agm_state_n = 
+                    // Draining required before recycling AGM
+                    (coord_ptr == agm_allocated_agcs_count - 1'b1) && agc_pkt_head_sent ? AGM_FSM_WAIT_DRAIN
                     : AGM_FSM_AGC_BUFFER_REQ;
     end
 
-    AGM_FSM_WAIT_DRAIN3: begin
-        agm_state_n = noc_router_waiting ? AGM_FSM_WAIT_BUFFER_DONE : AGM_FSM_WAIT_DRAIN3;
+    AGM_FSM_WAIT_DRAIN: begin
+        agm_state_n = noc_router_waiting ? AGM_FSM_WAIT_BUFFER_DONE : AGM_FSM_WAIT_DRAIN;
     end
 
     AGM_FSM_WAIT_BUFFER_DONE: begin
@@ -289,9 +277,16 @@ end
 
 always_comb begin
     // Sending allocation or feature packet
-    aggregation_manager_router_valid = (packet_state != PKT_FSM_IDLE) || (agm_state == AGM_FSM_AGC_ALLOC_PKT) || (agm_state == AGM_FSM_AGC_BUFFER_REQ);
+    aggregation_manager_router_valid = 
+                                    // For feature packet, packet_state waits for noc_router_waiting
+                                    (packet_state != PKT_FSM_IDLE) 
+
+                                    // When sending allocation/buffering packets, wait for router buffer to empty after each AGC
+                                    || ((agm_state == AGM_FSM_AGC_ALLOC_PKT) && noc_router_waiting) 
+                                    || ((agm_state == AGM_FSM_AGC_BUFFER_REQ) && noc_router_waiting);
     
-    aggregation_manager_router_data.vc_id = '0; // TO DO: consider using both VCs?
+    // Single VC enabled
+    aggregation_manager_router_data.vc_id = '0;
 
     // Nodeslot allocation packet
     if (agm_state == AGM_FSM_AGC_ALLOC_PKT) begin
@@ -300,14 +295,14 @@ always_comb begin
         aggregation_manager_router_data.data.bt_pl = 
                                             // Tail packet contains aggregation function and nodeslot
                                             agc_pkt_head_sent ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr],
-                                                                        x_coord, y_coord, // source node coordinates
+                                                                        X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], // source node coordinates
                                                                         {(PAYLOAD_DATA_WIDTH - $bits(AGGREGATION_FUNCTION_e) - $bits(agm_allocation.nodeslot)){1'b0}}, // 56 zeros
                                                                         agm_allocation.aggregation_function, agm_allocation.nodeslot
                                                                     }
                                             
                                             // Head packet contains packet type and last flag (always set to 1 for allocation packets)
                                             : {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr],
-                                                x_coord, y_coord,
+                                                X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0],
                                                 age_pkg::AGC_NODESLOT_ALLOCATION, 1'b1, 
                                                 {(PAYLOAD_DATA_WIDTH - $bits(aggregation_manager_packet_type_e) - 1){1'b0}}
                                             };
@@ -321,7 +316,7 @@ always_comb begin
         aggregation_manager_router_data.data.bt_pl = 
                                             // Head packet contains packet type and last flag (always set to 1 for allocation packets)
                                             (packet_state == PKT_FSM_HEAD)   ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], // destination node coordinates
-                                                                                    x_coord, y_coord, // source node coordinates
+                                                                                    X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], // source node coordinates
 
                                                                                     age_pkg::AGC_FEATURE_PACKET, message_channel_resp_q.last_neighbour,
                                                                                     {(PAYLOAD_DATA_WIDTH - $bits(aggregation_manager_packet_type_e) - 1 - SCALE_FACTOR_QUEUE_READ_WIDTH){1'b0}},
@@ -329,14 +324,14 @@ always_comb begin
                                                                                 }
 
                                             // Subsequent packets contain message channel response split into 64-bit chunks
-                                            : (packet_state == PKT_FSM_BODY1) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[511:448]}
-                                            : (packet_state == PKT_FSM_BODY2) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[447:384]}
-                                            : (packet_state == PKT_FSM_BODY3) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[383:320]}
-                                            : (packet_state == PKT_FSM_BODY4) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[319:256]}
-                                            : (packet_state == PKT_FSM_BODY5) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[255:192]}
-                                            : (packet_state == PKT_FSM_BODY6) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[191:128]}
-                                            : (packet_state == PKT_FSM_BODY7) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[127:64]}
-                                            : (packet_state == PKT_FSM_TAIL) ?  {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], x_coord, y_coord, message_channel_resp_q.data[63:0]} : '0;
+                                            : (packet_state == PKT_FSM_BODY1) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], message_channel_resp_q.data[511:448]}
+                                            : (packet_state == PKT_FSM_BODY2) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], message_channel_resp_q.data[447:384]}
+                                            : (packet_state == PKT_FSM_BODY3) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], message_channel_resp_q.data[383:320]}
+                                            : (packet_state == PKT_FSM_BODY4) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], message_channel_resp_q.data[319:256]}
+                                            : (packet_state == PKT_FSM_BODY5) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], message_channel_resp_q.data[255:192]}
+                                            : (packet_state == PKT_FSM_BODY6) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], message_channel_resp_q.data[191:128]}
+                                            : (packet_state == PKT_FSM_BODY7) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], message_channel_resp_q.data[127:64]}
+                                            : (packet_state == PKT_FSM_TAIL) ?  {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], message_channel_resp_q.data[63:0]} : '0;
     
     // Buffer request packets to AGCs
     end else if (agm_state == AGM_FSM_AGC_BUFFER_REQ) begin
@@ -344,7 +339,7 @@ always_comb begin
 
         aggregation_manager_router_data.data.bt_pl = // Tail packet contains allocated buffer manager coordinates
                                             agc_pkt_head_sent ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr],
-                                                                        x_coord, y_coord, // source node coordinates
+                                                                        X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], // source node coordinates
 
                                                                         {(PAYLOAD_DATA_WIDTH - $bits(buffer_manager_allocation_q)){1'b0}}, // 56 zeros
                                                                         buffer_manager_allocation_q
@@ -352,7 +347,7 @@ always_comb begin
                                             
                                             // Head packet contains packet type and last flag (always set to 1 for buffer req packets)
                                             : {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr],
-                                                x_coord, y_coord,
+                                                X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0],
 
                                                 age_pkg::BM_BUFFER_REQUEST, 1'b1,
                                                 {(PAYLOAD_DATA_WIDTH - $bits(aggregation_manager_packet_type_e) - 1){1'b0}}
