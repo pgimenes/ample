@@ -40,6 +40,7 @@ module feature_transformation_engine #(
     // Aggregation Buffer Interface
     input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::NODE_ID_WIDTH-1:0]                 aggregation_buffer_node_id,
     output logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_pop,
+    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_out_feature_valid,
     input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_out_feature,
     input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free,
 
@@ -436,7 +437,7 @@ always_comb begin
     begin_feature_dump = (fte_state == FTE_FSM_REQ_WC) && (fte_state_n == FTE_FSM_MULT_SLOW);
 
     // Pulse module when features ready in aggregation buffer and weights ready in weight channel
-    pulse_systolic_module = (fte_state_n == FTE_FSM_MULT_SLOW) && weight_channel_resp_valid && pe_delay_counter;
+    pulse_systolic_module = (fte_state_n == FTE_FSM_MULT_SLOW) && &aggregation_buffer_out_feature_valid && weight_channel_resp_valid;
 
     // Drive systolic module from aggregation buffer (on the left)
     sys_module_forward_valid [0] = slot_pop_shift & busy_aggregation_slots_snapshot;
@@ -446,6 +447,8 @@ always_comb begin
 end
 
 // 1-bit toggle to account for PE delay
+// TO DO: reconsider if necessary. May be able to just wait until aggregation_buffer_out_feature_valid
+// since this takes 2 cycles after pop
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         pe_delay_counter <= '1;

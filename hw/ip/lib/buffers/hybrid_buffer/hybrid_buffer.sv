@@ -24,6 +24,7 @@ module hybrid_buffer #(
     input  logic [NUM_SLOTS-1:0] [WRITE_WIDTH-1:0]         write_data,
     
     input  logic [NUM_SLOTS-1:0]                           pop,
+    output logic [NUM_SLOTS-1:0]                           out_feature_valid,
     output logic [NUM_SLOTS-1:0] [READ_WIDTH-1:0]          out_feature,
     
     output logic [NUM_SLOTS-1:0] [$clog2(READ_DEPTH)-1:0]  feature_count,
@@ -46,6 +47,7 @@ for (genvar slot = 0; slot < NUM_SLOTS; slot++) begin
         .write_data         (write_data     [slot]),
 
         .pop                (pop               [slot]),
+        .out_feature_valid  (out_feature_valid [slot]),
         .out_feature        (out_feature       [slot]),
 
         .feature_count      (feature_count     [slot]),

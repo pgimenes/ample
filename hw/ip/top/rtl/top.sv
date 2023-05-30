@@ -317,6 +317,7 @@ logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_READ_DEPTH)-1:0]
 logic [AGGREGATION_BUFFER_SLOTS-1:0] [NODE_ID_WIDTH-1:0]                          aggregation_buffer_node_id;
 logic [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_pop;
 logic [AGGREGATION_BUFFER_SLOTS-1:0] [AGGREGATION_BUFFER_READ_WIDTH-1:0]          aggregation_buffer_out_feature;
+logic [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_out_feature_valid;
 logic [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free;
 
 // FTE -> Transformation Buffer Interface
@@ -660,6 +661,7 @@ hybrid_buffer #(
 
     .pop                (aggregation_buffer_pop),
     .out_feature        (aggregation_buffer_out_feature),
+    .out_feature_valid  (aggregation_buffer_out_feature_valid),
     .slot_free          (aggregation_buffer_slot_free)
 
 );
@@ -702,6 +704,7 @@ feature_transformation_engine transformation_engine_i (
 
     .aggregation_buffer_node_id                         (aggregation_buffer_node_id),
     .aggregation_buffer_pop                             (aggregation_buffer_pop),
+    .aggregation_buffer_out_feature_valid               (aggregation_buffer_out_feature_valid),
     .aggregation_buffer_out_feature                     (aggregation_buffer_out_feature),
     .aggregation_buffer_slot_free                       (aggregation_buffer_slot_free),
 

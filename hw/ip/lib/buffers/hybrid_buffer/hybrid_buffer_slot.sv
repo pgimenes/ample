@@ -14,6 +14,7 @@ module hybrid_buffer_slot #(
     input  logic [WRITE_WIDTH-1:0]         write_data,
 
     input  logic                           pop,
+    output logic                           out_feature_valid,
     output logic [READ_WIDTH-1:0]          out_feature,
     
     output logic [$clog2(READ_DEPTH)-1:0]  feature_count,
@@ -22,6 +23,7 @@ module hybrid_buffer_slot #(
 
 logic [$clog2(READ_DEPTH)-1:0] rd_ptr;
 logic [$clog2(READ_DEPTH)-1:0] read_address;
+logic                          pop_q;
 
 // Pre-increment read address to account for read latency
 assign read_address = 
@@ -73,6 +75,8 @@ always_ff @( posedge core_clk or negedge resetn ) begin
     if ( !resetn ) begin
         rd_ptr            <= '0;
         feature_count     <= 0;
+        out_feature_valid <= '0;
+        pop_q             <= '0;
 
     end else begin
         if (write_enable) begin
@@ -85,6 +89,14 @@ always_ff @( posedge core_clk or negedge resetn ) begin
             rd_ptr <= rd_ptr + 1;
             feature_count <= feature_count - 1'b1;
         end
+
+                // Latch out_valid to 0 when pop or to 1, 3 cycles later
+        // This accounts for RAM delay
+        out_feature_valid <= pop ? '0 
+                            : pop_q ? '1
+                            : out_feature_valid;
+
+        pop_q <= pop;
 
     end
 end
