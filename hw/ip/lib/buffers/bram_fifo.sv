@@ -6,6 +6,8 @@ on out_data when out_valid is asserted (RAM reads take 3 cycles)
 
 */
 
+// TO DO: feature count will break if writing and reading at the same time
+
 module bram_fifo #(
     parameter WRITE_WIDTH = 64,
     parameter WRITE_DEPTH = 512,
@@ -20,6 +22,7 @@ module bram_fifo #(
     input  logic [WRITE_WIDTH-1:0]      in_data,
     
     input  logic                        pop,
+    output logic                        out_valid,
     output logic [READ_WIDTH-1:0]       out_data,
     
     output logic [$clog2(READ_DEPTH):0] count,
@@ -35,8 +38,9 @@ parameter READ_ADDR_WIDTH = $clog2(READ_DEPTH);
 // ==================================================================================================================================================
 
 logic [WRITE_ADDR_WIDTH-1:0] wr_ptr;
-logic [READ_ADDR_WIDTH-1:0] rd_ptr;
-logic [READ_ADDR_WIDTH-1:0] read_address;
+logic [READ_ADDR_WIDTH-1:0]  rd_ptr;
+logic [READ_ADDR_WIDTH-1:0]  read_address;
+logic                        pop_q;
 
 // Pre-increment read address to account for read latency
 assign read_address = 
@@ -92,6 +96,9 @@ always_ff @(posedge core_clk or negedge resetn) begin
         wr_ptr <= '0;
         rd_ptr <= '0;
 
+        pop_q     <= '0;
+        out_valid <= '1;
+
         wr_wrap   <= '0;
         rd_wrap   <= '0;
 
@@ -111,6 +118,14 @@ always_ff @(posedge core_clk or negedge resetn) begin
                 : push ? count + 1'b1
                 : pop ? count - 1'b1
                 : count;
+
+        // Latch out_valid to 0 when pop or to 1, 3 cycles later
+        // This accounts for RAM delay
+        out_valid <= pop ? '0 
+                    : pop_q ? '1
+                    : out_valid;
+
+        pop_q <= pop;
 
         if ((wr_ptr == (WRITE_DEPTH - 1)) && push) wr_wrap <= !wr_wrap;
         if ((rd_ptr == (READ_DEPTH - 1)) && pop) rd_wrap <= !rd_wrap;
