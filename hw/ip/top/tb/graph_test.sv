@@ -22,6 +22,8 @@ class GraphTest extends Test;
         integer chosen_nodeslot;
         xil_axi_data_beat fetch_weights_done_resp[];
 
+        wait(this.nsb_intf.regbank_resetn == '1);
+
         // Load layer configuration
         layer_root = json::Load("layer_config.json");
         assert (layer_root!=null) else $fatal(1, "Failed to load layer configuration from JSON file");

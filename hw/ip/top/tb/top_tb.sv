@@ -7,7 +7,6 @@ module top_tb;
     localparam DM_WIDTH                      = 9;
     localparam DRAM_WIDTH                    = 4;
     localparam tCK                           = 833 ; //DDR4 interface clock period in ps
-    localparam real SYSCLK_PERIOD            = tCK; 
     localparam NUM_PHYSICAL_PARTS = (DQ_WIDTH/DRAM_WIDTH) ;
     localparam           CLAMSHELL_PARTS = (NUM_PHYSICAL_PARTS/2);
     localparam           ODD_PARTS = ((CLAMSHELL_PARTS*2) < NUM_PHYSICAL_PARTS) ? 1 : 0;
@@ -50,7 +49,7 @@ module top_tb;
 
     // parameter SIMULATION = "TRUE"; // skip ddr4 calibration
 
-    parameter CLK_PERIOD = (3332);
+    parameter CLK_PERIOD = (5000);
     parameter REGBANK_CLK_PERIOD = (20000);
 
     // ------------------------
@@ -155,15 +154,18 @@ module top_tb;
   // ============================================================================
   initial begin
     sys_rst = 1'b1;
-    #(CLK_PERIOD*40)
+    #(CLK_PERIOD*100)
     sys_rst = 1'b0;
   end
 
   initial begin
     regbank_reset = 1'b1;
-    #(REGBANK_CLK_PERIOD*5)
+    #(REGBANK_CLK_PERIOD*20)
     regbank_reset = 1'b0;
   end
+
+//   20 regbank clock cycles == approx 81 sys_clk cycles at 20MHz
+//   so run sys_rst for 100 cycles
 
   // ============================================================================
   // Clock Generation
@@ -174,10 +176,13 @@ module top_tb;
     regbank_clk = 1'b1;
   end
 
-  always begin
-    sys_clk_i = #(CLK_PERIOD/2.0) ~sys_clk_i;
-    regbank_clk = #(REGBANK_CLK_PERIOD/2.0) ~regbank_clk;
-  end
+    always begin
+        sys_clk_i = #(CLK_PERIOD/2.0) ~sys_clk_i;
+    end
+
+    always begin
+        regbank_clk = #(REGBANK_CLK_PERIOD/2.0) ~regbank_clk;
+    end
 
   assign c0_sys_clk_p = sys_clk_i;
   assign c0_sys_clk_n = ~sys_clk_i;
@@ -329,8 +334,8 @@ top top_i (
 //===========================================================================
 
 axil_master_vip axil_master_vip_i (
-  .aclk                 (sys_clk_i),                    // input wire aclk
-  .aresetn              (!sys_rst),              // input wire aresetn
+  .aclk                 (regbank_clk),                    // input wire aclk
+  .aresetn              (!regbank_reset),              // input wire aresetn
   
   .m_axi_awaddr         (host_axil_awaddr),    // output wire [31 : 0] m_axi_awaddr
   .m_axi_awprot         (host_axil_awprot),    // output wire [2 : 0] m_axi_awprot
