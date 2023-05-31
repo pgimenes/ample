@@ -5,6 +5,9 @@ interface node_scoreboard_interface(
     input logic core_clk,
     input logic resetn,
 
+    input logic regbank_clk,
+    input logic regbank_resetn,
+
     // Regbank Slave AXI interface
     input logic [31:0]                                         s_axi_awaddr,
     input logic [2:0]                                          s_axi_awprot,

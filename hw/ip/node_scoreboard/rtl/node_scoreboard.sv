@@ -187,8 +187,8 @@ logic [$clog2(NODESLOT_COUNT)-1:0] age_arbiter_grant_bin;
 // ------------------------------------------------------------
 node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
     // Clock and Reset (SLOW)
-.axi_aclk                       (core_clk),
-.axi_aresetn                    (resetn),
+.axi_aclk                       (regbank_clk),
+.axi_aresetn                    (regbank_resetn),
 
     // Clock and Reset (FAST)
     .fast_clk                       (core_clk),
