@@ -5,7 +5,10 @@ import top_pkg::*;
 module top
 (
     input logic                           sys_clk,
-    input                                 sys_rst, //Common port for all controllers
+    input logic                           sys_rst, //Common port for all controllers
+
+    input  logic                          regbank_clk,
+    input  logic                          regbank_resetn,
     
     // AXI-L interface to Host
     input  logic [31 : 0]                 host_axil_awaddr,
@@ -347,6 +350,9 @@ node_scoreboard #(
 ) node_scoreboard_i (
     .core_clk                       (sys_clk),
     .resetn                         (!sys_rst),
+
+    .regbank_clk                    (regbank_clk),
+    .regbank_resetn                 (regbank_resetn),
     
     // Regbank Slave AXI interface
     .s_axi_awaddr                                       (axil_interconnect_m_axi_awaddr     [95:64]),

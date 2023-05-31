@@ -1,7 +1,5 @@
 
-program top_test #(
-    parameter CLK_PERIOD = 3332
-) (
+program top_test (
     // top_memory_axi_interface memory_intf,
     node_scoreboard_interface nsb_intf,
     aggregation_engine_interface age_intf,
