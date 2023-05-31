@@ -9,6 +9,9 @@ module node_scoreboard #(
     input logic core_clk,
     input logic resetn,
 
+    input  logic regbank_clk,
+    input  logic regbank_resetn,
+
     // Regbank Slave AXI interface
     input  logic [AXIL_ADDR_WIDTH-1:0]                          s_axi_awaddr,
     input  logic [2:0]                                          s_axi_awprot,
@@ -182,10 +185,14 @@ logic [$clog2(NODESLOT_COUNT)-1:0] age_arbiter_grant_bin;
 
 // Regbank
 // ------------------------------------------------------------
-node_scoreboard_regbank_regs node_scoreboard_regbank_i (
-    // Clock and Reset
-    .axi_aclk                       (core_clk),
-    .axi_aresetn                    (resetn),
+node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
+    // Clock and Reset (SLOW)
+.axi_aclk                       (core_clk),
+.axi_aresetn                    (resetn),
+
+    // Clock and Reset (FAST)
+    .fast_clk                       (core_clk),
+    .fast_resetn                    (resetn),
 
     // AXI Write Address Channel
     .s_axi_awaddr,
@@ -209,65 +216,36 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
     .s_axi_bready,
 
     // User Ports
-    .layer_config_in_features_strobe,
     .layer_config_in_features_count,
-    .layer_config_out_features_strobe,
     .layer_config_out_features_count,
-    .layer_config_weights_precision_strobe,
     .layer_config_weights_precision_precision,
-    .layer_config_activations_precision_strobe,
     .layer_config_activations_precision_precision,
 
-    .layer_config_adjacency_list_address_lsb_strobe,
     .layer_config_adjacency_list_address_lsb_lsb,
-    .layer_config_adjacency_list_address_msb_strobe,
     .layer_config_adjacency_list_address_msb_msb,
-    .layer_config_in_messages_address_lsb_strobe,
     .layer_config_in_messages_address_lsb_lsb,
-    .layer_config_in_messages_address_msb_strobe,
     .layer_config_in_messages_address_msb_msb,
-    .layer_config_weights_address_lsb_strobe,
     .layer_config_weights_address_lsb_lsb,
-    .layer_config_weights_address_msb_strobe,
     .layer_config_weights_address_msb_msb,
-    .layer_config_out_messages_address_lsb_strobe,
     .layer_config_out_messages_address_lsb_lsb,
-    .layer_config_out_messages_address_msb_strobe,
     .layer_config_out_messages_address_msb_msb,
 
-    .ctrl_fetch_layer_weights_strobe,
     .ctrl_fetch_layer_weights_fetch,
-    .ctrl_fetch_layer_weights_done_strobe,
     .ctrl_fetch_layer_weights_done_done,
-    .ctrl_fetch_layer_weights_done_ack_strobe,
     .ctrl_fetch_layer_weights_done_ack_ack,
-    .nsb_nodeslot_neighbour_count_strobe,
     .nsb_nodeslot_neighbour_count_count,
-    .nsb_nodeslot_node_id_strobe,
     .nsb_nodeslot_node_id_id,
-    .nsb_nodeslot_node_state_strobe,
     .nsb_nodeslot_node_state_state,
-    .nsb_nodeslot_precision_strobe,
     .nsb_nodeslot_precision_precision,
-    .nsb_nodeslot_adjacency_list_address_lsb_strobe,
     .nsb_nodeslot_adjacency_list_address_lsb_lsb,
-    .nsb_nodeslot_adjacency_list_address_msb_strobe,
     .nsb_nodeslot_adjacency_list_address_msb_msb,
-    .nsb_nodeslot_out_messages_address_lsb_strobe,
     .nsb_nodeslot_out_messages_address_lsb_lsb,
-    .nsb_nodeslot_out_messages_address_msb_strobe,
     .nsb_nodeslot_out_messages_address_msb_msb,
-    .nsb_nodeslot_config_make_valid_msb_strobe,
     .nsb_nodeslot_config_make_valid_msb_make_valid,
-    .nsb_nodeslot_config_make_valid_lsb_strobe,
     .nsb_nodeslot_config_make_valid_lsb_make_valid,
-    .nsb_nodeslot_scale_factors_address_lsb_strobe,
     .nsb_nodeslot_scale_factors_address_lsb_value,
-    .nsb_nodeslot_scale_factors_address_msb_strobe,
     .nsb_nodeslot_scale_factors_address_msb_value,
-    .nsb_config_aggregation_wait_count_strobe,
     .nsb_config_aggregation_wait_count_count,
-    .nsb_config_transformation_wait_count_strobe,
     .nsb_config_transformation_wait_count_count,
     .*
 );

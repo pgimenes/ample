@@ -51,11 +51,15 @@ module top_tb;
     // parameter SIMULATION = "TRUE"; // skip ddr4 calibration
 
     parameter CLK_PERIOD = (3332);
+    parameter REGBANK_CLK_PERIOD = (20000);
 
     // ------------------------
 
     logic                  sys_clk_i;
     logic                  sys_rst;
+    logic                  regbank_clk;
+    logic                  regbank_reset;
+
     logic                  c0_sys_clk_p;
     logic                  c0_sys_clk_n;
 
@@ -150,19 +154,30 @@ module top_tb;
   // Reset Generation
   // ============================================================================
   initial begin
-     sys_rst = 1'b1;
-     #(CLK_PERIOD*20)
-     sys_rst = 1'b0;
+    sys_rst = 1'b1;
+    #(CLK_PERIOD*40)
+    sys_rst = 1'b0;
+  end
+
+  initial begin
+    regbank_reset = 1'b1;
+    #(REGBANK_CLK_PERIOD*5)
+    regbank_reset = 1'b0;
   end
 
   // ============================================================================
   // Clock Generation
   // ============================================================================
 
-  initial
+  initial begin
     sys_clk_i = 1'b1;
-  always
+    regbank_clk = 1'b1;
+  end
+
+  always begin
     sys_clk_i = #(CLK_PERIOD/2.0) ~sys_clk_i;
+    regbank_clk = #(REGBANK_CLK_PERIOD/2.0) ~regbank_clk;
+  end
 
   assign c0_sys_clk_p = sys_clk_i;
   assign c0_sys_clk_n = ~sys_clk_i;
@@ -201,6 +216,9 @@ module top_tb;
 top top_i (
     .sys_clk            (sys_clk_i),
     .sys_rst            (sys_rst),
+
+    .regbank_clk            (regbank_clk),
+    .regbank_resetn         (!regbank_reset),
 
     // AXI-L interface to Host
     .host_axil_awaddr       (host_axil_awaddr       ),
