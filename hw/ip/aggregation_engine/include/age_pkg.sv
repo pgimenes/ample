@@ -37,7 +37,7 @@ parameter MESH_ROWS = AGC_ROWS + AGM_ROWS; // row of aggregation managers
 parameter MESH_COLS = AGC_COLS + BM_COLS; // col of buffer managers
 parameter TOTAL_MESH_NODES = MESH_ROWS * MESH_COLS;
 
-parameter BUFFER_MANAGER_COLUMN = age_pkg::MESH_COLS - 1;
+parameter BUFFER_MANAGER_COLUMN = MESH_COLS - 1;
 
 parameter PAYLOAD_DATA_WIDTH = 64;
 parameter MESH_NODE_ID_WIDTH = $clog2(MESH_ROWS) + $clog2(MESH_COLS); // = 12

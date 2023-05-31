@@ -125,28 +125,28 @@ logic last_weight_resp_received;
 // Register Bank
 // -------------------------------------------------------------------------------------
 
-logic layer_config_in_features_strobe;
-logic [9:0] layer_config_in_features_count;
-logic layer_config_out_features_strobe;
-logic [9:0] layer_config_out_features_count;
-
-logic layer_config_activation_function_strobe;
-logic [1:0] layer_config_activation_function_value;
-
-logic layer_config_bias_strobe;
+logic        layer_config_in_features_strobe;
+logic [9:0]  layer_config_in_features_count;
+logic        layer_config_out_features_strobe;
+logic [9:0]  layer_config_out_features_count;
+                                    
+logic        layer_config_activation_function_strobe;
+logic [1:0]  layer_config_activation_function_value;
+                                    
+logic        layer_config_bias_strobe;
 logic [31:0] layer_config_bias_value;
-
-logic layer_config_leaky_relu_alpha_strobe;
+                                    
+logic        layer_config_leaky_relu_alpha_strobe;
 logic [31:0] layer_config_leaky_relu_alpha_value;
-
-logic layer_config_out_features_address_msb_strobe;
-logic [1:0] layer_config_out_features_address_msb_value;
-logic layer_config_out_features_address_lsb_strobe;
+                                    
+logic        layer_config_out_features_address_msb_strobe;
+logic [1:0]  layer_config_out_features_address_msb_value;
+logic        layer_config_out_features_address_lsb_strobe;
 logic [31:0] layer_config_out_features_address_lsb_value;
 
-logic ctrl_buffering_enable_strobe;
+logic       ctrl_buffering_enable_strobe;
 logic [0:0] ctrl_buffering_enable_value;
-logic ctrl_writeback_enable_strobe;
+logic       ctrl_writeback_enable_strobe;
 logic [0:0] ctrl_writeback_enable_value;
 
 // NSB requests
@@ -490,8 +490,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
         
         // Accepting NSB request
     end else if (nsb_fte_req_valid && nsb_fte_req_ready) begin
-        nodeslots_to_buffer    <= nodeslot_count;
-        nodeslots_to_writeback <= nodeslot_count;
+        nodeslots_to_buffer    <= ctrl_buffering_enable_value ? nodeslot_count : nodeslots_to_buffer;
+        nodeslots_to_writeback <= ctrl_writeback_enable_value ? nodeslot_count : nodeslots_to_writeback;
     
     // Done flushing a row of features
     end else if (fte_state == FTE_FSM_BUFFER) begin
@@ -573,21 +573,21 @@ always_comb begin
     transformation_engine_axi_interconnect_axi_awaddr = {layer_config_out_features_address_msb_value, layer_config_out_features_address_lsb_value}
                                                         + sys_module_node_id_snapshot[0] * out_features_required_bytes;
 
-    transformation_engine_axi_interconnect_axi_awsize = 3'b110; // 64 bytes
+    transformation_engine_axi_interconnect_axi_awsize  = 3'b110; // 64 bytes
     transformation_engine_axi_interconnect_axi_awburst = 2'b01; // INCR mode (increment by 64 bytes for each beat)
-    transformation_engine_axi_interconnect_axi_awlen = (SYSTOLIC_MODULE_COUNT[7:0] - 1'b1);
+    transformation_engine_axi_interconnect_axi_awlen   = (SYSTOLIC_MODULE_COUNT[7:0] - 1'b1);
     
     // Unused features
     transformation_engine_axi_interconnect_axi_awcache = '0;
-    transformation_engine_axi_interconnect_axi_awid = '0;
-    transformation_engine_axi_interconnect_axi_awlock = '0;
-    transformation_engine_axi_interconnect_axi_awprot = '0;
-    transformation_engine_axi_interconnect_axi_awqos = '0;
+    transformation_engine_axi_interconnect_axi_awid    = '0;
+    transformation_engine_axi_interconnect_axi_awlock  = '0;
+    transformation_engine_axi_interconnect_axi_awprot  = '0;
+    transformation_engine_axi_interconnect_axi_awqos   = '0;
 
     transformation_engine_axi_interconnect_axi_wvalid = (axi_write_state == AXI_W);
-    transformation_engine_axi_interconnect_axi_wdata = sys_module_pe_acc [sys_module_counter] [0]; // Top row of systolic module
-    transformation_engine_axi_interconnect_axi_wlast = (sys_module_counter == (SYSTOLIC_MODULE_COUNT-1));
-    transformation_engine_axi_interconnect_axi_wstrb = '1;
+    transformation_engine_axi_interconnect_axi_wdata  = sys_module_pe_acc [sys_module_counter] [0];         // Top row of systolic module
+    transformation_engine_axi_interconnect_axi_wlast  = (sys_module_counter == (SYSTOLIC_MODULE_COUNT-1));
+    transformation_engine_axi_interconnect_axi_wstrb  = '1;
 
     transformation_engine_axi_interconnect_axi_bready = (axi_write_state == AXI_B);
 end
@@ -628,17 +628,17 @@ always_ff @(posedge core_clk or negedge resetn) begin
 end
 
 always_comb begin
-    transformation_engine_axi_interconnect_axi_araddr = '0;
+    transformation_engine_axi_interconnect_axi_araddr  = '0;
     transformation_engine_axi_interconnect_axi_arburst = '0;
     transformation_engine_axi_interconnect_axi_arcache = '0;
-    transformation_engine_axi_interconnect_axi_arid = '0;
-    transformation_engine_axi_interconnect_axi_arlen = '0;
-    transformation_engine_axi_interconnect_axi_arlock = '0;
-    transformation_engine_axi_interconnect_axi_arprot = '0;
-    transformation_engine_axi_interconnect_axi_arqos = '0;
-    transformation_engine_axi_interconnect_axi_arsize = '0;
+    transformation_engine_axi_interconnect_axi_arid    = '0;
+    transformation_engine_axi_interconnect_axi_arlen   = '0;
+    transformation_engine_axi_interconnect_axi_arlock  = '0;
+    transformation_engine_axi_interconnect_axi_arprot  = '0;
+    transformation_engine_axi_interconnect_axi_arqos   = '0;
+    transformation_engine_axi_interconnect_axi_arsize  = '0;
     transformation_engine_axi_interconnect_axi_arvalid = '0;
-    transformation_engine_axi_interconnect_axi_rready = '0;
+    transformation_engine_axi_interconnect_axi_rready  = '0;
 end
 
 endmodule
