@@ -75,7 +75,7 @@ always_ff @( posedge core_clk or negedge resetn ) begin
     if ( !resetn ) begin
         rd_ptr            <= '0;
         feature_count     <= 0;
-        out_feature_valid <= '0;
+        out_feature_valid <= '1;
         pop_q             <= '0;
 
     end else begin
