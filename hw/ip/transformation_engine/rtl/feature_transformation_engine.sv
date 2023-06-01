@@ -9,6 +9,9 @@ module feature_transformation_engine #(
     input logic                                                                                       core_clk,
     input logic                                                                                       resetn,
 
+    input logic regbank_clk,
+    input logic regbank_resetn,
+
     // Regbank Slave AXI interface
     input  logic [AXI_ADDR_WIDTH-1:0]                                                                 s_axi_awaddr,
     input  logic [2:0]                                                                                s_axi_awprot,
@@ -203,10 +206,12 @@ logic [$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1:0] out_features_required_bytes
 // Regbank
 // --------------------------------------------------------------------------------
 
-feature_transformation_engine_regbank_regs feature_transformation_engine_regbank_i (
+feature_transformation_engine_regbank_wrapper feature_transformation_engine_regbank_i (
     // Clock and Reset
-    .axi_aclk                        (core_clk),
-    .axi_aresetn                     (resetn),
+    .axi_aclk                       (regbank_clk),
+    .axi_aresetn                    (regbank_resetn),
+    .fast_clk                       (core_clk),
+    .fast_resetn                    (resetn),
 
     // AXI Write Address Channel
     .s_axi_awaddr,
@@ -230,20 +235,15 @@ feature_transformation_engine_regbank_regs feature_transformation_engine_regbank
     .s_axi_bready,
 
     // User Ports
-    .layer_config_in_features_strobe,
     .layer_config_in_features_count,
-    .layer_config_out_features_strobe,
     .layer_config_out_features_count,
-    .layer_config_activation_function_strobe,
     .layer_config_activation_function_value,
-    .layer_config_bias_strobe,
     .layer_config_bias_value,
-    .layer_config_leaky_relu_alpha_strobe,
     .layer_config_leaky_relu_alpha_value,
-    .layer_config_out_features_address_msb_strobe,
     .layer_config_out_features_address_msb_value,
-    .layer_config_out_features_address_lsb_strobe,
-    .layer_config_out_features_address_lsb_value
+    .layer_config_out_features_address_lsb_value,
+    .ctrl_buffering_enable_value,
+    .ctrl_writeback_enable_value
 );
 
 // Systolic Modules
