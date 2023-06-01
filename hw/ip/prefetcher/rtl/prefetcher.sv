@@ -6,6 +6,9 @@ module prefetcher #(
     input logic                               core_clk,
     input logic                               resetn,
 
+    input logic regbank_clk,
+    input logic regbank_resetn,
+
     // NSB -> Prefetcher Interface
     input  logic                              nsb_prefetcher_req_valid,
     output logic                              nsb_prefetcher_req_ready,
@@ -260,10 +263,12 @@ logic [3:0]                                        weight_bank_axi_rm_fetch_resp
 // Instances
 // ==================================================================================================================================================
 
-prefetcher_regbank_regs prefetcher_regbank_i (
+prefetcher_regbank_wrapper prefetcher_regbank_i (
     // Clock and Reset
-    .axi_aclk                       (core_clk),
-    .axi_aresetn                    (resetn),
+    .axi_aclk                       (regbank_clk),
+    .axi_aresetn                    (regbank_resetn),
+    .fast_clk                       (core_clk),
+    .fast_resetn                    (resetn),
 
     // AXI Write Address Channel
     .s_axi_awaddr                   (s_axi_awaddr),
@@ -287,25 +292,15 @@ prefetcher_regbank_regs prefetcher_regbank_i (
     .s_axi_bready                   (s_axi_bready),
 
     // User Ports
-    .layer_config_in_features_strobe,
     .layer_config_in_features_count,
-    .layer_config_out_features_strobe,
     .layer_config_out_features_count,
-    .layer_config_adjacency_list_address_lsb_strobe,
     .layer_config_adjacency_list_address_lsb_value,
-    .layer_config_adjacency_list_address_msb_strobe,
     .layer_config_adjacency_list_address_msb_value,
-    .layer_config_weights_address_lsb_strobe,
     .layer_config_weights_address_lsb_value,
-    .layer_config_weights_address_msb_strobe,
     .layer_config_weights_address_msb_value,
-    .layer_config_in_messages_address_lsb_strobe,
     .layer_config_in_messages_address_lsb_value,
-    .layer_config_in_messages_address_msb_strobe,
     .layer_config_in_messages_address_msb_value,
-    .layer_config_scale_factors_address_lsb_strobe,
     .layer_config_scale_factors_address_lsb_value,
-    .layer_config_scale_factors_address_msb_strobe,
     .layer_config_scale_factors_address_msb_value
 );
 
