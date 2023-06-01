@@ -22,7 +22,8 @@ class GraphTest extends Test;
         integer chosen_nodeslot;
         xil_axi_data_beat fetch_weights_done_resp[];
 
-        wait(this.nsb_intf.regbank_resetn == '1);
+        // System reset drops after regbank reset
+        wait(this.nsb_intf.resetn == '1);
 
         // Load layer configuration
         layer_root = json::Load("layer_config.json");
