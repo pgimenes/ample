@@ -8,13 +8,18 @@ def dump_regs (data, line_start="",
                 declaration=False, port=False, declare_postfix="",
                 assign_lhs_postfix="", assign_rhs_postfix="", assignment=False, 
                 instance_lhs_postfix="", instance_rhs_postfix="", instance=False,
-                line_end="", final_char=""):
+                line_end="", final_char="",
+                filter_out=[], only_allow=["READ_WRITE", "READ_ONLY", "WRITE_ONLY", "INTERRUPT"], debug=False):
     
+
     out_str = ""
     for reg_idx, register in enumerate(data["registerMap"]["registers"]):        
         name = register["name"]
         is_register_array = (register["type"] == "RegisterArray")
         array_length = register.get("arrayLength", 1)
+
+        if (register["access"] in filter_out) or (register["access"] not in only_allow):
+            continue
 
         for field_idx, field in enumerate(register["fields"]):
             field_name = field["name"]
@@ -27,21 +32,16 @@ def dump_regs (data, line_start="",
                 declaration_prefix = "input  logic" if register["access"] == "READ_ONLY" else "output logic"
                 declaration_prefix = "logic" if not port else declaration_prefix
                 out_str += (f"{line_start}{declaration_prefix} {size_suffix} {name.lower()}_{field_name.lower()}{declare_postfix}")
-            elif assignment and register["access"] != "READ_ONLY":
+            elif assignment:
                 out_str += f"{line_start} {name.lower()}_{field_name.lower()}{assign_lhs_postfix} <= {name.lower()}_{field_name.lower()}{assign_rhs_postfix}"
             
-            elif instance and register["access"] != "READ_ONLY":
+            elif instance and register["access"]:
                 out_str += f".{name.lower()}_{field_name.lower()}{instance_lhs_postfix} ({name.lower()}_{field_name.lower()}{instance_rhs_postfix})"
-            elif instance and register["access"] == "READ_ONLY":
-                out_str += f".{name.lower()}_{field_name.lower()}{instance_lhs_postfix} ({name.lower()}_{field_name.lower()}{instance_lhs_postfix})"
+
             else:
-                # Resetting
-                if (register["access"] == "READ_ONLY"):
-                    continue
                 out_str += (f"{line_start} {name.lower()}_{field_name.lower()}")
 
-            
-            # Either comma or semicolon
+            # Add either comma or semicolon
             if reg_idx == len(data["registerMap"]["registers"]) - 1 and field_idx == len(register["fields"]) - 1:
                 out_str += final_char
             else:
@@ -145,19 +145,43 @@ module {regbank_name}_wrapper #(
 // Synchronization Logic
 // ====================================================================================================================
 
-always_ff @(posedge fast_clk) begin
+// FAST to SLOW
+// --------------------------------------------------------------------
 
-    if (!fast_resetn) begin
+always_ff @(posedge axi_aclk or negedge axi_aresetn) begin
 
-{dump_regs(data, line_start="       ", line_end="_q <= '0;", final_char="_q <= '0;")}
+    if (!axi_aresetn) begin
 
-{dump_regs(data, line_start="       ", line_end=" <= '0;", final_char=" <= '0;")}
+{dump_regs(data, line_start="       ", line_end="_q <= '0;", final_char="_q <= '0;", only_allow=["READ_ONLY"])}
+
+{dump_regs(data, line_start="       ", line_end="_slow <= '0;", final_char=" <= '0;", only_allow=["READ_ONLY"])}
 
     end else begin
 
-{dump_regs(data, assignment=True, line_start="       ", assign_lhs_postfix="_q", assign_rhs_postfix="_slow", line_end=";", final_char=";")}
+{dump_regs(data, assignment=True, line_start="       ", assign_lhs_postfix="_q", assign_rhs_postfix="", line_end=";", final_char=";", only_allow=["READ_ONLY"])}
 
-{dump_regs(data, assignment=True, line_start="       ", assign_lhs_postfix="", assign_rhs_postfix="_q", line_end=";", final_char=";")}
+{dump_regs(data, assignment=True, line_start="       ", assign_lhs_postfix="_slow", assign_rhs_postfix="_q", line_end=";", final_char=";", only_allow=["READ_ONLY"])}
+
+    end
+
+end
+
+// SLOW to FAST
+// --------------------------------------------------------------------
+
+always_ff @(posedge fast_clk or negedge fast_resetn) begin
+
+    if (!fast_resetn) begin
+
+{dump_regs(data, line_start="       ", line_end="_q <= '0;", final_char="_q <= '0;", filter_out=["READ_ONLY"])}
+
+{dump_regs(data, line_start="       ", line_end=" <= '0;", final_char=" <= '0;", filter_out=["READ_ONLY"])}
+
+    end else begin
+
+{dump_regs(data, assignment=True, line_start="       ", assign_lhs_postfix="_q", assign_rhs_postfix="_slow", line_end=";", final_char=";", filter_out=["READ_ONLY"])}
+
+{dump_regs(data, assignment=True, line_start="       ", assign_lhs_postfix="", assign_rhs_postfix="_q", line_end=";", final_char=";", filter_out=["READ_ONLY"])}
 
     end
 
