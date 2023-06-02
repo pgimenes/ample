@@ -7,8 +7,9 @@ from torch_geometric.utils import to_networkx
 
 import random
 
+import logging
 class TrainedGraph:
-    def __init__(self, dataset, embeddings=[], weights=[], graph_precision="FLOAT_32"):
+    def __init__(self, dataset, feature_count=64, embeddings=[], graph_precision="FLOAT_32"):
         self.dataset = dataset
         self.nx_graph = to_networkx(self.dataset)
         self.graph_precision = graph_precision
@@ -24,7 +25,7 @@ class TrainedGraph:
         # Local copy of embeddings stored in node objects
         self.embeddings = embeddings
         # Feature count initialization may change when embeddings are trained
-        self.feature_count = len(dataset.x[0])
+        self.feature_count = feature_count
 
         # TO DO: read activation from model object
         self.transformation_activation = 1 # relu
@@ -33,9 +34,6 @@ class TrainedGraph:
 
         # TO DO: read dequantization parameter from QAT
         self.dequantization_parameter = 1
-
-        # Trained weights
-        self.weights = weights
 
     def visualize(self):
         pos = nx.spring_layout(self.nx_graph)
@@ -61,33 +59,29 @@ class TrainedGraph:
                     else:
                         self.nx_graph.nodes[node]['precision'] = self.graph_precision
                          
-    def random_embeddings(self, feature_size=64):
-        self.feature_count = feature_size
+    def random_embeddings(self):
+        logging.debug(f"Generating random graph embeddings.")
 
-        self.embeddings = np.zeros((len(self.nx_graph.nodes), feature_size))
+        self.embeddings = np.zeros((len(self.nx_graph.nodes), self.feature_count))
         for node in self.nx_graph.nodes:
 
             # Define range according to precision
             if (self.nx_graph.nodes[node]['precision'] == "FLOAT_32"):
-                embd = [random.uniform(-2, 2) for _ in range(feature_size)]
+                embd = [random.uniform(-2, 2) for _ in range(self.feature_count)]
             elif (self.nx_graph.nodes[node]['precision'] == "FIXED_16"):
-                embd = [random.randint(-8, 7) for _ in range(feature_size)]
-                print(embd)
+                embd = [random.randint(-8, 7) for _ in range(self.feature_count)]
             elif (self.nx_graph.nodes[node]['precision'] == "FIXED_8"):
-                embd = [random.randint(-8, 7) for _ in range(feature_size)]
+                embd = [random.randint(-8, 7) for _ in range(self.feature_count)]
             elif (self.nx_graph.nodes[node]['precision'] == "FIXED_4"):
-                embd = [random.randint(-8, 7) for _ in range(feature_size)]
+                embd = [random.randint(-8, 7) for _ in range(self.feature_count)]
             else:
                 print(f"Unrecognized precision, defaulting to float.")
-                embd = [random.uniform(-2, 2) for _ in range(feature_size)]
+                embd = [random.uniform(-2, 2) for _ in range(self.feature_count)]
 
             self.nx_graph.nodes[node]['embedding'] = embd
-            self.embeddings[node] = self.nx_graph.nodes[node]['embedding']
-
+        
+        # Update dataset object
         self.dataset.x = torch.tensor(self.embeddings, dtype=torch.float)
-        return self.embeddings
 
-    def random_weights(self):
-        self.weights = np.zeros((self.feature_count, self.feature_count))
-        for outf in range(self.feature_count):
-            self.weights[outf] = [random.uniform(-2, 2) for _ in range(self.feature_count)]
+    def __str__(self) -> str:
+        return "TrainedGraph"
