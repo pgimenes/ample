@@ -32,6 +32,7 @@ parameter AWIDTH = $clog2(DEPTH);
 
 logic [AWIDTH-1:0] wr_ptr;
 logic [AWIDTH-1:0] rd_ptr;
+logic [AWIDTH-1:0] read_address;
 
 logic pop1, pop2;
 
@@ -56,7 +57,7 @@ ultraram #(
     .dina               (in_data),
     
     .regceb             ('1), // TO DO: change for power savings
-    .addrb              (rd_ptr),
+    .addrb              (read_address),
     .doutb              (out_data)
 );
 
@@ -76,13 +77,16 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end else begin
         if (push) begin
             wr_ptr <= wr_ptr + 1'b1;
-            count <= count + 1'b1;
         end
         
         if (pop) begin
             rd_ptr <= rd_ptr + 1'b1;
-            count <= count - 1'b1;
         end
+
+        count <= push && pop ? count
+                : push ? count + 1'b1
+                : pop ? count - 1'b1
+                : count;
 
         // Latch out_valid to 0 when pop or to 1, 3 cycles later
         // This accounts for RAM delay
@@ -96,6 +100,12 @@ always_ff @(posedge core_clk or negedge resetn) begin
         if (rd_ptr == {AWIDTH{1'b1}} && pop) rd_wrap <= !rd_wrap;
     end
 end
+
+// Pre-increment read address to account for read latency
+assign read_address =
+                    pop && (rd_ptr == DEPTH - 1) ? '0 // account for wraparound
+                    : pop ? rd_ptr + 1'b1
+                    : rd_ptr;
 
 assign empty = (wr_ptr == rd_ptr) && !(wr_wrap ^ rd_wrap);
 assign full = (wr_ptr == rd_ptr) && (wr_wrap ^ rd_wrap);

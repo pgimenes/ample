@@ -78,16 +78,16 @@ logic ctrl_fetch_layer_weights_done_strobe;                             // strob
 logic [0:0] ctrl_fetch_layer_weights_done_done;                         // value of field 'CTRL_FETCH_LAYER_WEIGHTS_DONE.DONE'
 logic ctrl_fetch_layer_weights_done_ack_strobe;                         // strobe signal for register 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK' (pulsed when the register is written from the bus)
 logic [0:0] ctrl_fetch_layer_weights_done_ack_ack;                      // value of field 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK.ACK'
+logic [1:0] ctrl_fetch_layer_weights_precision_value;
 
 // Layer Config
+logic layer_config_valid_strobe;
+logic [0:0] layer_config_valid_value;
+
 logic layer_config_in_features_strobe;
 logic [9:0] layer_config_in_features_count;
 logic layer_config_out_features_strobe;
 logic [9:0] layer_config_out_features_count;
-logic layer_config_weights_precision_strobe;
-logic [2:0] layer_config_weights_precision_precision;
-logic layer_config_activations_precision_strobe;
-logic [2:0] layer_config_activations_precision_precision;
 
 logic layer_config_adjacency_list_address_lsb_strobe;
 logic [31:0] layer_config_adjacency_list_address_lsb_lsb;
@@ -179,6 +179,8 @@ logic [$clog2(NODESLOT_COUNT)-1:0] prefetcher_arbiter_grant_bin;
 logic [NODESLOT_COUNT-1:0]         age_arbiter_grant_oh;
 logic [$clog2(NODESLOT_COUNT)-1:0] age_arbiter_grant_bin;
 
+logic weights_fetched;
+
 // ==================================================================================================================================================
 // Instances
 // ==================================================================================================================================================
@@ -218,8 +220,6 @@ node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
     // User Ports
     .layer_config_in_features_count,
     .layer_config_out_features_count,
-    .layer_config_weights_precision_precision,
-    .layer_config_activations_precision_precision,
 
     .layer_config_adjacency_list_address_lsb_lsb,
     .layer_config_adjacency_list_address_msb_msb,
@@ -233,6 +233,7 @@ node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
     .ctrl_fetch_layer_weights_fetch,
     .ctrl_fetch_layer_weights_done_done,
     .ctrl_fetch_layer_weights_done_ack_ack,
+    .ctrl_fetch_layer_weights_precision_value,
     .nsb_nodeslot_neighbour_count_count,
     .nsb_nodeslot_node_id_id,
     .nsb_nodeslot_node_state_state,
@@ -405,6 +406,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         waiting_weights_fetch_req <= '0;
         ctrl_fetch_layer_weights_done_done <= '0;
+        weights_fetched <= '0;
     
     end else if (ctrl_fetch_layer_weights_fetch) begin
         waiting_weights_fetch_req <= '1;
@@ -417,6 +419,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end else if (nsb_prefetcher_resp_valid && nsb_prefetcher_resp.response_type == top_pkg::WEIGHTS) begin
         waiting_weights_fetch_req <= '0;
         ctrl_fetch_layer_weights_done_done <= '1;
+        weights_fetched <= '1;
         
     end else if (ctrl_fetch_layer_weights_done_ack_ack) begin
         waiting_weights_fetch_req <= '0;
@@ -524,7 +527,7 @@ assign nsb_age_req.fetch_tag            = nsb_nodeslot_allocated_fetch_tag_fetch
 // Transformation requests
 // ------------------------------------------------------------
 
-assign nsb_fte_req_valid                = (aggregation_buffer_population_count == nsb_config_aggregation_wait_count_count);
+assign nsb_fte_req_valid                = (aggregation_buffer_population_count == nsb_config_aggregation_wait_count_count) && weights_fetched && layer_config_valid_value;
 assign nsb_fte_req.nodeslots            = nodeslots_waiting_transformation;
 
 // Writeback requests

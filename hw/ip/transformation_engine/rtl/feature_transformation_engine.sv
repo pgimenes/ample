@@ -37,6 +37,7 @@ module feature_transformation_engine #(
     input  logic                                                                                      nsb_fte_req_valid,
     output logic                                                                                      nsb_fte_req_ready,
     input  NSB_FTE_REQ_t                                                                              nsb_fte_req,
+
     output logic                                                                                      nsb_fte_resp_valid, // valid only for now
     output NSB_FTE_RESP_t                                                                             nsb_fte_resp,
 
@@ -51,6 +52,7 @@ module feature_transformation_engine #(
     output logic                                                                                      weight_channel_req_valid,
     input  logic                                                                                      weight_channel_req_ready,
     output WEIGHT_CHANNEL_REQ_t                                                                       weight_channel_req,
+
     input  logic                                                                                      weight_channel_resp_valid,
     output logic                                                                                      weight_channel_resp_ready,
     input  WEIGHT_CHANNEL_RESP_t                                                                      weight_channel_resp,
@@ -161,22 +163,23 @@ logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslots_to_writeback;
 // -------------------------------------------------------------------------------------
 
 // Driven from aggregation buffer
-logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0]                 sys_module_forward_valid; // 16
-logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0] [31:0]          sys_module_forward;
+logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0]                                  sys_module_forward_valid; // 16
+logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0] [31:0]                           sys_module_forward;
 
 // Driven from weight channel
-logic [MAX_FEATURE_COUNT-1:0]        sys_module_down_in_valid;
-logic [MAX_FEATURE_COUNT-1:0] [31:0] sys_module_down_in;
+logic [MAX_FEATURE_COUNT-1:0]                                                   sys_module_down_in_valid;
+logic [MAX_FEATURE_COUNT-1:0] [31:0]                                            sys_module_down_in;
 
-logic [MAX_FEATURE_COUNT-1:0]        sys_module_down_out_valid;
-logic [MAX_FEATURE_COUNT-1:0] [31:0] sys_module_down_out;
+logic [MAX_FEATURE_COUNT-1:0]                                                   sys_module_down_out_valid;
+logic [MAX_FEATURE_COUNT-1:0] [31:0]                                            sys_module_down_out;
 
-logic [SYSTOLIC_MODULE_COUNT-1:0] sys_module_flush_done;
+logic [SYSTOLIC_MODULE_COUNT-1:0]                                               sys_module_flush_done;
 
 logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0] sys_module_pe_acc;
-logic [SYSTOLIC_MODULE_COUNT-1:0] shift_sys_module;
-logic                             bias_valid;
-logic                             activation_valid;
+
+logic [SYSTOLIC_MODULE_COUNT-1:0]                                               shift_sys_module;
+logic                                                                           bias_valid;
+logic                                                                           activation_valid;
 
 
 // Driving systolic modules
@@ -356,11 +359,11 @@ always_comb begin
         end
 
         FTE_FSM_MULT_SLOW: begin
-            fte_state_n = last_weight_resp_received && sys_module_flush_done[SYSTOLIC_MODULE_COUNT-1] ? FTE_FSM_MULT_FAST : FTE_FSM_MULT_SLOW;
+            fte_state_n = last_weight_resp_received ? FTE_FSM_MULT_FAST : FTE_FSM_MULT_SLOW;
         end
 
         FTE_FSM_MULT_FAST: begin
-            fte_state_n = FTE_FSM_BIAS;
+            fte_state_n = FTE_FSM_MULT_FAST;
         end
 
         FTE_FSM_BIAS: begin
@@ -437,7 +440,7 @@ always_comb begin
     begin_feature_dump = (fte_state == FTE_FSM_REQ_WC) && (fte_state_n == FTE_FSM_MULT_SLOW);
 
     // Pulse module when features ready in aggregation buffer and weights ready in weight channel
-    pulse_systolic_module = (fte_state_n == FTE_FSM_MULT_SLOW) && &aggregation_buffer_out_feature_valid && weight_channel_resp_valid;
+    pulse_systolic_module = ((fte_state_n == FTE_FSM_MULT_SLOW) && &aggregation_buffer_out_feature_valid && weight_channel_resp_valid) || fte_state == FTE_FSM_MULT_FAST;
 
     // Drive systolic module from aggregation buffer (on the left)
     sys_module_forward_valid [0] = slot_pop_shift & busy_aggregation_slots_snapshot;
@@ -467,9 +470,7 @@ always_comb begin
     // Bias and activation after multiplication finished
     bias_valid       = (fte_state == FTE_FSM_BIAS);
     activation_valid = (fte_state == FTE_FSM_ACTIVATION);
-    
-    // Shift systolic module upwards when done flushing top row
-    shift_sys_module = (fte_state == FTE_FSM_SHIFT) ? '1 : '0;
+    shift_sys_module = (fte_state == FTE_FSM_SHIFT);
 end
 
 // Buffering Logic

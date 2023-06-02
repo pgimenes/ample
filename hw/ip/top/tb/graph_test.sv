@@ -37,6 +37,7 @@ class GraphTest extends Test;
         nodeslots = nodeslot_root.getByKey("nodeslots");
 
         program_layer_config(layer);
+        this.write_nsb_regbank("Layer Config Valid", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_VALID_OFFSET, '1);
 
         // Fetch layer weights
         this.write_nsb_regbank("Fetch Weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_OFFSET, '1);
