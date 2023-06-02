@@ -44,6 +44,12 @@ class MatrixDataset(InMemoryDataset):
         return data, slices
 
 class MatrixGraph(TrainedGraph):
-    def __init__(self, embeddings=None, weights=None, dim=4):
+    def __init__(self, feature_count=4, graph_precision="FLOAT_32"):
         dataset = MatrixDataset()[0]
-        super().__init__(dataset=dataset, embeddings=embeddings, weights=weights)
+        super().__init__(dataset=dataset, feature_count=feature_count, graph_precision=graph_precision)
+
+    def train_embeddings(self):
+        self.random_embeddings()
+
+    def __str__(self) -> str:
+        return "MatrixGraph"

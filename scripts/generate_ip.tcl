@@ -15,13 +15,19 @@ if {[file exists $project_name.xpr]} {
 }
 
 # Update IP files
+add_files $env(FYP_DIR)/hw/ip/aggregation_engine/include
 add_files $env(FYP_DIR)/hw/ip/aggregation_engine/rtl
 add_files $env(FYP_DIR)/hw/ip/include
 add_files $env(FYP_DIR)/hw/ip/lib
+add_files $env(FYP_DIR)/hw/ip/node_scoreboard/include
 add_files $env(FYP_DIR)/hw/ip/node_scoreboard/rtl
+add_files $env(FYP_DIR)/hw/ip/prefetcher/include
 add_files $env(FYP_DIR)/hw/ip/prefetcher/rtl
 add_files $env(FYP_DIR)/hw/ip/top/rtl
 add_files $env(FYP_DIR)/hw/ip/transformation_engine/rtl
+add_files $env(FYP_DIR)/imports/nocrouter/src/if
+add_files $env(FYP_DIR)/imports/nocrouter/src/rtl
+
 set_property top top [current_fileset]
 
 # Import Xilinx IP

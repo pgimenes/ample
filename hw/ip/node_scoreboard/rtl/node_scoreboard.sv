@@ -189,8 +189,8 @@ logic weights_fetched;
 // ------------------------------------------------------------
 node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
     // Clock and Reset (SLOW)
-.axi_aclk                       (regbank_clk),
-.axi_aresetn                    (regbank_resetn),
+    .axi_aclk                       (regbank_clk),
+    .axi_aresetn                    (regbank_resetn),
 
     // Clock and Reset (FAST)
     .fast_clk                       (core_clk),
