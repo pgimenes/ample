@@ -36,11 +36,8 @@ module rr_arbiter #(
               	for (logic[BIT_IDX_WIDTH - 1:0] bit_idx = priority_idx[BIT_IDX_WIDTH - 1:0]; bit_idx != grant_idx[BIT_IDX_WIDTH - 1:0]; bit_idx++)
                 begin 
                     is_granted &= !request[bit_idx];
-                  	// $display("time = %2d, grant_idx = %1d, priority_idx = %1d, bit_idx = %1d, is_granted = %1b, request = %4b, grant_oh = %4b, priority_oh = %4b, priority_oh_nxt = %4b", $time, grant_idx, priority_idx, bit_idx, is_granted, request, grant_oh, priority_oh, priority_oh_nxt);
                 end
 
-              	// $display("time = %2d, grant_idx = %1d, priority_idx = %1d, bit_idx = X, is_granted = %1b, request = %4b, grant_oh = %4b, priority_oh = %4b, priority_oh_nxt = %4b", $time, grant_idx, priority_idx, is_granted, request, grant_oh, priority_oh, priority_oh_nxt);
-              
                 grant_oh[grant_idx] |= is_granted;
             end
         end

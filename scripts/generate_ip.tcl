@@ -20,7 +20,7 @@ add_files $env(FYP_DIR)/hw/ip/transformation_engine/rtl
 add_files $env(FYP_DIR)/imports/nocrouter/src/if
 add_files $env(FYP_DIR)/imports/nocrouter/src/rtl
 
-set_property top top [current_fileset]
+set_property top top_wrapper [current_fileset]
 
 # Import IP
 import_ip -files $env(FYP_DIR)/hw/xilinx/axi_L_register_control_crossbar.xci
