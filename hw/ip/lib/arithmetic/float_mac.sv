@@ -118,7 +118,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         busy <= '0;
 
-    end else if (in_valid && in_ready) begin
+    end else begin
         busy <= 
                 // Accepting new update request
                 in_valid && in_ready ? 1'b1

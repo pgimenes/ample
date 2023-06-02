@@ -50,12 +50,14 @@ class TrainedGraph:
                     self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
                     self.nx_graph.nodes[node]['adjacency_list_address_lsb'] = 0 # to be defined my init manager
                     self.nx_graph.nodes[node]['aggregation_function'] = "SUM"
-                    self.nx_graph.nodes[node]['scale_factors'] = [1] * len(neighbours)
+
+                    # Add a single scale factor to isolated nodes to occupy memory range
+                    self.nx_graph.nodes[node]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
                     
                     if (self.graph_precision == 'mixed'):
                         prec = random.choice(["FLOAT_32", "FIXED_16"])
-                        self.nx_graph.nodes[node]['precision'] = prec
                         # print(f"Initializing node {node} with precision {prec}")
+                        self.nx_graph.nodes[node]['precision'] = prec
                     else:
                         self.nx_graph.nodes[node]['precision'] = self.graph_precision
                          
@@ -69,9 +71,10 @@ class TrainedGraph:
             if (self.nx_graph.nodes[node]['precision'] == "FLOAT_32"):
                 embd = [random.uniform(-2, 2) for _ in range(feature_size)]
             elif (self.nx_graph.nodes[node]['precision'] == "FIXED_16"):
-                embd = [random.randint(-32768, 32767) for _ in range(feature_size)]
+                embd = [random.randint(-8, 7) for _ in range(feature_size)]
+                print(embd)
             elif (self.nx_graph.nodes[node]['precision'] == "FIXED_8"):
-                embd = [random.randint(-128, 127) for _ in range(feature_size)]
+                embd = [random.randint(-8, 7) for _ in range(feature_size)]
             elif (self.nx_graph.nodes[node]['precision'] == "FIXED_4"):
                 embd = [random.randint(-8, 7) for _ in range(feature_size)]
             else:
