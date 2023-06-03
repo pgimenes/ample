@@ -88,7 +88,7 @@ def apply_graph_options(graph, options):
 def run_pass(graph, model, random_embeddings=False):
     logging.info(f"Running graph: {str(graph)} with model: {model}")
 
-    model = model_map[model]['class'](args.in_features, int(args.out_features))
+    model = model_map[model]['class'](args.in_features, args.out_features)
     
     init_manager = InitManager(graph, model, base_path=args.base_path)
     

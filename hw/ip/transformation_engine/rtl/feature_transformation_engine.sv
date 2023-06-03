@@ -197,9 +197,23 @@ logic [top_pkg::TRANSFORMATION_BUFFER_SLOTS-1:0]         transformation_buffer_s
 // Writeback logic
 logic                                                start_memory_dump;
 AXI_WRITE_STATE_e                                    axi_write_state, axi_write_state_n;
-logic [$clog2(SYSTOLIC_MODULE_COUNT)-1:0]            sys_module_counter;
+logic [$clog2(SYSTOLIC_MODULE_COUNT):0]              sys_module_counter;
 logic [MATRIX_N:0] [top_pkg::NODE_ID_WIDTH-1:0]      sys_module_node_id_snapshot;
 logic [$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1:0] out_features_required_bytes;
+
+logic [$clog2(MATRIX_N-1)-1:0] fast_pulse_counter;
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        fast_pulse_counter <= '0;
+
+    end else if (fte_state == FTE_FSM_MULT_SLOW && fte_state_n == FTE_FSM_MULT_FAST) begin
+        fast_pulse_counter <= '0;
+
+    end else if (fte_state == FTE_FSM_MULT_FAST) begin
+        fast_pulse_counter <= fast_pulse_counter + 1'b1;
+    end
+end
 
 
 // ==================================================================================================================================================
@@ -252,6 +266,11 @@ feature_transformation_engine_regbank_wrapper feature_transformation_engine_regb
 // Systolic Modules
 // --------------------------------------------------------------------------------
 
+logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] [31:0] debug_update_counter;
+logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] [31:0] debug_update_counter_inv;
+
+assign debug_update_counter_inv = ~debug_update_counter;
+
 for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) begin
     // Driving from weight channel
     always_comb begin
@@ -292,7 +311,9 @@ for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) be
 
         .diagonal_flush_done                 (sys_module_flush_done    [sys_module]),
 
-        .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value)
+        .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value),
+
+        .debug_update_counter                (debug_update_counter     [sys_module])
     );
 
 end
@@ -363,7 +384,7 @@ always_comb begin
         end
 
         FTE_FSM_MULT_FAST: begin
-            fte_state_n = FTE_FSM_MULT_FAST;
+            fte_state_n = fast_pulse_counter == MATRIX_N - 1 ? FTE_FSM_BIAS : FTE_FSM_MULT_FAST;
         end
 
         FTE_FSM_BIAS: begin
@@ -380,7 +401,7 @@ always_comb begin
 
         FTE_FSM_WRITEBACK: begin
             fte_state_n = (nodeslots_to_writeback == 'd1) && (sys_module_counter == SYSTOLIC_MODULE_COUNT) && transformation_engine_axi_interconnect_axi_bvalid ? FTE_FSM_NSB_RESP 
-                        : (sys_module_counter == SYSTOLIC_MODULE_COUNT) && transformation_engine_axi_interconnect_axi_bvalid ? FTE_FSM_SHIFT
+                        : (sys_module_counter == SYSTOLIC_MODULE_COUNT[$clog2(SYSTOLIC_MODULE_COUNT):0]) && transformation_engine_axi_interconnect_axi_bvalid ? FTE_FSM_SHIFT
                         : FTE_FSM_WRITEBACK;
         end
 
@@ -391,7 +412,7 @@ always_comb begin
         end
 
         FTE_FSM_NSB_RESP: begin
-            fte_state_n = FTE_FSM_NSB_RESP;
+            fte_state_n = FTE_FSM_IDLE;
         end
 
         default: begin
@@ -513,14 +534,14 @@ count_ones #(
 // Writeback Logic
 // -------------------------------------------------------------------------------------
 
-assign start_memory_dump = (fte_state == FTE_FSM_BUFFER) && (fte_state_n == FTE_FSM_WRITEBACK);
+assign start_memory_dump = ((fte_state == FTE_FSM_BUFFER) || (fte_state == FTE_FSM_ACTIVATION) || (fte_state == FTE_FSM_SHIFT)) && (fte_state_n == FTE_FSM_WRITEBACK);
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         sys_module_counter <= '0;
         
     // Starting to flush row from systolic array
-    end else if (fte_state == FTE_FSM_BUFFER && fte_state_n == FTE_FSM_WRITEBACK) begin
+    end else if (start_memory_dump) begin
         sys_module_counter <= '0;
     
     // Finished current systolic module

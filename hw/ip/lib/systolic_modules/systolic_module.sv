@@ -53,7 +53,9 @@ module systolic_module #(
 
     output logic                                                 diagonal_flush_done,
 
-    input logic [31:0]                                           layer_config_leaky_relu_alpha_value
+    input logic [31:0]                                           layer_config_leaky_relu_alpha_value,
+
+    output logic [MATRIX_N-1:0] [MATRIX_N-1:0] [31:0]            debug_update_counter
 );
 
 // ============================================================================================
@@ -61,10 +63,12 @@ module systolic_module #(
 // ============================================================================================
 
 //   <    row    > <    col   > <      data      >
-logic [MATRIX_N-1:0] [MATRIX_N-1:0] [0:0]                      sys_module_pe_forward_valid;
-logic [MATRIX_N-1:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0]          sys_module_pe_forward;
-logic [MATRIX_N-1:0] [MATRIX_N-1:0] [0:0]                      sys_module_pe_down_valid;
-logic [MATRIX_N-1:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0]          sys_module_pe_down;
+logic [MATRIX_N-1:0] [MATRIX_N:0] [0:0]                      sys_module_pe_forward_valid;
+logic [MATRIX_N-1:0] [MATRIX_N:0] [FLOAT_WIDTH-1:0]          sys_module_pe_forward;
+
+//   <    row    > <    col   > <      data      >
+logic [MATRIX_N:0] [MATRIX_N-1:0] [0:0]                      sys_module_pe_down_valid;
+logic [MATRIX_N:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0]          sys_module_pe_down;
 
 logic [MATRIX_N-1:0] forward_flush_done;
 logic [MATRIX_N-1:0] down_flush_done;
@@ -107,7 +111,9 @@ for (genvar row = 0; row < MATRIX_N; row++) begin : rows_gen
 
             .pe_acc                     (sys_module_pe_acc                [row]   [col]   ),
 
-            .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value)
+            .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value),
+
+            .debug_update_counter       (debug_update_counter[row][col])
         );
 
     end : cols_gen
@@ -127,8 +133,8 @@ for (genvar row=0; row < MATRIX_N; row++) begin
         sys_module_pe_forward_valid   [row][0] = sys_module_forward_in_valid[row];
 
         // Drive forward outputs
-        sys_module_forward_out_valid [row] = sys_module_pe_forward_valid [row] [MATRIX_N-1];
-        sys_module_forward_out [row] = sys_module_pe_forward [row] [MATRIX_N-1];
+        sys_module_forward_out_valid [row] = sys_module_pe_forward_valid [row] [MATRIX_N];
+        sys_module_forward_out [row] = sys_module_pe_forward [row] [MATRIX_N];
     end
 end
 
@@ -142,8 +148,8 @@ for (genvar col=0; col < MATRIX_N; col++) begin
         sys_module_pe_down_valid      [0][col] = sys_module_down_in_valid[col];
 
         // Drive down outputs
-        sys_module_down_out_valid [col] = sys_module_pe_down_valid [MATRIX_N-1] [col];
-        sys_module_down_out       [col] = sys_module_pe_down [MATRIX_N-1] [col];
+        sys_module_down_out_valid [col] = sys_module_pe_down_valid [MATRIX_N] [col];
+        sys_module_down_out       [col] = sys_module_pe_down [MATRIX_N] [col];
     end
 end
 

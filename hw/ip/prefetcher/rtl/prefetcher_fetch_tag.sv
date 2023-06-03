@@ -369,7 +369,7 @@ always_comb begin
     fetch_tag_msg_rm_req_valid      = scale_factor_read_master_req_valid || ((message_fetch_state == MSG_FETCH) && !adj_queue_empty && adj_queue_head_valid && !message_queue_full);
     
     fetch_tag_msg_rm_start_address  = scale_factor_read_master_req_valid ? scale_factor_read_master_start_address
-                                    : {2'd0, layer_config_in_messages_address_lsb_value} + 64*adj_queue_head;
+                                    : {2'd0, layer_config_in_messages_address_lsb_value} + adj_queue_head;
     
     fetch_tag_msg_rm_byte_count     = scale_factor_read_master_req_valid ? scale_factor_read_master_byte_count
                                     : allocated_feature_count * top_pkg::bits_per_precision(msg_fetch_req_precision_q) / 8;

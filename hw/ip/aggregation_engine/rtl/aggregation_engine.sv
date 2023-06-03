@@ -513,7 +513,8 @@ end
 
 aggregation_core_allocator #(
     .NUM_CORES            (age_pkg::AGC_COUNT_FLOAT32),
-    .PRECISION_COL_OFFSET (AGC_FLOAT32_COL_OFFSET)
+    .PRECISION_COL_OFFSET (AGC_FLOAT32_COL_OFFSET),
+    .NUM_COLS             (age_pkg::AGC_FLOAT32_COLS)
 
 ) agc_float32_allocator (
     .core_clk               (core_clk),
@@ -539,7 +540,8 @@ aggregation_core_allocator #(
 
 aggregation_core_allocator #(
     .NUM_CORES            (age_pkg::AGC_COUNT_FIXED16),
-    .PRECISION_COL_OFFSET (AGC_FIXED16_COL_OFFSET)
+    .PRECISION_COL_OFFSET (AGC_FIXED16_COL_OFFSET),
+    .NUM_COLS             (age_pkg::AGC_FLOAT32_COLS)
 
 ) agc_fixed16_allocator (
     .core_clk               (core_clk),
