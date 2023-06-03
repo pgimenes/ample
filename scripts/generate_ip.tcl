@@ -28,7 +28,7 @@ add_files $env(FYP_DIR)/hw/ip/transformation_engine/rtl
 add_files $env(FYP_DIR)/imports/nocrouter/src/if
 add_files $env(FYP_DIR)/imports/nocrouter/src/rtl
 
-set_property top top [current_fileset]
+set_property top top_wrapper [current_fileset]
 
 # Import Xilinx IP
 import_ip -files $env(FYP_DIR)/hw/xilinx/axi_L_register_control_crossbar.xci
@@ -46,6 +46,9 @@ import_ip -files $env(FYP_DIR)/hw/xilinx/scale_factor_queue.xci
 import_ip -files $env(FYP_DIR)/hw/xilinx/ddr4_0.xcix
 
 generate_target all [get_ips]
+
+# Add constraint files
+add_files $env(FYP_DIR)/hw/constraints/constraints.xdc
 
 # Generate simulation files
 export_simulation -of_objects [get_files $env(FYP_DIR)/hw/build/build_project.srcs/sources_1/ip/axi_L_register_control_crossbar/axi_L_register_control_crossbar.xci] -directory $env(FYP_DIR)/hw/build/build_project.ip_user_files/sim_scripts -ip_user_files_dir $env(FYP_DIR)/hw/build/build_project.ip_user_files -ipstatic_source_dir $env(FYP_DIR)/hw/build/build_project.ip_user_files/ipstatic -lib_map_path [list {modelsim=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/modelsim} {questa=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/questa} {ies=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/ies} {xcelium=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/xcelium} {vcs=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/vcs} {riviera=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet

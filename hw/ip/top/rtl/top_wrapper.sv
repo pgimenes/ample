@@ -4,6 +4,9 @@ module top_wrapper (
     input  logic                                sys_clk,
     input  logic                                sys_rst,
 
+    input  logic                                regbank_clk,
+    input  logic                                regbank_resetn,
+
     // DDR4
     input  logic                                c0_sys_clk_p,
     input  logic                                c0_sys_clk_n,
@@ -107,6 +110,9 @@ top top_i
 (
     .sys_clk                              (sys_clk),
     .sys_rst                              (sys_rst),
+
+    .regbank_clk                          (regbank_clk),
+    .regbank_resetn                       (regbank_resetn),
     
     // AXI-L Register Programming Interface
     .host_axil_awaddr                     (host_axil_awaddr),

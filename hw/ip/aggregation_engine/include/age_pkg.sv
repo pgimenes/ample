@@ -4,13 +4,13 @@ import noc_params::*;
 package age_pkg;
 
 // Float 32 Aggregation Cores
-parameter AGC_FLOAT32_ROWS = 4;
+parameter AGC_FLOAT32_ROWS = 8;
 parameter AGC_FLOAT32_COLS = top_pkg::MAX_NODESLOT_COUNT/4;
 parameter AGC_FLOAT32_COL_OFFSET = 0;
 parameter AGC_COUNT_FLOAT32 = AGC_FLOAT32_ROWS * AGC_FLOAT32_COLS;
 
 // Fixed 16 Aggregation Cores
-parameter AGC_FIXED16_ROWS = 4;
+parameter AGC_FIXED16_ROWS = 8;
 parameter AGC_FIXED16_COLS = top_pkg::MAX_NODESLOT_COUNT/4;
 parameter AGC_FIXED16_COL_OFFSET = AGC_FLOAT32_COLS;
 parameter AGC_COUNT_FIXED16 = AGC_FIXED16_ROWS * AGC_FIXED16_COLS;
@@ -18,7 +18,7 @@ parameter AGC_COUNT_FIXED16 = AGC_FIXED16_ROWS * AGC_FIXED16_COLS;
 parameter AGC_UNUSED_COLS_OFFSET = AGC_FIXED16_COL_OFFSET + AGC_FIXED16_COLS;
 
 // Total Aggregation Cores
-parameter AGC_ROWS = 4;
+parameter AGC_ROWS = 8;
 parameter AGC_COLS = top_pkg::MAX_NODESLOT_COUNT;
 parameter TOTAL_AGGREGATION_CORES = AGC_ROWS * AGC_COLS;
 
@@ -28,7 +28,7 @@ parameter AGM_COLS = top_pkg::MAX_NODESLOT_COUNT;
 parameter TOTAL_AGGREGATION_MANAGERS = AGM_ROWS * AGM_COLS;
 
 // Buffer Managers
-parameter BM_ROWS = 4;
+parameter BM_ROWS = 8;
 parameter BM_COLS = 1;
 parameter TOTAL_BUFFER_MANAGERS = BM_ROWS * BM_COLS;
 
