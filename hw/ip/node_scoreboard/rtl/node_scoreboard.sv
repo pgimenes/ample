@@ -143,6 +143,10 @@ logic [5:0] nsb_config_transformation_wait_count_count;// value of field 'NSB_CO
 logic [63:0] nsb_nodeslot_allocated_fetch_tag_strobe;
 logic [63:0] [5:0] nsb_nodeslot_allocated_fetch_tag_fetch_tag;
 
+// STATUS
+logic [31:0] status_nodeslots_empty_mask_msb_value;
+logic [31:0] status_nodeslots_empty_mask_lsb_value;
+
 // Other
 // ------------------------------------------------------------
 
@@ -248,6 +252,8 @@ node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
     .nsb_nodeslot_scale_factors_address_msb_value,
     .nsb_config_aggregation_wait_count_count,
     .nsb_config_transformation_wait_count_count,
+    .status_nodeslots_empty_mask_lsb_value,
+    .status_nodeslots_empty_mask_msb_value,
     .*
 );
 
@@ -349,18 +355,18 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
                                     : node_scoreboard_pkg::AGGR;
             end
 
+            // node_scoreboard_pkg::TRANS: begin
+            //     nodeslot_state_n[nodeslot] = transformation_done[nodeslot] && accepting_writeback_request ? node_scoreboard_pkg::WRITEBACK
+            //                         : node_scoreboard_pkg::TRANS;
+            // end
+
             node_scoreboard_pkg::TRANS: begin
-                nodeslot_state_n[nodeslot] = transformation_done[nodeslot] && accepting_writeback_request ? node_scoreboard_pkg::WRITEBACK
+                nodeslot_state_n[nodeslot] = nsb_fte_resp_valid ? node_scoreboard_pkg::EMPTY
                                     : node_scoreboard_pkg::TRANS;
             end
 
             node_scoreboard_pkg::PASS: begin // TO DO: implement (MS4)
                 nodeslot_state_n[nodeslot] = node_scoreboard_pkg::EMPTY;
-            end
-
-            node_scoreboard_pkg::WRITEBACK: begin
-                nodeslot_state_n[nodeslot] = nsb_output_buffer_resp_valid && (nsb_output_buffer_resp.nodeslot == nodeslot) ? node_scoreboard_pkg::EMPTY
-                                    : node_scoreboard_pkg::WRITEBACK;
             end
 
             node_scoreboard_pkg::HALT: begin // TO DO: implement (MS5)
@@ -371,14 +377,15 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
     end
 
     // State masks for request logic
-    assign nodeslots_waiting_nb_list_fetch      [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::PROG_DONE);
-    assign nodeslots_waiting_scale_factor_fetch [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NB_LIST) && fetch_nb_list_resp_received[nodeslot];
-    assign nodeslots_waiting_neighbour_fetch    [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_SCALE_FACTORS) && fetch_scale_factors_resp_received[nodeslot];
-    assign nodeslots_waiting_prefetcher         [nodeslot] = nodeslots_waiting_nb_list_fetch[nodeslot] || nodeslots_waiting_neighbour_fetch[nodeslot] || nodeslots_waiting_scale_factor_fetch[nodeslot];
+    assign nodeslots_waiting_nb_list_fetch       [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::PROG_DONE);
+    assign nodeslots_waiting_scale_factor_fetch  [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NB_LIST) && fetch_nb_list_resp_received[nodeslot];
+    assign nodeslots_waiting_neighbour_fetch     [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_SCALE_FACTORS) && fetch_scale_factors_resp_received[nodeslot];
+    assign nodeslots_waiting_prefetcher          [nodeslot] = nodeslots_waiting_nb_list_fetch[nodeslot] || nodeslots_waiting_neighbour_fetch[nodeslot] || nodeslots_waiting_scale_factor_fetch[nodeslot];
 
-    assign nodeslots_waiting_aggregation        [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NEIGHBOURS) && fetch_nbs_resp_received[nodeslot];
-    assign nodeslots_waiting_transformation     [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::AGGR) && aggregation_done[nodeslot];
-    assign nodeslots_waiting_writeback          [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::TRANS) && transformation_done[nodeslot];
+    assign nodeslots_waiting_aggregation         [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NEIGHBOURS) && fetch_nbs_resp_received[nodeslot];
+    assign nodeslots_waiting_transformation      [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::AGGR) && aggregation_done[nodeslot];
+    assign nodeslots_waiting_writeback           [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::TRANS) && transformation_done[nodeslot];
+    assign status_nodeslots_empty_mask_lsb_value [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
 
     // Read-only status flags
     always_ff @(posedge core_clk or negedge resetn) begin
@@ -394,6 +401,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
                 nsb_nodeslot_allocated_fetch_tag_fetch_tag[nodeslot] <= nsb_prefetcher_resp.allocated_fetch_tag;
         end
     end
+
 
 end : per_nodeslot_logic
 

@@ -2,7 +2,8 @@ import age_pkg::*;
 
 module aggregation_core_allocator #(
     parameter NUM_CORES            = age_pkg::TOTAL_AGGREGATION_CORES,
-    parameter PRECISION_COL_OFFSET = age_pkg::AGC_FLOAT32_COL_OFFSET
+    parameter PRECISION_COL_OFFSET = age_pkg::AGC_FLOAT32_COL_OFFSET,
+    parameter NUM_COLS = age_pkg::AGC_FLOAT32_COLS
 ) (
     input  logic                                           core_clk,
     input  logic                                           resetn,
@@ -108,8 +109,8 @@ for (genvar allocation_slot = 0; allocation_slot < age_pkg::MAX_AGC_PER_NODE; al
             age_agm_req.coords_y [allocation_slot] <= '0;
             
         end else if (busy && !done && (agc_counter == allocation_slot)) begin
-            age_agm_req.coords_x [allocation_slot] <= PRECISION_COL_OFFSET[$clog2(MESH_COLS)-1:0] + allocated_core_bin[3:0]; // % 16
-            age_agm_req.coords_y [allocation_slot] <= allocated_core_bin[$clog2(AGC_COUNT_FIXED16)-1:4]; // div 16
+            age_agm_req.coords_x [allocation_slot] <= PRECISION_COL_OFFSET[$clog2(MESH_COLS)-1:0] + (allocated_core_bin % NUM_COLS); // TO DO: replace with AGGREGATION_COLS when merging with generalized aggregation mesh
+            age_agm_req.coords_y [allocation_slot] <= allocated_core_bin / NUM_COLS;
         end
     end
 end

@@ -24,7 +24,7 @@ class Memory_Mapper:
     def map_adj_list(self):
         for node in self.graph.nodes:
             self.graph.nodes[node]['adjacency_list_address'] = len(self.memory_hex)
-            self.memory_hex += self.int_list_to_byte_list(self.graph.nodes[node]['neighbours'], align=True, alignment=64, pad_side="right")
+            self.memory_hex += self.int_list_to_byte_list(self.graph.nodes[node]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
 
         # Set offset for next memory range
         self.offsets['scale_factors'] = len(self.memory_hex)
@@ -88,6 +88,7 @@ class Memory_Mapper:
                 memory_hex = new_elements + ['00'] * zeros
             elif (pad_side == 'left'):
                 memory_hex = ['00'] * zeros + new_elements
+
         return memory_hex
 
     def float_list_to_byte_list(self, in_list, align=False, alignment=None, pad_side='right'):

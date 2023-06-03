@@ -20,12 +20,13 @@ class TrainedGraph:
         for idx, i in enumerate(node_ids):
             self.node_offsets[i] = node_offsets[idx]
 
+        # Feature count initialization may change when embeddings are trained
+        self.feature_count = feature_count
+
         self.init_nx_graph()
 
         # Local copy of embeddings stored in node objects
         self.embeddings = embeddings
-        # Feature count initialization may change when embeddings are trained
-        self.feature_count = feature_count
 
         # TO DO: read activation from model object
         self.transformation_activation = 1 # relu
@@ -46,6 +47,7 @@ class TrainedGraph:
                     self.nx_graph.nodes[node]['neighbours'] = neighbours
                     self.nx_graph.nodes[node]['neighbour_count'] = len(neighbours)
                     self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
+                    self.nx_graph.nodes[node]['neighbour_message_ptrs'] = [4*self.feature_count*nb_ptr for nb_ptr in neighbours]
                     self.nx_graph.nodes[node]['adjacency_list_address_lsb'] = 0 # to be defined my init manager
                     self.nx_graph.nodes[node]['aggregation_function'] = "SUM"
 
