@@ -71,22 +71,6 @@ if (BRAM_TYPE == 0) begin
         .sleep        (1'b0)
     );
     
-end else if (BRAM_TYPE == 1) begin
-    
-    router_fifo_sdp_bram router_fifo_sdp_bram_i (
-        .clka         (core_clk),
-        .ena          (1'b1),
-
-        .wea          (push),
-        .addra        (wr_ptr),
-        .dina         (in_data),
-        
-        .clkb         (core_clk),
-        .enb          (1'b1),
-        .addrb        (read_address),
-        .doutb        (out_data)
-    );
-
 end else begin
     assign out_data = '0;
 end

@@ -9,6 +9,9 @@ module feature_transformation_engine #(
     input logic                                                                                       core_clk,
     input logic                                                                                       resetn,
 
+    input logic regbank_clk,
+    input logic regbank_resetn,
+
     // Regbank Slave AXI interface
     input  logic [AXI_ADDR_WIDTH-1:0]                                                                 s_axi_awaddr,
     input  logic [2:0]                                                                                s_axi_awprot,
@@ -34,6 +37,7 @@ module feature_transformation_engine #(
     input  logic                                                                                      nsb_fte_req_valid,
     output logic                                                                                      nsb_fte_req_ready,
     input  NSB_FTE_REQ_t                                                                              nsb_fte_req,
+
     output logic                                                                                      nsb_fte_resp_valid, // valid only for now
     output NSB_FTE_RESP_t                                                                             nsb_fte_resp,
 
@@ -125,28 +129,28 @@ logic last_weight_resp_received;
 // Register Bank
 // -------------------------------------------------------------------------------------
 
-logic layer_config_in_features_strobe;
-logic [9:0] layer_config_in_features_count;
-logic layer_config_out_features_strobe;
-logic [9:0] layer_config_out_features_count;
-
-logic layer_config_activation_function_strobe;
-logic [1:0] layer_config_activation_function_value;
-
-logic layer_config_bias_strobe;
+logic        layer_config_in_features_strobe;
+logic [9:0]  layer_config_in_features_count;
+logic        layer_config_out_features_strobe;
+logic [9:0]  layer_config_out_features_count;
+                                    
+logic        layer_config_activation_function_strobe;
+logic [1:0]  layer_config_activation_function_value;
+                                    
+logic        layer_config_bias_strobe;
 logic [31:0] layer_config_bias_value;
-
-logic layer_config_leaky_relu_alpha_strobe;
+                                    
+logic        layer_config_leaky_relu_alpha_strobe;
 logic [31:0] layer_config_leaky_relu_alpha_value;
-
-logic layer_config_out_features_address_msb_strobe;
-logic [1:0] layer_config_out_features_address_msb_value;
-logic layer_config_out_features_address_lsb_strobe;
+                                    
+logic        layer_config_out_features_address_msb_strobe;
+logic [1:0]  layer_config_out_features_address_msb_value;
+logic        layer_config_out_features_address_lsb_strobe;
 logic [31:0] layer_config_out_features_address_lsb_value;
 
-logic ctrl_buffering_enable_strobe;
+logic       ctrl_buffering_enable_strobe;
 logic [0:0] ctrl_buffering_enable_value;
-logic ctrl_writeback_enable_strobe;
+logic       ctrl_writeback_enable_strobe;
 logic [0:0] ctrl_writeback_enable_value;
 
 // NSB requests
@@ -158,22 +162,23 @@ logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslots_to_writeback;
 // -------------------------------------------------------------------------------------
 
 // Driven from aggregation buffer
-logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0]                 sys_module_forward_valid; // 16
-logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0] [31:0]          sys_module_forward;
+logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0]                                  sys_module_forward_valid; // 16
+logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0] [31:0]                           sys_module_forward;
 
 // Driven from weight channel
-logic [MAX_FEATURE_COUNT-1:0]        sys_module_down_in_valid;
-logic [MAX_FEATURE_COUNT-1:0] [31:0] sys_module_down_in;
+logic [MAX_FEATURE_COUNT-1:0]                                                   sys_module_down_in_valid;
+logic [MAX_FEATURE_COUNT-1:0] [31:0]                                            sys_module_down_in;
 
-logic [MAX_FEATURE_COUNT-1:0]        sys_module_down_out_valid;
-logic [MAX_FEATURE_COUNT-1:0] [31:0] sys_module_down_out;
+logic [MAX_FEATURE_COUNT-1:0]                                                   sys_module_down_out_valid;
+logic [MAX_FEATURE_COUNT-1:0] [31:0]                                            sys_module_down_out;
 
-logic [SYSTOLIC_MODULE_COUNT-1:0] sys_module_flush_done;
+logic [SYSTOLIC_MODULE_COUNT-1:0]                                               sys_module_flush_done;
 
 logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0] sys_module_pe_acc;
-logic [SYSTOLIC_MODULE_COUNT-1:0] shift_sys_module;
-logic                             bias_valid;
-logic                             activation_valid;
+
+logic [SYSTOLIC_MODULE_COUNT-1:0]                                               shift_sys_module;
+logic                                                                           bias_valid;
+logic                                                                           activation_valid;
 
 
 // Driving systolic modules
@@ -191,9 +196,23 @@ logic [top_pkg::TRANSFORMATION_BUFFER_SLOTS-1:0]     transformation_buffer_slot_
 // Writeback logic
 logic                                                start_memory_dump;
 AXI_WRITE_STATE_e                                    axi_write_state, axi_write_state_n;
-logic [$clog2(SYSTOLIC_MODULE_COUNT)-1:0]            sys_module_counter;
+logic [$clog2(SYSTOLIC_MODULE_COUNT):0]              sys_module_counter;
 logic [MATRIX_N:0] [top_pkg::NODE_ID_WIDTH-1:0]      sys_module_node_id_snapshot;
 logic [$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1:0] out_features_required_bytes;
+
+logic [$clog2(MATRIX_N-1)-1:0] fast_pulse_counter;
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        fast_pulse_counter <= '0;
+
+    end else if (fte_state == FTE_FSM_MULT_SLOW && fte_state_n == FTE_FSM_MULT_FAST) begin
+        fast_pulse_counter <= '0;
+
+    end else if (fte_state == FTE_FSM_MULT_FAST) begin
+        fast_pulse_counter <= fast_pulse_counter + 1'b1;
+    end
+end
 
 
 // ==================================================================================================================================================
@@ -203,10 +222,12 @@ logic [$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1:0] out_features_required_bytes
 // Regbank
 // --------------------------------------------------------------------------------
 
-feature_transformation_engine_regbank_regs feature_transformation_engine_regbank_i (
+feature_transformation_engine_regbank_wrapper feature_transformation_engine_regbank_i (
     // Clock and Reset
-    .axi_aclk                        (core_clk),
-    .axi_aresetn                     (resetn),
+    .axi_aclk                       (regbank_clk),
+    .axi_aresetn                    (regbank_resetn),
+    .fast_clk                       (core_clk),
+    .fast_resetn                    (resetn),
 
     // AXI Write Address Channel
     .s_axi_awaddr,
@@ -230,30 +251,30 @@ feature_transformation_engine_regbank_regs feature_transformation_engine_regbank
     .s_axi_bready,
 
     // User Ports
-    .layer_config_in_features_strobe,
     .layer_config_in_features_count,
-    .layer_config_out_features_strobe,
     .layer_config_out_features_count,
-    .layer_config_activation_function_strobe,
     .layer_config_activation_function_value,
-    .layer_config_bias_strobe,
     .layer_config_bias_value,
-    .layer_config_leaky_relu_alpha_strobe,
     .layer_config_leaky_relu_alpha_value,
-    .layer_config_out_features_address_msb_strobe,
     .layer_config_out_features_address_msb_value,
-    .layer_config_out_features_address_lsb_strobe,
-    .layer_config_out_features_address_lsb_value
+    .layer_config_out_features_address_lsb_value,
+    .ctrl_buffering_enable_value,
+    .ctrl_writeback_enable_value
 );
 
 // Systolic Modules
 // --------------------------------------------------------------------------------
 
+logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] [31:0] debug_update_counter;
+logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] [31:0] debug_update_counter_inv;
+
+assign debug_update_counter_inv = ~debug_update_counter;
+
 for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) begin
     // Driving from weight channel
     always_comb begin
-        sys_module_down_in_valid [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = {MATRIX_N{weight_channel_resp_valid}} & weight_channel_resp.valid_mask[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
-        sys_module_down_in       [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = weight_channel_resp.data[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
+        sys_module_down_in_valid [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = {MATRIX_N{weight_channel_resp_valid[0]}} & weight_channel_resp[0].valid_mask[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
+        sys_module_down_in       [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = weight_channel_resp[0].data[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
     end
     
     systolic_module #(
@@ -289,7 +310,9 @@ for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) be
 
         .diagonal_flush_done                 (sys_module_flush_done    [sys_module]),
 
-        .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value)
+        .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value),
+
+        .debug_update_counter                (debug_update_counter     [sys_module])
     );
 
 end
@@ -352,15 +375,15 @@ always_comb begin
         end
 
         FTE_FSM_REQ_WC: begin
-            fte_state_n = weight_channel_req_ready ? FTE_FSM_MULT_SLOW : FTE_FSM_REQ_WC;
+            fte_state_n = weight_channel_req_ready[0] ? FTE_FSM_MULT_SLOW : FTE_FSM_REQ_WC;
         end
 
         FTE_FSM_MULT_SLOW: begin
-            fte_state_n = last_weight_resp_received && sys_module_flush_done[SYSTOLIC_MODULE_COUNT-1] ? FTE_FSM_MULT_FAST : FTE_FSM_MULT_SLOW;
+            fte_state_n = last_weight_resp_received ? FTE_FSM_MULT_FAST : FTE_FSM_MULT_SLOW;
         end
 
         FTE_FSM_MULT_FAST: begin
-            fte_state_n = FTE_FSM_BIAS;
+            fte_state_n = fast_pulse_counter == MATRIX_N - 1 ? FTE_FSM_BIAS : FTE_FSM_MULT_FAST;
         end
 
         FTE_FSM_BIAS: begin
@@ -377,7 +400,7 @@ always_comb begin
 
         FTE_FSM_WRITEBACK: begin
             fte_state_n = (nodeslots_to_writeback == 'd1) && (sys_module_counter == SYSTOLIC_MODULE_COUNT) && transformation_engine_axi_interconnect_axi_bvalid ? FTE_FSM_NSB_RESP 
-                        : (sys_module_counter == SYSTOLIC_MODULE_COUNT) && transformation_engine_axi_interconnect_axi_bvalid ? FTE_FSM_SHIFT
+                        : (sys_module_counter == SYSTOLIC_MODULE_COUNT[$clog2(SYSTOLIC_MODULE_COUNT):0]) && transformation_engine_axi_interconnect_axi_bvalid ? FTE_FSM_SHIFT
                         : FTE_FSM_WRITEBACK;
         end
 
@@ -388,7 +411,7 @@ always_comb begin
         end
 
         FTE_FSM_NSB_RESP: begin
-            fte_state_n = FTE_FSM_NSB_RESP;
+            fte_state_n = FTE_FSM_IDLE;
         end
 
         default: begin
@@ -437,7 +460,7 @@ always_comb begin
     begin_feature_dump = (fte_state == FTE_FSM_REQ_WC) && (fte_state_n == FTE_FSM_MULT_SLOW);
 
     // Pulse module when features ready in aggregation buffer and weights ready in weight channel
-    pulse_systolic_module = (fte_state_n == FTE_FSM_MULT_SLOW) && &aggregation_buffer_out_feature_valid && weight_channel_resp_valid;
+    pulse_systolic_module = ((fte_state_n == FTE_FSM_MULT_SLOW) && &aggregation_buffer_out_feature_valid && weight_channel_resp_valid[0]) || fte_state == FTE_FSM_MULT_FAST;
 
     // Drive systolic module from aggregation buffer (on the left)
     sys_module_forward_valid [0] = slot_pop_shift & busy_aggregation_slots_snapshot;
@@ -467,9 +490,7 @@ always_comb begin
     // Bias and activation after multiplication finished
     bias_valid       = (fte_state == FTE_FSM_BIAS);
     activation_valid = (fte_state == FTE_FSM_ACTIVATION);
-    
-    // Shift systolic module upwards when done flushing top row
-    shift_sys_module = (fte_state == FTE_FSM_SHIFT) ? '1 : '0;
+    shift_sys_module = (fte_state == FTE_FSM_SHIFT);
 end
 
 // Buffering Logic
@@ -490,8 +511,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
         
         // Accepting NSB request
     end else if (nsb_fte_req_valid && nsb_fte_req_ready) begin
-        nodeslots_to_buffer    <= nodeslot_count;
-        nodeslots_to_writeback <= nodeslot_count;
+        nodeslots_to_buffer    <= ctrl_buffering_enable_value ? nodeslot_count : nodeslots_to_buffer;
+        nodeslots_to_writeback <= ctrl_writeback_enable_value ? nodeslot_count : nodeslots_to_writeback;
     
     // Done flushing a row of features
     end else if (fte_state == FTE_FSM_BUFFER) begin
@@ -512,14 +533,14 @@ count_ones #(
 // Writeback Logic
 // -------------------------------------------------------------------------------------
 
-assign start_memory_dump = (fte_state == FTE_FSM_BUFFER) && (fte_state_n == FTE_FSM_WRITEBACK);
+assign start_memory_dump = ((fte_state == FTE_FSM_BUFFER) || (fte_state == FTE_FSM_ACTIVATION) || (fte_state == FTE_FSM_SHIFT)) && (fte_state_n == FTE_FSM_WRITEBACK);
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         sys_module_counter <= '0;
         
     // Starting to flush row from systolic array
-    end else if (fte_state == FTE_FSM_BUFFER && fte_state_n == FTE_FSM_WRITEBACK) begin
+    end else if (start_memory_dump) begin
         sys_module_counter <= '0;
     
     // Finished current systolic module
@@ -573,21 +594,21 @@ always_comb begin
     transformation_engine_axi_interconnect_axi_awaddr = {layer_config_out_features_address_msb_value, layer_config_out_features_address_lsb_value}
                                                         + sys_module_node_id_snapshot[0] * out_features_required_bytes;
 
-    transformation_engine_axi_interconnect_axi_awsize = 3'b110; // 64 bytes
+    transformation_engine_axi_interconnect_axi_awsize  = 3'b110; // 64 bytes
     transformation_engine_axi_interconnect_axi_awburst = 2'b01; // INCR mode (increment by 64 bytes for each beat)
-    transformation_engine_axi_interconnect_axi_awlen = (SYSTOLIC_MODULE_COUNT[7:0] - 1'b1);
+    transformation_engine_axi_interconnect_axi_awlen   = (SYSTOLIC_MODULE_COUNT[7:0] - 1'b1);
     
     // Unused features
     transformation_engine_axi_interconnect_axi_awcache = '0;
-    transformation_engine_axi_interconnect_axi_awid = '0;
-    transformation_engine_axi_interconnect_axi_awlock = '0;
-    transformation_engine_axi_interconnect_axi_awprot = '0;
-    transformation_engine_axi_interconnect_axi_awqos = '0;
+    transformation_engine_axi_interconnect_axi_awid    = '0;
+    transformation_engine_axi_interconnect_axi_awlock  = '0;
+    transformation_engine_axi_interconnect_axi_awprot  = '0;
+    transformation_engine_axi_interconnect_axi_awqos   = '0;
 
     transformation_engine_axi_interconnect_axi_wvalid = (axi_write_state == AXI_W);
-    transformation_engine_axi_interconnect_axi_wdata = sys_module_pe_acc [sys_module_counter] [0]; // Top row of systolic module
-    transformation_engine_axi_interconnect_axi_wlast = (sys_module_counter == (SYSTOLIC_MODULE_COUNT-1));
-    transformation_engine_axi_interconnect_axi_wstrb = '1;
+    transformation_engine_axi_interconnect_axi_wdata  = sys_module_pe_acc [sys_module_counter] [0];         // Top row of systolic module
+    transformation_engine_axi_interconnect_axi_wlast  = (sys_module_counter == (SYSTOLIC_MODULE_COUNT-1));
+    transformation_engine_axi_interconnect_axi_wstrb  = '1;
 
     transformation_engine_axi_interconnect_axi_bready = (axi_write_state == AXI_B);
 end
@@ -607,14 +628,14 @@ end
 // -------------------------------------------------------------------------------------
 
 always_comb begin
-    weight_channel_req_valid  = (fte_state == FTE_FSM_REQ_WC);
+    weight_channel_req_valid[0]  = (fte_state == FTE_FSM_REQ_WC);
 
     // Feature counts aren't used by weight bank
-    weight_channel_req.in_features  = top_pkg::MAX_FEATURE_COUNT;
-    weight_channel_req.out_features = top_pkg::MAX_FEATURE_COUNT;
+    weight_channel_req[0].in_features  = top_pkg::MAX_FEATURE_COUNT;
+    weight_channel_req[0].out_features = top_pkg::MAX_FEATURE_COUNT;
 
     // Accept weight bank response when pulsing systolic module (i.e. aggregation buffer is also ready)
-    weight_channel_resp_ready = (fte_state == FTE_FSM_MULT_SLOW) && (pulse_systolic_module || weight_channel_resp.done);
+    weight_channel_resp_ready[0] = (fte_state == FTE_FSM_MULT_SLOW) && (pulse_systolic_module || weight_channel_resp[0].done);
 end
 
 // Raise flag as pre-condition for transitioning from MULT state
@@ -622,23 +643,23 @@ always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         last_weight_resp_received <= '0;
     
-    end else if (weight_channel_resp_valid && weight_channel_resp.done) begin
+    end else if (weight_channel_resp_valid[0] && weight_channel_resp[0].done) begin
         last_weight_resp_received <= '1;
     end
 end
 
 always_comb begin
-    transformation_engine_axi_interconnect_axi_araddr = '0;
+    transformation_engine_axi_interconnect_axi_araddr  = '0;
     transformation_engine_axi_interconnect_axi_arburst = '0;
     transformation_engine_axi_interconnect_axi_arcache = '0;
-    transformation_engine_axi_interconnect_axi_arid = '0;
-    transformation_engine_axi_interconnect_axi_arlen = '0;
-    transformation_engine_axi_interconnect_axi_arlock = '0;
-    transformation_engine_axi_interconnect_axi_arprot = '0;
-    transformation_engine_axi_interconnect_axi_arqos = '0;
-    transformation_engine_axi_interconnect_axi_arsize = '0;
+    transformation_engine_axi_interconnect_axi_arid    = '0;
+    transformation_engine_axi_interconnect_axi_arlen   = '0;
+    transformation_engine_axi_interconnect_axi_arlock  = '0;
+    transformation_engine_axi_interconnect_axi_arprot  = '0;
+    transformation_engine_axi_interconnect_axi_arqos   = '0;
+    transformation_engine_axi_interconnect_axi_arsize  = '0;
     transformation_engine_axi_interconnect_axi_arvalid = '0;
-    transformation_engine_axi_interconnect_axi_rready = '0;
+    transformation_engine_axi_interconnect_axi_rready  = '0;
 end
 
 endmodule

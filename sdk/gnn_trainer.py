@@ -1,27 +1,12 @@
-from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model
 import torch
 import pytorch_lightning as pl
 
-model_map ={
-  'gcn': {
-    'class': lambda: GCN_Model (4, 4)
-  },
-
-  'gat': {
-    'class': lambda: GAT_Model (4, 4)
-  },
-
-  'sage': {
-    'class': lambda: GraphSAGE_Model (4, 4)
-  }
-}
-
-class GNN_Model(pl.LightningModule):
+class GNN_Trainer(pl.LightningModule):
   def __init__(self, model):
     super().__init__()
 
     # Define model based on constructor argument
-    self.model = model_map[model]['class']()
+    self.model = model()
 
     # self.starter, self.ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
     self.loss_criterion = torch.nn.CrossEntropyLoss(reduction="sum")

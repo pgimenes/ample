@@ -246,8 +246,8 @@ end
 always_comb begin
     buffer_manager_router_valid = (bm_state == BM_FSM_SEND_DONE);
 
-    outgoing_packet_dest_col = allocated_agm_q[$clog2(MAX_MESH_COLS)-1:0];
-    outgoing_packet_dest_row = AGGREGATION_ROWS;
+    outgoing_packet_dest_col = {1'b0, allocated_agm_q}; // column width always 1 bit larger than AGM width
+    outgoing_packet_dest_row = AGGREGATION_ROWS - 1;
 
     buffer_manager_router_data.vc_id = '0;
     buffer_manager_router_data.flit_label = done_head_sent ? noc_pkg::TAIL : noc_pkg::HEAD;
