@@ -63,13 +63,16 @@ parameter SCALE_FACTOR_QUEUE_WRITE_DEPTH = 64;
 parameter SCALE_FACTOR_QUEUE_READ_WIDTH = 32;
 parameter SCALE_FACTOR_QUEUE_READ_DEPTH = 1024;
 
+// Multi-precision support
+parameter PRECISION_COUNT = 2;
+
 // Supported modes
 // ----------------------------------------------------
 
 typedef enum logic [1:0] {
     FLOAT_32 = 2'd0,
-    FIXED_16 = 2'd1,
     FIXED_8  = 2'd2,
+    FIXED_16 = 2'd1,
     FIXED_4  = 2'd3
 } NODE_PRECISION_e;
 

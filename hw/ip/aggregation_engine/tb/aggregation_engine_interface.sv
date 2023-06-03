@@ -1,5 +1,6 @@
 import top_pkg::*;
 import age_pkg::*;
+import noc_pkg::*;
 
 interface aggregation_engine_interface (
 
@@ -47,7 +48,7 @@ interface aggregation_engine_interface (
     // AGE -> Aggregation Buffer
     input  logic [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_write_enable,
     input  logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] aggregation_buffer_slot_write_address,
-    input  logic [AGGREGATION_BUFFER_SLOTS-1:0] [age_pkg::PAYLOAD_DATA_WIDTH-1:0]                     aggregation_buffer_slot_write_data,
+    input  logic [AGGREGATION_BUFFER_SLOTS-1:0] [noc_pkg::PAYLOAD_DATA_WIDTH-1:0]                     aggregation_buffer_slot_write_data,
     input  logic [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0]  aggregation_buffer_slot_feature_count,
     input  logic [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_slot_free
 

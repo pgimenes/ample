@@ -71,8 +71,13 @@ parameter AXI_ADDRESS_MSB_BITS = AXI_ADDRESS_WIDTH % 32;
 // Host Control
 logic ctrl_fetch_layer_weights_strobe;                                  // strobe signal for register 'CTRL_FETCH_LAYER_WEIGHTS' (pulsed when the register is written from the bus)
 logic [0:0] ctrl_fetch_layer_weights_fetch;                             // value of field 'CTRL_FETCH_LAYER_WEIGHTS.FETCH'
+
+logic ctrl_fetch_layer_weights_precision_strobe;
+logic [1:0] ctrl_fetch_layer_weights_precision_value;
+
 logic ctrl_fetch_layer_weights_done_strobe;                             // strobe signal for register 'CTRL_FETCH_LAYER_WEIGHTS_DONE' (pulsed when the register is read from the bus)
 logic [0:0] ctrl_fetch_layer_weights_done_done;                         // value of field 'CTRL_FETCH_LAYER_WEIGHTS_DONE.DONE'
+
 logic ctrl_fetch_layer_weights_done_ack_strobe;                         // strobe signal for register 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK' (pulsed when the register is written from the bus)
 logic [0:0] ctrl_fetch_layer_weights_done_ack_ack;                      // value of field 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK.ACK'
 
@@ -213,10 +218,6 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
     .layer_config_in_features_count,
     .layer_config_out_features_strobe,
     .layer_config_out_features_count,
-    .layer_config_weights_precision_strobe,
-    .layer_config_weights_precision_precision,
-    .layer_config_activations_precision_strobe,
-    .layer_config_activations_precision_precision,
 
     .layer_config_adjacency_list_address_lsb_strobe,
     .layer_config_adjacency_list_address_lsb_lsb,
@@ -237,6 +238,8 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
 
     .ctrl_fetch_layer_weights_strobe,
     .ctrl_fetch_layer_weights_fetch,
+    .ctrl_fetch_layer_weights_precision_strobe,
+    .ctrl_fetch_layer_weights_precision_value,
     .ctrl_fetch_layer_weights_done_strobe,
     .ctrl_fetch_layer_weights_done_done,
     .ctrl_fetch_layer_weights_done_ack_strobe,
@@ -500,6 +503,7 @@ always_comb begin : nsb_prefetcher_req_logic
                                         : |(nodeslots_waiting_scale_factor_fetch & prefetcher_arbiter_grant_oh) ? top_pkg::SCALE_FACTOR
                                         : |(nodeslots_waiting_neighbour_fetch & prefetcher_arbiter_grant_oh) ? top_pkg::MESSAGES
                                         : top_pkg::FETCH_RESERVED;
+
     nsb_prefetcher_req.nodeslot      = prefetcher_arbiter_grant_bin;
     
     nsb_prefetcher_req.start_address = nsb_prefetcher_req.req_opcode == top_pkg::WEIGHTS ? {layer_config_weights_address_msb_msb, layer_config_weights_address_lsb_lsb}
@@ -509,8 +513,8 @@ always_comb begin : nsb_prefetcher_req_logic
     
     nsb_prefetcher_req.neighbour_count = nsb_nodeslot_neighbour_count_count[prefetcher_arbiter_grant_bin];
 
-    // nsb_prefetcher_req.nodeslot_precision = nsb_nodeslot_precision_precision[prefetcher_arbiter_grant_bin];
-    nsb_prefetcher_req.nodeslot_precision = top_pkg::FLOAT_32;
+    nsb_prefetcher_req.nodeslot_precision = nsb_prefetcher_req.req_opcode == WEIGHTS ? top_pkg::NODE_PRECISION_e'(ctrl_fetch_layer_weights_precision_value)
+                                        : top_pkg::NODE_PRECISION_e'(nsb_nodeslot_precision_precision[prefetcher_arbiter_grant_bin]);
 
     nsb_prefetcher_req.in_features  = layer_config_in_features_count;
     nsb_prefetcher_req.out_features = layer_config_out_features_count;

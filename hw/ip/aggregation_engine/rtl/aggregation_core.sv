@@ -1,16 +1,19 @@
 import top_pkg::*;
 import age_pkg::*;
-import noc_params::*;
+import noc_pkg::*;
 
 module aggregation_core #(
     parameter X_COORD = 0,
     parameter Y_COORD = 0,
 
+    parameter AGGREGATION_ROWS = top_pkg::AGGREGATION_BUFFER_SLOTS,
+    parameter AGGREGATION_COLS = top_pkg::MESSAGE_CHANNEL_COUNT/top_pkg::PRECISION_COUNT,
+
     parameter FEATURE_COUNT = 16,
 
-    parameter DATA_WIDTH = 32,
+    parameter PRECISION = top_pkg::FLOAT_32,
     parameter FLOAT_WIDTH = 32,
-    parameter PRECISION = "FLOAT_32"
+    parameter DATA_WIDTH = 32
 ) (
     input logic core_clk,
     input logic resetn,
@@ -28,9 +31,7 @@ module aggregation_core #(
     output logic                                        router_aggregation_core_on,
     input  logic                                        router_aggregation_core_valid,
     output logic                                        router_aggregation_core_ready,
-    input  flit_t                                       router_aggregation_core_data,
-
-    input  logic [31:0]                                 layer_config_upsampling_parameter
+    input  flit_t                                       router_aggregation_core_data
 );
 
 parameter ALLOCATION_PKT_AGGR_FUNC_OFFSET = $clog2(top_pkg::MAX_NODESLOT_COUNT);
@@ -41,7 +42,6 @@ typedef enum logic [3:0] {
     AGC_FSM_WAIT_FEATURE_HEAD,
     AGC_FSM_WAIT_FEATURE_BODY,
     AGC_FSM_UPDATE_ACCS,
-    AGC_FSM_UPSAMPLE,
     AGC_FSM_WAIT_BUFFER_REQ,
     AGC_FSM_SEND_BUFF_MAN,
     AGC_FSM_WAIT_DRAIN
@@ -93,12 +93,12 @@ logic [3:0]                                     received_flits;
 logic                                           head_packet;
 logic                                           tail_packet;
 
-logic [$clog2(MESH_ROWS)-1:0]                   packet_dest_row;
-logic [$clog2(MESH_COLS)-1:0]                   packet_dest_col;
+logic [$clog2(MAX_MESH_ROWS)-1:0]                   packet_dest_row;
+logic [$clog2(MAX_MESH_COLS)-1:0]                   packet_dest_col;
 logic                                           correct_pkt_dest;
 
-logic [$clog2(MESH_ROWS)-1:0]                   packet_source_row;
-logic [$clog2(MESH_COLS)-1:0]                   packet_source_col;
+logic [$clog2(MAX_MESH_ROWS)-1:0]                   packet_source_row;
+logic [$clog2(MAX_MESH_COLS)-1:0]                   packet_source_col;
 
 // Aggregation Manager packets
 logic                                           aggregation_manager_pkt;
@@ -107,18 +107,13 @@ logic                                           aggregation_manager_packet_last;
 logic                                           aggregation_manager_packet_last_q;
 
 logic                                           received_buffer_req_head;
-logic [$clog2(MESH_ROWS)-1:0]                   buffer_manager_pkt_dest_row;
-logic [$clog2(MESH_COLS)-1:0]                   buffer_manager_pkt_dest_col;
+logic [$clog2(MAX_MESH_ROWS)-1:0]                   buffer_manager_pkt_dest_row;
+logic [$clog2(MAX_MESH_COLS)-1:0]                   buffer_manager_pkt_dest_col;
 
 logic [63:0]                                    bm_chosen_data;
 logic [$clog2(FEATURE_COUNT/2)-1:0]             sent_flits_counter;
 
 logic                                           noc_router_waiting;
-
-// Multi-precision support
-logic                                       upsample;
-logic [FEATURE_COUNT-1:0]                   upsampled_accumulator_valid;
-logic [FEATURE_COUNT-1:0] [FLOAT_WIDTH-1:0] upsampled_features;
 
 logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_q;
 
@@ -145,13 +140,8 @@ for (genvar feature = 0; feature < FEATURE_COUNT; feature = feature + 1) begin
         .feature_updated               (feature_aggregator_feature_updated       [feature]),
         .accumulator                   (features                                 [feature]),
         
-        .reset_accumulator             (feature_aggregator_reset_accumulator     [feature]),
+        .reset_accumulator             (feature_aggregator_reset_accumulator     [feature])
 
-        .upsample                       (upsample),
-        .upsampled_accumulator_valid    (upsampled_accumulator_valid             [feature]),
-        .upsampled_accumulator          (upsampled_features                      [feature]),
-
-        .layer_config_upsampling_parameter  (layer_config_upsampling_parameter)
     );
 
     // Update mask of updated features for the current packet
@@ -212,7 +202,7 @@ always_comb begin
     AGC_FSM_UPDATE_ACCS: begin
         agc_state_n = 
                     // Updating last feature accumulator and last packet flag has already been received
-                    (received_flits == 4'd8) && feature_updated[FEATURE_COUNT-1] && feature_updated[FEATURE_COUNT-2] && aggregation_manager_packet_last_q ? AGC_FSM_UPSAMPLE // updating final features
+                    (received_flits == 4'd8) && feature_updated[FEATURE_COUNT-1] && feature_updated[FEATURE_COUNT-2] && aggregation_manager_packet_last_q ? AGC_FSM_WAIT_BUFFER_REQ // updating final features
 
                     // Updating last feature accumulator but packets still pending
                     : (received_flits == 4'd8) && feature_updated[FEATURE_COUNT-1] && feature_updated[FEATURE_COUNT-2] ? AGC_FSM_WAIT_FEATURE_HEAD
@@ -220,10 +210,6 @@ always_comb begin
                     // Feature accumulators accepting update but flits still pending for this packet
                     : feature_updated[2*(received_flits-1)] && feature_updated[2*(received_flits-1) + 1] ? AGC_FSM_WAIT_FEATURE_BODY
                     : AGC_FSM_UPDATE_ACCS;
-    end
-
-    AGC_FSM_UPSAMPLE: begin
-        agc_state_n = &upsampled_accumulator_valid ? AGC_FSM_WAIT_BUFFER_REQ : AGC_FSM_UPSAMPLE;
     end
     
     AGC_FSM_WAIT_BUFFER_REQ: begin
@@ -247,26 +233,26 @@ end
 // Packet decoding
 // --------------------------------------------------------------------------------------------
 
-logic [age_pkg::MESH_NODE_ID_WIDTH-1:0] packet_source;
+logic [noc_pkg::MESH_NODE_ID_WIDTH-1:0] packet_source;
 
 // All packets
 always_comb begin    
-    head_packet = (router_aggregation_core_data.flit_label == noc_params::HEAD);
-    tail_packet = (router_aggregation_core_data.flit_label == noc_params::TAIL);
+    head_packet = (router_aggregation_core_data.flit_label == noc_pkg::HEAD);
+    tail_packet = (router_aggregation_core_data.flit_label == noc_pkg::TAIL);
 
-    packet_source = router_aggregation_core_data.data.head_data.head_pl[noc_params::HEAD_PAYLOAD_SIZE-1 : noc_params::HEAD_PAYLOAD_SIZE-MESH_NODE_ID_WIDTH];    
-    packet_source_col = packet_source[MESH_NODE_ID_WIDTH - 1 : MESH_NODE_ID_WIDTH - $clog2(age_pkg::MESH_COLS)];
-    packet_source_row = packet_source[$clog2(age_pkg::MESH_ROWS)-1:0];
+    packet_source = router_aggregation_core_data.data.head_data.head_pl[noc_pkg::HEAD_PAYLOAD_SIZE-1 : noc_pkg::HEAD_PAYLOAD_SIZE-MESH_NODE_ID_WIDTH];    
+    packet_source_col = packet_source[MESH_NODE_ID_WIDTH - 1 : MESH_NODE_ID_WIDTH - $clog2(noc_pkg::MAX_MESH_COLS)];
+    packet_source_row = packet_source[$clog2(noc_pkg::MAX_MESH_ROWS)-1:0];
     
     packet_dest_col = router_aggregation_core_data.data.head_data.x_dest;
     packet_dest_row = router_aggregation_core_data.data.head_data.y_dest;
 
-    correct_pkt_dest = (packet_dest_row == Y_COORD[$clog2(MESH_ROWS)-1:0]) && (packet_dest_col == X_COORD[$clog2(MESH_COLS)-1:0]);
+    correct_pkt_dest = (packet_dest_row == Y_COORD[$clog2(MAX_MESH_ROWS)-1:0]) && (packet_dest_col == X_COORD[$clog2(MAX_MESH_COLS)-1:0]);
 end
 
 // Aggregation Manager Packets
 always_comb begin
-    aggregation_manager_pkt = (packet_source_row == age_pkg::AGC_ROWS); // 16th row, 0 indexed = last row
+    aggregation_manager_pkt = (packet_source_row == noc_pkg::MAX_AGGREGATION_ROWS); // 16th row, 0 indexed = last row
     {aggregation_manager_packet_type, aggregation_manager_packet_last} = decode_head_packet(router_aggregation_core_data);
 end
 
@@ -319,7 +305,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         noc_router_waiting <= '1;
 
     // Drop when sending the tail packet and wait for router to be allocatable again        
-    end else if (aggregation_core_router_valid && (aggregation_core_router_data.flit_label == noc_params::TAIL)) begin
+    end else if (aggregation_core_router_valid && (aggregation_core_router_data.flit_label == noc_pkg::TAIL)) begin
         noc_router_waiting <= '0;
     end
 end
@@ -343,17 +329,12 @@ for (genvar pkt = 0; pkt < 8; pkt++) begin
     end
 end
 
-// Multi-precision support
-// --------------------------------------------------------------------------------------------
-
-assign upsample = (agc_state == AGC_FSM_UPSAMPLE);
-
 // AGC/Router interface
 // ----------------------------------------------------
 
 always_comb begin
-    buffer_manager_pkt_dest_row = router_agc_pkt_q[$clog2(TOTAL_BUFFER_MANAGERS)-1:0];
-    buffer_manager_pkt_dest_col = age_pkg::BUFFER_MANAGER_COLUMN;
+    buffer_manager_pkt_dest_row = router_agc_pkt_q[$clog2(MAX_MESH_ROWS)-1:0];
+    buffer_manager_pkt_dest_col = AGGREGATION_COLS;
 
     // Packets from Aggregation manager
     router_aggregation_core_ready = (agc_state == AGC_FSM_IDLE) || (agc_state == AGC_FSM_NODESLOT_ALLOCATION) || (agc_state == AGC_FSM_WAIT_FEATURE_HEAD) || (agc_state == AGC_FSM_WAIT_FEATURE_BODY) || (agc_state == AGC_FSM_WAIT_BUFFER_REQ);
@@ -362,24 +343,24 @@ always_comb begin
     
     aggregation_core_router_valid = (agc_state == AGC_FSM_SEND_BUFF_MAN);
     
-    bm_chosen_data = (sent_flits_counter == 'd0) ?  {upsampled_features[1],  upsampled_features[0]}
-                    : (sent_flits_counter == 'd1) ? {upsampled_features[3],  upsampled_features[2]}
-                    : (sent_flits_counter == 'd2) ? {upsampled_features[5],  upsampled_features[4]}
-                    : (sent_flits_counter == 'd3) ? {upsampled_features[7],  upsampled_features[6]}
-                    : (sent_flits_counter == 'd4) ? {upsampled_features[9],  upsampled_features[8]}
-                    : (sent_flits_counter == 'd5) ? {upsampled_features[11], upsampled_features[10]}
-                    : (sent_flits_counter == 'd6) ? {upsampled_features[13], upsampled_features[12]}
-                    : (sent_flits_counter == 'd7) ? {upsampled_features[15], upsampled_features[14]}
+    bm_chosen_data = (sent_flits_counter == 'd0) ?  {features[1],  features[0]}
+                    : (sent_flits_counter == 'd1) ? {features[3],  features[2]}
+                    : (sent_flits_counter == 'd2) ? {features[5],  features[4]}
+                    : (sent_flits_counter == 'd3) ? {features[7],  features[6]}
+                    : (sent_flits_counter == 'd4) ? {features[9],  features[8]}
+                    : (sent_flits_counter == 'd5) ? {features[11], features[10]}
+                    : (sent_flits_counter == 'd6) ? {features[13], features[12]}
+                    : (sent_flits_counter == 'd7) ? {features[15], features[14]}
                     : '0;
 
     aggregation_core_router_data.vc_id = '0;
     
-    aggregation_core_router_data.flit_label = sent_flits_counter == '0 ? noc_params::HEAD
-                                            : sent_flits_counter == 'd7 ? noc_params::TAIL
-                                            : noc_params::BODY;
+    aggregation_core_router_data.flit_label = sent_flits_counter == '0 ? noc_pkg::HEAD
+                                            : sent_flits_counter == 'd7 ? noc_pkg::TAIL
+                                            : noc_pkg::BODY;
 
     aggregation_core_router_data.data.bt_pl = {buffer_manager_pkt_dest_col, buffer_manager_pkt_dest_row,
-                                                X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0], // source node coordinates
+                                                X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], // source node coordinates
                                                 bm_chosen_data };
 end
 

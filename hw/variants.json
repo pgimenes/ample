@@ -1,0 +1,13 @@
+{
+    "variants": [
+        {
+            "name": "base",
+            "board_part": "xilinx.com:au250:part0:1.3",
+            "part": "xcu250-figd2104-2L-e",
+            "parameters": {
+                "MAX_NODESLOT_COUNT": 64,
+                "MESSAGE_CHANNEL_COUNT": 64
+            }
+        }
+    ]
+}

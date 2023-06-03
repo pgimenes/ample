@@ -162,19 +162,19 @@ module prefetcher #(
     output MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp,
 
     // Weight Channels: FTE -> Prefetcher Weight Bank
-    input  logic                                              weight_channel_req_valid,
-    output logic                                              weight_channel_req_ready,
-    input  WEIGHT_CHANNEL_REQ_t                               weight_channel_req,
+    input  logic                [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_valid,
+    output logic                [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_ready,
+    input  WEIGHT_CHANNEL_REQ_t [top_pkg::PRECISION_COUNT-1:0] weight_channel_req,
 
-    output logic                                              weight_channel_resp_valid,
-    input  logic                                              weight_channel_resp_ready,
-    output WEIGHT_CHANNEL_RESP_t                              weight_channel_resp,
+    output logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_valid,
+    input  logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_ready,
+    output WEIGHT_CHANNEL_RESP_t [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp,
 
-    input  logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_pop,
-    output logic [FETCH_TAG_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
-    output logic [FETCH_TAG_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count,
-    output logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_empty,
-    output logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_full
+    input  logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_pop,
+    output logic [MESSAGE_CHANNEL_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
+    output logic [MESSAGE_CHANNEL_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count,
+    output logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_empty,
+    output logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_full
     
 );
 
@@ -187,22 +187,31 @@ module prefetcher #(
 
 logic layer_config_in_features_strobe;
 logic [9:0] layer_config_in_features_count;
+
 logic layer_config_out_features_strobe;
 logic [9:0] layer_config_out_features_count;
+
 logic layer_config_in_messages_address_lsb_strobe;
 logic [31:0] layer_config_in_messages_address_lsb_value;
+
 logic layer_config_in_messages_address_msb_strobe;
 logic [1:0] layer_config_in_messages_address_msb_value;
+
 logic layer_config_adjacency_list_address_lsb_strobe;
 logic [31:0] layer_config_adjacency_list_address_lsb_value;
-logic layer_config_adjacency_list_address_msb_strobe;
-logic [1:0] layer_config_adjacency_list_address_msb_value;
-logic layer_config_weights_address_lsb_strobe;
-logic [31:0] layer_config_weights_address_lsb_value;
+
+logic [3:0] layer_config_adjacency_list_address_msb_strobe;
+logic [1:0] [3:0] layer_config_adjacency_list_address_msb_value;
+
+logic [3:0] layer_config_weights_address_lsb_strobe;
+logic [31:0] [3:0] layer_config_weights_address_lsb_value;
+
 logic layer_config_weights_address_msb_strobe;
 logic [1:0] layer_config_weights_address_msb_value;
+
 logic layer_config_scale_factors_address_lsb_strobe;
 logic [31:0] layer_config_scale_factors_address_lsb_value;
+
 logic layer_config_scale_factors_address_msb_strobe;
 logic [1:0] layer_config_scale_factors_address_msb_value;
 
@@ -241,20 +250,26 @@ logic [3:0]                                        msg_rm_fetch_resp_axi_id;
 // Weight Bank
 // --------------------------------------------------------------------------------------------
 
-logic                                              nsb_prefetcher_weight_bank_req_valid;
-logic                                              nsb_prefetcher_weight_bank_req_ready;
-logic                                              nsb_prefetcher_weight_bank_resp_valid;
-NSB_PREF_RESP_t                                    nsb_prefetcher_weight_bank_resp;
+logic           [top_pkg::PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_req_valid;
+logic           [top_pkg::PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_req_ready;
 
-logic                                              weight_bank_axi_rm_fetch_req_valid;
-logic                                              weight_bank_axi_rm_fetch_req_ready;
-logic [AXI_ADDRESS_WIDTH-1:0]                      weight_bank_axi_rm_fetch_start_address;
-logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       weight_bank_axi_rm_fetch_byte_count;
-logic                                              weight_bank_axi_rm_fetch_resp_valid;
-logic                                              weight_bank_axi_rm_fetch_resp_ready;
-logic                                              weight_bank_axi_rm_fetch_resp_last;
-logic [AXI_DATA_WIDTH-1:0]                         weight_bank_axi_rm_fetch_resp_data;
-logic [3:0]                                        weight_bank_axi_rm_fetch_resp_axi_id;
+logic           [top_pkg::PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_resp_valid;
+NSB_PREF_RESP_t [top_pkg::PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_resp;
+
+logic           [top_pkg::PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_req_valid;
+logic                                                                                       weight_read_master_fetch_req_ready;
+logic           [top_pkg::PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_req_ready;
+logic           [top_pkg::PRECISION_COUNT-1:0] [AXI_ADDRESS_WIDTH-1:0]                      weight_bank_axi_rm_fetch_start_address;
+logic           [top_pkg::PRECISION_COUNT-1:0] [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       weight_bank_axi_rm_fetch_byte_count;
+
+logic                                                                                       weight_read_master_fetch_resp_valid;
+logic           [top_pkg::PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_resp_valid;
+logic           [top_pkg::PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_resp_ready;
+logic                                                                                       weight_read_master_resp_last;
+logic           [AXI_DATA_WIDTH-1:0]                                                        weight_read_master_resp_data;
+logic           [3:0]                                                                       weight_read_master_resp_axi_id;
+
+top_pkg::NODE_PRECISION_e active_weight_fetch_precision;
 
 // ==================================================================================================================================================
 // Instances
@@ -375,41 +390,46 @@ prefetcher_feature_bank #(
 // Weight Bank
 // --------------------------------------------------------------------------------------------
 
-prefetcher_weight_bank #(
-    .AXI_ADDRESS_WIDTH (34),
-    .AXI_DATA_WIDTH    (512),
-    .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
-) weight_bank_i (
-    .core_clk,
-    .resetn,
+for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
 
-    .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid),
-    .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready),
-    .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req),
+    prefetcher_weight_bank #(
+        .AXI_ADDRESS_WIDTH (34),
+        .AXI_DATA_WIDTH    (512),
+        .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
+    ) weight_bank_i (
+        .core_clk,
+        .resetn,
 
-    .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid),
-    .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp),
-    
-    .weight_bank_axi_rm_fetch_req_valid     (weight_bank_axi_rm_fetch_req_valid),
-    .weight_bank_axi_rm_fetch_req_ready     (weight_bank_axi_rm_fetch_req_ready),
-    .weight_bank_axi_rm_fetch_start_address (weight_bank_axi_rm_fetch_start_address),
-    .weight_bank_axi_rm_fetch_byte_count    (weight_bank_axi_rm_fetch_byte_count),
-    .weight_bank_axi_rm_fetch_resp_valid    (weight_bank_axi_rm_fetch_resp_valid),
-    .weight_bank_axi_rm_fetch_resp_ready    (weight_bank_axi_rm_fetch_resp_ready),
-    .weight_bank_axi_rm_fetch_resp_last     (weight_bank_axi_rm_fetch_resp_last),
-    .weight_bank_axi_rm_fetch_resp_data     (weight_bank_axi_rm_fetch_resp_data),
-    .weight_bank_axi_rm_fetch_resp_axi_id   (weight_bank_axi_rm_fetch_resp_axi_id),
-    
-    .weight_channel_req_valid               (weight_channel_req_valid),
-    .weight_channel_req_ready               (weight_channel_req_ready),
-    .weight_channel_req                     (weight_channel_req),
+        .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid [precision]),
+        .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready [precision]),
+        .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req                   [precision]),
 
-    .weight_channel_resp_valid              (weight_channel_resp_valid),
-    .weight_channel_resp_ready              (weight_channel_resp_ready),
-    .weight_channel_resp                    (weight_channel_resp),
+        .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid [precision]),
+        .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp       [precision]),
 
-    .layer_config_weights_address_lsb_value (layer_config_weights_address_lsb_value)
-);
+        .weight_bank_axi_rm_fetch_req_valid     (weight_bank_axi_rm_fetch_req_valid     [precision]),
+        .weight_bank_axi_rm_fetch_req_ready     (weight_bank_axi_rm_fetch_req_ready     [precision]),
+        .weight_bank_axi_rm_fetch_start_address (weight_bank_axi_rm_fetch_start_address [precision]),
+        .weight_bank_axi_rm_fetch_byte_count    (weight_bank_axi_rm_fetch_byte_count    [precision]),
+
+        .weight_bank_axi_rm_fetch_resp_valid    (weight_bank_axi_rm_fetch_resp_valid  [precision]),
+        .weight_bank_axi_rm_fetch_resp_ready    (weight_bank_axi_rm_fetch_resp_ready  [precision]),
+        .weight_bank_axi_rm_fetch_resp_last     (weight_read_master_resp_last  ),
+        .weight_bank_axi_rm_fetch_resp_data     (weight_read_master_resp_data  ),
+        .weight_bank_axi_rm_fetch_resp_axi_id   (weight_read_master_resp_axi_id),
+
+        .weight_channel_req_valid               (weight_channel_req_valid [precision]),
+        .weight_channel_req_ready               (weight_channel_req_ready [precision]),
+        .weight_channel_req                     (weight_channel_req       [precision]),
+
+        .weight_channel_resp_valid              (weight_channel_resp_valid [precision]),
+        .weight_channel_resp_ready              (weight_channel_resp_ready [precision]),
+        .weight_channel_resp                    (weight_channel_resp       [precision]),
+
+        .layer_config_weights_address_lsb_value (layer_config_weights_address_lsb_value [precision])
+    );
+
+end
 
 // Adjacency Read Master
 // ----------------------------------------------------------------------------------
@@ -506,15 +526,16 @@ axi_read_master #(
     .resetn,
 
     // Request interface
-    .fetch_req_valid      (weight_bank_axi_rm_fetch_req_valid),
-    .fetch_req_ready      (weight_bank_axi_rm_fetch_req_ready),
-    .fetch_start_address  (weight_bank_axi_rm_fetch_start_address),
-    .fetch_byte_count     (weight_bank_axi_rm_fetch_byte_count),
-    .fetch_resp_valid     (weight_bank_axi_rm_fetch_resp_valid),
-    .fetch_resp_ready     (weight_bank_axi_rm_fetch_resp_ready),
-    .fetch_resp_last      (weight_bank_axi_rm_fetch_resp_last),
-    .fetch_resp_data      (weight_bank_axi_rm_fetch_resp_data),
-    .fetch_resp_axi_id    (weight_bank_axi_rm_fetch_resp_axi_id),
+    .fetch_req_valid      (weight_bank_axi_rm_fetch_req_valid     [active_weight_fetch_precision]),
+    .fetch_req_ready      (weight_read_master_fetch_req_ready),
+    .fetch_start_address  (weight_bank_axi_rm_fetch_start_address [active_weight_fetch_precision]),
+    .fetch_byte_count     (weight_bank_axi_rm_fetch_byte_count    [active_weight_fetch_precision]),
+
+    .fetch_resp_valid     (weight_read_master_fetch_resp_valid),
+    .fetch_resp_ready     (weight_bank_axi_rm_fetch_resp_ready [active_weight_fetch_precision]),
+    .fetch_resp_data      (weight_read_master_resp_data),
+    .fetch_resp_last      (weight_read_master_resp_last),
+    .fetch_resp_axi_id    (weight_read_master_resp_axi_id),
 
     // AXI Read-Only Interface
     .axi_araddr  (prefetcher_weight_bank_rm_axi_interconnect_axi_araddr),
@@ -547,12 +568,39 @@ axi_read_master #(
 
 always_comb begin 
     nsb_prefetcher_feature_bank_req_valid = nsb_prefetcher_req_valid && ((nsb_prefetcher_req.req_opcode == ADJACENCY_LIST) || (nsb_prefetcher_req.req_opcode == MESSAGES) || (nsb_prefetcher_req.req_opcode == SCALE_FACTOR));
-    nsb_prefetcher_weight_bank_req_valid  = nsb_prefetcher_req_valid && (nsb_prefetcher_req.req_opcode == WEIGHTS);
-    nsb_prefetcher_req_ready              = (nsb_prefetcher_req.req_opcode == top_pkg::WEIGHTS) ? nsb_prefetcher_weight_bank_req_ready : nsb_prefetcher_feature_bank_req_ready;
+
+    nsb_prefetcher_req_ready              = (nsb_prefetcher_req.req_opcode == top_pkg::WEIGHTS) ? |(nsb_prefetcher_weight_bank_req_valid & nsb_prefetcher_weight_bank_req_ready)
+                                            : nsb_prefetcher_feature_bank_req_ready;
     
     // Weight bank response should never happen at the same time as feature bank, so simple MUX is enough
-    nsb_prefetcher_resp_valid             = nsb_prefetcher_feature_bank_resp_valid || nsb_prefetcher_weight_bank_resp_valid;
-    nsb_prefetcher_resp                   = nsb_prefetcher_weight_bank_resp_valid ? nsb_prefetcher_weight_bank_resp : nsb_prefetcher_feature_bank_resp;
+    nsb_prefetcher_resp_valid             = nsb_prefetcher_feature_bank_resp_valid || |nsb_prefetcher_weight_bank_resp_valid;
+
+    nsb_prefetcher_resp                   = |nsb_prefetcher_weight_bank_resp_valid ? nsb_prefetcher_weight_bank_resp [active_weight_fetch_precision]
+                                            : nsb_prefetcher_feature_bank_resp;
+end
+
+// Multi-precision support
+// --------------------------------------------------------------------------------------------
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        active_weight_fetch_precision <= top_pkg::FLOAT_32;
+
+    // Accepting weight fetch request from NSB
+    end else begin
+        if (nsb_prefetcher_req_valid && nsb_prefetcher_req_ready && nsb_prefetcher_req.req_opcode == WEIGHTS) begin
+            active_weight_fetch_precision <= nsb_prefetcher_req.nodeslot_precision;
+        end
+    end
+end
+
+// Drive weight bank request
+for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
+    assign nsb_prefetcher_weight_bank_req_valid [precision]  = nsb_prefetcher_req_valid && (nsb_prefetcher_req.req_opcode == WEIGHTS) && (precision == nsb_prefetcher_req.nodeslot_precision);
+
+    assign weight_bank_axi_rm_fetch_req_ready [precision] = weight_read_master_fetch_req_ready && (precision == active_weight_fetch_precision);
+
+    assign weight_bank_axi_rm_fetch_resp_valid [precision] = weight_read_master_fetch_resp_valid && (precision == active_weight_fetch_precision);
 end
 
 // Read-only interfaces

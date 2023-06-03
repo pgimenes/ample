@@ -1,8 +1,10 @@
 import age_pkg::*;
+import noc_pkg::*;
 
 module aggregation_core_allocator #(
-    parameter NUM_CORES            = age_pkg::TOTAL_AGGREGATION_CORES,
-    parameter PRECISION_COL_OFFSET = age_pkg::AGC_FLOAT32_COL_OFFSET
+    parameter NUM_CORES            = noc_pkg::MAX_AGC_COUNT,
+    parameter NUM_MANAGERS         = noc_pkg::MAX_AGGREGATION_COLS,
+    parameter PRECISION_COL_OFFSET = 0
 ) (
     input  logic                                           core_clk,
     input  logic                                           resetn,
@@ -20,9 +22,9 @@ module aggregation_core_allocator #(
     input  logic [NUM_CORES-1:0]                           deallocation_cores,
 
     // Generated AGM request
-    output logic [age_pkg::TOTAL_AGGREGATION_MANAGERS-1:0] age_agm_req_valid,
-    input  logic [age_pkg::TOTAL_AGGREGATION_MANAGERS-1:0] age_agm_req_ready,
-    output age_pkg::AGE_AGM_REQ_t                          age_agm_req
+    output logic [NUM_MANAGERS-1:0] agm_req_valid,
+    input  logic [NUM_MANAGERS-1:0] agm_req_ready,
+    output age_pkg::AGE_AGM_REQ_t   agm_req
 
 );
 
@@ -68,11 +70,11 @@ onehot_to_binary_comb #(
 
 always_comb begin
     // Static AGM req payloads
-    age_agm_req.nsb_req = allocation_req_q;
-    age_agm_req.required_agcs = layer_config_in_features_count[9:4] + (|layer_config_in_features_count[3:0] ? 1'b1 : '0);
+    agm_req.nsb_req = allocation_req_q;
+    agm_req.required_agcs = layer_config_in_features_count[9:4] + (|layer_config_in_features_count[3:0] ? 1'b1 : '0);
 
     allocation_req_ready = !busy;
-    done = (agc_counter == age_agm_req.required_agcs);
+    done = (agc_counter == agm_req.required_agcs);
 end
 
 always_ff @(posedge core_clk or negedge resetn) begin
@@ -80,8 +82,9 @@ always_ff @(posedge core_clk or negedge resetn) begin
         busy <= '0;
         allocation_req_q <= '0;
 
+        agm_req.allocated_cores <= '0;
         agc_counter <= '0;
-        age_agm_req      <= '0;
+        agm_req      <= '0;
     
     // Accepting allocation request
     end else if (!busy & allocation_req_valid) begin
@@ -89,14 +92,14 @@ always_ff @(posedge core_clk or negedge resetn) begin
         allocation_req_q <= allocation_req;
 
         agc_counter      <= '0;
-        age_agm_req      <= '0;
+        agm_req      <= '0;
     
     end else if (busy && !done) begin
         agc_counter                 <= agc_counter + 1'b1;
-        age_agm_req.allocated_cores <= age_agm_req.allocated_cores | allocated_core;
+        agm_req.allocated_cores <= agm_req.allocated_cores | allocated_core;
     
     // AGM accepting request with allocated AGCs
-    end else if (|(age_agm_req_valid & age_agm_req_ready)) begin
+    end else if (|(agm_req_valid & agm_req_ready)) begin
         busy <= '0;
     end
 end
@@ -104,12 +107,12 @@ end
 for (genvar allocation_slot = 0; allocation_slot < age_pkg::MAX_AGC_PER_NODE; allocation_slot++) begin
     always_ff @(posedge core_clk or negedge resetn) begin
         if (!resetn) begin
-            age_agm_req.coords_x [allocation_slot] <= '0;
-            age_agm_req.coords_y [allocation_slot] <= '0;
+            agm_req.coords_x [allocation_slot] <= '0;
+            agm_req.coords_y [allocation_slot] <= '0;
             
         end else if (busy && !done && (agc_counter == allocation_slot)) begin
-            age_agm_req.coords_x [allocation_slot] <= PRECISION_COL_OFFSET[$clog2(MESH_COLS)-1:0] + allocated_core_bin[3:0]; // % 16
-            age_agm_req.coords_y [allocation_slot] <= allocated_core_bin[$clog2(AGC_COUNT_FIXED16)-1:4]; // div 16
+            agm_req.coords_x [allocation_slot] <= PRECISION_COL_OFFSET[$clog2(MAX_MESH_COLS)-1:0] + allocated_core_bin[3:0]; // % 16
+            agm_req.coords_y [allocation_slot] <= allocated_core_bin[$clog2(NUM_CORES)-1:4]; // div 16
         end
     end
 end
@@ -138,8 +141,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end
 end
 
-for (genvar agm = 0; agm < TOTAL_AGGREGATION_MANAGERS; agm++) begin
-    assign age_agm_req_valid [agm] = busy && done && (allocation_req_q.fetch_tag == agm);
+for (genvar agm = 0; agm < NUM_MANAGERS; agm++) begin
+    assign agm_req_valid [agm] = busy && done && (allocation_req_q.fetch_tag == agm);
 end
 
 endmodule
