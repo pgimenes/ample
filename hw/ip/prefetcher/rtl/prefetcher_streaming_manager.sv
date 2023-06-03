@@ -227,14 +227,13 @@ end
 // Adjacency queue store logic
 // ----------------------------------------------------
 
-always_comb begin
-    push_queue = (fetch_state == FETCH_STORE) && !queue_full && |obj_remaining_store;
+assign push_queue = (fetch_state == FETCH_STORE) && !queue_full && |obj_remaining_store;
 
-    // TO DO: cannot address register by non-constant expression like below:
-    // push_data = rm_resp_data_q [buffered_fetch_resp_offset + 9'd31 : buffered_fetch_resp_offset];
+// TO DO: cannot address register by non-constant expression like below:
+// push_data = rm_resp_data_q [buffered_fetch_resp_offset + 9'd31 : buffered_fetch_resp_offset];
 
-    if (UNPACKING_ENABLED) begin
-        push_data = (buffered_fetch_resp_offset == 'd0)  ? rm_resp_data_q [511:480]
+if (UNPACKING_ENABLED) begin
+    assign push_data = (buffered_fetch_resp_offset == 'd0)  ? rm_resp_data_q [511:480]
                     : (buffered_fetch_resp_offset == 'd1)  ? rm_resp_data_q [479:448]
                     : (buffered_fetch_resp_offset == 'd2)  ? rm_resp_data_q [447:416]
                     : (buffered_fetch_resp_offset == 'd3)  ? rm_resp_data_q [415:384]
@@ -251,10 +250,8 @@ always_comb begin
                     : (buffered_fetch_resp_offset == 'd14) ? rm_resp_data_q [63:32]
                     : (buffered_fetch_resp_offset == 'd15) ? rm_resp_data_q [31:0]
                     : '0;
-                            
-    end else begin
-        push_data = rm_resp_data_q;
-    end
+end else begin
+    assign push_data = rm_resp_data_q;
 end
 
 always_comb begin

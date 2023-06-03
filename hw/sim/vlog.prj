@@ -47,9 +47,13 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 
 sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --include "../build/regbanks/node_scoreboard_regbank" --include "../../imports" -d "FLOAT_MAC=1" \
 "../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs.sv" \
+"../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_wrapper.sv" \
 "../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs.sv" \
+"../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_wrapper.sv" \
 "../build/regbanks/prefetcher_regbank/prefetcher_regbank_regs.sv" \
+"../build/regbanks/prefetcher_regbank/prefetcher_regbank_wrapper.sv" \
 "../build/regbanks/feature_transformation_engine_regbank/feature_transformation_engine_regbank_regs.sv" \
+"../build/regbanks/feature_transformation_engine_regbank/feature_transformation_engine_regbank_wrapper.sv" \
 "../ip/include/arch_package.sv" \
 "../ip/include/arch_defines.v" \
 "../ip/lib/arithmetic/aggregators/passthrough_aggregator.sv" \

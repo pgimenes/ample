@@ -28,4 +28,4 @@ echo "======================================================="
 echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Building register banks."
 echo "======================================================="
 
-python3.6 $FYP_DIR/scripts/update_regbanks.py
+python3.6 $FYP_DIR/scripts/build_regbank_wrappers.sh

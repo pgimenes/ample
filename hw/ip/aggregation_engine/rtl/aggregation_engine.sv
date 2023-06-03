@@ -8,6 +8,9 @@ module aggregation_engine #(
 ) (
     input logic core_clk,
     input logic resetn,
+
+    input logic regbank_clk,
+    input logic regbank_resetn,
     
     // Regbank Slave AXI interface
     input  logic [AXI_ADDR_WIDTH-1:0]                           s_axi_awaddr,
@@ -108,12 +111,14 @@ logic [$clog2(top_pkg::PRECISION_COUNT * AGGREGATION_COLS) - 1 : 0] aggregation_
 // Register Bank
 // ----------------------------------------------------
 
-aggregation_engine_regbank_regs #(
-    .AXI_ADDR_WIDTH(32),
-    .BASEADDR(32'b0) // use regbank parameter
+aggregation_engine_regbank_wrapper #(
+    .AXI_ADDR_WIDTH(32)
 ) aggregation_engine_regbank_regs_i (
-    .axi_aclk                       (core_clk),
-    .axi_aresetn                    (resetn),
+    .axi_aclk                       (regbank_clk),
+    .axi_aresetn                    (regbank_resetn),
+    .fast_clk                       (core_clk),
+    .fast_resetn                    (resetn),
+
     .s_axi_awaddr,
     .s_axi_awprot,
     .s_axi_awvalid,
@@ -134,13 +139,8 @@ aggregation_engine_regbank_regs #(
     .s_axi_bvalid,
     .s_axi_bready,
 
-    .layer_config_in_features_strobe,
     .layer_config_in_features_count,
-
-    .layer_config_out_features_strobe,
     .layer_config_out_features_count,
-
-    .layer_config_upsampling_parameter_strobe,
     .layer_config_upsampling_parameter_value,
     .*
 );

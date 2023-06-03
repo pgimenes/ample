@@ -21,6 +21,10 @@ class GraphTest extends Test;
         int nodeslot_idx;
         integer chosen_nodeslot;
         xil_axi_data_beat fetch_weights_done_resp[];
+        xil_axi_data_beat nodeslots_empty_resp[];
+
+        // System reset drops after regbank reset
+        wait(this.nsb_intf.resetn == '1);
 
         // Load layer configuration
         layer_root = json::Load("layer_config.json");
@@ -34,6 +38,7 @@ class GraphTest extends Test;
         nodeslots = nodeslot_root.getByKey("nodeslots");
 
         program_layer_config(layer);
+        this.write_nsb_regbank("Layer Config Valid", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_VALID_OFFSET, '1);
 
         // Fetch layer weights
         this.write_nsb_regbank("Fetch Weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_OFFSET, '1);
@@ -70,6 +75,20 @@ class GraphTest extends Test;
             this.busy_nodeslots_mask[chosen_nodeslot] = 1'b1; // Mark nodeslot busy
             
         end
+
+        // Wait for all nodeslots to be finished
+        while ('1) begin
+            this.axil_read(.addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + node_scoreboard_regbank_regs_pkg::STATUS_NODESLOTS_EMPTY_MASK_LSB_OFFSET), .Rdatabeat(nodeslots_empty_resp));
+            if (&nodeslots_empty_resp[0]) begin
+                $display("[TIMESTAMP]: %t, [%0s::DEBUG]: All nodeslots empty, finishing test.", $time, TESTNAME);
+                break;
+            end else begin
+                $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Test not finished yet, some nodeslots are valid.", $time, TESTNAME);
+
+            end
+        end
+
+        $finish;
 
     endtask
 

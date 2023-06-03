@@ -4,6 +4,7 @@ import noc_pkg::*;
 module aggregation_core_allocator #(
     parameter NUM_CORES            = noc_pkg::MAX_AGC_COUNT,
     parameter NUM_MANAGERS         = noc_pkg::MAX_AGGREGATION_COLS,
+    parameter NUM_COLS             = noc_pkg::MAX_AGGREGATION_COLS,
     parameter PRECISION_COL_OFFSET = 0
 ) (
     input  logic                                           core_clk,
@@ -111,8 +112,8 @@ for (genvar allocation_slot = 0; allocation_slot < age_pkg::MAX_AGC_PER_NODE; al
             agm_req.coords_y [allocation_slot] <= '0;
             
         end else if (busy && !done && (agc_counter == allocation_slot)) begin
-            agm_req.coords_x [allocation_slot] <= PRECISION_COL_OFFSET[$clog2(MAX_MESH_COLS)-1:0] + allocated_core_bin[3:0]; // % 16
-            agm_req.coords_y [allocation_slot] <= allocated_core_bin[$clog2(NUM_CORES)-1:4]; // div 16
+            agm_req.coords_x [allocation_slot] <= PRECISION_COL_OFFSET[$clog2(noc_pkg::MAX_MESH_COLS)-1:0] + (allocated_core_bin % NUM_COLS); // TO DO: replace with AGGREGATION_COLS when merging with generalized aggregation mesh
+            agm_req.coords_y [allocation_slot] <= allocated_core_bin / NUM_COLS;
         end
     end
 end

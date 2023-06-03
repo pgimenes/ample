@@ -9,6 +9,9 @@ module node_scoreboard #(
     input logic core_clk,
     input logic resetn,
 
+    input  logic regbank_clk,
+    input  logic regbank_resetn,
+
     // Regbank Slave AXI interface
     input  logic [AXIL_ADDR_WIDTH-1:0]                          s_axi_awaddr,
     input  logic [2:0]                                          s_axi_awprot,
@@ -80,16 +83,16 @@ logic [0:0] ctrl_fetch_layer_weights_done_done;                         // value
 
 logic ctrl_fetch_layer_weights_done_ack_strobe;                         // strobe signal for register 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK' (pulsed when the register is written from the bus)
 logic [0:0] ctrl_fetch_layer_weights_done_ack_ack;                      // value of field 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK.ACK'
+logic [1:0] ctrl_fetch_layer_weights_precision_value;
 
 // Layer Config
+logic layer_config_valid_strobe;
+logic [0:0] layer_config_valid_value;
+
 logic layer_config_in_features_strobe;
 logic [9:0] layer_config_in_features_count;
 logic layer_config_out_features_strobe;
 logic [9:0] layer_config_out_features_count;
-logic layer_config_weights_precision_strobe;
-logic [2:0] layer_config_weights_precision_precision;
-logic layer_config_activations_precision_strobe;
-logic [2:0] layer_config_activations_precision_precision;
 
 logic layer_config_adjacency_list_address_lsb_strobe;
 logic [31:0] layer_config_adjacency_list_address_lsb_lsb;
@@ -145,6 +148,10 @@ logic [5:0] nsb_config_transformation_wait_count_count;// value of field 'NSB_CO
 logic [63:0] nsb_nodeslot_allocated_fetch_tag_strobe;
 logic [63:0] [5:0] nsb_nodeslot_allocated_fetch_tag_fetch_tag;
 
+// STATUS
+logic [31:0] status_nodeslots_empty_mask_msb_value;
+logic [31:0] status_nodeslots_empty_mask_lsb_value;
+
 // Other
 // ------------------------------------------------------------
 
@@ -181,16 +188,22 @@ logic [$clog2(NODESLOT_COUNT)-1:0] prefetcher_arbiter_grant_bin;
 logic [NODESLOT_COUNT-1:0]         age_arbiter_grant_oh;
 logic [$clog2(NODESLOT_COUNT)-1:0] age_arbiter_grant_bin;
 
+logic weights_fetched;
+
 // ==================================================================================================================================================
 // Instances
 // ==================================================================================================================================================
 
 // Regbank
 // ------------------------------------------------------------
-node_scoreboard_regbank_regs node_scoreboard_regbank_i (
-    // Clock and Reset
-    .axi_aclk                       (core_clk),
-    .axi_aresetn                    (resetn),
+node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
+    // Clock and Reset (SLOW)
+    .axi_aclk                       (regbank_clk),
+    .axi_aresetn                    (regbank_resetn),
+
+    // Clock and Reset (FAST)
+    .fast_clk                       (core_clk),
+    .fast_resetn                    (resetn),
 
     // AXI Write Address Channel
     .s_axi_awaddr,
@@ -214,64 +227,41 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
     .s_axi_bready,
 
     // User Ports
-    .layer_config_in_features_strobe,
     .layer_config_in_features_count,
-    .layer_config_out_features_strobe,
     .layer_config_out_features_count,
 
-    .layer_config_adjacency_list_address_lsb_strobe,
     .layer_config_adjacency_list_address_lsb_lsb,
-    .layer_config_adjacency_list_address_msb_strobe,
     .layer_config_adjacency_list_address_msb_msb,
-    .layer_config_in_messages_address_lsb_strobe,
     .layer_config_in_messages_address_lsb_lsb,
-    .layer_config_in_messages_address_msb_strobe,
     .layer_config_in_messages_address_msb_msb,
-    .layer_config_weights_address_lsb_strobe,
     .layer_config_weights_address_lsb_lsb,
-    .layer_config_weights_address_msb_strobe,
     .layer_config_weights_address_msb_msb,
-    .layer_config_out_messages_address_lsb_strobe,
     .layer_config_out_messages_address_lsb_lsb,
-    .layer_config_out_messages_address_msb_strobe,
     .layer_config_out_messages_address_msb_msb,
 
-    .ctrl_fetch_layer_weights_strobe,
     .ctrl_fetch_layer_weights_fetch,
     .ctrl_fetch_layer_weights_precision_strobe,
     .ctrl_fetch_layer_weights_precision_value,
     .ctrl_fetch_layer_weights_done_strobe,
     .ctrl_fetch_layer_weights_done_done,
-    .ctrl_fetch_layer_weights_done_ack_strobe,
     .ctrl_fetch_layer_weights_done_ack_ack,
-    .nsb_nodeslot_neighbour_count_strobe,
+    .ctrl_fetch_layer_weights_precision_value,
     .nsb_nodeslot_neighbour_count_count,
-    .nsb_nodeslot_node_id_strobe,
     .nsb_nodeslot_node_id_id,
-    .nsb_nodeslot_node_state_strobe,
     .nsb_nodeslot_node_state_state,
-    .nsb_nodeslot_precision_strobe,
     .nsb_nodeslot_precision_precision,
-    .nsb_nodeslot_adjacency_list_address_lsb_strobe,
     .nsb_nodeslot_adjacency_list_address_lsb_lsb,
-    .nsb_nodeslot_adjacency_list_address_msb_strobe,
     .nsb_nodeslot_adjacency_list_address_msb_msb,
-    .nsb_nodeslot_out_messages_address_lsb_strobe,
     .nsb_nodeslot_out_messages_address_lsb_lsb,
-    .nsb_nodeslot_out_messages_address_msb_strobe,
     .nsb_nodeslot_out_messages_address_msb_msb,
-    .nsb_nodeslot_config_make_valid_msb_strobe,
     .nsb_nodeslot_config_make_valid_msb_make_valid,
-    .nsb_nodeslot_config_make_valid_lsb_strobe,
     .nsb_nodeslot_config_make_valid_lsb_make_valid,
-    .nsb_nodeslot_scale_factors_address_lsb_strobe,
     .nsb_nodeslot_scale_factors_address_lsb_value,
-    .nsb_nodeslot_scale_factors_address_msb_strobe,
     .nsb_nodeslot_scale_factors_address_msb_value,
-    .nsb_config_aggregation_wait_count_strobe,
     .nsb_config_aggregation_wait_count_count,
-    .nsb_config_transformation_wait_count_strobe,
     .nsb_config_transformation_wait_count_count,
+    .status_nodeslots_empty_mask_lsb_value,
+    .status_nodeslots_empty_mask_msb_value,
     .*
 );
 
@@ -373,18 +363,18 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
                                     : node_scoreboard_pkg::AGGR;
             end
 
+            // node_scoreboard_pkg::TRANS: begin
+            //     nodeslot_state_n[nodeslot] = transformation_done[nodeslot] && accepting_writeback_request ? node_scoreboard_pkg::WRITEBACK
+            //                         : node_scoreboard_pkg::TRANS;
+            // end
+
             node_scoreboard_pkg::TRANS: begin
-                nodeslot_state_n[nodeslot] = transformation_done[nodeslot] && accepting_writeback_request ? node_scoreboard_pkg::WRITEBACK
+                nodeslot_state_n[nodeslot] = nsb_fte_resp_valid ? node_scoreboard_pkg::EMPTY
                                     : node_scoreboard_pkg::TRANS;
             end
 
             node_scoreboard_pkg::PASS: begin // TO DO: implement (MS4)
                 nodeslot_state_n[nodeslot] = node_scoreboard_pkg::EMPTY;
-            end
-
-            node_scoreboard_pkg::WRITEBACK: begin
-                nodeslot_state_n[nodeslot] = nsb_output_buffer_resp_valid && (nsb_output_buffer_resp.nodeslot == nodeslot) ? node_scoreboard_pkg::EMPTY
-                                    : node_scoreboard_pkg::WRITEBACK;
             end
 
             node_scoreboard_pkg::HALT: begin // TO DO: implement (MS5)
@@ -395,14 +385,15 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
     end
 
     // State masks for request logic
-    assign nodeslots_waiting_nb_list_fetch      [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::PROG_DONE);
-    assign nodeslots_waiting_scale_factor_fetch [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NB_LIST) && fetch_nb_list_resp_received[nodeslot];
-    assign nodeslots_waiting_neighbour_fetch    [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_SCALE_FACTORS) && fetch_scale_factors_resp_received[nodeslot];
-    assign nodeslots_waiting_prefetcher         [nodeslot] = nodeslots_waiting_nb_list_fetch[nodeslot] || nodeslots_waiting_neighbour_fetch[nodeslot] || nodeslots_waiting_scale_factor_fetch[nodeslot];
+    assign nodeslots_waiting_nb_list_fetch       [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::PROG_DONE);
+    assign nodeslots_waiting_scale_factor_fetch  [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NB_LIST) && fetch_nb_list_resp_received[nodeslot];
+    assign nodeslots_waiting_neighbour_fetch     [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_SCALE_FACTORS) && fetch_scale_factors_resp_received[nodeslot];
+    assign nodeslots_waiting_prefetcher          [nodeslot] = nodeslots_waiting_nb_list_fetch[nodeslot] || nodeslots_waiting_neighbour_fetch[nodeslot] || nodeslots_waiting_scale_factor_fetch[nodeslot];
 
-    assign nodeslots_waiting_aggregation        [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NEIGHBOURS) && fetch_nbs_resp_received[nodeslot];
-    assign nodeslots_waiting_transformation     [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::AGGR) && aggregation_done[nodeslot];
-    assign nodeslots_waiting_writeback          [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::TRANS) && transformation_done[nodeslot];
+    assign nodeslots_waiting_aggregation         [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NEIGHBOURS) && fetch_nbs_resp_received[nodeslot];
+    assign nodeslots_waiting_transformation      [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::AGGR) && aggregation_done[nodeslot];
+    assign nodeslots_waiting_writeback           [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::TRANS) && transformation_done[nodeslot];
+    assign status_nodeslots_empty_mask_lsb_value [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
 
     // Read-only status flags
     always_ff @(posedge core_clk or negedge resetn) begin
@@ -419,6 +410,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
         end
     end
 
+
 end : per_nodeslot_logic
 
 // Layer weights fetching logic
@@ -430,6 +422,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         waiting_weights_fetch_req <= '0;
         ctrl_fetch_layer_weights_done_done <= '0;
+        weights_fetched <= '0;
     
     end else if (ctrl_fetch_layer_weights_fetch) begin
         waiting_weights_fetch_req <= '1;
@@ -442,6 +435,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end else if (nsb_prefetcher_resp_valid && nsb_prefetcher_resp.response_type == top_pkg::WEIGHTS) begin
         waiting_weights_fetch_req <= '0;
         ctrl_fetch_layer_weights_done_done <= '1;
+        weights_fetched <= '1;
         
     end else if (ctrl_fetch_layer_weights_done_ack_ack) begin
         waiting_weights_fetch_req <= '0;
@@ -550,7 +544,7 @@ assign nsb_age_req.fetch_tag            = nsb_nodeslot_allocated_fetch_tag_fetch
 // Transformation requests
 // ------------------------------------------------------------
 
-assign nsb_fte_req_valid                = (aggregation_buffer_population_count == nsb_config_aggregation_wait_count_count);
+assign nsb_fte_req_valid                = (aggregation_buffer_population_count == nsb_config_aggregation_wait_count_count) && weights_fetched && layer_config_valid_value;
 assign nsb_fte_req.nodeslots            = nodeslots_waiting_transformation;
 
 // Writeback requests
