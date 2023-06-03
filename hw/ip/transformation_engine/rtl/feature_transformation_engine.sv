@@ -38,25 +38,26 @@ module feature_transformation_engine #(
     output NSB_FTE_RESP_t                                                                             nsb_fte_resp,
 
     // Aggregation Buffer Interface
-    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::NODE_ID_WIDTH-1:0]                 aggregation_buffer_node_id,
-    output logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_pop,
-    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_out_feature_valid,
-    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_out_feature,
-    input  logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free,
+    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::NODE_ID_WIDTH-1:0]                 aggregation_buffer_node_id,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_pop,
+    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_out_feature_valid,
+    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_out_feature,
+    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free,
 
     // Weight Channels: FTE -> Prefetcher Weight Bank (REQ)
-    output logic                                                                                      weight_channel_req_valid,
-    input  logic                                                                                      weight_channel_req_ready,
-    output WEIGHT_CHANNEL_REQ_t                                                                       weight_channel_req,
-    input  logic                                                                                      weight_channel_resp_valid,
-    output logic                                                                                      weight_channel_resp_ready,
-    input  WEIGHT_CHANNEL_RESP_t                                                                      weight_channel_resp,
+    output logic                 [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_req_valid,
+    input  logic                 [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_req_ready,
+    output WEIGHT_CHANNEL_REQ_t  [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_req,
+
+    input  logic                 [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_resp_valid,
+    output logic                 [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_resp_ready,
+    input  WEIGHT_CHANNEL_RESP_t [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_resp,
 
     // Transformation Buffer Interface
-    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_write_enable,
-    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0]    transformation_buffer_write_address,
-    output logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]            transformation_buffer_write_data,
-    input  logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_slot_free,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_write_enable,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0]    transformation_buffer_write_address,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]            transformation_buffer_write_data,
+    input  logic [top_pkg::PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_slot_free,
 
     // Feature Transformation Engine -> AXI Interconnect
     output logic [33:0]                       transformation_engine_axi_interconnect_axi_araddr,
@@ -104,7 +105,6 @@ module feature_transformation_engine #(
 
 );
 
-// parameter SYSTOLIC_MODULE_COUNT = top_pkg::MAX_FEATURE_COUNT / MATRIX_N; // = 64
 parameter SYSTOLIC_MODULE_COUNT = 4;
 
 typedef enum logic [3:0] { 
@@ -186,7 +186,7 @@ logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]         busy_aggregation_slots_sna
 logic                                                 pe_delay_counter;
 
 // Flushing logic
-logic [top_pkg::TRANSFORMATION_BUFFER_SLOTS-1:0]         transformation_buffer_slot_arb_oh;
+logic [top_pkg::TRANSFORMATION_BUFFER_SLOTS-1:0]     transformation_buffer_slot_arb_oh;
 
 // Writeback logic
 logic                                                start_memory_dump;

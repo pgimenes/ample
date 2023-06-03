@@ -143,8 +143,8 @@ class GraphTest extends Test;
     function automatic int get_precision(string precision_str);
         case (precision_str)
             "FLOAT_32": return 0;
-            "FIXED_16": return 1;
-            "FIXED_8": return 2;
+            "FIXED_8": return 1;
+            "FIXED_16": return 2;
             "FIXED_4": return 3;
             default: return -1;
         endcase

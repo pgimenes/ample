@@ -3,7 +3,7 @@ import top_pkg::*;
 module feature_aggregator #(
     parameter DATA_WIDTH = 32,
     parameter FLOAT_WIDTH = 32,
-    parameter PRECISION = "FLOAT_32"
+    parameter PRECISION = top_pkg::FLOAT_32
 ) (
     input  logic                   core_clk,
     input  logic                   resetn,
@@ -19,13 +19,7 @@ module feature_aggregator #(
     output logic                   feature_updated,
     output logic [DATA_WIDTH-1:0]  accumulator,
     
-    input  logic                   reset_accumulator,
-
-    input  logic                   upsample,
-    output logic                   upsampled_accumulator_valid,
-    output logic [FLOAT_WIDTH-1:0] upsampled_accumulator,
-
-    input  logic [31:0]            layer_config_upsampling_parameter
+    input  logic                   reset_accumulator
 
 );
 
@@ -52,8 +46,6 @@ logic                                         busy;
 // Upsampling
 logic                                         accumulator_float_valid;
 logic [FLOAT_WIDTH-1:0]                       accumulator_float;
-logic                                         upsampled_accumulator_valid_comb;
-logic [FLOAT_WIDTH-1:0]                       upsampled_accumulator_comb;
 
 // ==================================================================================================================================================
 // Instances
@@ -62,7 +54,7 @@ logic [FLOAT_WIDTH-1:0]                       upsampled_accumulator_comb;
 // Scale factor multipliers
 // -----------------------------------------------------------------------------------
 
-if (PRECISION == "FLOAT_32") begin
+if (PRECISION == top_pkg::FLOAT_32) begin
 
     fp_mult scale_factor_mult (
         .s_axis_a_tvalid      (in_feature_valid && in_feature_ready),
@@ -127,52 +119,6 @@ sum_aggregator #(
 
 // === ADD AGGREGATOR INSTANCE
 
-// Upsamplers
-// -----------------------------------------------------------------------------------
-
-if (PRECISION == "FIXED_16") begin
-    
-    fixed16_upsampler upsampler_i (
-        .s_axis_a_tvalid    (upsample),
-        .s_axis_a_tdata     (accumulator),
-        
-        .m_axis_result_tvalid (accumulator_float_valid),
-        .m_axis_result_tdata  (accumulator_float)
-    );
-
-end else if (PRECISION == "FIXED_8") begin
-    
-    fixed8_upsampler upsampler_i (
-        .s_axis_a_tvalid    (upsample),
-        .s_axis_a_tdata     (accumulator),
-        
-        .m_axis_result_tvalid (accumulator_float_valid),
-        .m_axis_result_tdata  (accumulator_float)
-    );
-
-end else if (PRECISION == "FIXED_4") begin
-    
-    fixed4_upsampler upsampler_i (
-        .s_axis_a_tvalid    (upsample),
-        .s_axis_a_tdata     (accumulator),
-        
-        .m_axis_result_tvalid (accumulator_float_valid),
-        .m_axis_result_tdata  (accumulator_float)
-    );
-
-end
-
-fp_mult upsampler_mult (
-    .s_axis_a_tvalid      (accumulator_float_valid),
-    .s_axis_a_tdata       (accumulator_float),
-
-    .s_axis_b_tvalid      ('1),
-    .s_axis_b_tdata       (layer_config_upsampling_parameter),
-    
-    .m_axis_result_tvalid (upsampled_accumulator_valid_comb),
-    .m_axis_result_tdata  (upsampled_accumulator_comb)
-);
-
 // ==================================================================================================================================================
 // Logic
 // ==================================================================================================================================================
@@ -236,39 +182,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
             endcase
         end
     end
-end
-
-// Multi-precision support
-// --------------------------------------------
-
-if (PRECISION == "FIXED_16" || PRECISION == "FIXED_8" || PRECISION == "FIXED_4") begin
-    
-    // Latch results in the cycle after upsample request
-    always_ff @(posedge core_clk or negedge resetn) begin
-        if (!resetn) begin
-            upsampled_accumulator       <= '0;
-            upsampled_accumulator_valid <= '0;
-        
-        end else if (upsampled_accumulator_valid_comb) begin
-            upsampled_accumulator       <= upsampled_accumulator_comb;
-            upsampled_accumulator_valid <= '1;
-        end
-    end
-
-end else begin
-
-    // Latch results in the cycle after upsample request
-    always_ff @(posedge core_clk or negedge resetn) begin
-        if (!resetn) begin
-            upsampled_accumulator       <= '0;
-            upsampled_accumulator_valid <= '0;
-        
-        end else if (upsample) begin
-            upsampled_accumulator       <= accumulator;
-            upsampled_accumulator_valid <= '1;
-        end
-    end
-
 end
 
 endmodule

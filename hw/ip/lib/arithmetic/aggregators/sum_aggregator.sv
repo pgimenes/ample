@@ -2,7 +2,7 @@ import top_pkg::*;
 
 module sum_aggregator #(
     parameter DATA_WIDTH = 32,
-    parameter PRECISION = "FLOAT_32"
+    parameter PRECISION = top_pkg::FLOAT_32
 ) (
     input  logic core_clk,
     input  logic resetn,
@@ -16,7 +16,7 @@ module sum_aggregator #(
     output logic [DATA_WIDTH-1:0]  out_feature
 );
 
-if (PRECISION == "FLOAT_32") begin
+if (PRECISION == top_pkg::FLOAT_32) begin
   
     // Adder is combinatorial
     fp_add fp_add_i (

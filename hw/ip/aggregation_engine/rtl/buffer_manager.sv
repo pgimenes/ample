@@ -1,10 +1,14 @@
 import top_pkg::*;
 import age_pkg::*;
-import noc_params::*;
+import noc_pkg::*;
 
 module buffer_manager #(
     parameter X_COORD = 0,
     parameter Y_COORD = 0,
+
+    parameter AGGREGATION_ROWS = top_pkg::AGGREGATION_BUFFER_SLOTS,
+    parameter AGGREGATION_COLS = top_pkg::MESSAGE_CHANNEL_COUNT/top_pkg::PRECISION_COUNT,
+    
     parameter BUFFER_SLOT_WRITE_DEPTH = 512,
     parameter BUFFER_SLOT_WRITE_WIDTH = 64
 ) (
@@ -46,9 +50,9 @@ typedef enum logic [2:0] { BM_FSM_IDLE, BM_FSM_WAIT_FEATURES, BM_FSM_WRITE, BM_F
 
 BM_FSM_e                                                  bm_state, bm_state_n;
 
-logic [$clog2(TOTAL_AGGREGATION_MANAGERS)-1:0]             allocated_agm_q;
-logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_COLS)-1:0]       allocated_agcs_x_coords_q;
-logic [MAX_AGC_PER_NODE-1:0] [$clog2(MESH_ROWS)-1:0]       allocated_agcs_y_coords_q;
+logic [$clog2(MAX_AGGREGATION_COLS)-1:0]             allocated_agm_q;
+logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_COLS)-1:0]       allocated_agcs_x_coords_q;
+logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_ROWS)-1:0]       allocated_agcs_y_coords_q;
 logic [$clog2(MAX_AGC_PER_NODE)-1:0]                       allocated_agcs_count_q;
 
 logic [MAX_AGC_PER_NODE-1:0]                               allocated_agcs_oh;
@@ -58,18 +62,18 @@ logic [MAX_AGC_PER_NODE-1:0]                               agc_done;
 flit_t                                                    received_flit;
 logic [$clog2(MAX_AGC_PER_NODE)-1:0]                       agc_offset; // offset of the AGC that sent the last received packet flit
 
-logic [$clog2(MESH_ROWS)-1:0]                             received_packet_source_row;
-logic [$clog2(MESH_COLS)-1:0]                             received_packet_source_col;
-logic [$clog2(MESH_ROWS)-1:0]                             incoming_packet_source_row;
-logic [$clog2(MESH_COLS)-1:0]                             incoming_packet_source_col;
+logic [$clog2(MAX_MESH_ROWS)-1:0]                             received_packet_source_row;
+logic [$clog2(MAX_MESH_COLS)-1:0]                             received_packet_source_col;
+logic [$clog2(MAX_MESH_ROWS)-1:0]                             incoming_packet_source_row;
+logic [$clog2(MAX_MESH_COLS)-1:0]                             incoming_packet_source_col;
 
 logic [MAX_AGC_PER_NODE-1:0]                               agc_source_oh;
 logic [MAX_AGC_PER_NODE-1:0]                               agc_source_oh_early;
 logic [MAX_AGC_PER_NODE-1:0] [3:0]                         flit_counter;
 
 // Done packets
-logic [$clog2(MESH_COLS)-1:0]                             outgoing_packet_dest_col;
-logic [$clog2(MESH_ROWS)-1:0]                             outgoing_packet_dest_row;
+logic [$clog2(MAX_MESH_COLS)-1:0]                             outgoing_packet_dest_col;
+logic [$clog2(MAX_MESH_ROWS)-1:0]                             outgoing_packet_dest_row;
 
 logic                                                     noc_router_waiting;
 logic                                                     done_head_sent;
@@ -174,10 +178,10 @@ assign allocated_agcs = allocated_agcs_oh - 1'b1;
 // -------------------------------------------------------------------------------------
 
 always_comb begin
-    {received_packet_source_col, received_packet_source_row} = age_pkg::decode_packet_source(received_flit);
+    {received_packet_source_col, received_packet_source_row} = noc_pkg::decode_packet_source(received_flit);
 
     // Decode packets arriving during handshake
-    {incoming_packet_source_col, incoming_packet_source_row} = age_pkg::decode_packet_source(router_buffer_manager_data);
+    {incoming_packet_source_col, incoming_packet_source_row} = noc_pkg::decode_packet_source(router_buffer_manager_data);
 end
 
 // Register incoming features
@@ -242,14 +246,14 @@ end
 always_comb begin
     buffer_manager_router_valid = (bm_state == BM_FSM_SEND_DONE);
 
-    outgoing_packet_dest_col = allocated_agm_q[$clog2(age_pkg::MESH_COLS)-1:0];
-    outgoing_packet_dest_row = age_pkg::MESH_ROWS - 1;
+    outgoing_packet_dest_col = allocated_agm_q[$clog2(MAX_MESH_COLS)-1:0];
+    outgoing_packet_dest_row = AGGREGATION_ROWS;
 
     buffer_manager_router_data.vc_id = '0;
-    buffer_manager_router_data.flit_label = done_head_sent ? noc_params::TAIL : noc_params::HEAD;
+    buffer_manager_router_data.flit_label = done_head_sent ? noc_pkg::TAIL : noc_pkg::HEAD;
 
     buffer_manager_router_data.data.bt_pl = { outgoing_packet_dest_col, outgoing_packet_dest_row,
-                                                X_COORD[$clog2(MESH_COLS)-1:0], Y_COORD[$clog2(MESH_ROWS)-1:0],
+                                                X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0],
                                                 // packet is empty since any packet received by an AGM from a BM indicates buffering done
                                                 {PAYLOAD_DATA_WIDTH{1'b0}} }; // 64 zeros
 end
@@ -265,11 +269,11 @@ always_ff @(posedge core_clk or negedge resetn) begin
         noc_router_waiting <= '1;
 
     // Drop when sending the tail packet and wait for router to be allocatable again        
-    end else if (buffer_manager_router_valid && (buffer_manager_router_data.flit_label == noc_params::HEAD)) begin
+    end else if (buffer_manager_router_valid && (buffer_manager_router_data.flit_label == noc_pkg::HEAD)) begin
         done_head_sent     <= '1;
         
     
-    end else if (buffer_manager_router_valid && (buffer_manager_router_data.flit_label == noc_params::TAIL)) begin
+    end else if (buffer_manager_router_valid && (buffer_manager_router_data.flit_label == noc_pkg::TAIL)) begin
         noc_router_waiting <= '0;
         done_head_sent     <= '0;
     end
