@@ -27,13 +27,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="41093460fs"></ZoomStartTime>
-      <ZoomEndTime time="41127021fs"></ZoomEndTime>
-      <Cursor1Time time="41115000fs"></Cursor1Time>
+      <ZoomStartTime time="7426967fs"></ZoomStartTime>
+      <ZoomEndTime time="7595168fs"></ZoomEndTime>
+      <Cursor1Time time="7455000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="337"></NameColumnWidth>
-      <ValueColumnWidth column_width="93"></ValueColumnWidth>
+      <ValueColumnWidth column_width="89"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="48" />
    <wvobject type="logic" fp_name="/top_tb/sys_clk_i">
@@ -85,8 +85,8 @@
          <obj_property name="ObjectShortName">.allocated_fetch_tag[3:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/node_scoreboard_i/aggregation_buffer_population_count">
-         <obj_property name="ElementShortName">aggregation_buffer_population_count[5:0]</obj_property>
-         <obj_property name="ObjectShortName">aggregation_buffer_population_count[5:0]</obj_property>
+         <obj_property name="ElementShortName">aggregation_buffer_population_count[1:0][5:0]</obj_property>
+         <obj_property name="ObjectShortName">aggregation_buffer_population_count[1:0][5:0]</obj_property>
       </wvobject>
       <wvobject type="logic" fp_name="/top_tb/top_i/node_scoreboard_i/nsb_age_resp_valid">
          <obj_property name="ElementShortName">nsb_age_resp_valid</obj_property>
@@ -422,6 +422,7 @@
    <wvobject type="group" fp_name="group298">
       <obj_property name="label">WEIGHT BANK</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_float_i/nsb_prefetcher_weight_bank_req_valid">
          <obj_property name="ElementShortName">nsb_prefetcher_weight_bank_req_valid</obj_property>
          <obj_property name="ObjectShortName">nsb_prefetcher_weight_bank_req_valid</obj_property>
@@ -454,13 +455,42 @@
          <obj_property name="ElementShortName">weight_bank_state[3:0]</obj_property>
          <obj_property name="ObjectShortName">weight_bank_state[3:0]</obj_property>
       </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_bank_float_i/weight_bank_axi_rm_fetch_resp_valid">
+         <obj_property name="ElementShortName">weight_bank_axi_rm_fetch_resp_valid</obj_property>
+         <obj_property name="ObjectShortName">weight_bank_axi_rm_fetch_resp_valid</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group307">
       <obj_property name="label">Weight Bank AXI RM</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/fetch_state">
          <obj_property name="ElementShortName">fetch_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">fetch_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/fetch_req_valid">
+         <obj_property name="ElementShortName">fetch_req_valid</obj_property>
+         <obj_property name="ObjectShortName">fetch_req_valid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/fetch_req_ready">
+         <obj_property name="ElementShortName">fetch_req_ready</obj_property>
+         <obj_property name="ObjectShortName">fetch_req_ready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/fetch_start_address">
+         <obj_property name="ElementShortName">fetch_start_address[33:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_start_address[33:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/fetch_byte_count">
+         <obj_property name="ElementShortName">fetch_byte_count[17:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_byte_count[17:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/req_fetch_byte_count">
+         <obj_property name="ElementShortName">req_fetch_byte_count[17:0]</obj_property>
+         <obj_property name="ObjectShortName">req_fetch_byte_count[17:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/required_beat_count">
+         <obj_property name="ElementShortName">required_beat_count[11:0]</obj_property>
+         <obj_property name="ObjectShortName">required_beat_count[11:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/req_fetch_byte_count">
          <obj_property name="ElementShortName">req_fetch_byte_count[17:0]</obj_property>
@@ -473,6 +503,10 @@
       <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/last_transaction_pending">
          <obj_property name="ElementShortName">last_transaction_pending</obj_property>
          <obj_property name="ObjectShortName">last_transaction_pending</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/top_tb/top_i/prefetcher_i/weight_read_master_i/fetch_resp_valid">
+         <obj_property name="ElementShortName">fetch_resp_valid</obj_property>
+         <obj_property name="ObjectShortName">fetch_resp_valid</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="group" fp_name="group311">
