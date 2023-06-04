@@ -6,9 +6,12 @@ interface aggregation_engine_interface (
 
     input logic core_clk,
     input logic resetn,
+
+    input logic regbank_clk,
+    input logic regbank_resetn,
     
     // Regbank Slave AXI interface
-    input logic [AXI_ADDRESS_WIDTH-1:0]                        s_axi_awaddr,
+    input logic [AXIL_ADDR_WIDTH-1:0]                          s_axi_awaddr,
     input logic [2:0]                                          s_axi_awprot,
     input logic                                                s_axi_awvalid,
     input logic                                                s_axi_awready,
@@ -16,7 +19,7 @@ interface aggregation_engine_interface (
     input logic [3:0]                                          s_axi_wstrb,
     input logic                                                s_axi_wvalid,
     input logic                                                s_axi_wready,
-    input logic [AXI_ADDRESS_WIDTH-1:0]                        s_axi_araddr,
+    input logic [AXIL_ADDR_WIDTH-1:0]                          s_axi_araddr,
     input logic [2:0]                                          s_axi_arprot,
     input logic                                                s_axi_arvalid,
     input logic                                                s_axi_arready,

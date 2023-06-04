@@ -14,8 +14,8 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 "../ip/lib/buffers/bram_fifo.sv" \
 
 sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --include "../build/regbanks/node_scoreboard_regbank" --include "../../imports" -d "FLOAT_MAC=1" \
-"../ip/include/top_pkg.sv" \
 "../../imports/nocrouter/src/rtl/noc/noc_pkg.sv" \
+"../ip/include/top_pkg.sv" \
 "../ip/aggregation_engine/include/age_pkg.sv" \
 "../ip/node_scoreboard/include/node_scoreboard_pkg.sv" \
 "../ip/prefetcher/include/prefetcher_pkg.sv" \
@@ -94,5 +94,6 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 "../ip/transformation_engine/rtl/feature_transformation_core.sv" \
 "../ip/transformation_engine/rtl/feature_transformation_engine.sv" \
 "../ip/top/rtl/top.sv" \
+"../ip/top/rtl/top_fast_build.sv" \
 
 nosort

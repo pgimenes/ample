@@ -1,20 +1,24 @@
 
 import top_pkg::*;
+import json::*;
 
 class aggregation_engine_tb_monitor;
 
 virtual aggregation_engine_interface age_vif;
 
-function new(virtual aggregation_engine_interface age_intf);
+Node_Scoreboard sb;
+
+function new(virtual aggregation_engine_interface age_intf, ref Node_Scoreboard node_scoreboard);
     $display("[TIMESTAMP]: %t, [AGE_MONITOR::DEBUG]: AGE monitor instantiated.", $time);
     this.age_vif = age_intf;
+    this.sb = node_scoreboard;
 endfunction
 
 task main();
-    $display("[TIMESTAMP]: %t, [AGE_MONITOR::DEBUG]: AGE monitor activated.", $time);
     fork
+        $display("[TIMESTAMP]: %t, [AGE_MONITOR::DEBUG]: AGE monitor activated.", $time);
         nsb_req();
-    join
+    join_any
 endtask
 
 // Monitor NSB requests
