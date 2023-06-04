@@ -240,9 +240,6 @@ node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
     .layer_config_out_messages_address_msb_msb,
 
     .ctrl_fetch_layer_weights_fetch,
-    .ctrl_fetch_layer_weights_precision_strobe,
-    .ctrl_fetch_layer_weights_precision_value,
-    .ctrl_fetch_layer_weights_done_strobe,
     .ctrl_fetch_layer_weights_done_done,
     .ctrl_fetch_layer_weights_done_ack_ack,
     .ctrl_fetch_layer_weights_precision_value,

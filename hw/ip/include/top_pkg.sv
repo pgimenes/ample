@@ -50,6 +50,10 @@ parameter AGGREGATION_BUFFER_WRITE_WIDTH = 64;
 parameter AGGREGATION_BUFFER_READ_DEPTH = MAX_FEATURE_COUNT * 4 / 4; // 4 bytes per float
 parameter AGGREGATION_BUFFER_READ_WIDTH = 32;
 
+// Transformation Engine
+
+parameter TRANSFORMATION_ROWS = 4;
+
 // Transformation Buffer
 parameter TRANSFORMATION_BUFFER_SLOTS = 16;
 parameter TRANSFORMATION_BUFFER_WRITE_DEPTH = 1024*32/512; // == 64
@@ -120,6 +124,7 @@ typedef struct packed {
 
 typedef struct packed {
     logic [MAX_NODESLOT_COUNT-1:0]         nodeslots;
+    NODE_PRECISION_e                       precision;
 } NSB_FTE_REQ_t;
 
 typedef struct packed {

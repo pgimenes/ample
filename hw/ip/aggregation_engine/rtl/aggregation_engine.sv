@@ -90,13 +90,13 @@ logic [31:0] layer_config_upsampling_parameter_value;
 // ------------------------------------------------------------
 
 // AGE -> Aggregation Mesh: Request Interface
-logic [top_pkg::PRECISION_COUNT]                                                        aggregation_req_valid;
-logic [top_pkg::PRECISION_COUNT]                                                        aggregation_req_ready;
-top_pkg::NSB_AGE_REQ_t                                                                  aggregation_req;
+logic [top_pkg::PRECISION_COUNT-1:0]                                                        aggregation_req_valid;
+logic [top_pkg::PRECISION_COUNT-1:0]                                                        aggregation_req_ready;
+top_pkg::NSB_AGE_REQ_t                                                                      aggregation_req;
 
 // Aggregation Mesh -> AGE : Request Interface
-logic [top_pkg::PRECISION_COUNT] [AGGREGATION_COLS-1:0]                                 aggregation_manager_done_valid;
-logic [top_pkg::PRECISION_COUNT] [AGGREGATION_COLS-1:0]                                 aggregation_manager_done_ready;
+logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_COLS-1:0]                                 aggregation_manager_done_valid;
+logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_COLS-1:0]                                 aggregation_manager_done_ready;
 
 // NSB Response Arbitration
 // ------------------------------------------------------------

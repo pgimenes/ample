@@ -14,6 +14,8 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module processing_element #(
+    parameter PRECISION = top_pkg::FLOAT_32,
+    parameter DATA_WIDTH = 32,
     parameter FLOAT_WIDTH = 32
 ) (
     input  logic                            core_clk,
@@ -22,31 +24,31 @@ module processing_element #(
     input  logic                            pulse_systolic_module,
 
     input  logic                            pe_forward_in_valid,
-    input  logic [FLOAT_WIDTH-1:0]          pe_forward_in,
+    input  logic [DATA_WIDTH-1:0]           pe_forward_in,
 
     input  logic                            pe_down_in_valid,
-    input  logic [FLOAT_WIDTH-1:0]          pe_down_in,
+    input  logic [DATA_WIDTH-1:0]           pe_down_in,
     
     output logic                            pe_forward_out_valid,
-    output logic [FLOAT_WIDTH-1:0]          pe_forward_out,
+    output logic [DATA_WIDTH-1:0]           pe_forward_out,
     
     output logic                            pe_down_out_valid,
-    output logic [FLOAT_WIDTH-1:0]          pe_down_out,
+    output logic [DATA_WIDTH-1:0]           pe_down_out,
 
     input  logic                            bias_valid,
-    input  logic [FLOAT_WIDTH-1:0]          bias,
+    input  logic [DATA_WIDTH-1:0]           bias,
 
     input  logic                                             activation_valid,
     input  logic [$bits(top_pkg::ACTIVATION_FUNCTION_e)-1:0] activation,
 
     input  logic                            shift_valid,
-    input  logic [FLOAT_WIDTH-1:0]          shift_data,
+    input  logic [DATA_WIDTH-1:0]           shift_data,
     
-    output logic [FLOAT_WIDTH-1:0]          pe_acc,
+    output logic [DATA_WIDTH-1:0]           pe_acc,
 
-    input  logic [31:0]                     layer_config_leaky_relu_alpha_value,
+    input  logic [DATA_WIDTH-1:0]           layer_config_leaky_relu_alpha_value,
 
-    output logic [31:0] debug_update_counter
+    output logic [DATA_WIDTH-1:0]           debug_update_counter
 );
 
 // ==================================================================================================================================================
@@ -71,6 +73,8 @@ logic [FLOAT_WIDTH-1:0] activated_feature;
 // ==================================================================================================================================================
 
 mac #(
+    .PRECISION          (PRECISION),
+    .DATA_WIDTH         (DATA_WIDTH),
     .FLOAT_WIDTH        (FLOAT_WIDTH)
 ) mac_i (
     .core_clk,            
@@ -91,26 +95,38 @@ mac #(
 // Bias addition
 // -------------------------------------------------------------
 
-fp_add bias_adder (
-  .s_axis_a_tvalid              ('1),
-  .s_axis_a_tdata               (pe_acc),
-  
-  .s_axis_b_tvalid              (bias_valid),
-  .s_axis_b_tdata               (bias),
+if (PRECISION == top_pkg::FLOAT_32) begin
 
-  .m_axis_result_tvalid         (bias_out_valid_comb),
-  .m_axis_result_tdata          (pe_acc_add_bias_comb)
-);
+    fp_add bias_adder (
+    .s_axis_a_tvalid              ('1),
+    .s_axis_a_tdata               (pe_acc),
 
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        bias_out_valid <= '0;
-        pe_acc_add_bias <= '0;
+    .s_axis_b_tvalid              (bias_valid),
+    .s_axis_b_tdata               (bias),
 
-    end else begin
-        bias_out_valid <= bias_out_valid_comb;
-        pe_acc_add_bias <= pe_acc_add_bias_comb;
+    .m_axis_result_tvalid         (bias_out_valid_comb),
+    .m_axis_result_tdata          (pe_acc_add_bias_comb)
+    );
+
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            bias_out_valid <= '0;
+            pe_acc_add_bias <= '0;
+
+        end else begin
+            bias_out_valid <= bias_out_valid_comb;
+            pe_acc_add_bias <= pe_acc_add_bias_comb;
+        end
     end
+
+end else begin
+
+    // Fixed point
+    always_comb begin
+        bias_out_valid = bias_valid;
+        pe_acc_add_bias = pe_acc + bias;
+    end
+
 end
 
 // Activations
@@ -163,6 +179,8 @@ always_comb begin
                             : '0;
 end
 
+`ifdef DEBUG
+
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         debug_update_counter <= '0;
@@ -172,6 +190,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
 
     end
 end
+
+`endif
 
 // ======================================================================================================
 // Assertions
