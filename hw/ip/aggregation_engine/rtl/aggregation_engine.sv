@@ -214,14 +214,8 @@ rr_arbiter #(
     
     .request    (aggregation_manager_done_valid),
     .update_lru (|aggregation_manager_done_valid),
-    .grant_oh   (aggregation_manager_resp_arbitration_oh)
-);
-
-onehot_to_binary_comb #(
-    .INPUT_WIDTH    (TOTAL_AGGREGATION_MANAGERS)
-) bm_alloc_oh2bin (
-    .input_data     (aggregation_manager_resp_arbitration_oh),
-    .output_data    (aggregation_manager_resp_arbitration_bin)
+    .grant_oh   (aggregation_manager_resp_arbitration_oh),
+    .grant_bin  (aggregation_manager_resp_arbitration_bin)
 );
 
 // ==================================================================================================================================================

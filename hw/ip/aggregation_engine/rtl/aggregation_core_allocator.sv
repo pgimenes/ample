@@ -55,14 +55,8 @@ rr_arbiter #(
     .request        (cores_free & allocatable_cores),
     .update_lru     (busy && !done),
 
-    .grant_oh       (allocated_core)
-);
-
-onehot_to_binary_comb #(
-    .INPUT_WIDTH (NUM_CORES)
-) allocated_core_oh2bin (
-	.input_data     (allocated_core),
-  	.output_data    (allocated_core_bin)
+    .grant_oh       (allocated_core),
+    .grant_bin      (allocated_core_bin)
 );
 
 // ==================================================================================================================================================

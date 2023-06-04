@@ -409,14 +409,8 @@ rr_arbiter #(
 
     .request    (buffer_manager_allocation_ready),
     .update_lru (agm_waiting && bm_waiting), // update when agm accepting buffer manager allocation
-    .grant_oh   (agm_allocation_oh)
-);
-
-onehot_to_binary_comb #(
-    .INPUT_WIDTH    (AGGREGATION_COLS)
-) agm_alloc_req_oh2bin (
-    .input_data     (agm_allocation_oh),
-    .output_data    (agm_receiving_buffer_manager_allocation)
+    .grant_oh   (agm_allocation_oh),
+    .grant_bin  (agm_receiving_buffer_manager_allocation)
 );
 
 // Drive valid allocation to AGM when it has been arbitrated and a buffer manager is waiting
@@ -433,14 +427,8 @@ rr_arbiter #(
     
     .request    (buffer_manager_nodeslot_allocation_ready),
     .update_lru (agm_waiting && bm_waiting), // accepting when buffer manager accepting allocation
-    .grant_oh   (buffer_manager_allocation_oh)
-);
-
-onehot_to_binary_comb #(
-    .INPUT_WIDTH    (AGGREGATION_ROWS)
-) agm_resp_arb_oh2bin (
-    .input_data     (buffer_manager_allocation_oh),
-    .output_data    (buffer_manager_allocation) // buffer manager receiving allocation
+    .grant_oh   (buffer_manager_allocation_oh),
+    .grant_bin  (buffer_manager_allocation)
 );
 
 // Drive valid allocation to buffer manager when it has been arbitrated and an AGM is waiting

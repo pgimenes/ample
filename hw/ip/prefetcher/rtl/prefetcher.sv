@@ -207,7 +207,7 @@ logic [3:0] layer_config_adjacency_list_address_msb_strobe;
 logic [1:0] [3:0] layer_config_adjacency_list_address_msb_value;
 
 logic [3:0] layer_config_weights_address_lsb_strobe;
-logic [31:0] [3:0] layer_config_weights_address_lsb_value;
+logic [3:0] [31:0] layer_config_weights_address_lsb_value;
 
 logic layer_config_weights_address_msb_strobe;
 logic [1:0] layer_config_weights_address_msb_value;
@@ -397,7 +397,7 @@ for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT;
 
         .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid [precision]),
         .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready [precision]),
-        .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req                   [precision]),
+        .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req),
 
         .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid [precision]),
         .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp       [precision]),

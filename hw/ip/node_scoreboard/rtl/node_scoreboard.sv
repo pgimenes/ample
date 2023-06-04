@@ -473,14 +473,8 @@ rr_arbiter #(
     .resetn             (resetn),
     .request            (nodeslots_waiting_prefetcher),
     .update_lru         (nsb_prefetcher_req_valid && nsb_prefetcher_req_ready),
-    .grant_oh           (prefetcher_arbiter_grant_oh)
-);
-
-onehot_to_binary_comb #(
-    .INPUT_WIDTH    (NODESLOT_COUNT)
-) prefetcher_req_oh2bin (
-    .input_data     (prefetcher_arbiter_grant_oh),
-    .output_data    (prefetcher_arbiter_grant_bin)
+    .grant_oh           (prefetcher_arbiter_grant_oh),
+    .grant_bin          (prefetcher_arbiter_grant_bin)
 );
 
 // How to define weights address to prefetcher req?
@@ -521,14 +515,8 @@ rr_arbiter #(
     .resetn             (resetn),
     .request            (nodeslots_waiting_aggregation),
     .update_lru         (nsb_age_req_valid && nsb_age_req_ready),
-    .grant_oh           (age_arbiter_grant_oh)
-);
-
-onehot_to_binary_comb #(
-    .INPUT_WIDTH    (NODESLOT_COUNT)
-) age_req_oh2bin (
-    .input_data     (age_arbiter_grant_oh),
-    .output_data    (age_arbiter_grant_bin)
+    .grant_oh           (age_arbiter_grant_oh),
+    .grant_bin          (age_arbiter_grant_bin)
 );
 
 assign nsb_age_req_valid                = |nodeslots_waiting_aggregation;
