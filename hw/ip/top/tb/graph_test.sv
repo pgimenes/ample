@@ -17,8 +17,8 @@ class GraphTest extends Test;
 
     task automatic run_test();
 
-        Object nodeslot_root, nodeslots, chosen_node_programming;
-        Object layer_root, layers, layer;
+        Object chosen_node_programming;
+        Object layer;
         int nodeslot_idx;
         integer chosen_nodeslot;
         string precision;
@@ -26,17 +26,20 @@ class GraphTest extends Test;
 
         // System reset drops after regbank reset
         wait(this.nsb_intf.resetn == '1);
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Initiating %0s.", $time, TESTNAME, TESTNAME);
 
         // Load layer configuration
-        layer_root = json::Load("layer_config.json");
-        assert (layer_root!=null) else $fatal(1, "Failed to load layer configuration from JSON file");
-        layers = layer_root.getByKey("layers");
-        layer = layers.getByIndex(0);
+        this.layers = json::Load("layer_config.json");
+        assert (this.layers!=null) else $fatal(1, "Failed to load layer configuration from JSON file");
+        this.layers = this.layers.getByKey("layers");
+        layer = this.layers.getByIndex(0);
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Finished loading layer configuration.", $time, TESTNAME);
 
         // Load nodeslot programming
-        nodeslot_root = json::Load("nodeslot_programming.json");
-        assert (nodeslot_root!=null) else $fatal(1, "Failed to load nodeslot programming from JSON file");
-        nodeslots = nodeslot_root.getByKey("nodeslots");
+        this.nodeslots = json::Load("nodeslot_programming.json");
+        assert (this.nodeslots!=null) else $fatal(1, "Failed to load nodeslot programming from JSON file");
+        this.nodeslots = this.nodeslots.getByKey("nodeslots");
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Finished loading nodeslot programming.", $time, TESTNAME);
 
         program_layer_config(layer);
         this.write_nsb_regbank("Layer Config Valid", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_VALID_OFFSET, '1);
@@ -47,10 +50,10 @@ class GraphTest extends Test;
 
         // Program nodeslots from JSON dump
         nodeslot_idx = 0;
-        while (nodeslot_idx < nodeslots.size()) begin
+        while (nodeslot_idx < this.nodeslots.size()) begin
             // Get nodeslot from JSON object and display
             chosen_node_programming = new();
-            chosen_node_programming = nodeslots.getByIndex(nodeslot_idx);
+            chosen_node_programming = this.nodeslots.getByIndex(nodeslot_idx);
             precision = chosen_node_programming.getByKey("precision").asString();
             nodeslot_idx++;
 
@@ -60,6 +63,7 @@ class GraphTest extends Test;
 
             choose_nodeslot(precision, chosen_nodeslot);
 
+            this.sb.node_scoreboard[chosen_nodeslot] = chosen_node_programming;
             $display("[TIMESTAMP]: %t, [%0s::INFO]: Ready to program Node ID %0d into Nodeslot %0d.", $time, TESTNAME, chosen_node_programming.getByKey("node_id").asInt(), chosen_nodeslot);
             program_nodeslot(chosen_node_programming, chosen_nodeslot);
             this.busy_nodeslots_mask[chosen_nodeslot] = 1'b1; // Mark nodeslot busy
