@@ -44,7 +44,9 @@ module processing_element #(
     
     output logic [FLOAT_WIDTH-1:0]          pe_acc,
 
-    input  logic [31:0]                     layer_config_leaky_relu_alpha_value
+    input  logic [31:0]                     layer_config_leaky_relu_alpha_value,
+
+    output logic [31:0] debug_update_counter
 );
 
 // ==================================================================================================================================================
@@ -141,13 +143,13 @@ always_ff @(posedge core_clk or negedge resetn) begin
         pe_down_out_valid           <= '0;
         pe_down_out                 <= '0;
 
-    end else if (update_accumulator) begin
-        // Register incoming messages when updating the accumulator
+    end else if (pulse_systolic_module) begin
         pe_forward_out_valid        <= pe_forward_in_valid;
         pe_forward_out              <= pe_forward_in;
 
         pe_down_out_valid           <= pe_down_in_valid;
         pe_down_out                 <= pe_down_in;
+
     end
 end
 
@@ -159,6 +161,16 @@ always_comb begin
                             : activated_feature_valid ? activated_feature
                             : shift_valid ? shift_data
                             : '0;
+end
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        debug_update_counter <= '0;
+
+    end else if (update_accumulator) begin
+        debug_update_counter <= debug_update_counter + 1'b1;
+
+    end
 end
 
 // ======================================================================================================

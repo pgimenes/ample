@@ -54,7 +54,7 @@ def main(args):
     graphs = []
     for arg, graph_info in graph_map.items():
         if getattr(args, arg):
-            graph = graph_info['class'](feature_count=args.in_features)
+            graph = graph_info['class'](feature_count=args.in_features, graph_precision=args.precision)
             
             # Apply options
             options = graph_info.get('options', {})
@@ -88,7 +88,7 @@ def apply_graph_options(graph, options):
 def run_pass(graph, model, random_embeddings=False):
     logging.info(f"Running graph: {str(graph)} with model: {model}")
 
-    model = model_map[model]['class'](args.in_features, int(args.out_features))
+    model = model_map[model]['class'](args.in_features, args.out_features)
     
     init_manager = InitManager(graph, model, base_path=args.base_path)
     
@@ -129,6 +129,9 @@ def parse_arguments():
     
     parser.add_argument('--random', action='store_true', help='Initialize graph with random embedding.')
     
+    parser.add_argument('--precision', choices=['FLOAT_32', 'FIXED_16', 'FIXED_8', 'FIXED_4', 'mixed'], default='FLOAT_32',
+                            help='Precision for calculations (default: FLOAT_32)')
+
     return parser.parse_args()
 
 if (__name__ == "__main__"):

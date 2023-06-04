@@ -2,11 +2,19 @@
 catch {exec mkdir $env(FYP_DIR)/hw/build}
 cd $env(FYP_DIR)/hw/build
 
-create_project build_project -part xcu250-figd2104-2L-e -force
+set project_name "build_project"
 
-set_property board_part xilinx.com:au250:part0:1.3 [current_project]
+# Check if the project exists
+if {[file exists $project_name.xpr]} {
+    # Project already exists, open it
+    open_project $project_name.xpr
+} else {
+    # Project doesn't exist, create a new project
+    create_project $project_name -part xcu250-figd2104-2L-e -force
+    set_property board_part xilinx.com:au250:part0:1.3 [current_project]
+}
 
-# Add files to project
+# Update IP files
 add_files $env(FYP_DIR)/hw/ip/aggregation_engine/include
 add_files $env(FYP_DIR)/hw/ip/aggregation_engine/rtl
 add_files $env(FYP_DIR)/hw/ip/include
@@ -22,7 +30,7 @@ add_files $env(FYP_DIR)/imports/nocrouter/src/rtl
 
 set_property top top_wrapper [current_fileset]
 
-# Import IP
+# Import Xilinx IP
 import_ip -files $env(FYP_DIR)/hw/xilinx/axi_L_register_control_crossbar.xci
 import_ip -files $env(FYP_DIR)/hw/xilinx/axi_memory_interconnect.xci
 import_ip -files $env(FYP_DIR)/hw/xilinx/axi_memory_master_vip.xci
@@ -59,3 +67,5 @@ export_simulation -of_objects [get_files $env(FYP_DIR)/hw/build/build_project.sr
 
 # Synthesis
 set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY none [get_runs synth_1]
+create_clock -period 20.000 -name regbank_clk -waveform {0.000 10.000} [get_ports {regbank_clk}]
+create_clock -period 5.000 -name sys_clk -waveform {0.000 2.500} [get_ports {sys_clk}]
