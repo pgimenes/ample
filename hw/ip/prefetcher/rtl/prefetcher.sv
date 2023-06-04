@@ -1,7 +1,8 @@
 import top_pkg::*;
+import noc_pkg::*;
 
 module prefetcher #(
-    parameter FETCH_TAG_COUNT = 1
+    parameter FETCH_TAG_COUNT = top_pkg::MESSAGE_CHANNEL_COUNT
 ) (
     input logic                               core_clk,
     input logic                               resetn,
@@ -175,6 +176,7 @@ module prefetcher #(
 
     input  logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_pop,
     output logic [MESSAGE_CHANNEL_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
+    output logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_out_valid,
     output logic [MESSAGE_CHANNEL_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count,
     output logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_empty,
     output logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_full
@@ -203,14 +205,14 @@ logic [1:0] layer_config_in_messages_address_msb_value;
 logic layer_config_adjacency_list_address_lsb_strobe;
 logic [31:0] layer_config_adjacency_list_address_lsb_value;
 
-logic [3:0] layer_config_adjacency_list_address_msb_strobe;
-logic [1:0] [3:0] layer_config_adjacency_list_address_msb_value;
+logic layer_config_adjacency_list_address_msb_strobe;
+logic [1:0] layer_config_adjacency_list_address_msb_value;
 
 logic [3:0] layer_config_weights_address_lsb_strobe;
 logic [3:0] [31:0] layer_config_weights_address_lsb_value;
 
-logic layer_config_weights_address_msb_strobe;
-logic [1:0] layer_config_weights_address_msb_value;
+logic [3:0] layer_config_weights_address_msb_strobe;
+logic [3:0] [1:0] layer_config_weights_address_msb_value;
 
 logic layer_config_scale_factors_address_lsb_strobe;
 logic [31:0] layer_config_scale_factors_address_lsb_value;
@@ -370,6 +372,7 @@ prefetcher_feature_bank #(
 
     .scale_factor_queue_pop                                             (scale_factor_queue_pop),
     .scale_factor_queue_out_data                                        (scale_factor_queue_out_data),
+    .scale_factor_queue_out_valid                                       (scale_factor_queue_out_valid),
     .scale_factor_queue_count                                           (scale_factor_queue_count),
     .scale_factor_queue_empty                                           (scale_factor_queue_empty),
     .scale_factor_queue_full                                            (scale_factor_queue_full),
@@ -385,46 +388,85 @@ prefetcher_feature_bank #(
 // Weight Bank
 // --------------------------------------------------------------------------------------------
 
-for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
+// for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
 
-    prefetcher_weight_bank #(
-        .AXI_ADDRESS_WIDTH (34),
-        .AXI_DATA_WIDTH    (512),
-        .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
-    ) weight_bank_i (
-        .core_clk,
-        .resetn,
+// end
 
-        .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid [precision]),
-        .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready [precision]),
-        .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req),
+prefetcher_weight_bank #(
+    .PRECISION         (top_pkg::FLOAT_32),
+    .AXI_ADDRESS_WIDTH (34),
+    .AXI_DATA_WIDTH    (512),
+    .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
+) weight_bank_float_i (
+    .core_clk,
+    .resetn,
 
-        .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid [precision]),
-        .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp       [precision]),
+    .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid [top_pkg::FLOAT_32]),
+    .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready [top_pkg::FLOAT_32]),
+    .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req),
 
-        .weight_bank_axi_rm_fetch_req_valid     (weight_bank_axi_rm_fetch_req_valid     [precision]),
-        .weight_bank_axi_rm_fetch_req_ready     (weight_bank_axi_rm_fetch_req_ready     [precision]),
-        .weight_bank_axi_rm_fetch_start_address (weight_bank_axi_rm_fetch_start_address [precision]),
-        .weight_bank_axi_rm_fetch_byte_count    (weight_bank_axi_rm_fetch_byte_count    [precision]),
+    .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid [top_pkg::FLOAT_32]),
+    .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp       [top_pkg::FLOAT_32]),
 
-        .weight_bank_axi_rm_fetch_resp_valid    (weight_bank_axi_rm_fetch_resp_valid  [precision]),
-        .weight_bank_axi_rm_fetch_resp_ready    (weight_bank_axi_rm_fetch_resp_ready  [precision]),
-        .weight_bank_axi_rm_fetch_resp_last     (weight_read_master_resp_last  ),
-        .weight_bank_axi_rm_fetch_resp_data     (weight_read_master_resp_data  ),
-        .weight_bank_axi_rm_fetch_resp_axi_id   (weight_read_master_resp_axi_id),
+    .weight_bank_axi_rm_fetch_req_valid     (weight_bank_axi_rm_fetch_req_valid     [top_pkg::FLOAT_32]),
+    .weight_bank_axi_rm_fetch_req_ready     (weight_bank_axi_rm_fetch_req_ready     [top_pkg::FLOAT_32]),
+    .weight_bank_axi_rm_fetch_start_address (weight_bank_axi_rm_fetch_start_address [top_pkg::FLOAT_32]),
+    .weight_bank_axi_rm_fetch_byte_count    (weight_bank_axi_rm_fetch_byte_count    [top_pkg::FLOAT_32]),
 
-        .weight_channel_req_valid               (weight_channel_req_valid [precision]),
-        .weight_channel_req_ready               (weight_channel_req_ready [precision]),
-        .weight_channel_req                     (weight_channel_req       [precision]),
+    .weight_bank_axi_rm_fetch_resp_valid    (weight_bank_axi_rm_fetch_resp_valid  [top_pkg::FLOAT_32]),
+    .weight_bank_axi_rm_fetch_resp_ready    (weight_bank_axi_rm_fetch_resp_ready  [top_pkg::FLOAT_32]),
+    .weight_bank_axi_rm_fetch_resp_last     (weight_read_master_resp_last  ),
+    .weight_bank_axi_rm_fetch_resp_data     (weight_read_master_resp_data  ),
+    .weight_bank_axi_rm_fetch_resp_axi_id   (weight_read_master_resp_axi_id),
 
-        .weight_channel_resp_valid              (weight_channel_resp_valid [precision]),
-        .weight_channel_resp_ready              (weight_channel_resp_ready [precision]),
-        .weight_channel_resp                    (weight_channel_resp       [precision]),
+    .weight_channel_req_valid               (weight_channel_req_valid [top_pkg::FLOAT_32]),
+    .weight_channel_req_ready               (weight_channel_req_ready [top_pkg::FLOAT_32]),
+    .weight_channel_req                     (weight_channel_req       [top_pkg::FLOAT_32]),
 
-        .layer_config_weights_address_lsb_value (layer_config_weights_address_lsb_value [precision])
-    );
+    .weight_channel_resp_valid              (weight_channel_resp_valid [top_pkg::FLOAT_32]),
+    .weight_channel_resp_ready              (weight_channel_resp_ready [top_pkg::FLOAT_32]),
+    .weight_channel_resp                    (weight_channel_resp       [top_pkg::FLOAT_32]),
 
-end
+    .layer_config_weights_address_lsb_value (layer_config_weights_address_lsb_value [top_pkg::FLOAT_32])
+);
+
+prefetcher_weight_bank #(
+    .PRECISION         (top_pkg::FIXED_8),
+    .AXI_ADDRESS_WIDTH (34),
+    .AXI_DATA_WIDTH    (512),
+    .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
+) weight_bank_fixed_i (
+    .core_clk,
+    .resetn,
+
+    .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid [top_pkg::FIXED_8]),
+    .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready [top_pkg::FIXED_8]),
+    .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req),
+
+    .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid [top_pkg::FIXED_8]),
+    .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp       [top_pkg::FIXED_8]),
+
+    .weight_bank_axi_rm_fetch_req_valid     (weight_bank_axi_rm_fetch_req_valid     [top_pkg::FIXED_8]),
+    .weight_bank_axi_rm_fetch_req_ready     (weight_bank_axi_rm_fetch_req_ready     [top_pkg::FIXED_8]),
+    .weight_bank_axi_rm_fetch_start_address (weight_bank_axi_rm_fetch_start_address [top_pkg::FIXED_8]),
+    .weight_bank_axi_rm_fetch_byte_count    (weight_bank_axi_rm_fetch_byte_count    [top_pkg::FIXED_8]),
+
+    .weight_bank_axi_rm_fetch_resp_valid    (weight_bank_axi_rm_fetch_resp_valid  [top_pkg::FIXED_8]),
+    .weight_bank_axi_rm_fetch_resp_ready    (weight_bank_axi_rm_fetch_resp_ready  [top_pkg::FIXED_8]),
+    .weight_bank_axi_rm_fetch_resp_last     (weight_read_master_resp_last  ),
+    .weight_bank_axi_rm_fetch_resp_data     (weight_read_master_resp_data  ),
+    .weight_bank_axi_rm_fetch_resp_axi_id   (weight_read_master_resp_axi_id),
+
+    .weight_channel_req_valid               (weight_channel_req_valid [top_pkg::FIXED_8]),
+    .weight_channel_req_ready               (weight_channel_req_ready [top_pkg::FIXED_8]),
+    .weight_channel_req                     (weight_channel_req       [top_pkg::FIXED_8]),
+
+    .weight_channel_resp_valid              (weight_channel_resp_valid [top_pkg::FIXED_8]),
+    .weight_channel_resp_ready              (weight_channel_resp_ready [top_pkg::FIXED_8]),
+    .weight_channel_resp                    (weight_channel_resp       [top_pkg::FIXED_8]),
+
+    .layer_config_weights_address_lsb_value (layer_config_weights_address_lsb_value [top_pkg::FIXED_8])
+);
 
 // Adjacency Read Master
 // ----------------------------------------------------------------------------------

@@ -52,14 +52,7 @@ module node_scoreboard #(
     input  logic                                                nsb_prefetcher_req_ready,
     output NSB_PREF_REQ_t                                       nsb_prefetcher_req,
     input  logic                                                nsb_prefetcher_resp_valid, // valid only for now
-    input  NSB_PREF_RESP_t                                      nsb_prefetcher_resp,
-
-    // Controller -> Output Buffer Interface
-    output logic                                                nsb_output_buffer_req_valid,
-    input  logic                                                nsb_output_buffer_req_ready,
-    output NSB_OUT_BUFF_REQ_t                                   nsb_output_buffer_req,
-    input  logic                                                nsb_output_buffer_resp_valid, // valid only for now
-    input  NSB_OUT_BUFF_RESP_t                                  nsb_output_buffer_resp
+    input  NSB_PREF_RESP_t                                      nsb_prefetcher_resp
 );
 
 parameter AXI_ADDRESS_MSB_BITS = AXI_ADDRESS_WIDTH % 32;
@@ -103,9 +96,9 @@ logic [31:0] layer_config_in_messages_address_lsb_lsb;
 logic layer_config_in_messages_address_msb_strobe;
 logic [1:0] layer_config_in_messages_address_msb_msb;
 logic layer_config_weights_address_lsb_strobe;                          // strobe signal for register 'LAYER_CONFIG_WEIGHTS_ADDRESS_LSB' (pulsed when the register is written from the bus)
-logic [31:0] layer_config_weights_address_lsb_lsb;                      // value of field 'LAYER_CONFIG_WEIGHTS_ADDRESS_LSB.LSB'
+logic [3:0] [31:0] layer_config_weights_address_lsb_lsb;                      // value of field 'LAYER_CONFIG_WEIGHTS_ADDRESS_LSB.LSB'
 logic layer_config_weights_address_msb_strobe;                          // strobe signal for register 'LAYER_CONFIG_WEIGHTS_ADDRESS_MSB' (pulsed when the register is written from the bus)
-logic [1:0] layer_config_weights_address_msb_msb;                       // value of field 'LAYER_CONFIG_WEIGHTS_ADDRESS_MSB.MSB'
+logic [3:0] [1:0] layer_config_weights_address_msb_msb;                       // value of field 'LAYER_CONFIG_WEIGHTS_ADDRESS_MSB.MSB'
 logic layer_config_out_messages_address_lsb_strobe;
 logic [31:0] layer_config_out_messages_address_lsb_lsb;
 logic layer_config_out_messages_address_msb_strobe;
@@ -173,22 +166,24 @@ logic [NODESLOT_COUNT-1:0] nodeslots_waiting_scale_factor_fetch;
 logic [NODESLOT_COUNT-1:0] nodeslots_waiting_prefetcher;
 logic [NODESLOT_COUNT-1:0] nodeslots_waiting_aggregation;
 logic [NODESLOT_COUNT-1:0] nodeslots_waiting_transformation;
-logic [NODESLOT_COUNT-1:0] nodeslots_waiting_writeback;
 
 logic accepting_prefetch_request;
-logic accepting_aggr_request;
+logic accepting_aggregation_request;
 logic accepting_transformation_request;
-logic accepting_writeback_request;
 
-logic [5:0] aggregation_buffer_population_count;
-logic [5:0] transformation_buffer_population_count;
+logic [top_pkg::PRECISION_COUNT-1:0] [5:0] aggregation_buffer_population_count;
 
 logic [NODESLOT_COUNT-1:0]         prefetcher_arbiter_grant_oh;
 logic [$clog2(NODESLOT_COUNT)-1:0] prefetcher_arbiter_grant_bin;
-logic [NODESLOT_COUNT-1:0]         age_arbiter_grant_oh;
 logic [$clog2(NODESLOT_COUNT)-1:0] age_arbiter_grant_bin;
 
-logic weights_fetched;
+logic [top_pkg::PRECISION_COUNT-1:0] weights_fetched;
+
+logic                     waiting_weights_fetch_req;
+top_pkg::NODE_PRECISION_e active_weights_fetch_precision;
+
+logic [top_pkg::PRECISION_COUNT-1:0] aggregation_buffer_waiting_transformation;
+logic [$clog2(top_pkg::PRECISION_COUNT)-1:0] aggregation_buffer_precision_arb_bin;
 
 // ==================================================================================================================================================
 // Instances
@@ -271,10 +266,9 @@ assign nodeslot_make_valid[31:0] = nsb_nodeslot_config_make_valid_lsb_make_valid
 // assign nodeslot_make_valid[63:32] = nsb_nodeslot_config_make_valid_msb_make_valid;
 
 assign accepting_prefetch_request = nsb_prefetcher_req_valid && nsb_prefetcher_req_ready;
-assign accepting_aggr_request = nsb_age_req_valid && nsb_age_req_ready;
+assign accepting_aggregation_request = nsb_age_req_valid && nsb_age_req_ready;
 
 assign accepting_transformation_request = nsb_fte_req_valid && nsb_fte_req_ready;
-assign accepting_writeback_request = nsb_output_buffer_req_valid && nsb_output_buffer_req_ready;
 
 // Per-Nodeslot Logic
 // ------------------------------------------------------------
@@ -314,10 +308,10 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
             end else if ((nodeslot_state[nodeslot] == FETCH_NEIGHBOURS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::MESSAGES)) begin
                 fetch_nbs_resp_received[nodeslot]             <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == AGGR) && nsb_age_resp_valid && (nsb_age_resp.nodeslot == nodeslot)) begin
+            end else if ((nodeslot_state[nodeslot] == AGGREGATION) && nsb_age_resp_valid && (nsb_age_resp.nodeslot == nodeslot)) begin
                 aggregation_done[nodeslot]                    <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == TRANS) && nsb_fte_resp_valid && (nsb_fte_resp.nodeslot == nodeslot)) begin
+            end else if ((nodeslot_state[nodeslot] == TRANSFORMATION) && nsb_fte_resp_valid && nsb_fte_resp.nodeslots[nodeslot]) begin
                 transformation_done[nodeslot]                    <= 1'b1;
             end
         end
@@ -351,23 +345,18 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
             end
 
             node_scoreboard_pkg::FETCH_NEIGHBOURS: begin // move when resp received and age ready
-                nodeslot_state_n[nodeslot] = fetch_nbs_resp_received[nodeslot] && accepting_aggr_request && (nsb_age_req.nodeslot == nodeslot) ? node_scoreboard_pkg::AGGR
+                nodeslot_state_n[nodeslot] = fetch_nbs_resp_received[nodeslot] && accepting_aggregation_request && (nsb_age_req.nodeslot == nodeslot) ? node_scoreboard_pkg::AGGREGATION
                                     : node_scoreboard_pkg::FETCH_NEIGHBOURS;
             end
 
-            node_scoreboard_pkg::AGGR: begin
-                nodeslot_state_n[nodeslot] = aggregation_done[nodeslot] && accepting_transformation_request ? node_scoreboard_pkg::TRANS
-                                    : node_scoreboard_pkg::AGGR;
+            node_scoreboard_pkg::AGGREGATION: begin
+                nodeslot_state_n[nodeslot] = aggregation_done[nodeslot] && accepting_transformation_request ? node_scoreboard_pkg::TRANSFORMATION
+                                    : node_scoreboard_pkg::AGGREGATION;
             end
 
-            // node_scoreboard_pkg::TRANS: begin
-            //     nodeslot_state_n[nodeslot] = transformation_done[nodeslot] && accepting_writeback_request ? node_scoreboard_pkg::WRITEBACK
-            //                         : node_scoreboard_pkg::TRANS;
-            // end
-
-            node_scoreboard_pkg::TRANS: begin
-                nodeslot_state_n[nodeslot] = nsb_fte_resp_valid ? node_scoreboard_pkg::EMPTY
-                                    : node_scoreboard_pkg::TRANS;
+            node_scoreboard_pkg::TRANSFORMATION: begin
+                nodeslot_state_n[nodeslot] = nsb_fte_resp_valid && nsb_fte_resp.nodeslots[nodeslot] ? node_scoreboard_pkg::EMPTY
+                                    : node_scoreboard_pkg::TRANSFORMATION;
             end
 
             node_scoreboard_pkg::PASS: begin // TO DO: implement (MS4)
@@ -388,8 +377,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
     assign nodeslots_waiting_prefetcher          [nodeslot] = nodeslots_waiting_nb_list_fetch[nodeslot] || nodeslots_waiting_neighbour_fetch[nodeslot] || nodeslots_waiting_scale_factor_fetch[nodeslot];
 
     assign nodeslots_waiting_aggregation         [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NEIGHBOURS) && fetch_nbs_resp_received[nodeslot];
-    assign nodeslots_waiting_transformation      [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::AGGR) && aggregation_done[nodeslot];
-    assign nodeslots_waiting_writeback           [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::TRANS) && transformation_done[nodeslot];
+    assign nodeslots_waiting_transformation      [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::AGGREGATION) && aggregation_done[nodeslot];
     assign status_nodeslots_empty_mask_lsb_value [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
 
     // Read-only status flags
@@ -413,21 +401,21 @@ end : per_nodeslot_logic
 // Layer weights fetching logic
 // ------------------------------------------------------------
 
-logic waiting_weights_fetch_req;
-
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         waiting_weights_fetch_req <= '0;
         ctrl_fetch_layer_weights_done_done <= '0;
         weights_fetched <= '0;
-    
+        active_weights_fetch_precision <= top_pkg::FLOAT_32;
+
     end else if (ctrl_fetch_layer_weights_fetch) begin
         waiting_weights_fetch_req <= '1;
         ctrl_fetch_layer_weights_done_done <= '0;
-    
+
     end else if (nsb_prefetcher_req_valid && nsb_prefetcher_req.req_opcode == top_pkg::WEIGHTS) begin
         waiting_weights_fetch_req <= '0;
         ctrl_fetch_layer_weights_done_done <= '0;
+        active_weights_fetch_precision <= nsb_prefetcher_req.nodeslot_precision;
 
     end else if (nsb_prefetcher_resp_valid && nsb_prefetcher_resp.response_type == top_pkg::WEIGHTS) begin
         waiting_weights_fetch_req <= '0;
@@ -441,27 +429,36 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end
 end
 
-// Population counts
-// ------------------------------------------------------------
+// Update weights valid flag
+for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) begin
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            weights_fetched [precision] <= '0;
 
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        aggregation_buffer_population_count         <= '0;
-        transformation_buffer_population_count      <= '0;
-    end else begin
-        if (nsb_age_resp_valid) begin
-            aggregation_buffer_population_count         <= aggregation_buffer_population_count + 1'b1;
-        end else if (accepting_transformation_request) begin
-            aggregation_buffer_population_count         <= '0;
-        end
+        end else if (nsb_prefetcher_resp_valid && nsb_prefetcher_resp.response_type == top_pkg::WEIGHTS && (active_weights_fetch_precision == precision)) begin
+            weights_fetched [precision] <= '1;
 
-        if (nsb_fte_resp_valid) begin
-            transformation_buffer_population_count         <= transformation_buffer_population_count + 1'b1;
-        end else if (accepting_writeback_request) begin
-            transformation_buffer_population_count         <= '0;
         end
     end
+
+        // Population counts
+        always_ff @(posedge core_clk or negedge resetn) begin
+            if (!resetn) begin
+                aggregation_buffer_population_count    [precision] <= '0;
+
+            // AGE sending aggregation response
+            end else if (nsb_age_resp_valid && (nsb_nodeslot_precision_precision[nsb_age_resp.nodeslot] == precision)) begin
+                    aggregation_buffer_population_count [precision] <= aggregation_buffer_population_count + 1'b1;
+
+            // FTE accepting transformation request
+            end else if (accepting_transformation_request && (nsb_fte_req.precision == precision)) begin
+                aggregation_buffer_population_count [precision] <= '0;
+            end
+        end
+
+        assign aggregation_buffer_waiting_transformation [precision] = (aggregation_buffer_population_count[precision] >= nsb_config_aggregation_wait_count_count) && weights_fetched [precision] && layer_config_valid_value;
 end
+
 
 // Prefetcher requests
 // ------------------------------------------------------------
@@ -477,9 +474,6 @@ rr_arbiter #(
     .grant_bin          (prefetcher_arbiter_grant_bin)
 );
 
-// How to define weights address to prefetcher req?
-// {layer_config_weights_address_msb_msb, layer_config_weights_address_lsb_lsb}
-
 always_comb begin : nsb_prefetcher_req_logic
     nsb_prefetcher_req_valid         = |nodeslots_waiting_prefetcher || waiting_weights_fetch_req;
 
@@ -491,7 +485,7 @@ always_comb begin : nsb_prefetcher_req_logic
 
     nsb_prefetcher_req.nodeslot      = prefetcher_arbiter_grant_bin;
     
-    nsb_prefetcher_req.start_address = nsb_prefetcher_req.req_opcode == top_pkg::WEIGHTS ? {layer_config_weights_address_msb_msb, layer_config_weights_address_lsb_lsb}
+    nsb_prefetcher_req.start_address = nsb_prefetcher_req.req_opcode == top_pkg::WEIGHTS ? {layer_config_weights_address_msb_msb [ctrl_fetch_layer_weights_precision_value], layer_config_weights_address_lsb_lsb [ctrl_fetch_layer_weights_precision_value]}
                                     : nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST ? {nsb_nodeslot_adjacency_list_address_msb_msb[prefetcher_arbiter_grant_bin], nsb_nodeslot_adjacency_list_address_lsb_lsb[prefetcher_arbiter_grant_bin]}
                                     : nsb_prefetcher_req.req_opcode == top_pkg::SCALE_FACTOR ? {nsb_nodeslot_scale_factors_address_msb_value[prefetcher_arbiter_grant_bin], nsb_nodeslot_scale_factors_address_lsb_value[prefetcher_arbiter_grant_bin]}
                                     : '0;
@@ -514,29 +508,39 @@ rr_arbiter #(
     .clk                (core_clk),
     .resetn             (resetn),
     .request            (nodeslots_waiting_aggregation),
-    .update_lru         (nsb_age_req_valid && nsb_age_req_ready),
-    .grant_oh           (age_arbiter_grant_oh),
+    .update_lru         (accepting_aggregation_request),
+    .grant_oh           (),
     .grant_bin          (age_arbiter_grant_bin)
 );
 
-assign nsb_age_req_valid                = |nodeslots_waiting_aggregation;
-assign nsb_age_req.nodeslot             = age_arbiter_grant_bin;
-assign nsb_age_req.node_id              = nsb_nodeslot_node_id_id [age_arbiter_grant_bin];
-assign nsb_age_req.node_precision       = NODE_PRECISION_e'(nsb_nodeslot_precision_precision[age_arbiter_grant_bin]);
-assign nsb_age_req.aggregation_function = AGGREGATION_FUNCTION_e'(nsb_nodeslot_aggregation_function_value[age_arbiter_grant_bin]);
-assign nsb_age_req.fetch_tag            = nsb_nodeslot_allocated_fetch_tag_fetch_tag[age_arbiter_grant_bin];
+always_comb begin
+    nsb_age_req_valid                = |nodeslots_waiting_aggregation;
+    nsb_age_req.nodeslot             = age_arbiter_grant_bin;
+    nsb_age_req.node_id              = nsb_nodeslot_node_id_id [age_arbiter_grant_bin];
+    nsb_age_req.node_precision       = NODE_PRECISION_e'(nsb_nodeslot_precision_precision[age_arbiter_grant_bin]);
+    nsb_age_req.aggregation_function = AGGREGATION_FUNCTION_e'(nsb_nodeslot_aggregation_function_value[age_arbiter_grant_bin]);
+    nsb_age_req.fetch_tag            = nsb_nodeslot_allocated_fetch_tag_fetch_tag[age_arbiter_grant_bin];
+end
 
 // Transformation requests
 // ------------------------------------------------------------
 
-assign nsb_fte_req_valid                = (aggregation_buffer_population_count == nsb_config_aggregation_wait_count_count) && weights_fetched && layer_config_valid_value;
-assign nsb_fte_req.nodeslots            = nodeslots_waiting_transformation;
+rr_arbiter #(
+    .NUM_REQUESTERS     (top_pkg::PRECISION_COUNT)
+) aggregation_buffer_precision_arb (
+    .clk                (core_clk),
+    .resetn             (resetn),
+    .request            (aggregation_buffer_waiting_transformation),
+    .update_lru         (accepting_transformation_request),
+    .grant_oh           (),
+    .grant_bin          (aggregation_buffer_precision_arb_bin)
+);
 
-// Writeback requests
-// ------------------------------------------------------------
-
-assign nsb_output_buffer_req_valid      = (transformation_buffer_population_count == nsb_config_transformation_wait_count_count);
-assign nsb_output_buffer_req.nodeslots  = nodeslots_waiting_writeback;
+always_comb begin
+    nsb_fte_req_valid     = |aggregation_buffer_waiting_transformation;
+    nsb_fte_req.nodeslots = nodeslots_waiting_transformation;
+    nsb_fte_req.precision = top_pkg::NODE_PRECISION_e'(aggregation_buffer_precision_arb_bin);
+end
 
 // ==================================================================================================================================================
 // Assertions

@@ -4,6 +4,7 @@ import node_scoreboard_regbank_regs_pkg::*;
 import prefetcher_regbank_regs_pkg::*;
 import aggregation_engine_regbank_regs_pkg::*;
 import feature_transformation_engine_regbank_regs_pkg::*;
+import top_pkg::*;
 
 `include "json.svh"
 
@@ -20,7 +21,7 @@ class GraphTest extends Test;
         Object layer_root, layers, layer;
         int nodeslot_idx;
         integer chosen_nodeslot;
-        xil_axi_data_beat fetch_weights_done_resp[];
+        string precision;
         xil_axi_data_beat nodeslots_empty_resp[];
 
         // System reset drops after regbank reset
@@ -40,35 +41,24 @@ class GraphTest extends Test;
         program_layer_config(layer);
         this.write_nsb_regbank("Layer Config Valid", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_VALID_OFFSET, '1);
 
-        // Fetch layer weights
-        this.write_nsb_regbank("Fetch Weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_OFFSET, '1);
-        
-        // Wait for done flag to be asserted
-        while ('1) begin
-            this.axil_read(.addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + CTRL_FETCH_LAYER_WEIGHTS_DONE_OFFSET), .Rdatabeat(fetch_weights_done_resp));            
-            if (|fetch_weights_done_resp[0]) begin
-                $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Layer weights fetch done.", $time, TESTNAME);
-                break;
-            end else begin
-                $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Prefetcher not yet finished with weight fetching.", $time, TESTNAME);
-            end
-        end
-
-        this.write_nsb_regbank("Ack fetch weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK_OFFSET, '1);
+        // Fetch layer weights for all supported precisions
+        req_weight_fetch(top_pkg::FLOAT_32);
+        req_weight_fetch(top_pkg::FIXED_8);
 
         // Program nodeslots from JSON dump
         nodeslot_idx = 0;
         while (nodeslot_idx < nodeslots.size()) begin
-            choose_nodeslot(chosen_nodeslot);
-
             // Get nodeslot from JSON object and display
             chosen_node_programming = new();
             chosen_node_programming = nodeslots.getByIndex(nodeslot_idx);
+            precision = chosen_node_programming.getByKey("precision").asString();
             nodeslot_idx++;
 
             if (chosen_node_programming.getByKey("neighbour_count").asInt() == 0) begin
                 continue;
             end
+
+            choose_nodeslot(precision, chosen_nodeslot);
 
             $display("[TIMESTAMP]: %t, [%0s::INFO]: Ready to program Node ID %0d into Nodeslot %0d.", $time, TESTNAME, chosen_node_programming.getByKey("node_id").asInt(), chosen_nodeslot);
             program_nodeslot(chosen_node_programming, chosen_nodeslot);
@@ -84,7 +74,6 @@ class GraphTest extends Test;
                 break;
             end else begin
                 $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Test not finished yet, some nodeslots are valid.", $time, TESTNAME);
-
             end
         end
 
@@ -92,28 +81,57 @@ class GraphTest extends Test;
 
     endtask
 
+    task req_weight_fetch(top_pkg::NODE_PRECISION_e precision);
+        xil_axi_data_beat fetch_weights_done_resp[];
+
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Requesting weights fetch for precision: %0s.", $time, TESTNAME, precision.name());
+        this.write_nsb_regbank("Set weights fetch precision", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_PRECISION_OFFSET, precision);
+        this.write_nsb_regbank("Fetch Weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_OFFSET, '1);
+
+        // Wait for done flag to be asserted
+        fetch_weights_done_resp = new[0];
+        while ('1) begin
+            this.axil_read(.addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + CTRL_FETCH_LAYER_WEIGHTS_DONE_OFFSET), .Rdatabeat(fetch_weights_done_resp));
+            if (|fetch_weights_done_resp[0]) begin
+                $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Layer weights fetch done for precision: %0s.", $time, TESTNAME, precision.name());
+                break;
+            end else begin
+                $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Prefetcher not yet finished with weight fetching for precision: %0s.", $time, TESTNAME, precision.name());
+            end
+        end
+
+        this.write_nsb_regbank("Ack fetch weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK_OFFSET, '1);
+    endtask
+
     task automatic program_layer_config (Object layer_config);
     
+        // Prefetcher regbank
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to Prefetcher regbank.", $time, TESTNAME);
+
         this.write_prefetcher_regbank("Define IN Feature Count", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_prefetcher_regbank("Define OUT Feature Count", prefetcher_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
-        
-        // Prefetcher regbank
         this.write_prefetcher_regbank("Define Adjacency List Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_ADJACENCY_LIST_ADDRESS_LSB_OFFSET, layer_config.getByKey("adjacency_list_address").asInt());
         this.write_prefetcher_regbank("Define Adjacency List Address MSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_ADJACENCY_LIST_ADDRESS_MSB_OFFSET, '0);
+        
         this.write_prefetcher_regbank("Define IN Messages Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_MESSAGES_ADDRESS_LSB_OFFSET, layer_config.getByKey("in_messages_address").asInt());
         this.write_prefetcher_regbank("Define IN Messages Address MSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_IN_MESSAGES_ADDRESS_MSB_OFFSET, '0);
-        this.write_prefetcher_regbank("Define Weights Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET, layer_config.getByKey("weights_address").asInt());
-        this.write_prefetcher_regbank("Define Weights Address MSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET, '0);
-        
+
+        this.write_prefetcher_regbank("Define Weights Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET + 4 * top_pkg::FLOAT_32, layer_config.getByKey("weights_address").asInt());
+        this.write_prefetcher_regbank("Define Weights Address MSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET + 4 * top_pkg::FLOAT_32, '0);
+
+        this.write_prefetcher_regbank("Define Weights Address LSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET + 4 * top_pkg::FIXED_8, layer_config.getByKey("weights_address").asInt());
+        this.write_prefetcher_regbank("Define Weights Address MSB", prefetcher_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET + 4 * top_pkg::FIXED_8, '0);
+
         // AGE regbank
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to AGE regbank.", $time, TESTNAME);
+
         this.write_age_regbank("Define IN Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_age_regbank("Define OUT Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
         this.write_age_regbank("Define Upsampling parameter", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_UPSAMPLING_PARAMETER_OFFSET, $realtobits(layer_config.getByKey("dequantization_parameter").asReal()));
         
         // FTE regbank
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to FTE regbank.", $time, TESTNAME);
+
         this.write_fte_regbank("Define IN Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_fte_regbank("Define OUT Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
         this.write_fte_regbank("Define transformation activation function", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_ACTIVATION_FUNCTION_OFFSET, layer_config.getByKey("transformation_activation").asInt());
@@ -123,6 +141,7 @@ class GraphTest extends Test;
         // NSB regbank
         // NSB Layer configuration
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to NSB regbank.", $time, TESTNAME);
+
         this.write_nsb_regbank("Define Feature Count", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_nsb_regbank("Define Feature Count", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
         
@@ -131,8 +150,14 @@ class GraphTest extends Test;
         this.write_nsb_regbank("Define Adjacency List Address MSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_ADJACENCY_LIST_ADDRESS_MSB_OFFSET, '0);
         this.write_nsb_regbank("Define IN Messages Address LSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_IN_MESSAGES_ADDRESS_LSB_OFFSET, layer_config.getByKey("in_messages_address").asInt());
         this.write_nsb_regbank("Define IN Messages Address MSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_IN_MESSAGES_ADDRESS_MSB_OFFSET, '0);
+
+        // FLOAT_32 address
         this.write_nsb_regbank("Define Weights Address LSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET, layer_config.getByKey("weights_address").asInt());
         this.write_nsb_regbank("Define Weights Address MSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_MSB_OFFSET, '0);
+        // FIXED_8 address
+        this.write_nsb_regbank("Define Weights Address LSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_LSB_OFFSET + 4 * top_pkg::FIXED_8, layer_config.getByKey("weights_address").asInt());
+        this.write_nsb_regbank("Define Weights Address MSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_WEIGHTS_ADDRESS_MSB_OFFSET + 4 * top_pkg::FIXED_8, '0);
+
         this.write_nsb_regbank("Define OUT Messages Address LSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_OUT_MESSAGES_ADDRESS_LSB_OFFSET, layer_config.getByKey("out_messages_address").asInt());
         this.write_nsb_regbank("Define OUT Messages Address MSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_OUT_MESSAGES_ADDRESS_MSB_OFFSET, '0);
 
@@ -140,13 +165,23 @@ class GraphTest extends Test;
         this.write_nsb_regbank("Define Transformation Wait Count", node_scoreboard_regbank_regs_pkg::NSB_CONFIG_TRANSFORMATION_WAIT_COUNT_OFFSET, 'd4);
     endtask
 
-    task automatic choose_nodeslot(output int chosen_nodeslot);
+    task automatic choose_nodeslot(input string precision, output int chosen_nodeslot);
+        logic [63:0] busy_nodeslots_precision;
+
+        busy_nodeslots_precision = '1;
         chosen_nodeslot = 0;
         
         // Wait for a nodeslot to be free
-        while (this.busy_nodeslots_mask == '1) begin end
+        while (busy_nodeslots_precision == '1) begin
+            // Precision filter
+            if (precision == "FLOAT_32") begin
+                busy_nodeslots_precision = {{56{1'b1}}, this.busy_nodeslots_mask[7:0]};
+            end else if (precision == "FIXED_8") begin
+                busy_nodeslots_precision = {{48{1'b1}}, this.busy_nodeslots_mask[15:8], {8{1'b1}}};
+            end
+        end
 
-        while( (this.busy_nodeslots_mask[chosen_nodeslot] == '1) ) this.choose_least_significant(this.busy_nodeslots_mask, chosen_nodeslot);
+        while( (busy_nodeslots_precision[chosen_nodeslot]) ) this.choose_least_significant(busy_nodeslots_precision, chosen_nodeslot);
     endtask
 
     task automatic choose_least_significant (input logic [63:0] busy_nodeslots, output integer chosen_nodeslot);

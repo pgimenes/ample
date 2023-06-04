@@ -63,13 +63,14 @@ module aggregation_engine #(
     input  logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_slot_free,
 
     output logic [MESSAGE_CHANNEL_COUNT-1:0]                                                  scale_factor_queue_pop,
-    input  logic [MESSAGE_CHANNEL_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]              scale_factor_queue_out_data
+    input  logic [MESSAGE_CHANNEL_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]              scale_factor_queue_out_data,
+    input  logic [MESSAGE_CHANNEL_COUNT-1:0]                                                  scale_factor_queue_out_valid
 
 );
 
 // Aggregation meshes have symmetric dimensions
-parameter AGGREGATION_ROWS = top_pkg::AGGREGATION_BUFFER_SLOTS;
-parameter AGGREGATION_COLS = top_pkg::MESSAGE_CHANNEL_COUNT/top_pkg::PRECISION_COUNT;
+parameter AGGREGATION_ROWS = noc_pkg::MAX_AGGREGATION_ROWS;
+parameter AGGREGATION_COLS = noc_pkg::MAX_AGGREGATION_COLS;
 parameter TOTAL_AGGREGATION_MANAGERS = top_pkg::PRECISION_COUNT * AGGREGATION_COLS;
 
 // ==================================================================================================================================================
@@ -148,7 +149,7 @@ aggregation_engine_regbank_wrapper #(
 // Aggregation Meshes (per precision)
 // ----------------------------------------------------
 
-for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin : precision_block
+for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) begin : precision_block
 
     aggregation_mesh #(
         .AGGREGATION_ROWS            (AGGREGATION_ROWS),
@@ -182,6 +183,7 @@ for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT;
         // Aggregation Mesh -> Fetch Tag: Scale Factor Queue Interface
         .scale_factor_queue_pop                                        (scale_factor_queue_pop                    [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
         .scale_factor_queue_out_data                                   (scale_factor_queue_out_data               [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
+        .scale_factor_queue_out_valid                                  (scale_factor_queue_out_valid              [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
         
         // AGE -> Aggregation Buffer
         .aggregation_buffer_slot_set_node_id_valid                     (aggregation_buffer_slot_set_node_id_valid [precision]),
@@ -202,6 +204,8 @@ for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT;
     assign aggregation_req_valid [precision] = nsb_age_req_valid && (nsb_age_req.node_precision == precision);
 
 end : precision_block
+
+assign aggregation_req = nsb_age_req;
 
 // Aggregation Manager Response Arbitration
 // ----------------------------------------------------

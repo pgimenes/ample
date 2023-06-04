@@ -46,6 +46,25 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 "../../imports/nocrouter/src/rtl/noc/mesh.sv" \
 
 sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --include "../build/regbanks/node_scoreboard_regbank" --include "../../imports" -d "FLOAT_MAC=1" \
+"../ip/lib/arithmetic/aggregators/passthrough_aggregator.sv" \
+"../ip/lib/arithmetic/aggregators/sum_aggregator.sv" \
+"../ip/lib/buffers/hybrid_buffer/hybrid_buffer_slot.sv" \
+"../ip/lib/buffers/hybrid_buffer/hybrid_buffer.sv" \
+"../ip/lib/buffers/hybrid_buffer/hybrid_buffer_driver.sv" \
+"../ip/lib/axi/axi_read_master.sv" \
+"../ip/lib/axi/axi_write_master.sv" \
+"../ip/lib/arithmetic/float_mac.sv" \
+"../ip/lib/arithmetic/fixed_point_mac.sv" \
+"../ip/lib/arithmetic/mac.sv" \
+"../ip/lib/base_components/binary_to_onehot.sv" \
+"../ip/lib/base_components/count_ones.sv" \
+"../ip/lib/base_components/onehot_to_binary_comb.sv" \
+"../ip/lib/base_components/rr_arbiter.sv" \
+"../ip/lib/systolic_modules/activation_core.sv" \
+"../ip/lib/systolic_modules/processing_element.sv" \
+"../ip/lib/systolic_modules/systolic_module.sv" \
+
+sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --include "../build/regbanks/node_scoreboard_regbank" --include "../../imports" -d "FLOAT_MAC=1" \
 "../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_regs.sv" \
 "../build/regbanks/aggregation_engine_regbank/aggregation_engine_regbank_wrapper.sv" \
 "../build/regbanks/node_scoreboard_regbank/node_scoreboard_regbank_regs.sv" \
@@ -56,8 +75,8 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 "../build/regbanks/feature_transformation_engine_regbank/feature_transformation_engine_regbank_wrapper.sv" \
 "../ip/include/arch_package.sv" \
 "../ip/include/arch_defines.v" \
-"../ip/lib/arithmetic/aggregators/passthrough_aggregator.sv" \
-"../ip/lib/arithmetic/aggregators/sum_aggregator.sv" \
+
+sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --include "../build/regbanks/node_scoreboard_regbank" --include "../../imports" -d "FLOAT_MAC=1" \
 "../ip/aggregation_engine/rtl/feature_aggregator.sv" \
 "../ip/aggregation_engine/rtl/aggregation_core_allocator.sv" \
 "../ip/aggregation_engine/rtl/aggregation_core.sv" \
@@ -65,17 +84,6 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 "../ip/aggregation_engine/rtl/buffer_manager.sv" \
 "../ip/aggregation_engine/rtl/aggregation_mesh.sv" \
 "../ip/aggregation_engine/rtl/aggregation_engine.sv" \
-"../ip/lib/buffers/hybrid_buffer/hybrid_buffer_slot.sv" \
-"../ip/lib/buffers/hybrid_buffer/hybrid_buffer.sv" \
-"../ip/lib/buffers/hybrid_buffer/hybrid_buffer_driver.sv" \
-"../ip/lib/axi/axi_read_master.sv" \
-"../ip/lib/arithmetic/float_mac.sv" \
-"../ip/lib/arithmetic/fixed_point_mac.sv" \
-"../ip/lib/arithmetic/mac.sv" \
-"../ip/lib/base_components/binary_to_onehot.sv" \
-"../ip/lib/base_components/count_ones.sv" \
-"../ip/lib/base_components/onehot_to_binary_comb.sv" \
-"../ip/lib/base_components/rr_arbiter.sv" \
 "../ip/node_scoreboard/rtl/node_scoreboard.sv" \
 "../ip/lib/buffers/ultraram_fifo.sv" \
 "../ip/prefetcher/rtl/prefetcher_streaming_manager.sv" \
@@ -83,9 +91,7 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 "../ip/prefetcher/rtl/prefetcher_feature_bank.sv" \
 "../ip/prefetcher/rtl/prefetcher_weight_bank.sv" \
 "../ip/prefetcher/rtl/prefetcher.sv" \
-"../ip/lib/systolic_modules/activation_core.sv" \
-"../ip/lib/systolic_modules/processing_element.sv" \
-"../ip/lib/systolic_modules/systolic_module.sv" \
+"../ip/transformation_engine/rtl/feature_transformation_core.sv" \
 "../ip/transformation_engine/rtl/feature_transformation_engine.sv" \
 "../ip/top/rtl/top.sv" \
 

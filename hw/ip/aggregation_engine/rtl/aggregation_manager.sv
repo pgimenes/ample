@@ -55,7 +55,8 @@ module aggregation_manager #(
     output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_ROWS)-1:0] coords_buffer_y,
 
     output logic                                                scale_factor_queue_pop,
-    input  logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]            scale_factor_queue_out_data
+    input  logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]            scale_factor_queue_out_data,
+    input  logic                                                scale_factor_queue_out_valid
 );
 
 typedef enum logic [4:0] {

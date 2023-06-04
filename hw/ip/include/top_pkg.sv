@@ -40,11 +40,10 @@ parameter MAX_FETCH_REQ_BYTE_COUNT = `max(MAX_REQUIRED_BYTES_ADJ_FETCH_REQ, MAX_
 parameter MAX_PRECISION_BYTE_COUNT = 4; 
 
 // Prefetcher
-parameter FETCH_TAG_COUNT = MAX_NODESLOT_COUNT;
-parameter MESSAGE_CHANNEL_COUNT = MAX_NODESLOT_COUNT;
+parameter MESSAGE_CHANNEL_COUNT = noc_pkg::MAX_AGGREGATION_COLS * PRECISION_COUNT;
 
 // Aggregation Buffer
-parameter AGGREGATION_BUFFER_SLOTS = 16;
+parameter AGGREGATION_BUFFER_SLOTS = 4;
 parameter AGGREGATION_BUFFER_WRITE_DEPTH = MAX_FEATURE_COUNT * 4 / 8; // 8 bytes per 64b flit
 parameter AGGREGATION_BUFFER_WRITE_WIDTH = 64;
 parameter AGGREGATION_BUFFER_READ_DEPTH = MAX_FEATURE_COUNT * 4 / 4; // 4 bytes per float
@@ -75,8 +74,8 @@ parameter PRECISION_COUNT = 2;
 
 typedef enum logic [1:0] {
     FLOAT_32 = 2'd0,
-    FIXED_8  = 2'd2,
-    FIXED_16 = 2'd1,
+    FIXED_8  = 2'd1,
+    FIXED_16 = 2'd2,
     FIXED_4  = 2'd3
 } NODE_PRECISION_e;
 
@@ -112,7 +111,7 @@ endfunction
 typedef struct packed {
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
     logic [NODE_ID_WIDTH-1:0]              node_id;
-    logic [$clog2(FETCH_TAG_COUNT)-1:0]    fetch_tag;
+    logic [$clog2(MESSAGE_CHANNEL_COUNT)-1:0]    fetch_tag;
 
     NODE_PRECISION_e                       node_precision;
     AGGREGATION_FUNCTION_e                 aggregation_function;
@@ -128,7 +127,8 @@ typedef struct packed {
 } NSB_FTE_REQ_t;
 
 typedef struct packed {
-    logic [MAX_NODESLOT_COUNT-1:0] nodeslot;
+    logic [MAX_NODESLOT_COUNT-1:0] nodeslots;
+    NODE_PRECISION_e               precision;
 } NSB_FTE_RESP_t;
 
 typedef enum logic [2:0] {
@@ -156,13 +156,13 @@ typedef struct packed {
 typedef struct packed {
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
     NSB_PREF_OPCODE_e                      response_type;
-    logic [$clog2(FETCH_TAG_COUNT)-1:0]    allocated_fetch_tag;
+    logic [$clog2(MESSAGE_CHANNEL_COUNT)-1:0]    allocated_fetch_tag;
     logic                                  partial;
 } NSB_PREF_RESP_t;
 
 typedef struct packed {
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
-    logic [$clog2(FETCH_TAG_COUNT)-1:0] fetch_tag;
+    logic [$clog2(MESSAGE_CHANNEL_COUNT)-1:0] fetch_tag;
 } MESSAGE_CHANNEL_REQ_t;
 
 typedef struct packed {

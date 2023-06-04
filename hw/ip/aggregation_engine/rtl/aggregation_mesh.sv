@@ -35,6 +35,7 @@ module aggregation_mesh #(
     // Aggregation Mesh -> Fetch Tag: Scale Factor Queue Interface
     output logic [AGGREGATION_COLS-1:0]                                                       scale_factor_queue_pop,
     input  logic [AGGREGATION_COLS-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]                   scale_factor_queue_out_data,
+    input  logic [AGGREGATION_COLS-1:0]                                                       scale_factor_queue_out_valid,
 
     // AGE -> Aggregation Buffer
     output logic [AGGREGATION_ROWS-1:0]                                                       aggregation_buffer_slot_set_node_id_valid,
@@ -262,6 +263,7 @@ for (genvar agm = 0; agm < AGGREGATION_COLS; agm = agm + 1) begin
         
         .scale_factor_queue_pop                                  (scale_factor_queue_pop             [agm]),
         .scale_factor_queue_out_data                             (scale_factor_queue_out_data        [agm]),
+        .scale_factor_queue_out_valid                            (scale_factor_queue_out_valid       [agm]),
         
         // Buffer Manager allocation
         .age_aggregation_manager_buffer_manager_allocation_valid (buffer_manager_allocation_valid [agm]),
@@ -280,15 +282,15 @@ for (genvar agm = 0; agm < AGGREGATION_COLS; agm = agm + 1) begin
 
     always_comb begin
         // Last row of NOC mesh is taken by message channels
-        aggregation_manager_router_on    [agm]                     = node_router_on                   [agm][AGGREGATION_ROWS-1][0];
-        aggregation_manager_router_ready [agm]                     = node_router_ready                [agm][AGGREGATION_ROWS-1][0];
-        node_router_valid                [agm][AGGREGATION_ROWS-1] = aggregation_manager_router_valid [agm];
-        node_router_data                 [agm][AGGREGATION_ROWS-1] = aggregation_manager_router_data  [agm];
+        aggregation_manager_router_on    [agm]                     = node_router_on                   [agm][AGGREGATION_ROWS][0];
+        aggregation_manager_router_ready [agm]                     = node_router_ready                [agm][AGGREGATION_ROWS][0];
+        node_router_valid                [agm][AGGREGATION_ROWS] = aggregation_manager_router_valid [agm];
+        node_router_data                 [agm][AGGREGATION_ROWS] = aggregation_manager_router_data  [agm];
 
-        router_aggregation_manager_valid [agm]                 = router_node_valid                [agm][AGGREGATION_ROWS-1];
-        router_aggregation_manager_data  [agm]                 = router_node_data                 [agm][AGGREGATION_ROWS-1];
-        router_node_on                   [agm][AGGREGATION_ROWS-1][0] = router_aggregation_manager_on    [agm];
-        router_node_ready                [agm][AGGREGATION_ROWS-1][0] = router_aggregation_manager_ready [agm];
+        router_aggregation_manager_valid [agm]                 = router_node_valid                [agm][AGGREGATION_ROWS];
+        router_aggregation_manager_data  [agm]                 = router_node_data                 [agm][AGGREGATION_ROWS];
+        router_node_on                   [agm][AGGREGATION_ROWS][0] = router_aggregation_manager_on    [agm];
+        router_node_ready                [agm][AGGREGATION_ROWS][0] = router_aggregation_manager_ready [agm];
     end
 
 end

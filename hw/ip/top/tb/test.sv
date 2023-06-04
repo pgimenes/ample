@@ -110,8 +110,8 @@ class Test;
                                 // Response beats
                                 output xil_axi_data_beat Rdatabeat []
     );
-
         axi_transaction rd_trans;
+        Rdatabeat = new[0];
         rd_trans = this.axil_agent.rd_driver.create_transaction(name);
         rd_trans.set_read_cmd(addr,burst,id,len,size);
         rd_trans.set_prot(prot);
