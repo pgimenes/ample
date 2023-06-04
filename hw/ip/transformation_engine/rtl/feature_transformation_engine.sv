@@ -3,43 +3,44 @@ import top_pkg::*;
 
 module feature_transformation_engine #(
     parameter FLOAT_WIDTH = 32,
-    parameter AXI_ADDR_WIDTH = 32,
-    parameter MATRIX_N = 16
+    parameter AXIL_ADDR_WIDTH = 32,
+    parameter MATRIX_N = top_pkg::TRANSFORMATION_ROWS,
+    parameter SYSTOLIC_MODULE_COUNT = 32
 ) (
-    input logic                                                                                       core_clk,
-    input logic                                                                                       resetn,
+    input logic                                                 core_clk,
+    input logic                                                 resetn,
 
-    input logic regbank_clk,
-    input logic regbank_resetn,
+    input logic                                                 regbank_clk,
+    input logic                                                 regbank_resetn,
 
     // Regbank Slave AXI interface
-    input  logic [AXI_ADDR_WIDTH-1:0]                                                                 s_axi_awaddr,
-    input  logic [2:0]                                                                                s_axi_awprot,
-    input  logic                                                                                      s_axi_awvalid,
-    output logic                                                                                      s_axi_awready,
-    input  logic [31:0]                                                                               s_axi_wdata,
-    input  logic [3:0]                                                                                s_axi_wstrb,
-    input  logic                                                                                      s_axi_wvalid,
-    output logic                                                                                      s_axi_wready,
-    input  logic [AXI_ADDR_WIDTH-1:0]                                                                 s_axi_araddr,
-    input  logic [2:0]                                                                                s_axi_arprot,
-    input  logic                                                                                      s_axi_arvalid,
-    output logic                                                                                      s_axi_arready,
-    output logic [31:0]                                                                               s_axi_rdata,
-    output logic [1:0]                                                                                s_axi_rresp,
-    output logic                                                                                      s_axi_rvalid,
-    input  logic                                                                                      s_axi_rready,
-    output logic [1:0]                                                                                s_axi_bresp,
-    output logic                                                                                      s_axi_bvalid,
-    input  logic                                                                                      s_axi_bready,
+    input  logic [AXIL_ADDR_WIDTH-1:0]                           s_axi_awaddr,
+    input  logic [2:0]                                          s_axi_awprot,
+    input  logic                                                s_axi_awvalid,
+    output logic                                                s_axi_awready,
+    input  logic [31:0]                                         s_axi_wdata,
+    input  logic [3:0]                                          s_axi_wstrb,
+    input  logic                                                s_axi_wvalid,
+    output logic                                                s_axi_wready,
+    input  logic [AXIL_ADDR_WIDTH-1:0]                           s_axi_araddr,
+    input  logic [2:0]                                          s_axi_arprot,
+    input  logic                                                s_axi_arvalid,
+    output logic                                                s_axi_arready,
+    output logic [31:0]                                         s_axi_rdata,
+    output logic [1:0]                                          s_axi_rresp,
+    output logic                                                s_axi_rvalid,
+    input  logic                                                s_axi_rready,
+    output logic [1:0]                                          s_axi_bresp,
+    output logic                                                s_axi_bvalid,
+    input  logic                                                s_axi_bready,
 
     // Node Scoreboard -> Transformation Engine Interface
-    input  logic                                                                                      nsb_fte_req_valid,
-    output logic                                                                                      nsb_fte_req_ready,
-    input  NSB_FTE_REQ_t                                                                              nsb_fte_req,
+    input  logic                                                nsb_fte_req_valid,
+    output logic                                                nsb_fte_req_ready,
+    input  NSB_FTE_REQ_t                                        nsb_fte_req,
 
-    output logic                                                                                      nsb_fte_resp_valid, // valid only for now
-    output NSB_FTE_RESP_t                                                                             nsb_fte_resp,
+    output logic                                                nsb_fte_resp_valid,
+    output NSB_FTE_RESP_t                                       nsb_fte_resp,
 
     // Aggregation Buffer Interface
     input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::NODE_ID_WIDTH-1:0]                 aggregation_buffer_node_id,
@@ -49,13 +50,13 @@ module feature_transformation_engine #(
     input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free,
 
     // Weight Channels: FTE -> Prefetcher Weight Bank (REQ)
-    output logic                 [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_req_valid,
-    input  logic                 [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_req_ready,
-    output WEIGHT_CHANNEL_REQ_t  [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_req,
+    output logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_valid,
+    input  logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_ready,
+    output WEIGHT_CHANNEL_REQ_t  [top_pkg::PRECISION_COUNT-1:0] weight_channel_req,
 
-    input  logic                 [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_resp_valid,
-    output logic                 [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_resp_ready,
-    input  WEIGHT_CHANNEL_RESP_t [top_pkg::PRECISION_COUNT-1:0]                                       weight_channel_resp,
+    input  logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_valid,
+    output logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_ready,
+    input  WEIGHT_CHANNEL_RESP_t [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp,
 
     // Transformation Buffer Interface
     output logic [top_pkg::PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_write_enable,
@@ -109,22 +110,9 @@ module feature_transformation_engine #(
 
 );
 
-parameter SYSTOLIC_MODULE_COUNT = 4;
-
-typedef enum logic [3:0] { 
-    FTE_FSM_IDLE, FTE_FSM_REQ_WC, FTE_FSM_MULT_SLOW, FTE_FSM_MULT_FAST, FTE_FSM_BIAS, FTE_FSM_ACTIVATION, FTE_FSM_BUFFER, FTE_FSM_WRITEBACK, FTE_FSM_SHIFT, FTE_FSM_NSB_RESP
-} FTE_FSM_e;
-
-typedef enum logic [1:0] {
-    AXI_IDLE, AXI_AW, AXI_W, AXI_B
-} AXI_WRITE_STATE_e;
-
 // ==================================================================================================================================================
 // Declarations
 // ==================================================================================================================================================
-
-FTE_FSM_e fte_state, fte_state_n;
-logic last_weight_resp_received;
 
 // Register Bank
 // -------------------------------------------------------------------------------------
@@ -136,16 +124,16 @@ logic [9:0]  layer_config_out_features_count;
                                     
 logic        layer_config_activation_function_strobe;
 logic [1:0]  layer_config_activation_function_value;
-                                    
+
 logic        layer_config_bias_strobe;
 logic [31:0] layer_config_bias_value;
-                                    
+
 logic        layer_config_leaky_relu_alpha_strobe;
 logic [31:0] layer_config_leaky_relu_alpha_value;
-                                    
+
 logic        layer_config_out_features_address_msb_strobe;
-logic [1:0]  layer_config_out_features_address_msb_value;
 logic        layer_config_out_features_address_lsb_strobe;
+logic [1:0]  layer_config_out_features_address_msb_value;
 logic [31:0] layer_config_out_features_address_lsb_value;
 
 logic       ctrl_buffering_enable_strobe;
@@ -153,67 +141,45 @@ logic [0:0] ctrl_buffering_enable_value;
 logic       ctrl_writeback_enable_strobe;
 logic [0:0] ctrl_writeback_enable_value;
 
-// NSB requests
-logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslot_count;
-logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslots_to_buffer;
-logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslots_to_writeback;
-
-// Systolic modules
+// AXI Write Master
 // -------------------------------------------------------------------------------------
 
-// Driven from aggregation buffer
-logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0]                                  sys_module_forward_valid; // 16
-logic [SYSTOLIC_MODULE_COUNT:0] [MATRIX_N-1:0] [31:0]                           sys_module_forward;
+logic                              axi_write_master_req_valid;
+logic                              axi_write_master_req_ready;
+logic [33:0]                       axi_write_master_req_start_address;
+logic [7:0]                        axi_write_master_req_len;
 
-// Driven from weight channel
-logic [MAX_FEATURE_COUNT-1:0]                                                   sys_module_down_in_valid;
-logic [MAX_FEATURE_COUNT-1:0] [31:0]                                            sys_module_down_in;
+logic                              axi_write_master_pop;
+logic                              axi_write_master_data_valid;
+logic [511:0]                      axi_write_master_data;
 
-logic [MAX_FEATURE_COUNT-1:0]                                                   sys_module_down_out_valid;
-logic [MAX_FEATURE_COUNT-1:0] [31:0]                                            sys_module_down_out;
+logic                              axi_write_master_resp_valid;
+logic                              axi_write_master_resp_ready;
 
-logic [SYSTOLIC_MODULE_COUNT-1:0]                                               sys_module_flush_done;
-
-logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N:0] [MATRIX_N-1:0] [FLOAT_WIDTH-1:0] sys_module_pe_acc;
-
-logic [SYSTOLIC_MODULE_COUNT-1:0]                                               shift_sys_module;
-logic                                                                           bias_valid;
-logic                                                                           activation_valid;
-
-
-// Driving systolic modules
+// Transformation Cores
 // -------------------------------------------------------------------------------------
 
-logic                                                 begin_feature_dump;
-logic                                                 pulse_systolic_module;
-logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]         slot_pop_shift;
-logic [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]         busy_aggregation_slots_snapshot;
-logic                                                 pe_delay_counter;
+logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_req_ready;
 
-// Flushing logic
-logic [top_pkg::TRANSFORMATION_BUFFER_SLOTS-1:0]     transformation_buffer_slot_arb_oh;
+logic          [top_pkg::PRECISION_COUNT-1:0] transformation_core_resp_valid;
+logic          [top_pkg::PRECISION_COUNT-1:0] transformation_core_resp_ready;
+NSB_FTE_RESP_t [top_pkg::PRECISION_COUNT-1:0] transformation_core_resp;
 
-// Writeback logic
-logic                                                start_memory_dump;
-AXI_WRITE_STATE_e                                    axi_write_state, axi_write_state_n;
-logic [$clog2(SYSTOLIC_MODULE_COUNT):0]              sys_module_counter;
-logic [MATRIX_N:0] [top_pkg::NODE_ID_WIDTH-1:0]      sys_module_node_id_snapshot;
-logic [$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1:0] out_features_required_bytes;
+logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_req_valid;
+logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_req_ready;
+logic [top_pkg::PRECISION_COUNT-1:0] [33:0]   transformation_core_axi_write_master_req_start_address;
+logic [top_pkg::PRECISION_COUNT-1:0] [7:0]    transformation_core_axi_write_master_req_len;
 
-logic [$clog2(MATRIX_N-1)-1:0] fast_pulse_counter;
+logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_pop;
+logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_data_valid;
+logic [top_pkg::PRECISION_COUNT-1:0] [511:0]  transformation_core_axi_write_master_data;
+logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_resp_valid;
+logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_resp_ready;
 
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        fast_pulse_counter <= '0;
+logic [$clog2(top_pkg::PRECISION_COUNT)-1:0] transformation_core_resp_valid_bin;
 
-    end else if (fte_state == FTE_FSM_MULT_SLOW && fte_state_n == FTE_FSM_MULT_FAST) begin
-        fast_pulse_counter <= '0;
-
-    end else if (fte_state == FTE_FSM_MULT_FAST) begin
-        fast_pulse_counter <= fast_pulse_counter + 1'b1;
-    end
-end
-
+logic [$clog2(top_pkg::PRECISION_COUNT)-1:0] transformation_core_write_master_alloc_bin;
+logic [$clog2(top_pkg::PRECISION_COUNT)-1:0] transformation_core_write_master_alloc_bin_q;
 
 // ==================================================================================================================================================
 // Instances
@@ -262,404 +228,220 @@ feature_transformation_engine_regbank_wrapper feature_transformation_engine_regb
     .ctrl_writeback_enable_value
 );
 
-// Systolic Modules
+// Transformation Cores
 // --------------------------------------------------------------------------------
 
-logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] [31:0] debug_update_counter;
-logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] [31:0] debug_update_counter_inv;
+for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) begin
+    feature_transformation_core #(
+        .FLOAT_WIDTH           (FLOAT_WIDTH),
+        .DATA_WIDTH            (top_pkg::bits_per_precision(top_pkg::NODE_PRECISION_e'(precision))),
+        .MATRIX_N              (MATRIX_N),
+        .SYSTOLIC_MODULE_COUNT (SYSTOLIC_MODULE_COUNT)
+    ) feature_transformation_core_i (
+        .core_clk                                                   (core_clk),
+        .resetn                                                     (resetn),
 
-assign debug_update_counter_inv = ~debug_update_counter;
+        // Node Scoreboard -> Transformation Engine Interface
+        .nsb_fte_req_valid                                          (nsb_fte_req_valid && (nsb_fte_req.precision == precision)),
+        .nsb_fte_req_ready                                          (transformation_core_req_ready [precision]),
+        .nsb_fte_req                                                (nsb_fte_req),
 
-for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) begin
-    // Driving from weight channel
-    always_comb begin
-        sys_module_down_in_valid [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = {MATRIX_N{weight_channel_resp_valid[0]}} & weight_channel_resp[0].valid_mask[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
-        sys_module_down_in       [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = weight_channel_resp[0].data[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
-    end
-    
-    systolic_module #(
-        .FLOAT_WIDTH (FLOAT_WIDTH),
-        .MATRIX_N    (MATRIX_N)
-    ) sys_module_i (
-        .core_clk                            (core_clk),
-        .resetn                              (resetn),
+        .nsb_fte_resp_valid                                         (transformation_core_resp_valid                         [precision]),
+        .nsb_fte_resp_ready                                         (transformation_core_resp_ready                         [precision]),
+        .nsb_fte_resp                                               (transformation_core_resp                               [precision]),
 
-        .pulse_systolic_module               (pulse_systolic_module),
+        // Aggregation Buffer Interface
+        .transformation_core_aggregation_buffer_node_id             (aggregation_buffer_node_id                             [precision]),
+        .transformation_core_aggregation_buffer_pop                 (aggregation_buffer_pop                                 [precision]),
+        .transformation_core_aggregation_buffer_out_feature_valid   (aggregation_buffer_out_feature_valid                   [precision]),
+        .transformation_core_aggregation_buffer_out_feature         (aggregation_buffer_out_feature                         [precision]),
+        .transformation_core_aggregation_buffer_slot_free           (aggregation_buffer_slot_free                           [precision]),
 
-        .sys_module_forward_in_valid         (sys_module_forward_valid  [sys_module]),
-        .sys_module_forward_in               (sys_module_forward        [sys_module]),
+        // Weight Channels: FTE -> Prefetcher Weight Bank (REQ)
+        .weight_channel_req_valid                                   (weight_channel_req_valid                               [precision]),
+        .weight_channel_req_ready                                   (weight_channel_req_ready                               [precision]),
+        .weight_channel_req                                         (weight_channel_req                                     [precision]),
+        .weight_channel_resp_valid                                  (weight_channel_resp_valid                              [precision]),
+        .weight_channel_resp_ready                                  (weight_channel_resp_ready                              [precision]),
+        .weight_channel_resp                                        (weight_channel_resp                                    [precision]),
 
-        .sys_module_down_in_valid            (sys_module_down_in_valid  [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]),
-        .sys_module_down_in                  (sys_module_down_in        [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]),
+        // Transformation Buffer Interface
+        .transformation_buffer_write_enable                         (transformation_buffer_write_enable                     [precision]),
+        .transformation_buffer_write_address                        (transformation_buffer_write_address                    [precision]),
+        .transformation_buffer_write_data                           (transformation_buffer_write_data                       [precision]),
+        .transformation_buffer_slot_free                            (transformation_buffer_slot_free                        [precision]),
 
-        .sys_module_forward_out_valid        (sys_module_forward_valid  [sys_module+1]),
-        .sys_module_forward_out              (sys_module_forward        [sys_module+1]),
+        // AXI Write Master Interface
+        .axi_write_master_req_valid                                 (transformation_core_axi_write_master_req_valid         [precision]),
+        .axi_write_master_req_ready                                 (transformation_core_axi_write_master_req_ready         [precision]),
+        .axi_write_master_req_start_address                         (transformation_core_axi_write_master_req_start_address [precision]),
+        .axi_write_master_req_len                                   (transformation_core_axi_write_master_req_len           [precision]),
 
-        .sys_module_down_out_valid           (sys_module_down_out_valid [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]),
-        .sys_module_down_out                 (sys_module_down_out       [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]),
-        
-        .bias_valid                          (bias_valid),
-        .bias                                (layer_config_bias_value),
-        
-        .activation_valid                    (activation_valid),
-        .activation                          (layer_config_activation_function_value),
+        .axi_write_master_pop                                       (transformation_core_axi_write_master_pop               [precision]),
+        .axi_write_master_data_valid                                (transformation_core_axi_write_master_data_valid        [precision]),
+        .axi_write_master_data                                      (transformation_core_axi_write_master_data              [precision]),
 
-        .shift_valid                         (shift_sys_module         [sys_module]),
+        .axi_write_master_resp_valid                                (transformation_core_axi_write_master_resp_valid        [precision]),
+        .axi_write_master_resp_ready                                (transformation_core_axi_write_master_resp_ready        [precision]),
 
-        .sys_module_pe_acc                   (sys_module_pe_acc        [sys_module]),
-
-        .diagonal_flush_done                 (sys_module_flush_done    [sys_module]),
-
-        .layer_config_leaky_relu_alpha_value (layer_config_leaky_relu_alpha_value),
-
-        .debug_update_counter                (debug_update_counter     [sys_module])
+        // Layer configuration
+        .layer_config_in_features_count                             (layer_config_in_features_count),
+        .layer_config_out_features_count                            (layer_config_out_features_count),
+        .layer_config_out_features_address_msb_value                (layer_config_out_features_address_msb_value),
+        .layer_config_out_features_address_lsb_value                (layer_config_out_features_address_lsb_value),
+        .ctrl_buffering_enable_value                                (ctrl_buffering_enable_value),
+        .ctrl_writeback_enable_value                                (ctrl_writeback_enable_value)
     );
-
 end
 
-// Transformation Buffer slot arbitration
-// --------------------------------------------------------------------------------
+// AXI Write Master
+// -------------------------------------------------------------------------------------
+
+axi_write_master write_master_i (
+    .core_clk                   (core_clk),
+    .resetn                     (resetn),
+
+    // Request interface
+    .axi_write_master_req_valid         (axi_write_master_req_valid),
+    .axi_write_master_req_ready         (axi_write_master_req_ready),
+    .axi_write_master_req_start_address (axi_write_master_req_start_address),
+    .axi_write_master_req_len           (axi_write_master_req_len),
+
+    // Data interface
+    .data_queue_pop                     (axi_write_master_pop),
+    .data_queue_data_valid              (axi_write_master_data_valid),
+    .data_queue_data                    (axi_write_master_data),
+
+    // Response interface
+    .axi_write_master_resp_valid        (axi_write_master_resp_valid),
+    .axi_write_master_resp_ready        (axi_write_master_resp_ready),
+
+    // AXI Write Master -> AXI Interconnect
+    .axi_awaddr         (transformation_engine_axi_interconnect_axi_awaddr),
+    .axi_awburst        (transformation_engine_axi_interconnect_axi_awburst),
+    .axi_awcache        (transformation_engine_axi_interconnect_axi_awcache),
+    .axi_awid           (transformation_engine_axi_interconnect_axi_awid),
+    .axi_awlen          (transformation_engine_axi_interconnect_axi_awlen),
+    .axi_awlock         (transformation_engine_axi_interconnect_axi_awlock),
+    .axi_awprot         (transformation_engine_axi_interconnect_axi_awprot),
+    .axi_awqos          (transformation_engine_axi_interconnect_axi_awqos),
+    .axi_awready        (transformation_engine_axi_interconnect_axi_awready),
+    .axi_awsize         (transformation_engine_axi_interconnect_axi_awsize),
+    .axi_awvalid        (transformation_engine_axi_interconnect_axi_awvalid),
+
+    .axi_wdata          (transformation_engine_axi_interconnect_axi_wdata),
+    .axi_wlast          (transformation_engine_axi_interconnect_axi_wlast),
+    .axi_wready         (transformation_engine_axi_interconnect_axi_wready),
+    .axi_wstrb          (transformation_engine_axi_interconnect_axi_wstrb),
+    .axi_wvalid         (transformation_engine_axi_interconnect_axi_wvalid),
+
+    .axi_bid            (transformation_engine_axi_interconnect_axi_bid),
+    .axi_bready         (transformation_engine_axi_interconnect_axi_bready),
+    .axi_bresp          (transformation_engine_axi_interconnect_axi_bresp),
+    .axi_bvalid         (transformation_engine_axi_interconnect_axi_bvalid),
+
+    .axi_araddr         (transformation_engine_axi_interconnect_axi_araddr),
+    .axi_arburst        (transformation_engine_axi_interconnect_axi_arburst),
+    .axi_arcache        (transformation_engine_axi_interconnect_axi_arcache),
+    .axi_arid           (transformation_engine_axi_interconnect_axi_arid),
+    .axi_arlen          (transformation_engine_axi_interconnect_axi_arlen),
+    .axi_arlock         (transformation_engine_axi_interconnect_axi_arlock),
+    .axi_arprot         (transformation_engine_axi_interconnect_axi_arprot),
+    .axi_arqos          (transformation_engine_axi_interconnect_axi_arqos),
+    .axi_arsize         (transformation_engine_axi_interconnect_axi_arsize),
+    .axi_arvalid        (transformation_engine_axi_interconnect_axi_arvalid),
+    .axi_arready        (transformation_engine_axi_interconnect_axi_arready),
+
+    .axi_rdata          (transformation_engine_axi_interconnect_axi_rdata),
+    .axi_rid            (transformation_engine_axi_interconnect_axi_rid),
+    .axi_rlast          (transformation_engine_axi_interconnect_axi_rlast),
+    .axi_rready         (transformation_engine_axi_interconnect_axi_rready),
+    .axi_rresp          (transformation_engine_axi_interconnect_axi_rresp),
+    .axi_rvalid         (transformation_engine_axi_interconnect_axi_rvalid)
+);
+
+// NSB Response Arbitration
+// -------------------------------------------------------------------------------------
 
 rr_arbiter #(
-    .NUM_REQUESTERS     (top_pkg::TRANSFORMATION_BUFFER_SLOTS)
+    .NUM_REQUESTERS     (top_pkg::PRECISION_COUNT)
+) nsb_response_arb (
+    .clk                (core_clk),
+    .resetn             (resetn),
+
+    .request            (transformation_core_resp_valid),
+
+    // update when starting to flush new row
+    .update_lru         (|transformation_core_resp_valid),
+    .grant_oh           (transformation_core_resp_ready),
+    .grant_bin          (transformation_core_resp_valid_bin)
+);
+
+// AXI Write Master Request Arbitration
+// -------------------------------------------------------------------------------------
+
+rr_arbiter #(
+    .NUM_REQUESTERS     (top_pkg::PRECISION_COUNT)
 ) prefetcher_req_arb (
     .clk                (core_clk),
     .resetn             (resetn),
-    .request            (transformation_buffer_slot_free),
+
+    .request            (transformation_core_axi_write_master_req_valid),
 
     // update when starting to flush new row
-    .update_lru         (fte_state == FTE_FSM_WRITEBACK),
-    .grant_oh           (transformation_buffer_slot_arb_oh)
-);
-
-// Driving Aggregation Buffer
-// --------------------------------------------------------------------------------
-
-hybrid_buffer_driver #(
-    .BUFFER_SLOTS (top_pkg::AGGREGATION_BUFFER_SLOTS),
-    .MAX_PULSES_PER_SLOT (top_pkg::MAX_FEATURE_COUNT)
-) aggregation_buffer_driver_i (
-    .core_clk,
-    .resetn,
-
-    .begin_dump     (begin_feature_dump),
-    .pulse          (pulse_systolic_module),
-
-    .pulse_limit    (layer_config_in_features_count),
-
-    .slot_pop_shift (slot_pop_shift)
+    .update_lru         (axi_write_master_req_ready),
+    .grant_oh           (),
+    .grant_bin          (transformation_core_write_master_alloc_bin)
 );
 
 // ==================================================================================================================================================
 // Logic
 // ==================================================================================================================================================
 
-// FTE State Machine
-// -------------------------------------------------------------------------------------
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        fte_state <= FTE_FSM_IDLE;
-    end else begin
-        fte_state <= fte_state_n;
-    end
-end
-
-always_comb begin
-    fte_state_n = fte_state;
-
-    case(fte_state)
-
-        FTE_FSM_IDLE: begin
-            fte_state_n = nsb_fte_req_valid ? FTE_FSM_REQ_WC : FTE_FSM_IDLE;
-        end
-
-        FTE_FSM_REQ_WC: begin
-            fte_state_n = weight_channel_req_ready[0] ? FTE_FSM_MULT_SLOW : FTE_FSM_REQ_WC;
-        end
-
-        FTE_FSM_MULT_SLOW: begin
-            fte_state_n = last_weight_resp_received ? FTE_FSM_MULT_FAST : FTE_FSM_MULT_SLOW;
-        end
-
-        FTE_FSM_MULT_FAST: begin
-            fte_state_n = fast_pulse_counter == MATRIX_N - 1 ? FTE_FSM_BIAS : FTE_FSM_MULT_FAST;
-        end
-
-        FTE_FSM_BIAS: begin
-            fte_state_n = FTE_FSM_ACTIVATION;
-        end
-
-        FTE_FSM_ACTIVATION: begin
-            fte_state_n = ctrl_buffering_enable_value ? FTE_FSM_BUFFER : FTE_FSM_WRITEBACK;
-        end
-        
-        FTE_FSM_BUFFER: begin
-            fte_state_n = FTE_FSM_WRITEBACK; // buffering takes a single cycle
-        end
-
-        FTE_FSM_WRITEBACK: begin
-            fte_state_n = (nodeslots_to_writeback == 'd1) && (sys_module_counter == SYSTOLIC_MODULE_COUNT) && transformation_engine_axi_interconnect_axi_bvalid ? FTE_FSM_NSB_RESP 
-                        : (sys_module_counter == SYSTOLIC_MODULE_COUNT[$clog2(SYSTOLIC_MODULE_COUNT):0]) && transformation_engine_axi_interconnect_axi_bvalid ? FTE_FSM_SHIFT
-                        : FTE_FSM_WRITEBACK;
-        end
-
-        FTE_FSM_SHIFT: begin
-            fte_state_n = ctrl_buffering_enable_value ? FTE_FSM_BUFFER
-                        : ctrl_writeback_enable_value ? FTE_FSM_WRITEBACK
-                        : FTE_FSM_NSB_RESP;
-        end
-
-        FTE_FSM_NSB_RESP: begin
-            fte_state_n = FTE_FSM_IDLE;
-        end
-
-        default: begin
-            fte_state_n = FTE_FSM_IDLE;
-        end
-
-    endcase
-end
-
-// Take snapshot of busy slots and respective node IDs after NSB request
-// -------------------------------------------------------------------------------------
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        busy_aggregation_slots_snapshot <= '0;
-        
-    // Starting multiplication
-    end else if ((fte_state == FTE_FSM_IDLE) && (fte_state_n == FTE_FSM_REQ_WC)) begin
-        busy_aggregation_slots_snapshot <= ~aggregation_buffer_slot_free;    
-    end
-end
-
-for (genvar row = 0; row < MATRIX_N; row++) begin
-    always_ff @(posedge core_clk or negedge resetn) begin
-        if (!resetn) begin
-            sys_module_node_id_snapshot [row]          <= '0;
-            
-        // Starting multiplication
-        end else if ((fte_state == FTE_FSM_IDLE) && (fte_state_n == FTE_FSM_REQ_WC)) begin
-            sys_module_node_id_snapshot [row]          <= aggregation_buffer_node_id [row];
-        
-        // Shift node IDs
-        end else if (fte_state == FTE_FSM_SHIFT) begin
-            sys_module_node_id_snapshot [row]          <= sys_module_node_id_snapshot [row+1];
-        end
-    end
-end
-
-assign sys_module_node_id_snapshot [MATRIX_N] = '0;
-
-// Driving systolic module
-// -------------------------------------------------------------------------------------
-
-always_comb begin
-    // Begin feature dump when weight channel request accepted
-    begin_feature_dump = (fte_state == FTE_FSM_REQ_WC) && (fte_state_n == FTE_FSM_MULT_SLOW);
-
-    // Pulse module when features ready in aggregation buffer and weights ready in weight channel
-    pulse_systolic_module = ((fte_state_n == FTE_FSM_MULT_SLOW) && &aggregation_buffer_out_feature_valid && weight_channel_resp_valid[0]) || fte_state == FTE_FSM_MULT_FAST;
-
-    // Drive systolic module from aggregation buffer (on the left)
-    sys_module_forward_valid [0] = slot_pop_shift & busy_aggregation_slots_snapshot;
-    sys_module_forward       [0] = aggregation_buffer_out_feature;
-
-    aggregation_buffer_pop = slot_pop_shift & {MATRIX_N{pulse_systolic_module}} & busy_aggregation_slots_snapshot & ~aggregation_buffer_slot_free;
-end
-
-// 1-bit toggle to account for PE delay
-// TO DO: reconsider if necessary. May be able to just wait until aggregation_buffer_out_feature_valid
-// since this takes 2 cycles after pop
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        pe_delay_counter <= '1;
-    end else begin
-        pe_delay_counter <= begin_feature_dump ? 1'b1
-                            
-                            // Don't toggle before starting MULT
-                            : !(fte_state == FTE_FSM_MULT_SLOW) ? pe_delay_counter
-
-                            // Toggle every cycle during MULT
-                            : !pe_delay_counter;
-    end
-end
-    
-always_comb begin
-    // Bias and activation after multiplication finished
-    bias_valid       = (fte_state == FTE_FSM_BIAS);
-    activation_valid = (fte_state == FTE_FSM_ACTIVATION);
-    shift_sys_module = (fte_state == FTE_FSM_SHIFT);
-end
-
-// Buffering Logic
-// -------------------------------------------------------------------------------------
-
-for (genvar slot = 0; slot < TRANSFORMATION_BUFFER_SLOTS; slot++) begin
-    always_comb begin
-        transformation_buffer_write_enable  [slot] = transformation_buffer_slot_arb_oh[slot] && (fte_state == FTE_FSM_BUFFER);
-        transformation_buffer_write_address [slot] = '0;
-        transformation_buffer_write_data    [slot] = sys_module_pe_acc [0] [0]; // 16*32 bits = 512b
-    end    
-end
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        nodeslots_to_buffer <= '0;
-        nodeslots_to_writeback <= '0;
-        
-        // Accepting NSB request
-    end else if (nsb_fte_req_valid && nsb_fte_req_ready) begin
-        nodeslots_to_buffer    <= ctrl_buffering_enable_value ? nodeslot_count : nodeslots_to_buffer;
-        nodeslots_to_writeback <= ctrl_writeback_enable_value ? nodeslot_count : nodeslots_to_writeback;
-    
-    // Done flushing a row of features
-    end else if (fte_state == FTE_FSM_BUFFER) begin
-        nodeslots_to_buffer <= nodeslots_to_buffer - 1'b1;
-    
-    end else if (fte_state == FTE_FSM_WRITEBACK && transformation_engine_axi_interconnect_axi_bvalid) begin
-        nodeslots_to_writeback <= nodeslots_to_writeback - 1'b1;
-    end
-end
-
-count_ones #(
-    .INPUT_WIDTH (top_pkg::MAX_NODESLOT_COUNT)
-) count_nodeslots (
-    .data (nsb_fte_req.nodeslots),
-    .count (nodeslot_count)
-);
-
-// Writeback Logic
-// -------------------------------------------------------------------------------------
-
-assign start_memory_dump = ((fte_state == FTE_FSM_BUFFER) || (fte_state == FTE_FSM_ACTIVATION) || (fte_state == FTE_FSM_SHIFT)) && (fte_state_n == FTE_FSM_WRITEBACK);
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        sys_module_counter <= '0;
-        
-    // Starting to flush row from systolic array
-    end else if (start_memory_dump) begin
-        sys_module_counter <= '0;
-    
-    // Finished current systolic module
-    end else if (transformation_engine_axi_interconnect_axi_wvalid && transformation_engine_axi_interconnect_axi_wready) begin
-        sys_module_counter <= sys_module_counter + 1'b1;
-    end
-end
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        axi_write_state <= AXI_IDLE;
-    end else begin
-        axi_write_state <= axi_write_state_n;
-    end
-end
-
-always_comb begin
-    axi_write_state_n = axi_write_state;
-
-    case (axi_write_state)
-        AXI_IDLE: begin
-            axi_write_state_n = start_memory_dump ? AXI_AW
-                              : AXI_IDLE;
-        end
-
-        AXI_AW: begin
-            axi_write_state_n = transformation_engine_axi_interconnect_axi_awready ? AXI_W
-                              : AXI_AW;
-        end
-
-        AXI_W: begin
-            axi_write_state_n = transformation_engine_axi_interconnect_axi_wvalid && transformation_engine_axi_interconnect_axi_wready && transformation_engine_axi_interconnect_axi_wlast ? AXI_B
-                              : AXI_W;
-        end
-
-        AXI_B: begin
-            axi_write_state_n = transformation_engine_axi_interconnect_axi_bvalid ? AXI_IDLE
-                              : AXI_B;
-        end
-
-    endcase
-
-end
-
-always_comb begin
-    out_features_required_bytes = layer_config_out_features_count * 4; // 4 bytes per feature
-    out_features_required_bytes = {out_features_required_bytes[$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1 : 6], 6'd0} + (out_features_required_bytes[5:0] ? 'd64 : 1'b0); // nearest multiple of 64
-    
-    transformation_engine_axi_interconnect_axi_awvalid = (axi_write_state == AXI_AW);
-    
-    transformation_engine_axi_interconnect_axi_awaddr = {layer_config_out_features_address_msb_value, layer_config_out_features_address_lsb_value}
-                                                        + sys_module_node_id_snapshot[0] * out_features_required_bytes;
-
-    transformation_engine_axi_interconnect_axi_awsize  = 3'b110; // 64 bytes
-    transformation_engine_axi_interconnect_axi_awburst = 2'b01; // INCR mode (increment by 64 bytes for each beat)
-    transformation_engine_axi_interconnect_axi_awlen   = (SYSTOLIC_MODULE_COUNT[7:0] - 1'b1);
-    
-    // Unused features
-    transformation_engine_axi_interconnect_axi_awcache = '0;
-    transformation_engine_axi_interconnect_axi_awid    = '0;
-    transformation_engine_axi_interconnect_axi_awlock  = '0;
-    transformation_engine_axi_interconnect_axi_awprot  = '0;
-    transformation_engine_axi_interconnect_axi_awqos   = '0;
-
-    transformation_engine_axi_interconnect_axi_wvalid = (axi_write_state == AXI_W);
-    transformation_engine_axi_interconnect_axi_wdata  = sys_module_pe_acc [sys_module_counter] [0];         // Top row of systolic module
-    transformation_engine_axi_interconnect_axi_wlast  = (sys_module_counter == (SYSTOLIC_MODULE_COUNT-1));
-    transformation_engine_axi_interconnect_axi_wstrb  = '1;
-
-    transformation_engine_axi_interconnect_axi_bready = (axi_write_state == AXI_B);
-end
-
 // NSB Interface
 // -------------------------------------------------------------------------------------
 
 always_comb begin
-    nsb_fte_req_ready           = (fte_state == FTE_FSM_IDLE);
-    
-    // TO DO: NSB resp
-    nsb_fte_resp_valid          = (fte_state == FTE_FSM_NSB_RESP);
-    nsb_fte_resp                = '0;
+    nsb_fte_req_ready           = nsb_fte_req.precision == top_pkg::FLOAT_32 ? transformation_core_req_ready [top_pkg::FLOAT_32]
+                                : nsb_fte_req.precision == top_pkg::FIXED_8 ? transformation_core_req_ready [top_pkg::FIXED_8]
+                                : '0;
+
+    // Response
+    nsb_fte_resp_valid          = |transformation_core_resp_valid;
+    nsb_fte_resp = transformation_core_resp [transformation_core_resp_valid_bin];
 end
 
-// Weight Channel Interface
+// Transformation Core Allocation for AXI Write Master
 // -------------------------------------------------------------------------------------
 
-always_comb begin
-    weight_channel_req_valid[0]  = (fte_state == FTE_FSM_REQ_WC);
-
-    // Feature counts aren't used by weight bank
-    weight_channel_req[0].in_features  = top_pkg::MAX_FEATURE_COUNT;
-    weight_channel_req[0].out_features = top_pkg::MAX_FEATURE_COUNT;
-
-    // Accept weight bank response when pulsing systolic module (i.e. aggregation buffer is also ready)
-    weight_channel_resp_ready[0] = (fte_state == FTE_FSM_MULT_SLOW) && (pulse_systolic_module || weight_channel_resp[0].done);
-end
-
-// Raise flag as pre-condition for transitioning from MULT state
-always_ff @(posedge core_clk or negedge resetn) begin
+always_ff @(posedge core_clk) begin
     if (!resetn) begin
-        last_weight_resp_received <= '0;
-    
-    end else if (weight_channel_resp_valid[0] && weight_channel_resp[0].done) begin
-        last_weight_resp_received <= '1;
+        transformation_core_write_master_alloc_bin_q <= '0;
+
+    // AXI Write Master accepting request
+    end else if (axi_write_master_req_ready && axi_write_master_req_valid) begin
+        transformation_core_write_master_alloc_bin_q <= transformation_core_write_master_alloc_bin;
     end
 end
 
 always_comb begin
-    transformation_engine_axi_interconnect_axi_araddr  = '0;
-    transformation_engine_axi_interconnect_axi_arburst = '0;
-    transformation_engine_axi_interconnect_axi_arcache = '0;
-    transformation_engine_axi_interconnect_axi_arid    = '0;
-    transformation_engine_axi_interconnect_axi_arlen   = '0;
-    transformation_engine_axi_interconnect_axi_arlock  = '0;
-    transformation_engine_axi_interconnect_axi_arprot  = '0;
-    transformation_engine_axi_interconnect_axi_arqos   = '0;
-    transformation_engine_axi_interconnect_axi_arsize  = '0;
-    transformation_engine_axi_interconnect_axi_arvalid = '0;
-    transformation_engine_axi_interconnect_axi_rready  = '0;
+    axi_write_master_req_valid         = |transformation_core_axi_write_master_req_valid;
+    axi_write_master_req_start_address = transformation_core_axi_write_master_req_start_address [transformation_core_write_master_alloc_bin];
+    axi_write_master_req_len           = transformation_core_axi_write_master_req_len           [transformation_core_write_master_alloc_bin];
+
+    axi_write_master_data_valid = transformation_core_axi_write_master_data_valid [transformation_core_write_master_alloc_bin_q];
+    axi_write_master_data       = transformation_core_axi_write_master_data       [transformation_core_write_master_alloc_bin_q];
+    axi_write_master_resp_ready = transformation_core_axi_write_master_resp_ready [transformation_core_write_master_alloc_bin_q];
+end
+
+for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
+
+    always_comb begin
+        transformation_core_axi_write_master_req_ready [precision] = axi_write_master_req_ready && (transformation_core_write_master_alloc_bin == precision);
+        transformation_core_axi_write_master_pop       [precision] = axi_write_master_pop && (transformation_core_write_master_alloc_bin_q == precision);
+
+        transformation_core_axi_write_master_resp_valid [precision] = axi_write_master_resp_valid && (transformation_core_write_master_alloc_bin_q == precision);
+    end
 end
 
 endmodule

@@ -19,9 +19,9 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module mac #(
+    parameter PRECISION   = top_pkg::FLOAT_32,
     parameter FLOAT_WIDTH = 32,
-    parameter DATA_WIDTH  = 32,
-    parameter PRECISION   = "FLOAT_32"
+    parameter DATA_WIDTH  = 32
 ) (
     input  logic                              core_clk,            
     input  logic                              resetn,
@@ -39,10 +39,10 @@ module mac #(
     
 );
 
-if (PRECISION == "FLOAT_32") begin
+if (PRECISION == top_pkg::FLOAT_32) begin
 
     float_mac #(
-        .FLOAT_WIDTH(FLOAT_WIDTH)
+        .FLOAT_WIDTH (FLOAT_WIDTH)
     ) float_mac_i (
         .core_clk,            
         .resetn,
@@ -59,10 +59,9 @@ if (PRECISION == "FLOAT_32") begin
         .accumulator
     );
 
-end else if (PRECISION == "FIXED_16") begin
+end else begin
 
     fixed_point_mac #(
-        .WIDTH          (FLOAT_WIDTH),
         .DATA_WIDTH     (DATA_WIDTH)
     ) fixed_point_mac_i (
         .core_clk,            

@@ -11,11 +11,12 @@
 module rr_arbiter #(
     parameter NUM_REQUESTERS = 4
 ) (
-    input                               clk,
-    input                               resetn,
-    input[NUM_REQUESTERS - 1:0]         request,
-    input                               update_lru,
-    output logic[NUM_REQUESTERS - 1:0]  grant_oh
+    input                                      clk,
+    input                                      resetn,
+    input        [NUM_REQUESTERS - 1:0]        request,
+    input                                      update_lru,
+    output logic [NUM_REQUESTERS - 1:0]        grant_oh,
+    output logic [$clog2(NUM_REQUESTERS)-1:0]  grant_bin
 );
 
     logic[NUM_REQUESTERS - 1:0] priority_oh_nxt;
@@ -55,4 +56,12 @@ module rr_arbiter #(
             priority_oh <= priority_oh_nxt;
         end
     end
+
+    onehot_to_binary_comb #(
+        .INPUT_WIDTH (NUM_REQUESTERS)
+    ) oh2bin (
+        .input_data         (grant_oh),
+        .output_data        (grant_bin)
+    );
+
 endmodule

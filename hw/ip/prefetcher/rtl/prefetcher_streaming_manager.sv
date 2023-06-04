@@ -1,5 +1,8 @@
 import top_pkg::*;
 
+`define min(a,b) ((a > b) ? b : a)
+`define divide_round_up(a,b) (a - 1)/b + 1
+
 module prefetcher_streaming_manager #(
     parameter NSB_PREF_OPCODE_e FETCH_TYPE = top_pkg::ADJACENCY_LIST,
 

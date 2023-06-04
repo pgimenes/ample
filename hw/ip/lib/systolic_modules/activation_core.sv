@@ -1,21 +1,23 @@
 import top_pkg::*;
 
 module activation_core #(
+    parameter PRECISION = top_pkg::FLOAT_32,
+    parameter DATA_WIDTH = 32,
     parameter FLOAT_WIDTH = 32
 ) (
     input  logic [$bits(ACTIVATION_FUNCTION_e)-1:0] sel_activation,
     
     input  logic                                    in_feature_valid,
-    input  logic [FLOAT_WIDTH-1:0]                  in_feature,
+    input  logic [DATA_WIDTH-1:0]                   in_feature,
     
     output logic                                    activated_feature_valid,
-    output logic [FLOAT_WIDTH-1:0]                  activated_feature,
+    output logic [DATA_WIDTH-1:0]                   activated_feature,
 
-    input  logic [31:0]                             layer_config_leaky_relu_alpha_value
+    input  logic [DATA_WIDTH-1:0]                   layer_config_leaky_relu_alpha_value
 );
 
 logic                   leaky_relu_activation_valid;
-logic [FLOAT_WIDTH-1:0] leaky_relu_activation;
+logic [DATA_WIDTH-1:0]  leaky_relu_activation;
 
 always_comb begin
     case (sel_activation)
@@ -35,16 +37,27 @@ always_comb begin
     endcase
 end
 
-fp_mult activation_mult (
-    .s_axis_a_tvalid      (in_feature_valid),
-    .s_axis_a_tdata       (in_feature),
+if (PRECISION == top_pkg::FLOAT_32) begin
 
-    .s_axis_b_tvalid      ('1),
-    .s_axis_b_tdata       (layer_config_leaky_relu_alpha_value),
-    
-    .m_axis_result_tvalid (leaky_relu_activation_valid),
-    .m_axis_result_tdata  (leaky_relu_activation)
-);
+    fp_mult activation_mult (
+        .s_axis_a_tvalid      (in_feature_valid),
+        .s_axis_a_tdata       (in_feature),
+
+        .s_axis_b_tvalid      ('1),
+        .s_axis_b_tdata       (layer_config_leaky_relu_alpha_value),
+
+        .m_axis_result_tvalid (leaky_relu_activation_valid),
+        .m_axis_result_tdata  (leaky_relu_activation)
+    );
+
+end else begin
+
+    // Fixed point
+    always_comb begin
+        leaky_relu_activation_valid = in_feature_valid;
+        leaky_relu_activation = in_feature * layer_config_leaky_relu_alpha_value;
+    end
+end
 
 assign activated_feature_valid = (sel_activation == top_pkg::NONE) ? in_feature_valid
                                : (sel_activation == top_pkg::RELU) ? in_feature_valid

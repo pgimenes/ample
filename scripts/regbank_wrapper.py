@@ -154,7 +154,7 @@ always_ff @(posedge axi_aclk or negedge axi_aresetn) begin
 
 {dump_regs(data, line_start="       ", line_end="_q <= '0;", final_char="_q <= '0;", only_allow=["READ_ONLY"])}
 
-{dump_regs(data, line_start="       ", line_end="_slow <= '0;", final_char=" <= '0;", only_allow=["READ_ONLY"])}
+{dump_regs(data, line_start="       ", line_end="_slow <= '0;", final_char="_slow <= '0;", only_allow=["READ_ONLY"])}
 
     end else begin
 
