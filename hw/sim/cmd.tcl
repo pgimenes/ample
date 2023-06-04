@@ -11,4 +11,4 @@ if { [string length $curr_wave] == 0 } {
 # Log all signals
 log_wave -r *
 
-run 32 us
+run 64 us

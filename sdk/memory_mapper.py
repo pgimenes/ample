@@ -24,7 +24,7 @@ class Memory_Mapper:
     def map_adj_list(self):
         for node in self.graph.nodes:
             self.graph.nodes[node]['adjacency_list_address'] = len(self.memory_hex)
-            self.memory_hex += self.int_list_to_byte_list(self.graph.nodes[node]['neighbours'], align=True, alignment=64)
+            self.memory_hex += self.int_list_to_byte_list(self.graph.nodes[node]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
 
         # Set offset for next memory range
         self.offsets['scale_factors'] = len(self.memory_hex)
@@ -32,7 +32,10 @@ class Memory_Mapper:
     def map_scale_factors(self):
         for node in self.graph.nodes:
             self.graph.nodes[node]['scale_factors_address'] = len(self.memory_hex)
-            self.memory_hex += self.float_list_to_byte_list(self.graph.nodes[node]['scale_factors'], align=True, alignment=64, pad_side='left')
+            if (self.graph.nodes[node]['precision'] == 'FLOAT_32'):
+                self.memory_hex += self.float_list_to_byte_list(self.graph.nodes[node]['scale_factors'], align=True, alignment=64, pad_side='left')
+            else:
+                self.memory_hex += self.int_list_to_byte_list(self.graph.nodes[node]['scale_factors'], align=True, alignment=64, pad_side='left')
         
         # Set offset for next memory range
         self.offsets['in_messages'] = len(self.memory_hex)
@@ -67,17 +70,25 @@ class Memory_Mapper:
     # Utilities
     # ===============================================
 
-    def int_list_to_byte_list(self, in_list, align=False, alignment=None):
+    def int_list_to_byte_list(self, in_list, align=False, alignment=None, pad_side='right'):
         '''
         Convert to list of bytes in hex
         '''
+        memory_hex, new_elements = [], []
         in_list = [0] if (in_list == []) else in_list
-        memory_hex = np.array([f"{dest_node:08x}" for dest_node in in_list])
-        memory_hex = [s[i:i+2] for s in memory_hex for i in range(0, 8, 2)]
+
+        new_elements = np.array([f"{dest_node:08x}" for dest_node in in_list])
+        new_elements = [s[i:i+2] for s in new_elements for i in range(0, 8, 2)]
+
         if (align and alignment is not None):
-            zeros = (alignment - len(memory_hex) % alignment)
+            zeros = (alignment - len(new_elements) % alignment)
             zeros = 0 if (zeros == 64) else zeros
-            memory_hex += ['00'] * zeros
+
+            if (pad_side == 'right'):
+                memory_hex = new_elements + ['00'] * zeros
+            elif (pad_side == 'left'):
+                memory_hex = ['00'] * zeros + new_elements
+
         return memory_hex
 
     def float_list_to_byte_list(self, in_list, align=False, alignment=None, pad_side='right'):

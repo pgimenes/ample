@@ -20,12 +20,13 @@ class TrainedGraph:
         for idx, i in enumerate(node_ids):
             self.node_offsets[i] = node_offsets[idx]
 
+        # Feature count initialization may change when embeddings are trained
+        self.feature_count = feature_count
+
         self.init_nx_graph()
 
         # Local copy of embeddings stored in node objects
         self.embeddings = embeddings
-        # Feature count initialization may change when embeddings are trained
-        self.feature_count = feature_count
 
         # TO DO: read activation from model object
         self.transformation_activation = 1 # relu
@@ -46,14 +47,17 @@ class TrainedGraph:
                     self.nx_graph.nodes[node]['neighbours'] = neighbours
                     self.nx_graph.nodes[node]['neighbour_count'] = len(neighbours)
                     self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
+                    self.nx_graph.nodes[node]['neighbour_message_ptrs'] = [4*self.feature_count*nb_ptr for nb_ptr in neighbours]
                     self.nx_graph.nodes[node]['adjacency_list_address_lsb'] = 0 # to be defined my init manager
                     self.nx_graph.nodes[node]['aggregation_function'] = "SUM"
-                    self.nx_graph.nodes[node]['scale_factors'] = [1] * len(neighbours)
+
+                    # Add a single scale factor to isolated nodes to occupy memory range
+                    self.nx_graph.nodes[node]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
                     
                     if (self.graph_precision == 'mixed'):
                         prec = random.choice(["FLOAT_32", "FIXED_16"])
-                        self.nx_graph.nodes[node]['precision'] = prec
                         # print(f"Initializing node {node} with precision {prec}")
+                        self.nx_graph.nodes[node]['precision'] = prec
                     else:
                         self.nx_graph.nodes[node]['precision'] = self.graph_precision
                          
@@ -67,9 +71,9 @@ class TrainedGraph:
             if (self.nx_graph.nodes[node]['precision'] == "FLOAT_32"):
                 embd = [random.uniform(-2, 2) for _ in range(self.feature_count)]
             elif (self.nx_graph.nodes[node]['precision'] == "FIXED_16"):
-                embd = [random.randint(-32768, 32767) for _ in range(self.feature_count)]
+                embd = [random.randint(-8, 7) for _ in range(self.feature_count)]
             elif (self.nx_graph.nodes[node]['precision'] == "FIXED_8"):
-                embd = [random.randint(-128, 127) for _ in range(self.feature_count)]
+                embd = [random.randint(-8, 7) for _ in range(self.feature_count)]
             elif (self.nx_graph.nodes[node]['precision'] == "FIXED_4"):
                 embd = [random.randint(-8, 7) for _ in range(self.feature_count)]
             else:
