@@ -260,14 +260,8 @@ rr_arbiter #(
 
     .request    (nsb_prefetcher_fetch_tag_resp_valid),
     .update_lru ('1),
-    .grant_oh   (fetch_tag_resp_arb)
-);
-
-onehot_to_binary_comb #(
-    .INPUT_WIDTH (FETCH_TAG_COUNT)
-) fetch_tag_resp_arb_oh2bin (
-	.input_data     (fetch_tag_resp_arb),
-  	.output_data    (fetch_tag_resp_arb_bin)
+    .grant_oh   (fetch_tag_resp_arb),
+    .grant_bin  (fetch_tag_resp_arb_bin)
 );
 
 // Adjacency Read Master request arbitration
@@ -281,14 +275,8 @@ rr_arbiter #(
 
     .request    (fetch_tag_adj_rm_req_valid),
     .update_lru (adj_rm_fetch_req_ready),
-    .grant_oh   (chosen_fetch_tag_adj_rm_req)
-);
-
-onehot_to_binary_comb #(
-    .INPUT_WIDTH (FETCH_TAG_COUNT)
-) adj_rm_req_arb_oh2bin (
-	.input_data     (chosen_fetch_tag_adj_rm_req),
-  	.output_data    (chosen_fetch_tag_adj_rm_req_bin)
+    .grant_oh   (chosen_fetch_tag_adj_rm_req),
+    .grant_bin  (chosen_fetch_tag_adj_rm_req_bin)
 );
 
 
@@ -303,14 +291,8 @@ rr_arbiter #(
 
     .request    (fetch_tag_msg_rm_req_valid),
     .update_lru (msg_rm_fetch_req_ready),
-    .grant_oh   (chosen_fetch_tag_msg_rm_req)
-);
-
-onehot_to_binary_comb #(
-    .INPUT_WIDTH (FETCH_TAG_COUNT)
-) msg_rm_req_arb_oh2bin (
-	.input_data     (chosen_fetch_tag_msg_rm_req),
-  	.output_data    (chosen_fetch_tag_msg_rm_req_bin)
+    .grant_oh   (chosen_fetch_tag_msg_rm_req),
+    .grant_bin  (chosen_fetch_tag_msg_rm_req_bin)
 );
 
 // ==================================================================================================================================================

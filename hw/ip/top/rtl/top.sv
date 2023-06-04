@@ -300,13 +300,12 @@ logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_resp_ready;
 MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp;
 
 // Weight Channel: FTE -> Prefetcher
-logic                                              weight_channel_req_valid;
-logic                                              weight_channel_req_ready;
-WEIGHT_CHANNEL_REQ_t                               weight_channel_req;
-
-logic                                              weight_channel_resp_valid;
-logic                                              weight_channel_resp_ready;
-WEIGHT_CHANNEL_RESP_t                              weight_channel_resp;
+logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_valid;
+logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_ready;
+WEIGHT_CHANNEL_REQ_t  [top_pkg::PRECISION_COUNT-1:0] weight_channel_req;
+logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_valid;
+logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_ready;
+WEIGHT_CHANNEL_RESP_t [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp;
 
 // AGE -> Aggregation Buffer Interface
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_set_node_id_valid;
@@ -775,32 +774,6 @@ feature_transformation_engine transformation_engine_i (
     .transformation_engine_axi_interconnect_axi_wready,
     .transformation_engine_axi_interconnect_axi_wstrb,
     .transformation_engine_axi_interconnect_axi_wvalid
-);
-
-
-// ====================================================================================
-// Transformation Buffer
-// ====================================================================================
-
-hybrid_buffer #(
-    .NUM_SLOTS   (top_pkg::TRANSFORMATION_BUFFER_SLOTS),
-    .WRITE_WIDTH (top_pkg::TRANSFORMATION_BUFFER_WRITE_WIDTH),
-    .WRITE_DEPTH (top_pkg::TRANSFORMATION_BUFFER_WRITE_DEPTH),
-    .READ_WIDTH  (top_pkg::TRANSFORMATION_BUFFER_READ_WIDTH),
-    .READ_DEPTH  (top_pkg::TRANSFORMATION_BUFFER_READ_DEPTH),
-    .BUFFER_TYPE ("TRANSFORMATION")
-) transformation_buffer_i (
-    .core_clk           (sys_clk),
-    .resetn             (!sys_rst),
-
-    .write_enable       (transformation_buffer_write_enable),
-    .write_address      (transformation_buffer_write_address),
-    .write_data         (transformation_buffer_write_data),
-    .feature_count      (transformation_buffer_feature_count),
-
-    .pop                (transformation_buffer_pop),
-    .out_feature        (transformation_buffer_out_feature),
-    .slot_free          (transformation_buffer_slot_free)
 );
 
 // ====================================================================================
