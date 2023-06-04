@@ -8,6 +8,7 @@ sv xil_defaultlib --include "../../imports/json_sv/sv" -d "FLOAT_MAC=1" \
 "../../imports/json_sv/sv/json.svh" \
 "../../imports/json_sv/sv/util.sv" \
 "../../imports/json_sv/sv/json.sv" \
+"../ip/tb_lib/node_scoreboard.sv" \
 "../ip/aggregation_engine/tb/aggregation_engine_interface.sv" \
 "../ip/aggregation_engine/tb/aggregation_engine_tb_monitor.sv" \
 "../ip/aggregation_engine/tb/aggregation_engine_tb_scoreboard.sv" \

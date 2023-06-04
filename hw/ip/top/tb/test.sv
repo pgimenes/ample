@@ -1,10 +1,10 @@
 import axi_vip_pkg::*;
 import axil_master_vip_pkg::*;
+import json::*;
 // import axi_memory_master_vip_pkg::*;
 
 `define AXIL_MASTER_VIP_IF top_tb.axil_master_vip_i.inst.IF
 // `define AXI_MEMORY_MASTER_VIP_IF top_tb.axi_memory_master_vip_i.inst.IF
-
 class Test;
 
     virtual node_scoreboard_interface nsb_intf;
@@ -12,7 +12,6 @@ class Test;
     virtual prefetcher_interface prefetcher_intf;
 
     axil_master_vip_mst_t axil_agent;
-    // axi_memory_master_vip_mst_t axi_memory_agent;
     
     // Environment
     node_scoreboard_tb_monitor nsb_monitor_i;
@@ -21,6 +20,11 @@ class Test;
     
     logic [63:0] busy_nodeslots_mask;
     string TESTNAME;
+
+    protected Object layers;
+    protected Object nodeslots;
+
+    Node_Scoreboard sb;
 
     function new(virtual node_scoreboard_interface nsb_intf, virtual aggregation_engine_interface age_intf, virtual prefetcher_interface prefetcher_intf);
         this.nsb_intf = nsb_intf;
@@ -44,16 +48,22 @@ class Test;
             // Initialize nodeslots mask as all free
             this.busy_nodeslots_mask = '0;
 
+            this.sb = new();
+
             // Environment
-            this.nsb_monitor_i        = new(this.nsb_intf);
-            this.age_monitor_i        = new(this.age_intf);
-            this.prefetcher_monitor_i = new(this.prefetcher_intf);
+            this.nsb_monitor_i        = new(this.nsb_intf, sb);
+            this.age_monitor_i        = new(this.age_intf, sb);
+            this.prefetcher_monitor_i = new(this.prefetcher_intf, sb);
+
+            this.nodeslots = new();
+            this.layers = new();
     endfunction
 
     task automatic start_environment();
         // Initialize AXI VIP agents
+        $display("[TIMESTAMP]: %t, [CORE_TEST::DEBUG]: Ready to initialize AXI-L Master.", $time);
         this.axil_agent.start_master();
-        // this.axi_memory_agent.start_master();
+        $display("[TIMESTAMP]: %t, [CORE_TEST::DEBUG]: Done initializing AXI-L Master.", $time);
 
         // Run monitors
         fork

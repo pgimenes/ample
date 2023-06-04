@@ -85,5 +85,6 @@ sv xil_defaultlib --include "../build/regbanks/aggregation_engine_regbank" --inc
 "../ip/lib/systolic_modules/systolic_module.sv" \
 "../ip/transformation_engine/rtl/feature_transformation_engine.sv" \
 "../ip/top/rtl/top.sv" \
+"../ip/top/rtl/top_fast_build.sv" \
 
 nosort

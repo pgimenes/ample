@@ -4,17 +4,19 @@ import top_pkg::*;
 class prefetcher_tb_monitor;
 
 virtual prefetcher_interface prefetcher_vif;
+Node_Scoreboard sb;
 
-function new(virtual prefetcher_interface prefetcher_intf);
+function new(virtual prefetcher_interface prefetcher_intf, ref Node_Scoreboard node_scoreboard);
     $display("[TIMESTAMP]: %t, [PREF_MONITOR::DEBUG]: Prefetcher monitor instantiated.", $time);
     this.prefetcher_vif = prefetcher_intf;
+    this.sb = node_scoreboard;
 endfunction
 
 task main();
-    $display("[TIMESTAMP]: %t, [PREF_MONITOR::DEBUG]: Prefetcher monitor activated.", $time);
     fork
+        $display("[TIMESTAMP]: %t, [PREF_MONITOR::DEBUG]: Prefetcher monitor activated.", $time);
         nsb_req();
-    join
+    join_any
 endtask
 
 // Monitor NSB requests

@@ -16,25 +16,28 @@ class GraphTest extends Test;
 
     task automatic run_test();
 
-        Object nodeslot_root, nodeslots, chosen_node_programming;
-        Object layer_root, layers, layer;
+        Object chosen_node_programming;
+        Object layer;
         int nodeslot_idx;
         integer chosen_nodeslot;
         xil_axi_data_beat fetch_weights_done_resp[];
 
         // System reset drops after regbank reset
         wait(this.nsb_intf.resetn == '1);
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Initiating %0s.", $time, TESTNAME, TESTNAME);
 
         // Load layer configuration
-        layer_root = json::Load("layer_config.json");
-        assert (layer_root!=null) else $fatal(1, "Failed to load layer configuration from JSON file");
-        layers = layer_root.getByKey("layers");
-        layer = layers.getByIndex(0);
+        this.layers = json::Load("layer_config.json");
+        assert (this.layers!=null) else $fatal(1, "Failed to load layer configuration from JSON file");
+        this.layers = this.layers.getByKey("layers");
+        layer = this.layers.getByIndex(0);
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Finished loading layer configuration.", $time, TESTNAME);
 
         // Load nodeslot programming
-        nodeslot_root = json::Load("nodeslot_programming.json");
-        assert (nodeslot_root!=null) else $fatal(1, "Failed to load nodeslot programming from JSON file");
-        nodeslots = nodeslot_root.getByKey("nodeslots");
+        this.nodeslots = json::Load("nodeslot_programming.json");
+        assert (this.nodeslots!=null) else $fatal(1, "Failed to load nodeslot programming from JSON file");
+        this.nodeslots = this.nodeslots.getByKey("nodeslots");
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Finished loading nodeslot programming.", $time, TESTNAME);
 
         program_layer_config(layer);
 
@@ -43,7 +46,7 @@ class GraphTest extends Test;
         
         // Wait for done flag to be asserted
         while ('1) begin
-            this.axil_read(.addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + CTRL_FETCH_LAYER_WEIGHTS_DONE_OFFSET), .Rdatabeat(fetch_weights_done_resp));            
+            this.axil_read(.addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + CTRL_FETCH_LAYER_WEIGHTS_DONE_OFFSET), .Rdatabeat(fetch_weights_done_resp));
             if (|fetch_weights_done_resp[0]) begin
                 $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Layer weights fetch done.", $time, TESTNAME);
                 break;
@@ -68,6 +71,7 @@ class GraphTest extends Test;
                 continue;
             end
 
+            sb.node_scoreboard[chosen_nodeslot] = chosen_node_programming;
             $display("[TIMESTAMP]: %t, [%0s::INFO]: Ready to program Node ID %0d into Nodeslot %0d.", $time, TESTNAME, chosen_node_programming.getByKey("node_id").asInt(), chosen_nodeslot);
             program_nodeslot(chosen_node_programming, chosen_nodeslot);
             this.busy_nodeslots_mask[chosen_nodeslot] = 1'b1; // Mark nodeslot busy
