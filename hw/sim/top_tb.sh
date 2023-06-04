@@ -20,6 +20,10 @@ if [ "$SIM_GUI" -eq 1 ]; then
   SIM_ARGS="--gui"
 fi
 
+if [ "$FAST_BUILD" -eq 1 ]; then
+  xvlog_opts+=" --define TOP_FAST_BUILD"
+fi
+
 # Main steps
 run()
 {

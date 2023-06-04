@@ -30,25 +30,6 @@ initial begin
 
 end
 
-// task automatic nsb_nodeslot_programming_test();
-//     logic [63:0] busy_nodeslots_mask;
-//     integer chosen_nodeslot;
-    
-//     // Initialize
-//     $display("[TIMESTAMP]: %d, Starting Nodeslot Programming Test", $time);
-//     chosen_nodeslot = 0;
-//     busy_nodeslots_mask = '0;
-//     delay(30); // wait reset done (lasts 20 cycles)
-
-//     // Program random nodeslots
-//     repeat (10) begin
-//         while( (busy_nodeslots_mask != '1) && (busy_nodeslots_mask[chosen_nodeslot] == '1)) chosen_nodeslot = $urandom_range(0, 63);
-//         busy_nodeslots_mask[chosen_nodeslot] = 1'b1;
-//         $display("TIMESTAMP: %d, NSB_NODESLOT_PROGRAMMING: Chose Nodeslot %d", $time, chosen_nodeslot);
-//         program_random_nodeslot(chosen_nodeslot, 64);
-//     end
-// endtask
-
 // ========================================================================================
 // Utilities
 // ========================================================================================

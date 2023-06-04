@@ -5,12 +5,15 @@ import node_scoreboard_regbank_regs_pkg::*;
 class node_scoreboard_tb_monitor;
 
 virtual node_scoreboard_interface nsb_vif;
+Node_Scoreboard sb;
+
 logic expecting_make_valid_msb;
 logic expecting_make_valid_lsb;
 
-function new(virtual node_scoreboard_interface nsb_intf);
+function new(virtual node_scoreboard_interface nsb_intf, ref Node_Scoreboard node_scoreboard);
     $display("[TIMESTAMP]: %t, [NSB_MONITOR::DEBUG]: NSB monitor instantiated.", $time);
     this.nsb_vif = nsb_intf;
+    this.sb = node_scoreboard;
 endfunction
 
 function int one_hot_to_decimal (input logic [31:0] one_hot);
