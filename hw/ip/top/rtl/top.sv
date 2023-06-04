@@ -283,13 +283,6 @@ NSB_PREF_REQ_t                                       nsb_prefetcher_req;
 logic                                                nsb_prefetcher_resp_valid; // valid only for now
 NSB_PREF_RESP_t                                      nsb_prefetcher_resp;
 
-// NSB -> Output Buffer Interface
-logic                                                nsb_output_buffer_req_valid;
-logic                                                nsb_output_buffer_req_ready;
-NSB_OUT_BUFF_REQ_t                                   nsb_output_buffer_req;
-logic                                                nsb_output_buffer_resp_valid; // valid only for now
-NSB_OUT_BUFF_RESP_t                                  nsb_output_buffer_resp;
-
 // Message Channels: AGE -> Prefetcher
 logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_req_valid;
 logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_req_ready;
@@ -334,11 +327,12 @@ logic [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_READ_WIDTH-1:0]  
 logic [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                 transformation_buffer_slot_free;
 
 // Prefetcher -> AGE: Scale Factor interface
-logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_pop;
-logic [FETCH_TAG_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data;
-logic [FETCH_TAG_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count;
-logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_empty;
-logic [FETCH_TAG_COUNT-1:0]                                           scale_factor_queue_full;
+logic [top_pkg::MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_pop;
+logic [top_pkg::MESSAGE_CHANNEL_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data;
+logic [top_pkg::MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_out_valid;
+logic [top_pkg::MESSAGE_CHANNEL_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count;
+logic [top_pkg::MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_empty;
+logic [top_pkg::MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_full;
 
 // ====================================================================================
 // Node Scoreboard
@@ -393,14 +387,7 @@ node_scoreboard #(
     .nsb_prefetcher_req_ready                           (nsb_prefetcher_req_ready),
     .nsb_prefetcher_req                                 (nsb_prefetcher_req),
     .nsb_prefetcher_resp_valid                          (nsb_prefetcher_resp_valid),
-    .nsb_prefetcher_resp                                (nsb_prefetcher_resp),
-
-    // Node Scoreboard -> Output Buffer Interface
-    .nsb_output_buffer_req_valid                        (nsb_output_buffer_req_valid),
-    .nsb_output_buffer_req_ready                        (nsb_output_buffer_req_ready),
-    .nsb_output_buffer_req                              (nsb_output_buffer_req),
-    .nsb_output_buffer_resp_valid                       (nsb_output_buffer_resp_valid),
-    .nsb_output_buffer_resp                             (nsb_output_buffer_resp)
+    .nsb_prefetcher_resp                                (nsb_prefetcher_resp)
 );
 
 // ====================================================================================
@@ -408,7 +395,7 @@ node_scoreboard #(
 // ====================================================================================
 
 prefetcher #(
-    .FETCH_TAG_COUNT (top_pkg::MAX_NODESLOT_COUNT)
+    .FETCH_TAG_COUNT (top_pkg::MESSAGE_CHANNEL_COUNT)
 ) prefetcher_i (
     .core_clk                                                  (sys_clk),
     .resetn                                                    (!sys_rst),
@@ -580,6 +567,7 @@ prefetcher #(
 
     .scale_factor_queue_pop                                    (scale_factor_queue_pop),
     .scale_factor_queue_out_data                               (scale_factor_queue_out_data),
+    .scale_factor_queue_out_valid                              (scale_factor_queue_out_valid),
     .scale_factor_queue_count                                  (scale_factor_queue_count),
     .scale_factor_queue_empty                                  (scale_factor_queue_empty),
     .scale_factor_queue_full                                   (scale_factor_queue_full)
@@ -644,7 +632,8 @@ aggregation_engine aggregation_engine_i (
     .aggregation_buffer_slot_slot_free            (aggregation_buffer_slot_free),
 
     .scale_factor_queue_pop                       (scale_factor_queue_pop),
-    .scale_factor_queue_out_data                  (scale_factor_queue_out_data)
+    .scale_factor_queue_out_data                  (scale_factor_queue_out_data),
+    .scale_factor_queue_out_valid                 (scale_factor_queue_out_valid)
 );
 
 // ====================================================================================

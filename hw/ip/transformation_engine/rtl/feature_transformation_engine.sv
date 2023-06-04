@@ -14,7 +14,7 @@ module feature_transformation_engine #(
     input logic                                                 regbank_resetn,
 
     // Regbank Slave AXI interface
-    input  logic [AXIL_ADDR_WIDTH-1:0]                           s_axi_awaddr,
+    input  logic [AXIL_ADDR_WIDTH-1:0]                          s_axi_awaddr,
     input  logic [2:0]                                          s_axi_awprot,
     input  logic                                                s_axi_awvalid,
     output logic                                                s_axi_awready,
@@ -22,7 +22,7 @@ module feature_transformation_engine #(
     input  logic [3:0]                                          s_axi_wstrb,
     input  logic                                                s_axi_wvalid,
     output logic                                                s_axi_wready,
-    input  logic [AXIL_ADDR_WIDTH-1:0]                           s_axi_araddr,
+    input  logic [AXIL_ADDR_WIDTH-1:0]                          s_axi_araddr,
     input  logic [2:0]                                          s_axi_arprot,
     input  logic                                                s_axi_arvalid,
     output logic                                                s_axi_arready,

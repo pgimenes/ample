@@ -69,6 +69,7 @@ module prefetcher_fetch_tag #(
 
     // Scale Factor Queue Interface: Fetch Tag -> AGE
     input  logic                                           scale_factor_queue_pop,
+    output logic                                           scale_factor_queue_out_valid,
     output logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
     output logic [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count,
     output logic                                           scale_factor_queue_empty,
@@ -244,6 +245,7 @@ bram_fifo #(
     .in_data                    (scale_factor_queue_in_data),
 
     .pop                        (scale_factor_queue_pop),
+    .out_valid                  (scale_factor_queue_out_valid),
     .out_data                   (scale_factor_queue_out_data),    
     
     .count                      (scale_factor_queue_count),
@@ -435,7 +437,7 @@ always_comb begin
                                         : trigger_msg_partial_resp || (message_fetch_state == MSG_DONE) ? MESSAGES
                                         : FETCH_RESERVED;
 
-    nsb_prefetcher_resp.allocated_fetch_tag = TAG[$clog2(FETCH_TAG_COUNT)-1:0];
+    nsb_prefetcher_resp.allocated_fetch_tag = TAG[$clog2(top_pkg::MESSAGE_CHANNEL_COUNT)-1:0];
 
     nsb_prefetcher_resp.partial = adj_queue_fetch_resp_partial || trigger_msg_partial_resp || scale_factor_fetch_resp_partial;
 end

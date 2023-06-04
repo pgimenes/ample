@@ -448,12 +448,7 @@ node_scoreboard_interface node_scoreboard_interface_i
     .nsb_prefetcher_req_ready       ('0),
     .nsb_prefetcher_req     ('0),
     .nsb_prefetcher_resp        ('0),
-    .nsb_prefetcher_resp_valid      ('0), // valid only for now
-    .nsb_output_buffer_req_valid        ('0),
-    .nsb_output_buffer_req_ready        ('0),
-    .nsb_output_buffer_req      ('0),
-    .nsb_output_buffer_resp_valid       ('0), // valid only for now
-    .nsb_output_buffer_resp     ('0)
+    .nsb_prefetcher_resp_valid      ('0)
 );
 
 aggregation_engine_interface aggregation_engine_interface_i 

@@ -1,9 +1,10 @@
 import top_pkg::*;
+import noc_pkg::*;
 
 module prefetcher_feature_bank #(
     parameter AXI_ADDRESS_WIDTH = 34,
     parameter AXI_DATA_WIDTH    = 512,
-    parameter FETCH_TAG_COUNT   = 1
+    parameter FETCH_TAG_COUNT   = top_pkg::MESSAGE_CHANNEL_COUNT
 ) (
     input logic core_clk,
     input logic resetn,
@@ -191,6 +192,7 @@ for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 
         .message_channel_resp                           (message_channel_resp         [fetch_tag]),
 
         .scale_factor_queue_pop                         (scale_factor_queue_pop       [fetch_tag]),   
+        .scale_factor_queue_out_valid                   (scale_factor_queue_out_valid [fetch_tag]),
         .scale_factor_queue_out_data                    (scale_factor_queue_out_data  [fetch_tag]),  
         .scale_factor_queue_count                       (scale_factor_queue_count     [fetch_tag]), 
         .scale_factor_queue_empty                       (scale_factor_queue_empty     [fetch_tag]), 

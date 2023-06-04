@@ -48,14 +48,7 @@ interface node_scoreboard_interface(
     input logic                                                nsb_prefetcher_req_ready,
     input NSB_PREF_REQ_t                                       nsb_prefetcher_req,
     input NSB_PREF_RESP_t                                      nsb_prefetcher_resp,
-    input logic                                                nsb_prefetcher_resp_valid, // valid only for now
-
-    // Controller -> Output Buffer Interface
-    input logic                                                nsb_output_buffer_req_valid,
-    input logic                                                nsb_output_buffer_req_ready,
-    input NSB_OUT_BUFF_REQ_t                                   nsb_output_buffer_req,
-    input logic                                                nsb_output_buffer_resp_valid, // valid only for now
-    input NSB_OUT_BUFF_RESP_t                                  nsb_output_buffer_resp
+    input logic                                                nsb_prefetcher_resp_valid
 );
 
 parameter AXIL_ADDR_WIDTH = 32;

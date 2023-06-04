@@ -7,8 +7,8 @@ typedef enum logic [3:0] {
     FETCH_NB_LIST,
     FETCH_SCALE_FACTORS,
     FETCH_NEIGHBOURS,
-    AGGR,
-    TRANS,
+    AGGREGATION,
+    TRANSFORMATION,
     PASS,
     WRITEBACK,
     HALT
