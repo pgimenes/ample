@@ -289,6 +289,9 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
         .layer_config_out_features_count                            (layer_config_out_features_count),
         .layer_config_out_features_address_msb_value                (layer_config_out_features_address_msb_value),
         .layer_config_out_features_address_lsb_value                (layer_config_out_features_address_lsb_value),
+        .layer_config_bias_value                                    (layer_config_bias_value),
+        .layer_config_activation_function_value                     (layer_config_activation_function_value),
+        .layer_config_leaky_relu_alpha_value                        (layer_config_leaky_relu_alpha_value),
         .ctrl_buffering_enable_value                                (ctrl_buffering_enable_value),
         .ctrl_writeback_enable_value                                (ctrl_writeback_enable_value)
     );

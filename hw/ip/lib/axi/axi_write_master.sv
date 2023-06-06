@@ -131,6 +131,8 @@ always_comb begin
 
 end
 
+assign axi_write_master_req_ready = (axi_write_state == AXI_IDLE);
+
 // Drive AXI signals
 // ---------------------------------------------------------------------
 

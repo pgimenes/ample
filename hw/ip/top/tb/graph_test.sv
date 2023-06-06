@@ -72,13 +72,17 @@ class GraphTest extends Test;
 
         // Wait for all nodeslots to be finished
         while ('1) begin
+            nodeslots_empty_resp[0] = '0;
             this.axil_read(.addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + node_scoreboard_regbank_regs_pkg::STATUS_NODESLOTS_EMPTY_MASK_LSB_OFFSET), .Rdatabeat(nodeslots_empty_resp));
-            if (&nodeslots_empty_resp[0]) begin
+            if (nodeslots_empty_resp[0] == '1) begin
                 $display("[TIMESTAMP]: %t, [%0s::DEBUG]: All nodeslots empty, finishing test.", $time, TESTNAME);
+                $display("[TIMESTAMP]: %t, [%0s::DEBUG]:    nodeslots_empty: %0h", $time, TESTNAME, nodeslots_empty_resp[0]);
                 break;
             end else begin
                 $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Test not finished yet, some nodeslots are valid.", $time, TESTNAME);
+                $display("[TIMESTAMP]: %t, [%0s::DEBUG]:    nodeslots_empty: %0h", $time, TESTNAME, nodeslots_empty_resp[0]);
             end
+            delay(10);
         end
 
         $finish;
@@ -93,15 +97,20 @@ class GraphTest extends Test;
         this.write_nsb_regbank("Fetch Weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_OFFSET, '1);
 
         // Wait for done flag to be asserted
-        fetch_weights_done_resp = new[0];
+        fetch_weights_done_resp[0] = '0;
         while ('1) begin
+
+            $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Issuing read to weights fetch done flag.", $time, TESTNAME);
             this.axil_read(.addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + CTRL_FETCH_LAYER_WEIGHTS_DONE_OFFSET), .Rdatabeat(fetch_weights_done_resp));
+
             if (|fetch_weights_done_resp[0]) begin
                 $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Layer weights fetch done for precision: %0s.", $time, TESTNAME, precision.name());
                 break;
             end else begin
                 $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Prefetcher not yet finished with weight fetching for precision: %0s.", $time, TESTNAME, precision.name());
             end
+
+            this.delay(10);
         end
 
         this.write_nsb_regbank("Ack fetch weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK_OFFSET, '1);
@@ -165,8 +174,8 @@ class GraphTest extends Test;
         this.write_nsb_regbank("Define OUT Messages Address LSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_OUT_MESSAGES_ADDRESS_LSB_OFFSET, layer_config.getByKey("out_messages_address").asInt());
         this.write_nsb_regbank("Define OUT Messages Address MSB", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_OUT_MESSAGES_ADDRESS_MSB_OFFSET, '0);
 
-        this.write_nsb_regbank("Define Aggregation Wait Count", node_scoreboard_regbank_regs_pkg::NSB_CONFIG_AGGREGATION_WAIT_COUNT_OFFSET, 'd4);
-        this.write_nsb_regbank("Define Transformation Wait Count", node_scoreboard_regbank_regs_pkg::NSB_CONFIG_TRANSFORMATION_WAIT_COUNT_OFFSET, 'd4);
+        this.write_nsb_regbank("Define Aggregation Wait Count", node_scoreboard_regbank_regs_pkg::NSB_CONFIG_AGGREGATION_WAIT_COUNT_OFFSET, layer_config.getByKey("aggregation_wait_count").asInt());
+        this.write_nsb_regbank("Define Transformation Wait Count", node_scoreboard_regbank_regs_pkg::NSB_CONFIG_TRANSFORMATION_WAIT_COUNT_OFFSET, layer_config.getByKey("transformation_wait_count").asInt());
     endtask
 
     task automatic choose_nodeslot(input string precision, output int chosen_nodeslot);
@@ -180,7 +189,7 @@ class GraphTest extends Test;
             // Precision filter
             if (precision == "FLOAT_32") begin
                 busy_nodeslots_precision = {{56{1'b1}}, this.busy_nodeslots_mask[7:0]};
-            end else if (precision == "FIXED_8") begin
+            end else begin
                 busy_nodeslots_precision = {{48{1'b1}}, this.busy_nodeslots_mask[15:8], {8{1'b1}}};
             end
         end

@@ -47,6 +47,8 @@ logic [FLOAT_WIDTH-1:0] fp_mult_result_comb;
 logic                   fp_mult_result_valid_q;
 logic [FLOAT_WIDTH-1:0] fp_mult_result_q;
 
+logic                   fp_add_result_valid_comb;
+logic [FLOAT_WIDTH-1:0] fp_add_result_comb;
 logic                   fp_add_result_valid;
 logic [FLOAT_WIDTH-1:0] fp_add_result;
 
@@ -75,8 +77,8 @@ fp_add adder_i (
   .s_axis_b_tvalid              (busy && fp_mult_result_valid_q),
   .s_axis_b_tdata               (acc_reg),
 
-  .m_axis_result_tvalid         (fp_add_result_valid),
-  .m_axis_result_tdata          (fp_add_result)
+  .m_axis_result_tvalid         (fp_add_result_valid_comb),
+  .m_axis_result_tdata          (fp_add_result_comb)
 );
 
 // ==================================================================================================================================================
@@ -90,9 +92,15 @@ always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         fp_mult_result_valid_q <= '0;
         fp_mult_result_q       <= '0;
+
+        fp_add_result_valid <= '0;
+        fp_add_result <= '0;
     end else begin
         fp_mult_result_valid_q <= fp_mult_result_valid_comb;
         fp_mult_result_q       <= fp_mult_result_comb;
+
+        fp_add_result_valid <= fp_add_result_valid_comb;
+        fp_add_result <= fp_add_result_comb;
     end
 end
 

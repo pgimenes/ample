@@ -20,6 +20,7 @@ module aggregation_mesh #(
 
     // Aggregation Mesh -> AGE : Response Interface
     output logic [AGGREGATION_COLS-1:0]                                                       aggregation_manager_done_valid,
+    output logic [AGGREGATION_COLS-1:0] [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0]             aggregation_manager_done_nodeslot,
     input  logic [AGGREGATION_COLS-1:0]                                                       aggregation_manager_done_ready,
 
     // Message Channel: AGE -> Prefetcher (request)
@@ -167,7 +168,8 @@ assign agm_sending_done_oh = (aggregation_manager_done_valid & aggregation_manag
 
 aggregation_core_allocator #(
     .NUM_CORES            (AGC_COUNT),
-    .NUM_MANAGERS         (AGGREGATION_COLS)
+    .NUM_MANAGERS         (AGGREGATION_COLS),
+    .PRECISION            (PRECISION)
 
 ) agc_allocator (
     .core_clk               (core_clk),
@@ -292,6 +294,8 @@ for (genvar agm = 0; agm < AGGREGATION_COLS; agm = agm + 1) begin
         router_node_on                   [agm][AGGREGATION_ROWS][0] = router_aggregation_manager_on    [agm];
         router_node_ready                [agm][AGGREGATION_ROWS][0] = router_aggregation_manager_ready [agm];
     end
+
+    assign aggregation_manager_done_nodeslot [agm] = agm_allocation[agm].nodeslot;
 
 end
 

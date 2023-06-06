@@ -170,13 +170,19 @@ always_ff @(posedge core_clk or negedge resetn) begin
 end
 
 // Overwrite accumulator for activation, bias and shifting
-always_comb begin
-    overwrite_accumulator = bias_out_valid || activated_feature_valid || shift_valid;
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        overwrite_accumulator <= '0;
+        overwrite_data <= '0;
 
-    overwrite_data        = bias_out_valid ? pe_acc_add_bias
-                            : activated_feature_valid ? activated_feature
-                            : shift_valid ? shift_data
-                            : '0;
+    end else begin
+        overwrite_accumulator <= bias_out_valid || activated_feature_valid || shift_valid;
+
+        overwrite_data        <= bias_out_valid ? pe_acc_add_bias
+                                : activated_feature_valid ? activated_feature
+                                : shift_valid ? shift_data
+                                : overwrite_data;
+    end
 end
 
 `ifdef DEBUG
