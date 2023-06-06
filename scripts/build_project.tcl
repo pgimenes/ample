@@ -6,10 +6,11 @@ set project_name "build_project"
 
 # Check if the project exists
 if {[file exists $project_name.xpr]} {
-    # Project already exists, open it
+    puts "Build project already exists, opening it."
     open_project $project_name.xpr
 } else {
     # Project doesn't exist, create a new project
+    puts "Creating build project."
     create_project $project_name -part xcu250-figd2104-2L-e -force
     set_property board_part xilinx.com:au250:part0:1.3 [current_project]
 }
@@ -29,6 +30,12 @@ add_files $env(FYP_DIR)/imports/nocrouter/src/if
 add_files $env(FYP_DIR)/imports/nocrouter/src/rtl
 
 set_property top top_wrapper [current_fileset]
+
+# Add register banks
+add_files -fileset sources_1 /scratch/pg519/wa3/hw/build/regbanks/aggregation_engine_regbank
+add_files -fileset sources_1 /scratch/pg519/wa3/hw/build/regbanks/feature_transformation_engine_regbank
+add_files -fileset sources_1 /scratch/pg519/wa3/hw/build/regbanks/node_scoreboard_regbank
+add_files -fileset sources_1 /scratch/pg519/wa3/hw/build/regbanks/prefetcher_regbank
 
 # Import Xilinx IP
 import_ip -files $env(FYP_DIR)/hw/xilinx/axi_L_register_control_crossbar.xci
@@ -65,7 +72,5 @@ export_simulation -of_objects [get_files $env(FYP_DIR)/hw/build/build_project.sr
 export_simulation -of_objects [get_files $env(FYP_DIR)/hw/build/build_project.srcs/sources_1/ip/scale_factor_queue/scale_factor_queue.xci]                           -directory $env(FYP_DIR)/hw/build/build_project.ip_user_files/sim_scripts -ip_user_files_dir $env(FYP_DIR)/hw/build/build_project.ip_user_files -ipstatic_source_dir $env(FYP_DIR)/hw/build/build_project.ip_user_files/ipstatic -lib_map_path [list {modelsim=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/modelsim} {questa=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/questa} {ies=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/ies} {xcelium=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/xcelium} {vcs=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/vcs} {riviera=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet
 export_simulation -of_objects [get_files $env(FYP_DIR)/hw/build/build_project.srcs/sources_1/ip/ddr4_0/ddr4_0.xcix]                                                  -directory $env(FYP_DIR)/hw/build/build_project.ip_user_files/sim_scripts -ip_user_files_dir $env(FYP_DIR)/hw/build/build_project.ip_user_files -ipstatic_source_dir $env(FYP_DIR)/hw/build/build_project.ip_user_files/ipstatic -lib_map_path [list {modelsim=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/modelsim} {questa=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/questa} {ies=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/ies} {xcelium=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/xcelium} {vcs=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/vcs} {riviera=$env(FYP_DIR)/hw/build/build_project.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet
 
-# Synthesis
+# SYNTH
 set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY none [get_runs synth_1]
-create_clock -period 20.000 -name regbank_clk -waveform {0.000 10.000} [get_ports {regbank_clk}]
-create_clock -period 5.000 -name sys_clk -waveform {0.000 2.500} [get_ports {sys_clk}]
