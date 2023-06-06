@@ -93,12 +93,12 @@ logic [3:0]                                     received_flits;
 logic                                           head_packet;
 logic                                           tail_packet;
 
-logic [$clog2(MAX_MESH_ROWS)-1:0]                   packet_dest_row;
-logic [$clog2(MAX_MESH_COLS)-1:0]                   packet_dest_col;
+logic [$clog2(MAX_MESH_ROWS)-1:0]               packet_dest_row;
+logic [$clog2(MAX_MESH_COLS)-1:0]               packet_dest_col;
 logic                                           correct_pkt_dest;
 
-logic [$clog2(MAX_MESH_ROWS)-1:0]                   packet_source_row;
-logic [$clog2(MAX_MESH_COLS)-1:0]                   packet_source_col;
+logic [$clog2(MAX_MESH_ROWS)-1:0]               packet_source_row;
+logic [$clog2(MAX_MESH_COLS)-1:0]               packet_source_col;
 
 // Aggregation Manager packets
 logic                                           aggregation_manager_pkt;
@@ -107,8 +107,8 @@ logic                                           aggregation_manager_packet_last;
 logic                                           aggregation_manager_packet_last_q;
 
 logic                                           received_buffer_req_head;
-logic [$clog2(MAX_MESH_ROWS)-1:0]                   buffer_manager_pkt_dest_row;
-logic [$clog2(MAX_MESH_COLS)-1:0]                   buffer_manager_pkt_dest_col;
+logic [$clog2(MAX_MESH_ROWS)-1:0]               buffer_manager_pkt_dest_row;
+logic [$clog2(MAX_MESH_COLS)-1:0]               buffer_manager_pkt_dest_col;
 
 logic [63:0]                                    bm_chosen_data;
 logic [$clog2(FEATURE_COUNT/2)-1:0]             sent_flits_counter;

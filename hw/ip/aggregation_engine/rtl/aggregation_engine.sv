@@ -97,7 +97,11 @@ top_pkg::NSB_AGE_REQ_t                                                          
 
 // Aggregation Mesh -> AGE : Request Interface
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_COLS-1:0]                                 aggregation_manager_done_valid;
+logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_COLS-1:0] [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] aggregation_manager_done_nodeslot;
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_COLS-1:0]                                 aggregation_manager_done_ready;
+
+// AGM-wise signal for reading from AGM resp arbitration
+logic [top_pkg::PRECISION_COUNT * AGGREGATION_COLS -1:0] [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] agm_nodeslot;
 
 // NSB Response Arbitration
 // ------------------------------------------------------------
@@ -168,6 +172,7 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
 
         // Aggregation Mesh -> AGE : Response Interface
         .aggregation_manager_done_valid                                (aggregation_manager_done_valid            [precision]),
+        .aggregation_manager_done_nodeslot                             (aggregation_manager_done_nodeslot         [precision]),
         .aggregation_manager_done_ready                                (aggregation_manager_done_ready            [precision]),
 
         // Message Channel: AGE -> Prefetcher (request)
@@ -202,6 +207,7 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
     );
 
     assign aggregation_req_valid [precision] = nsb_age_req_valid && (nsb_age_req.node_precision == precision);
+    assign aggregation_manager_done_ready [precision] = aggregation_manager_resp_arbitration_oh [(precision+1)*AGGREGATION_COLS - 1 : precision*AGGREGATION_COLS];
 
 end : precision_block
 
@@ -229,12 +235,14 @@ rr_arbiter #(
 // NSB Interface
 // ----------------------------------------------------
 
+// Cast to AGM-wise signal
+assign agm_nodeslot = aggregation_manager_done_nodeslot;
+
 // Accept NSB request when correct AGC allocator accepts it
 always_comb begin
     nsb_age_req_ready = |(aggregation_req_valid & aggregation_req_ready);
     nsb_age_resp_valid = |aggregation_manager_done_valid;
-    // TO DO: fix
-    nsb_age_resp.nodeslot = '0;
+    nsb_age_resp.nodeslot = agm_nodeslot [aggregation_manager_resp_arbitration_bin];
 end
 
 // ==================================================================================================================================================

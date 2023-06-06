@@ -4,8 +4,8 @@ module sum_aggregator #(
     parameter DATA_WIDTH = 32,
     parameter PRECISION = top_pkg::FLOAT_32
 ) (
-    input  logic core_clk,
-    input  logic resetn,
+    input  logic                   core_clk,
+    input  logic                   resetn,
 
     input  logic                   in_feature_valid,
     input  logic [DATA_WIDTH-1:0]  in_feature,

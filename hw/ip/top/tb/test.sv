@@ -10,6 +10,7 @@ class Test;
     virtual node_scoreboard_interface nsb_intf;
     virtual aggregation_engine_interface age_intf;
     virtual prefetcher_interface prefetcher_intf;
+    virtual agc_allocator_interface agc_allocator_float_intf;
 
     axil_master_vip_mst_t axil_agent;
     
@@ -17,6 +18,7 @@ class Test;
     node_scoreboard_tb_monitor nsb_monitor_i;
     aggregation_engine_tb_monitor age_monitor_i;
     prefetcher_tb_monitor prefetcher_monitor_i;
+    agc_allocator_monitor agc_allocator_float_monitor_i;
     
     logic [63:0] busy_nodeslots_mask;
     string TESTNAME;
@@ -54,6 +56,7 @@ class Test;
             this.nsb_monitor_i        = new(this.nsb_intf, sb);
             this.age_monitor_i        = new(this.age_intf, sb);
             this.prefetcher_monitor_i = new(this.prefetcher_intf, sb);
+            this.agc_allocator_float_monitor_i = new(this.agc_allocator_float_intf, top_pkg::FLOAT_32, sb);
 
             this.nodeslots = new();
             this.layers = new();
@@ -154,6 +157,10 @@ class Test;
         for( xil_axi_uint beat=0; beat<rd_trans.get_len()+1; beat++) begin
             Rdatabeat[beat] = rd_trans.get_data_beat(beat);
         end
+    endtask
+
+    task delay(integer cycle_count);
+        repeat (cycle_count) @(posedge this.nsb_intf.core_clk);
     endtask
 
 endclass

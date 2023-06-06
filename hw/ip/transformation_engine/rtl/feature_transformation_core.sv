@@ -69,7 +69,7 @@ module feature_transformation_core #(
 );
 
 parameter SYS_MODULES_PER_BEAT = 512 / (MATRIX_N * FLOAT_WIDTH);
-parameter WRITEBACK_BEATS_PER_NODESLOT = SYSTOLIC_MODULE_COUNT / SYS_MODULES_PER_BEAT;
+parameter MAX_WRITEBACK_BEATS_PER_NODESLOT = SYSTOLIC_MODULE_COUNT / SYS_MODULES_PER_BEAT;
 
 typedef enum logic [3:0] {
     FTE_FSM_IDLE, FTE_FSM_REQ_WC, FTE_FSM_MULT_SLOW, FTE_FSM_MULT_FAST, FTE_FSM_BIAS, FTE_FSM_ACTIVATION, FTE_FSM_BUFFER, FTE_FSM_WRITEBACK_REQ, FTE_FSM_WRITEBACK_RESP, FTE_FSM_SHIFT, FTE_FSM_NSB_RESP
@@ -83,6 +83,7 @@ FTE_FSM_e fte_state, fte_state_n;
 logic last_weight_resp_received;
 
 // NSB requests
+logic [top_pkg::MAX_NODESLOT_COUNT-1:0]         nsb_req_nodeslots_q;
 logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslot_count;
 logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslots_to_buffer;
 logic [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] nodeslots_to_writeback;
@@ -123,7 +124,8 @@ logic                                                 pe_delay_counter;
 logic [top_pkg::TRANSFORMATION_BUFFER_SLOTS-1:0]     transformation_buffer_slot_arb_oh;
 
 // Writeback logic
-logic [$clog2(SYSTOLIC_MODULE_COUNT):0]              sys_module_counter;
+logic [$clog2(MAX_WRITEBACK_BEATS_PER_NODESLOT):0]   sent_writeback_beats;
+logic [$clog2(MAX_WRITEBACK_BEATS_PER_NODESLOT):0]   writeback_required_beats;
 logic [MATRIX_N:0] [top_pkg::NODE_ID_WIDTH-1:0]      sys_module_node_id_snapshot;
 logic [$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1:0] out_features_required_bytes;
 
@@ -134,6 +136,7 @@ logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] [31:0] debug_upd
 
 assign debug_update_counter_inv = ~debug_update_counter;
 
+logic bias_applied, activation_applied;
 
 // ==================================================================================================================================================
 // Instances
@@ -261,11 +264,13 @@ always_comb begin
         end
 
         FTE_FSM_BIAS: begin
-            fte_state_n = FTE_FSM_ACTIVATION;
+            fte_state_n = bias_applied ? FTE_FSM_ACTIVATION : FTE_FSM_BIAS;
         end
 
         FTE_FSM_ACTIVATION: begin
-            fte_state_n = ctrl_buffering_enable_value ? FTE_FSM_BUFFER : FTE_FSM_WRITEBACK_REQ;
+            fte_state_n = activation_applied && ctrl_buffering_enable_value ? FTE_FSM_BUFFER
+                        : activation_applied ? FTE_FSM_WRITEBACK_REQ
+                        : FTE_FSM_ACTIVATION;
         end
         
         FTE_FSM_BUFFER: begin
@@ -279,10 +284,10 @@ always_comb begin
         FTE_FSM_WRITEBACK_RESP: begin
             fte_state_n =
                         // Sending last beat for last nodeslot
-                        (nodeslots_to_writeback == 'd1) && (sys_module_counter == WRITEBACK_BEATS_PER_NODESLOT [$clog2(SYSTOLIC_MODULE_COUNT):0]) && axi_write_master_resp_valid ? FTE_FSM_NSB_RESP
+                        (nodeslots_to_writeback == 'd1) && (sent_writeback_beats == writeback_required_beats) && axi_write_master_resp_valid ? FTE_FSM_NSB_RESP
 
                         // Sending last beat, more nodeslots to go
-                        : (sys_module_counter == WRITEBACK_BEATS_PER_NODESLOT[$clog2(SYSTOLIC_MODULE_COUNT):0]) && axi_write_master_resp_valid ? FTE_FSM_SHIFT
+                        : (sent_writeback_beats == writeback_required_beats) && axi_write_master_resp_valid ? FTE_FSM_SHIFT
                         : FTE_FSM_WRITEBACK_RESP;
         end
 
@@ -303,16 +308,37 @@ always_comb begin
     endcase
 end
 
+// Bias and activation applied flag
+always_ff @(posedge core_clk or negedge resetn) begin
+
+    if (!resetn) begin
+        bias_applied <= '0;
+        activation_applied <= '0;
+
+    end else begin
+        bias_applied <= (fte_state == FTE_FSM_MULT_FAST && fte_state_n == FTE_FSM_BIAS) ? '0
+                    : fte_state == FTE_FSM_BIAS ? '1
+                    : bias_applied;
+
+        activation_applied <= fte_state == FTE_FSM_BIAS && fte_state_n == FTE_FSM_ACTIVATION ? '0
+                            : fte_state == FTE_FSM_ACTIVATION ? '1
+                            : activation_applied;
+
+    end
+end
+
 // Take snapshot of busy slots and respective node IDs after NSB request
 // -------------------------------------------------------------------------------------
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         busy_aggregation_slots_snapshot <= '0;
+        nsb_req_nodeslots_q <= '0;
         
     // Starting multiplication
     end else if ((fte_state == FTE_FSM_IDLE) && (fte_state_n == FTE_FSM_REQ_WC)) begin
         busy_aggregation_slots_snapshot <= ~transformation_core_aggregation_buffer_slot_free;
+        nsb_req_nodeslots_q <= nsb_fte_req.nodeslots;
     end
 end
 
@@ -414,19 +440,23 @@ count_ones #(
 always_comb begin
     out_features_required_bytes = layer_config_out_features_count * 4; // 4 bytes per feature
     out_features_required_bytes = {out_features_required_bytes[$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1 : 6], 6'd0} + (out_features_required_bytes[5:0] ? 'd64 : 1'b0); // nearest multiple of 64
+    // Div feautre count by 16, round up
+    writeback_required_beats = (layer_config_out_features_count >> 4) + (layer_config_out_features_count[3:0] ? 1'b1 : 1'b0);
 
     // Request
-    axi_write_master_req_valid = ((fte_state == FTE_FSM_BUFFER) || (fte_state == FTE_FSM_ACTIVATION) || (fte_state == FTE_FSM_SHIFT)) && (fte_state_n == FTE_FSM_WRITEBACK_REQ);
+    axi_write_master_req_valid = (fte_state == FTE_FSM_WRITEBACK_REQ);
     axi_write_master_req_start_address = {layer_config_out_features_address_msb_value, layer_config_out_features_address_lsb_value}
                                             + sys_module_node_id_snapshot[0] * out_features_required_bytes;
-    axi_write_master_req_len = (SYSTOLIC_MODULE_COUNT[7:0] - 1'b1);
+
+    axi_write_master_req_len = writeback_required_beats - 1'b1;
 
     // Data
     axi_write_master_data_valid = (fte_state == FTE_FSM_WRITEBACK_RESP);
-    axi_write_master_data = {sys_module_pe_acc [SYS_MODULES_PER_BEAT*sys_module_counter + 'd3][0],
-                            sys_module_pe_acc  [SYS_MODULES_PER_BEAT*sys_module_counter + 'd2][0],
-                            sys_module_pe_acc  [SYS_MODULES_PER_BEAT*sys_module_counter + 'd1][0],
-                            sys_module_pe_acc  [SYS_MODULES_PER_BEAT*sys_module_counter + 'd0][0] };
+    axi_write_master_data = {sys_module_pe_acc [SYS_MODULES_PER_BEAT*sent_writeback_beats + 'd3][0],
+                            sys_module_pe_acc  [SYS_MODULES_PER_BEAT*sent_writeback_beats + 'd2][0],
+                            sys_module_pe_acc  [SYS_MODULES_PER_BEAT*sent_writeback_beats + 'd1][0],
+                            sys_module_pe_acc  [SYS_MODULES_PER_BEAT*sent_writeback_beats + 'd0][0]
+                        };
 
     // Response
     axi_write_master_resp_ready = (fte_state == FTE_FSM_WRITEBACK_RESP);
@@ -436,23 +466,23 @@ end
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         nodeslots_to_writeback <= '0;
-        sys_module_counter <= '0;
+        sent_writeback_beats <= '0;
 
         // Accepting NSB request
     end else if (nsb_fte_req_valid && nsb_fte_req_ready) begin
         nodeslots_to_writeback <= ctrl_writeback_enable_value ? nodeslot_count : nodeslots_to_writeback;
-        sys_module_counter <= '0;
+        sent_writeback_beats <= '0;
 
     // Accepting AXI Write Master request
     end else if (axi_write_master_req_valid && axi_write_master_req_ready) begin
-        sys_module_counter <= '0;
+        sent_writeback_beats <= '0;
 
     // Sent 512b beat
     end else if (axi_write_master_pop) begin
-        sys_module_counter <= sys_module_counter + 1'b1;
+        sent_writeback_beats <= sent_writeback_beats + 1'b1;
 
     // Accepting write response
-    end else if (fte_state == FTE_FSM_WRITEBACK_RESP && axi_write_master_resp_valid && sys_module_counter == WRITEBACK_BEATS_PER_NODESLOT) begin
+    end else if (fte_state == FTE_FSM_WRITEBACK_RESP && axi_write_master_resp_valid && sent_writeback_beats == writeback_required_beats) begin
         nodeslots_to_writeback <= nodeslots_to_writeback - 1'b1;
     end
 end
@@ -465,7 +495,7 @@ always_comb begin
     
     // TO DO: NSB resp
     nsb_fte_resp_valid          = (fte_state == FTE_FSM_NSB_RESP);
-    nsb_fte_resp                = '0;
+    nsb_fte_resp.nodeslots      = nsb_req_nodeslots_q;
 end
 
 // Weight Channel Interface

@@ -12,6 +12,8 @@ sv xil_defaultlib --include "../../imports/json_sv/sv" -d "FLOAT_MAC=1" \
 "../ip/aggregation_engine/tb/aggregation_engine_interface.sv" \
 "../ip/aggregation_engine/tb/aggregation_engine_tb_monitor.sv" \
 "../ip/aggregation_engine/tb/aggregation_engine_tb_scoreboard.sv" \
+"../ip/aggregation_engine/tb/agc_allocator_interface.sv" \
+"../ip/aggregation_engine/tb/agc_allocator_monitor.sv" \
 "../ip/node_scoreboard/tb/node_scoreboard_interface.sv" \
 "../ip/node_scoreboard/tb/node_scoreboard_tb_monitor.sv" \
 "../ip/node_scoreboard/tb/node_scoreboard_tb_scoreboard.sv" \

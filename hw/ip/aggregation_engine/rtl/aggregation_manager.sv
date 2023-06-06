@@ -5,8 +5,8 @@ import noc_pkg::*;
 module aggregation_manager #(
     parameter X_COORD = 0,
     parameter Y_COORD = 0,
-    parameter AGGREGATION_ROWS = top_pkg::AGGREGATION_BUFFER_SLOTS,
-    parameter AGGREGATION_COLS = top_pkg::MESSAGE_CHANNEL_COUNT/top_pkg::PRECISION_COUNT
+    parameter AGGREGATION_ROWS = noc_pkg::MAX_AGGREGATION_ROWS,
+    parameter AGGREGATION_COLS = noc_pkg::MAX_AGGREGATION_COLS
 ) (
     input logic                                                 core_clk,
     input logic                                                 resetn,
@@ -160,7 +160,7 @@ always_comb begin
     end
 
     AGM_FSM_WAIT_BUFFER_DONE: begin
-        agm_state_n = router_aggregation_manager_valid && (packet_source_col == noc_pkg::MAX_MESH_COLS - 1) && (packet_source_row == buffer_manager_allocation_q) ? AGM_FSM_NSB_RESP
+        agm_state_n = router_aggregation_manager_valid && (packet_source_col == AGGREGATION_COLS) && (packet_source_row == buffer_manager_allocation_q) ? AGM_FSM_NSB_RESP
                     : AGM_FSM_WAIT_BUFFER_DONE;
     end
 

@@ -24,6 +24,10 @@ if [ "${FAST_BUILD:-0}" -eq 1 ]; then
   xvlog_opts+=" --define TOP_FAST_BUILD"
 fi
 
+if [ "${DEBUG:-0}" -eq 1 ]; then
+  xvlog_opts+=" --define DEBUG"
+fi
+
 # Main steps
 run()
 {
