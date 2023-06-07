@@ -635,7 +635,11 @@ top_test top_test_i (
 top_test top_test_i (
     .nsb_intf                       (top_i.node_scoreboard_i.nsb_interface),   //   node_scoreboard_interface_i
     .age_intf                       (top_i.aggregation_engine_i.age_interface),   //   aggregation_engine_interface_i
-    .prefetcher_intf                (top_i.prefetcher_i.prefetcher_interface)  //   prefetcher_interface_i
+    .prefetcher_intf                (top_i.prefetcher_i.pref_interface),  //   prefetcher_interface_i
+    .agc_allocator_intf             (top_i.aggregation_engine_i.precision_block[1].aggregation_mesh_i.agc_allocator.agc_alloc_intf_i)
+    // .agm_intf                       (top_i.aggregation_engine_i.precision_block[1].aggregation_mesh_i.agm_block[0].agm_i.agm_intf_i)
+    // .agc_intf                       (top_i.aggregation_engine_i.precision_block[1].aggregation_mesh_i.row_gen[0].col_gen[0].agc_i.agc_intf_i),
+    // .bm_intf                        (top_i.aggregation_engine_i.precision_block[1].aggregation_mesh_i.bm_block[0].buffer_manager_i.bm_intf_i)
  );
 `endif
 
@@ -817,6 +821,7 @@ axi_ram #(
 
 `endif
 
+
 //===========================================================================
 //                         Binds
 //===========================================================================
@@ -831,8 +836,24 @@ bind top_i.aggregation_engine_i aggregation_engine_interface age_interface (
     .*
 );
 
-bind top_i.prefetcher_i prefetcher_interface prefetcher_interface (
+bind top_i.prefetcher_i prefetcher_interface pref_interface (
     .*
+);
+
+bind top_i.aggregation_engine_i.precision_block[1].aggregation_mesh_i.agc_allocator agc_allocator_interface agc_alloc_intf_i (
+        .*
+);
+
+bind top_i.aggregation_engine_i.precision_block[1].aggregation_mesh_i.agm_block[0].agm_i agm_interface agm_intf_i (
+        .*
+);
+
+bind top_i.aggregation_engine_i.precision_block[1].aggregation_mesh_i.row_gen[0].col_gen[0].agc_i agc_interface agc_intf_i (
+        .*
+);
+
+bind top_i.aggregation_engine_i.precision_block[1].aggregation_mesh_i.bm_block[0].buffer_manager_i bm_interface bm_intf_i (
+        .*
 );
 
 `endif
