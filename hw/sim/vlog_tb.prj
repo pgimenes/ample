@@ -7,13 +7,24 @@ sv xil_defaultlib  --include "../build/regbanks/aggregation_engine_regbank" --in
 sv xil_defaultlib --include "../../imports/json_sv/sv" -d "FLOAT_MAC=1" \
 "../../imports/json_sv/sv/json.svh" \
 "../../imports/json_sv/sv/util.sv" \
-"../../imports/json_sv/sv/json.sv" \
+"../../imports/json_sv/sv/json.sv"
+
+sv xil_defaultlib --include "../../imports/json_sv/sv" -d "FLOAT_MAC=1" \
 "../ip/tb_lib/node_scoreboard.sv" \
+"../ip/tb_lib/tb_utils.sv"
+
+sv xil_defaultlib --include "../../imports/json_sv/sv" --include "../ip/tb_lib" -d "FLOAT_MAC=1" \
 "../ip/aggregation_engine/tb/aggregation_engine_interface.sv" \
 "../ip/aggregation_engine/tb/aggregation_engine_tb_monitor.sv" \
 "../ip/aggregation_engine/tb/aggregation_engine_tb_scoreboard.sv" \
 "../ip/aggregation_engine/tb/agc_allocator_interface.sv" \
 "../ip/aggregation_engine/tb/agc_allocator_monitor.sv" \
+"../ip/aggregation_engine/tb/agm_interface.sv" \
+"../ip/aggregation_engine/tb/agm_monitor.sv" \
+"../ip/aggregation_engine/tb/agc_interface.sv" \
+"../ip/aggregation_engine/tb/agc_monitor.sv" \
+"../ip/aggregation_engine/tb/bm_interface.sv" \
+"../ip/aggregation_engine/tb/bm_monitor.sv" \
 "../ip/node_scoreboard/tb/node_scoreboard_interface.sv" \
 "../ip/node_scoreboard/tb/node_scoreboard_tb_monitor.sv" \
 "../ip/node_scoreboard/tb/node_scoreboard_tb_scoreboard.sv" \

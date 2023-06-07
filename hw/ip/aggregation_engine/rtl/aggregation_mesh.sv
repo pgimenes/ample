@@ -224,7 +224,7 @@ mesh #(
 // Aggregation Managers
 // ----------------------------------------------------
 
-for (genvar agm = 0; agm < AGGREGATION_COLS; agm = agm + 1) begin
+for (genvar agm = 0; agm < AGGREGATION_COLS; agm = agm + 1) begin : agm_block
     
     aggregation_manager #(
         .X_COORD  (agm),
@@ -297,7 +297,7 @@ for (genvar agm = 0; agm < AGGREGATION_COLS; agm = agm + 1) begin
 
     assign aggregation_manager_done_nodeslot [agm] = agm_allocation[agm].nodeslot;
 
-end
+end : agm_block
 
 // Aggregation Cores
 // ----------------------------------------------------
@@ -354,7 +354,7 @@ end : row_gen
 // Buffer Managers
 // ----------------------------------------------------
 
-for (genvar bm = 0; bm < AGGREGATION_ROWS; bm++) begin
+for (genvar bm = 0; bm < AGGREGATION_ROWS; bm++) begin : bm_block
 
     buffer_manager #(
         .X_COORD (AGGREGATION_COLS),
@@ -399,7 +399,7 @@ for (genvar bm = 0; bm < AGGREGATION_ROWS; bm++) begin
         router_node_on              [AGGREGATION_COLS][bm][0] = router_buffer_manager_on    [bm];
         router_node_ready           [AGGREGATION_COLS][bm][0] = router_buffer_manager_ready [bm];
     end
-end
+end : bm_block
 
 // Aggregation Manager Arbitration (to be allocated a buffer manager)
 // ----------------------------------------------------

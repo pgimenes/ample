@@ -10,8 +10,23 @@ import top_pkg::*;
 
 class GraphTest extends Test;
 
-    function new(virtual node_scoreboard_interface nsb_intf, virtual aggregation_engine_interface age_intf, virtual prefetcher_interface prefetcher_intf);
-        super.new(nsb_intf, age_intf, prefetcher_intf);
+    function new(virtual node_scoreboard_interface nsb_intf,
+                    virtual aggregation_engine_interface age_intf,
+                    virtual prefetcher_interface prefetcher_intf,
+
+                    virtual agc_allocator_interface agc_allocator_intf
+                    // virtual agm_interface agm_intf
+                    // virtual agc_interface agc_intf,
+                    // virtual bm_interface bm_intf
+    );
+
+        super.new(nsb_intf, age_intf, prefetcher_intf
+                    , agc_allocator_intf
+                    // , agm_intf
+                    // , agc_intf
+                    // , bm_intf
+        );
+
         this.TESTNAME = "GRAPH_TEST";
     endfunction
 
@@ -113,7 +128,9 @@ class GraphTest extends Test;
             this.delay(10);
         end
 
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Acknowledging weights fetch is done for precision: %0s.", $time, TESTNAME, precision.name());
         this.write_nsb_regbank("Ack fetch weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK_OFFSET, '1);
+        this.delay(100);
     endtask
 
     task automatic program_layer_config (Object layer_config);

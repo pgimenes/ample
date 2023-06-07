@@ -2,6 +2,7 @@
 import top_pkg::*;
 import json::*;
 
+`include "node_scoreboard.sv"
 class aggregation_engine_tb_monitor;
 
 virtual aggregation_engine_interface age_vif;
