@@ -367,6 +367,10 @@ end
 
 // Message read master is shared between Message Queue and Scale Factor queue requests
 
+logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0] msg_fetch_required_bytes;
+
+assign msg_fetch_required_bytes = (allocated_feature_count << 2);
+
 always_comb begin
     fetch_tag_msg_rm_req_valid      = scale_factor_read_master_req_valid || ((message_fetch_state == MSG_FETCH) && !adj_queue_empty && adj_queue_head_valid && !message_queue_full);
     
@@ -374,7 +378,9 @@ always_comb begin
                                     : {2'd0, layer_config_in_messages_address_lsb_value} + adj_queue_head;
     
     fetch_tag_msg_rm_byte_count     = scale_factor_read_master_req_valid ? scale_factor_read_master_byte_count
-                                    : allocated_feature_count * top_pkg::bits_per_precision(msg_fetch_req_precision_q) / 8;
+
+                                    // For message fetch, find lowest multiple of 64 bytes greater than the required byte count
+                                    : {msg_fetch_required_bytes[$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:6], 6'd0} + (|msg_fetch_required_bytes[5:0] ? 1'b1 : 1'b0);
 
     fetch_tag_msg_rm_resp_ready = (message_fetch_state == MSG_STORE) || scale_factor_read_master_resp_ready;
 

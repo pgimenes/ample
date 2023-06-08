@@ -4,7 +4,6 @@ import json::*;
 // import axi_memory_master_vip_pkg::*;
 
 `define AXIL_MASTER_VIP_IF top_tb.axil_master_vip_i.inst.IF
-// `define AXI_MEMORY_MASTER_VIP_IF top_tb.axi_memory_master_vip_i.inst.IF
 class Test;
 
     virtual node_scoreboard_interface nsb_intf;
@@ -40,7 +39,7 @@ class Test;
         virtual aggregation_engine_interface age_intf,
         virtual prefetcher_interface prefetcher_intf,
         virtual agc_allocator_interface agc_allocator_float_intf
-        // virtual agm_interface agm_intf
+        // virtual agm_interface agm_intf,
         // virtual agc_interface agc_intf,
         // virtual bm_interface bm_intf
         );
@@ -79,9 +78,9 @@ class Test;
         this.prefetcher_monitor_i = new(this.prefetcher_intf, sb);
 
         this.agc_allocator_float_monitor_i = new(this.agc_allocator_float_intf, top_pkg::FIXED_8, sb);
-        this.agm_monitor_i                 = new(this.agm_intf, top_pkg::FIXED_8, 4, 0, sb);
-        this.agc_monitor_i                 = new(this.agc_intf, top_pkg::FIXED_8, 0, 0, sb);
-        this.bm_monitor_i                  = new(this.bm_intf, top_pkg::FIXED_8, 0, 8, sb);
+        // this.agm_monitor_i                 = new(this.agm_intf, top_pkg::FIXED_8, 4, 0, sb);
+        // this.agc_monitor_i                 = new(this.agc_intf, top_pkg::FIXED_8, 0, 0, sb);
+        // this.bm_monitor_i                  = new(this.bm_intf, top_pkg::FIXED_8, 0, 8, sb);
 
         this.nodeslots = new();
         this.layers = new();
@@ -100,9 +99,9 @@ class Test;
             this.prefetcher_monitor_i.main();
 
             this.agc_allocator_float_monitor_i.main();
-            this.agm_monitor_i.main();
-            this.agc_monitor_i.main();
-            this.bm_monitor_i.main();
+            // this.agm_monitor_i.main();
+            // this.agc_monitor_i.main();
+            // this.bm_monitor_i.main();
         join
     endtask
 

@@ -5,7 +5,7 @@ program top_test (
     aggregation_engine_interface age_intf,
     prefetcher_interface prefetcher_intf,
     agc_allocator_interface agc_allocator_intf
-    // agm_interface agm_intf
+    // agm_interface agm_intf,
     // agc_interface agc_intf,
     // bm_interface bm_intf
 );
@@ -27,7 +27,7 @@ initial begin
 `ifdef GRAPH_TEST
     graph_test = new(nsb_intf, age_intf, prefetcher_intf,
                      agc_allocator_intf
-                    //  agm_intf
+                    //  agm_intf,
                     //  agc_intf,
                     //  bm_intf
                      );
