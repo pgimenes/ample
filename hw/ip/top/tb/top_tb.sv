@@ -1,3 +1,5 @@
+`timescale 1ps/1ps
+
 import arch_package::*;
 module top_tb;
 

@@ -1,6 +1,6 @@
-
 import top_pkg::*;
 import node_scoreboard_regbank_regs_pkg::*;
+import tb_utils::*;
 
 class node_scoreboard_tb_monitor;
 

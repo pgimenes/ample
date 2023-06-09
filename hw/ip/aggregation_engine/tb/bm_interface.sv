@@ -2,6 +2,9 @@
 import top_pkg::*;
 import age_pkg::*;
 
+parameter BUFFER_SLOT_WRITE_DEPTH = 512;
+parameter BUFFER_SLOT_WRITE_WIDTH = 64;
+
 interface bm_interface (
     input  logic core_clk,
     input  logic resetn,
@@ -32,8 +35,5 @@ interface bm_interface (
     input  logic [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0] buffer_slot_bm_feature_count,
     input  logic                                                      buffer_slot_bm_slot_free
 );
-
-parameter BUFFER_SLOT_WRITE_DEPTH = 512;
-parameter BUFFER_SLOT_WRITE_WIDTH = 64;
 
 endinterface

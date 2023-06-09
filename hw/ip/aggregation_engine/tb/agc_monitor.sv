@@ -1,6 +1,7 @@
-
 import top_pkg::*;
 import tb_utils::*;
+
+// `include "node_scoreboard_tb.sv"
 
 class agc_monitor;
 

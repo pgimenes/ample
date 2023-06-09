@@ -1,5 +1,5 @@
-
 import top_pkg::*;
+import tb_utils::*;
 
 class prefetcher_tb_monitor;
 

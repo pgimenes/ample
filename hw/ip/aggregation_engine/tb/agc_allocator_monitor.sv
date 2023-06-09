@@ -3,6 +3,8 @@ import top_pkg::*;
 import json::*;
 import tb_utils::*;
 
+// `include "node_scoreboard_tb.sv"
+
 class agc_allocator_monitor;
 
 virtual agc_allocator_interface vif;
