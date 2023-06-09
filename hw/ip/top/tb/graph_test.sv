@@ -7,6 +7,7 @@ import feature_transformation_engine_regbank_regs_pkg::*;
 import top_pkg::*;
 
 `include "json.svh"
+`include "test.sv"
 
 class GraphTest extends Test;
 
@@ -50,18 +51,18 @@ class GraphTest extends Test;
         layer = this.layers.getByIndex(0);
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Finished loading layer configuration.", $time, TESTNAME);
 
-        // Load nodeslot programming
-        this.nodeslots = json::Load("nodeslot_programming.json");
-        assert (this.nodeslots!=null) else $fatal(1, "Failed to load nodeslot programming from JSON file");
-        this.nodeslots = this.nodeslots.getByKey("nodeslots");
-        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Finished loading nodeslot programming.", $time, TESTNAME);
-
         program_layer_config(layer);
         this.write_nsb_regbank("Layer Config Valid", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_VALID_OFFSET, '1);
 
         // Fetch layer weights for all supported precisions
         req_weight_fetch(top_pkg::FLOAT_32);
         req_weight_fetch(top_pkg::FIXED_8);
+
+        // Load nodeslot programming
+        this.nodeslots = json::Load("nodeslot_programming.json");
+        assert (this.nodeslots!=null) else $fatal(1, "Failed to load nodeslot programming from JSON file");
+        this.nodeslots = this.nodeslots.getByKey("nodeslots");
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Finished loading nodeslot programming.", $time, TESTNAME);
 
         // Program nodeslots from JSON dump
         nodeslot_idx = 0;

@@ -1,7 +1,7 @@
-
 import top_pkg::*;
 import tb_utils::*;
 import noc_pkg::*;
+import tb_utils::*;
 
 class bm_monitor;
 

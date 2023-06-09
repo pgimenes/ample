@@ -1,3 +1,9 @@
+import noc_pkg::*;
+
+parameter NUM_CORES = noc_pkg::MAX_AGC_COUNT;
+parameter NUM_MANAGERS = noc_pkg::MAX_AGGREGATION_COLS;
+parameter PRECISION = top_pkg::FLOAT_32;
+
 interface agc_allocator_interface (
     input  logic                                           core_clk,
     input  logic                                           resetn,
@@ -20,9 +26,5 @@ interface agc_allocator_interface (
     input  age_pkg::AGE_AGM_REQ_t                          agm_req
 
 );
-
-parameter NUM_CORES            = noc_pkg::MAX_AGC_COUNT;
-parameter NUM_MANAGERS         = noc_pkg::MAX_AGGREGATION_COLS;
-parameter PRECISION            = top_pkg::FLOAT_32;
 
 endinterface

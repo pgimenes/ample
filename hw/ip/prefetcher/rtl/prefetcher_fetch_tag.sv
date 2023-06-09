@@ -404,7 +404,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
     
     // Acceoting MSG fetch req to MSG read master
     end else if (accepting_message_fetch_req) begin
-        msg_queue_expected_responses <= `divide_round_up(fetch_tag_msg_rm_byte_count, 64);
+        msg_queue_expected_responses <= (fetch_tag_msg_rm_byte_count - 1)/64 + 1;
     
     end else begin
         // Accepting response from MSG read master

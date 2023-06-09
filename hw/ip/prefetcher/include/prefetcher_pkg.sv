@@ -1,5 +1,9 @@
 package prefetcher_pkg;
 
+`define max(a,b) ((a > b) ? a : b)
+`define min(a,b) ((a > b) ? b : a)
+`define divide_round_up(a,b) (a - 1)/b + 1
+
 parameter ADJ_QUEUE_WIDTH   = 32; // next version will take top_pkg::NODE_ID_WIDTH
 parameter ADJ_QUEUE_DEPTH   = 64;
 

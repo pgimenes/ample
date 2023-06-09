@@ -76,7 +76,6 @@ logic [0:0] ctrl_fetch_layer_weights_done_done;                         // value
 
 logic ctrl_fetch_layer_weights_done_ack_strobe;                         // strobe signal for register 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK' (pulsed when the register is written from the bus)
 logic [0:0] ctrl_fetch_layer_weights_done_ack_ack;                      // value of field 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK.ACK'
-logic [1:0] ctrl_fetch_layer_weights_precision_value;
 
 // Layer Config
 logic layer_config_valid_strobe;

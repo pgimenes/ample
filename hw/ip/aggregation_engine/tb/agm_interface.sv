@@ -2,6 +2,11 @@ import top_pkg::*;
 import age_pkg::*;
 import noc_pkg::*;
 
+parameter X_COORD = 0;
+parameter Y_COORD = 0;
+parameter AGGREGATION_ROWS = noc_pkg::MAX_AGGREGATION_ROWS;
+parameter AGGREGATION_COLS = noc_pkg::MAX_AGGREGATION_COLS;
+
 interface agm_interface (
     input logic                                                 core_clk,
     input logic                                                 resetn,
@@ -53,10 +58,5 @@ interface agm_interface (
     input  logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]            scale_factor_queue_out_data,
     input  logic                                                scale_factor_queue_out_valid
 );
-
-parameter X_COORD = 0;
-parameter Y_COORD = 0;
-parameter AGGREGATION_ROWS = noc_pkg::MAX_AGGREGATION_ROWS;
-parameter AGGREGATION_COLS = noc_pkg::MAX_AGGREGATION_COLS;
 
 endinterface
