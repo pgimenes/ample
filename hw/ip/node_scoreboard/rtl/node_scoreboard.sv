@@ -285,7 +285,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
             aggregation_done                  [nodeslot] <= '0;
             transformation_done               [nodeslot] <= '0;
 
-        end else if (nodeslot_state_n[nodeslot] == EMPTY) begin
+        end else if (nodeslot_state_n[nodeslot] == node_scoreboard_pkg::EMPTY) begin
             nsb_nodeslot_node_state_state[nodeslot] <= nodeslot_state_n[nodeslot];
 
             // Update done mask from prefetcher response
@@ -298,19 +298,19 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
         end else begin
             nsb_nodeslot_node_state_state[nodeslot] <= nodeslot_state_n[nodeslot];
 
-            if ((nodeslot_state[nodeslot] == FETCH_NB_LIST) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST)) begin
+            if ((nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NB_LIST) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST)) begin
                 fetch_nb_list_resp_received[nodeslot]         <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == FETCH_SCALE_FACTORS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::SCALE_FACTOR)) begin
+            end else if ((nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_SCALE_FACTORS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::SCALE_FACTOR)) begin
                 fetch_scale_factors_resp_received[nodeslot]   <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == FETCH_NEIGHBOURS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::MESSAGES)) begin
+            end else if ((nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NEIGHBOURS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::MESSAGES)) begin
                 fetch_nbs_resp_received[nodeslot]             <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == AGGREGATION) && nsb_age_resp_valid && (nsb_age_resp.nodeslot == nodeslot)) begin
+            end else if ((nodeslot_state[nodeslot] == node_scoreboard_pkg::AGGREGATION) && nsb_age_resp_valid && (nsb_age_resp.nodeslot == nodeslot)) begin
                 aggregation_done[nodeslot]                    <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == TRANSFORMATION) && nsb_fte_resp_valid && nsb_fte_resp.nodeslots[nodeslot]) begin
+            end else if ((nodeslot_state[nodeslot] == node_scoreboard_pkg::TRANSFORMATION) && nsb_fte_resp_valid && nsb_fte_resp.nodeslots[nodeslot]) begin
                 transformation_done[nodeslot]                    <= 1'b1;
             end
         end
@@ -385,7 +385,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
             nsb_nodeslot_allocated_fetch_tag_fetch_tag [nodeslot] <= '0;
         
         // Reset flags if clearing nodeslot
-        end else if (nodeslot_state_n[nodeslot] == EMPTY) begin
+        end else if (nodeslot_state_n[nodeslot] == node_scoreboard_pkg::EMPTY) begin
             nsb_nodeslot_allocated_fetch_tag_fetch_tag [nodeslot] <= '0;
             
         end else if (nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == ADJACENCY_LIST) && (nsb_prefetcher_resp.nodeslot == nodeslot)) begin

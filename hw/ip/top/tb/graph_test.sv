@@ -6,9 +6,6 @@ import aggregation_engine_regbank_regs_pkg::*;
 import feature_transformation_engine_regbank_regs_pkg::*;
 import top_pkg::*;
 
-`include "json.svh"
-`include "test.sv"
-
 class GraphTest extends Test;
 
     function new(virtual node_scoreboard_interface nsb_intf,

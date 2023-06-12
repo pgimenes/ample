@@ -1,6 +1,4 @@
 
-`include "graph_test.sv"
-
 program top_test (
     // top_memory_axi_interface memory_intf,
     node_scoreboard_interface nsb_intf,

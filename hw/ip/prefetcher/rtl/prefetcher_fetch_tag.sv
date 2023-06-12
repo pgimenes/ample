@@ -90,7 +90,7 @@ logic [$clog2(MAX_NODESLOT_COUNT)-1:0]                        allocated_nodeslot
 logic [$clog2(MAX_FEATURE_COUNT)-1:0]                         allocated_feature_count;
 logic                                                         make_tag_free;
 
-FETCH_TAG_MESSAGE_FETCH_FSM_e                                 message_fetch_state, message_fetch_state_n;
+prefetcher_pkg::FETCH_TAG_MESSAGE_FETCH_FSM_e                                 message_fetch_state, message_fetch_state_n;
 
 // Address Queue
 logic                                                         push_adj_queue, pop_adj_queue;
@@ -317,7 +317,7 @@ end
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
-        message_fetch_state        <= MSG_IDLE;
+        message_fetch_state        <= prefetcher_pkg::MSG_IDLE;
     end else begin
         message_fetch_state        <= message_fetch_state_n;
     end
@@ -328,35 +328,35 @@ always_comb begin
 
     case (message_fetch_state)
     
-    MSG_IDLE: begin
+    prefetcher_pkg::MSG_IDLE: begin
         message_fetch_state_n = !tag_free && accepting_nsb_req
                                         && (nsb_prefetcher_req.req_opcode == MESSAGES) && !adj_queue_empty
                                         && (nsb_prefetcher_req.nodeslot == allocated_nodeslot)
-                                        ? MSG_FETCH
-                            : MSG_IDLE;
+                                        ? prefetcher_pkg::MSG_FETCH
+                            : prefetcher_pkg::MSG_IDLE;
     end
 
-    MSG_FETCH: begin
-        message_fetch_state_n = accepting_message_fetch_req ? MSG_STORE
-                            : MSG_FETCH;
+    prefetcher_pkg::MSG_FETCH: begin
+        message_fetch_state_n = accepting_message_fetch_req ? prefetcher_pkg::MSG_STORE
+                            : prefetcher_pkg::MSG_FETCH;
     end
 
-    MSG_STORE: begin
-        message_fetch_state_n = accepting_msg_fetch_resp && (msg_queue_expected_responses == 1'b1) && adj_queue_empty ? MSG_DONE
-                            : accepting_msg_fetch_resp && (msg_queue_expected_responses == 1'b1) && !adj_queue_empty && message_queue_full ? MSG_PAUSE
-                            : accepting_msg_fetch_resp && (msg_queue_expected_responses == 1'b1) && !adj_queue_empty && !message_queue_full ? MSG_FETCH
-                            : MSG_STORE;
+    prefetcher_pkg::MSG_STORE: begin
+        message_fetch_state_n = accepting_msg_fetch_resp && (msg_queue_expected_responses == 1'b1) && adj_queue_empty ? prefetcher_pkg::MSG_DONE
+                            : accepting_msg_fetch_resp && (msg_queue_expected_responses == 1'b1) && !adj_queue_empty && message_queue_full ? prefetcher_pkg::MSG_PAUSE
+                            : accepting_msg_fetch_resp && (msg_queue_expected_responses == 1'b1) && !adj_queue_empty && !message_queue_full ? prefetcher_pkg::MSG_FETCH
+                            : prefetcher_pkg::MSG_STORE;
     end
 
-    MSG_PAUSE: begin
+    prefetcher_pkg::MSG_PAUSE: begin
         message_fetch_state_n = adj_queue_empty ? MSG_DONE // defensive
-                            : !adj_queue_empty && !message_queue_full ? MSG_FETCH // keep fetching when message queue clears
-                            : MSG_PAUSE;
+                            : !adj_queue_empty && !message_queue_full ? prefetcher_pkg::MSG_FETCH // keep fetching when message queue clears
+                            : prefetcher_pkg::MSG_PAUSE;
     end
 
-    MSG_DONE: begin
-        message_fetch_state_n = nsb_prefetcher_resp_valid && nsb_prefetcher_resp_ready && (nsb_prefetcher_resp.response_type == MESSAGES) ? MSG_IDLE
-                            : MSG_DONE;
+    prefetcher_pkg::MSG_DONE: begin
+        message_fetch_state_n = nsb_prefetcher_resp_valid && nsb_prefetcher_resp_ready && (nsb_prefetcher_resp.response_type == MESSAGES) ? prefetcher_pkg::MSG_IDLE
+                            : prefetcher_pkg::MSG_DONE;
     end
 
     endcase
@@ -372,7 +372,7 @@ logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0] msg_fetch_required_bytes;
 assign msg_fetch_required_bytes = (allocated_feature_count << 2);
 
 always_comb begin
-    fetch_tag_msg_rm_req_valid      = scale_factor_read_master_req_valid || ((message_fetch_state == MSG_FETCH) && !adj_queue_empty && adj_queue_head_valid && !message_queue_full);
+    fetch_tag_msg_rm_req_valid      = scale_factor_read_master_req_valid || ((message_fetch_state == prefetcher_pkg::MSG_FETCH) && !adj_queue_empty && adj_queue_head_valid && !message_queue_full);
     
     fetch_tag_msg_rm_start_address  = scale_factor_read_master_req_valid ? scale_factor_read_master_start_address
                                     : {2'd0, layer_config_in_messages_address_lsb_value} + adj_queue_head;
@@ -382,12 +382,12 @@ always_comb begin
                                     // For message fetch, find lowest multiple of 64 bytes greater than the required byte count
                                     : {msg_fetch_required_bytes[$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:6], 6'd0} + (|msg_fetch_required_bytes[5:0] ? 1'b1 : 1'b0);
 
-    fetch_tag_msg_rm_resp_ready = (message_fetch_state == MSG_STORE) || scale_factor_read_master_resp_ready;
+    fetch_tag_msg_rm_resp_ready = (message_fetch_state == prefetcher_pkg::MSG_STORE) || scale_factor_read_master_resp_ready;
 
-    push_message_queue   = (message_fetch_state == MSG_STORE) && accepting_msg_fetch_resp;
+    push_message_queue   = (message_fetch_state == prefetcher_pkg::MSG_STORE) && accepting_msg_fetch_resp;
     msg_queue_write_data = fetch_tag_msg_rm_resp_data;
     
-    pop_adj_queue = (message_fetch_state == MSG_FETCH) && accepting_message_fetch_req;
+    pop_adj_queue = (message_fetch_state == prefetcher_pkg::MSG_FETCH) && accepting_message_fetch_req;
 end
 
 always_ff @(posedge core_clk or negedge resetn) begin
@@ -397,7 +397,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         issue_nsb_partial_done_msg_fetch <= '0;
     
     // Accepting MSG fetch request from NSB
-    end else if ((message_fetch_state == MSG_IDLE) && (message_fetch_state_n == MSG_FETCH)) begin // && accepting_nsb_req && (nsb_prefetcher_req.req_opcode == MESSAGES)
+    end else if ((message_fetch_state == prefetcher_pkg::MSG_IDLE) && (message_fetch_state_n == prefetcher_pkg::MSG_FETCH)) begin // && accepting_nsb_req && (nsb_prefetcher_req.req_opcode == MESSAGES)
         msg_fetch_req_precision_q        <= nsb_prefetcher_req.nodeslot_precision;
         msg_queue_expected_responses     <= '0;
         issue_nsb_partial_done_msg_fetch <= '0;
@@ -412,7 +412,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
             msg_queue_expected_responses <= msg_queue_expected_responses - 1;
         end
 
-        if ((message_fetch_state == MSG_STORE) && (message_fetch_state_n == MSG_PAUSE)) begin
+        if ((message_fetch_state == prefetcher_pkg::MSG_STORE) && (message_fetch_state_n == prefetcher_pkg::MSG_PAUSE)) begin
             issue_nsb_partial_done_msg_fetch <= '1;
         end
         issue_nsb_partial_done_msg_fetch_q <= issue_nsb_partial_done_msg_fetch;
@@ -430,17 +430,17 @@ always_comb begin
     nsb_prefetcher_req_ready = !tag_free && (nsb_prefetcher_req.nodeslot == allocated_nodeslot) &&
                                 (nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST ? adj_queue_manager_ready
                                 : nsb_prefetcher_req.req_opcode == top_pkg::SCALE_FACTOR ? scale_factor_fetch_req_ready
-                                : nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES ? ((message_fetch_state == MSG_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) && !adj_queue_empty)
+                                : nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES ? ((message_fetch_state == prefetcher_pkg::MSG_IDLE) && (nsb_prefetcher_req.req_opcode == top_pkg::MESSAGES) && !adj_queue_empty)
                                 : '0 );
 
     nsb_prefetcher_resp_valid = adj_queue_fetch_resp_valid
-                            || (message_fetch_state == MSG_DONE) || trigger_msg_partial_resp
+                            || (message_fetch_state == prefetcher_pkg::MSG_DONE) || trigger_msg_partial_resp
                             || scale_factor_fetch_resp_valid;
 
     nsb_prefetcher_resp.nodeslot = allocated_nodeslot;
     nsb_prefetcher_resp.response_type = adj_queue_fetch_resp_valid ? ADJACENCY_LIST
                                         : scale_factor_fetch_resp_valid ? SCALE_FACTOR
-                                        : trigger_msg_partial_resp || (message_fetch_state == MSG_DONE) ? MESSAGES
+                                        : trigger_msg_partial_resp || (message_fetch_state == prefetcher_pkg::MSG_DONE) ? MESSAGES
                                         : FETCH_RESERVED;
 
     nsb_prefetcher_resp.allocated_fetch_tag = TAG[$clog2(top_pkg::MESSAGE_CHANNEL_COUNT)-1:0];
@@ -467,7 +467,7 @@ end
 
 always_comb begin
     // Accept message channel req when completed message fetching
-    message_channel_req_ready = !message_queue_empty && (message_fetch_state == MSG_IDLE) 
+    message_channel_req_ready = !message_queue_empty && (message_fetch_state == prefetcher_pkg::MSG_IDLE)
                                     && (message_channel_req.nodeslot == allocated_nodeslot);
 
     message_channel_resp_valid = accepted_message_channel_req && message_queue_head_valid && !message_queue_empty;
@@ -490,7 +490,7 @@ end
 
 assign make_tag_free = deallocation_valid && adj_queue_empty && message_queue_empty
             && adj_queue_manager_free
-            && (message_fetch_state == MSG_IDLE);
+            && (message_fetch_state == prefetcher_pkg::MSG_IDLE);
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
