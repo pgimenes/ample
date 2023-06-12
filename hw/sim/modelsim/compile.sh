@@ -17,5 +17,5 @@
 bin_path="/mnt/applications/mentor/modelsim-2019.2/modelsim/modeltech/linux_x86_64"
 set -Eeuo pipefail
 source $FYP_DIR/scripts/add_hash.sh
-source top_tb_compile.do > compile.log 2>&1
+source compile.do > compile.log 2>&1
 
