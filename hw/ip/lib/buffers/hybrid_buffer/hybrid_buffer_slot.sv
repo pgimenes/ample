@@ -36,6 +36,7 @@ assign read_address =
 
 if (BUFFER_TYPE == "AGGREGATION") begin
     
+`ifdef XSIM
     aggregation_buffer_sdp_bram fifo (
         .clka     (core_clk),    // input wire clka
         .ena      ('1),      // input wire ena
@@ -50,9 +51,32 @@ if (BUFFER_TYPE == "AGGREGATION") begin
         
         .sleep    ('0)  // input wire sleep
     );
+`endif
+
+`ifdef MODELSIM
+
+    asym_dp_ram #(
+        .WRITE_WIDTH (64),
+        .WRITE_DEPTH (512),
+        .READ_WIDTH  (32),
+        .READ_DEPTH  (1024)
+     ) fifo (
+        .core_clk       (core_clk),
+        .resetn         (resetn),
+
+        .wea            (write_enable),
+        .addr_a         (write_address),
+        .in_data_a      (write_data),
+
+        .addr_b         (read_address),
+        .out_data_b     (out_feature)
+     );
+
+`endif
 
 end else if (BUFFER_TYPE == "TRANSFORMATION") begin
     
+`ifdef XSIM
     transformation_buffer_sdp_bram fifo (
         .clka           (core_clk),    // input wire clka
         .ena            ('1),      // input wire ena
@@ -65,6 +89,28 @@ end else if (BUFFER_TYPE == "TRANSFORMATION") begin
         .addrb          (read_address),    // input wire [9 : 0] addrb
         .doutb          (out_feature)    // output wire [31 : 0] doutb
     );
+`endif
+
+`ifdef MODELSIM
+
+    asym_dp_ram #(
+        .WRITE_WIDTH (512),
+        .WRITE_DEPTH (64),
+        .READ_WIDTH  (32),
+        .READ_DEPTH  (1024)
+     ) fifo (
+        .core_clk       (core_clk),
+        .resetn         (resetn),
+
+        .wea            (write_enable),
+        .addr_a         (write_address),
+        .in_data_a      (write_data),
+
+        .addr_b         (read_address),
+        .out_data_b     (out_feature)
+     );
+
+`endif
 
 end
 
