@@ -233,8 +233,10 @@ feature_transformation_engine_regbank_wrapper feature_transformation_engine_regb
 
 for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) begin
     feature_transformation_core #(
+        .PRECISION             (top_pkg::NODE_PRECISION_e'(precision)),
         .FLOAT_WIDTH           (FLOAT_WIDTH),
         .DATA_WIDTH            (top_pkg::bits_per_precision(top_pkg::NODE_PRECISION_e'(precision))),
+
         .MATRIX_N              (MATRIX_N),
         .SYSTOLIC_MODULE_COUNT (SYSTOLIC_MODULE_COUNT)
     ) feature_transformation_core_i (
