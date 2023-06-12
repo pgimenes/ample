@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 import torch
 from torch_geometric.utils import to_networkx
+from torch_geometric.loader import GraphSAINTRandomWalkSampler
 
 import random
 
@@ -28,11 +29,6 @@ class TrainedGraph:
         # Local copy of embeddings stored in node objects
         self.embeddings = embeddings
 
-        # TO DO: read activation from model object
-        self.transformation_activation = 1 # relu
-        self.transformation_bias = 0
-        self.leaky_relu_alpha = 0.2
-
         # TO DO: read dequantization parameter from QAT
         self.dequantization_parameter = 1
 
@@ -40,6 +36,22 @@ class TrainedGraph:
         pos = nx.spring_layout(self.nx_graph)
         nx.draw(self.nx_graph, pos, with_labels=True)
         plt.show()
+
+    def reduce(self):
+        logging.info("Reducing graph.")
+
+        print(f"dataset has type {type(self.dataset)}")
+
+        logging.info("STATS BEORE REDUCE")
+        logging.info(f"node_count: {self.dataset.num_nodes}, edge_count: {self.dataset.num_edges}")
+
+        loader = GraphSAINTRandomWalkSampler(self.dataset, batch_size=100, walk_length=2, num_steps=5, sample_coverage=100, save_dir="processed", num_workers=4)
+        logging.info(f"Loader has size {len(loader)}")
+
+        for data in loader:
+            logging.info(f"Data shape: {data.x.shape}")
+            logging.info(f"Edge index: {data.edge_index.shape}")
+
 
     def init_nx_graph(self):
         for node in self.nx_graph.nodes:

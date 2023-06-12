@@ -27,9 +27,9 @@ graph_map = {
     'karate': { 
         'class': KarateClubGraph
     },
-    'pubmed': { 'class': lambda: PlanetoidGraph(name="Pubmed")},
-    'cora': { 'class': lambda: PlanetoidGraph(name="Cora")},
-    'citeseer': { 'class': lambda: PlanetoidGraph(name="Citeseer")},
+    'pubmed': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Pubmed")},
+    'cora': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Cora")},
+    'citeseer': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Citeseer")},
     'reddit': { 'class': RedditGraph},
     'flickr': { 'class': FlickrGraph },
     'yelp': { 'class': YelpGraph }
@@ -73,7 +73,7 @@ def main(args):
             models.append(arg)
     
     for (graph, model) in itertools.product(graphs, models):
-        run_pass(graph, model, args.random)
+        run_pass(graph, model, args.random, args.reduce)
 
 def run_graph_commands(graph, commands):
     for command in commands:
@@ -85,13 +85,16 @@ def apply_graph_options(graph, options):
     for key, value in options.items():
         setattr(graph, key, value)
 
-def run_pass(graph, model, random_embeddings=False):
+def run_pass(graph, model, random_embeddings=False, reduce=False):
     logging.info(f"Running graph: {str(graph)} with model: {model}")
 
     model = model_map[model]['class'](args.in_features, args.out_features)
     
     init_manager = InitManager(graph, model, base_path=args.base_path)
-    
+
+    if (reduce):
+        init_manager.reduce_graph()
+
     if (random_embeddings):
         init_manager.trained_graph.random_embeddings()
     else:
@@ -131,6 +134,9 @@ def parse_arguments():
     
     parser.add_argument('--precision', choices=['FLOAT_32', 'FIXED_16', 'FIXED_8', 'FIXED_4', 'mixed'], default='FLOAT_32',
                             help='Precision for calculations (default: FLOAT_32)')
+
+
+    parser.add_argument('--reduce', action='store_true', help='Run sampling step before generating payloads.')
 
     return parser.parse_args()
 

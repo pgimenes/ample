@@ -24,7 +24,7 @@ python3.10 $FYP_DIR/scripts/build_register_banks.py
 
 # Build Xilinx IP
 echo "======================================================="
-echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Building Xilinx IP."
+echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Generate Build Project."
 echo "======================================================="
 
 mkdir -p $FYP_DIR/hw/build && cd $FYP_DIR/hw/build || cd $FYP_DIR/hw/build
