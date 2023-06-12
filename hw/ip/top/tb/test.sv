@@ -3,22 +3,6 @@ import axil_master_vip_pkg::*;
 import json::*;
 // import axi_memory_master_vip_pkg::*;
 
-`include "node_scoreboard_interface.sv"
-`include "aggregation_engine_interface.sv"
-`include "prefetcher_interface.sv"
-`include "agc_allocator_interface.sv"
-`include "agm_interface.sv"
-`include "agc_interface.sv"
-`include "bm_interface.sv"
-
-`include "node_scoreboard_tb_monitor.sv"
-`include "aggregation_engine_tb_monitor.sv"
-`include "prefetcher_tb_monitor.sv"
-`include "agc_allocator_monitor.sv"
-`include "agm_monitor.sv"
-`include "agc_monitor.sv"
-`include "bm_monitor.sv"
-
 `define AXIL_MASTER_VIP_IF top_tb.axil_master_vip_i.inst.IF
 class Test;
 
