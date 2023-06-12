@@ -1,40 +1,54 @@
-sv xil_defaultlib  --include "../build/regbanks/aggregation_engine_regbank" --include "../build/regbanks/node_scoreboard_regbank" --include "../../imports" -d "FLOAT_MAC=1" \
-"../build/build_project.srcs/sources_1/ip/axi_memory_master_vip/sim/axi_memory_master_vip_pkg.sv" \
-"../build/build_project.srcs/sources_1/ip/axi_memory_master_vip/sim/axi_memory_master_vip.sv" \
-"../build/build_project.srcs/sources_1/ip/axil_master_vip/sim/axil_master_vip_pkg.sv" \
-"../build/build_project.srcs/sources_1/ip/axil_master_vip/sim/axil_master_vip.sv" \
+sv xil_defaultlib  \
+--include $FYP_DIR/hw/build/regbanks/aggregation_engine_regbank" \
+--include $FYP_DIR/hw/build/regbanks/node_scoreboard_regbank" \
+--include $FYP_DIR/imports \
+-d "FLOAT_MAC=1" \
+-d "XSIM" \
+    $FYP_DIR/hw/build/build_project.srcs/sources_1/ip/axi_memory_master_vip/sim/axi_memory_master_vip_pkg.sv \
+    $FYP_DIR/hw/build/build_project.srcs/sources_1/ip/axi_memory_master_vip/sim/axi_memory_master_vip.sv \
+    $FYP_DIR/hw/build/build_project.srcs/sources_1/ip/axil_master_vip/sim/axil_master_vip_pkg.sv \
+    $FYP_DIR/hw/build/build_project.srcs/sources_1/ip/axil_master_vip/sim/axil_master_vip.sv \
 
-sv xil_defaultlib --include "../../imports/json_sv/sv" -d "FLOAT_MAC=1" \
-"../../imports/json_sv/sv/json.svh" \
-"../../imports/json_sv/sv/util.sv" \
-"../../imports/json_sv/sv/json.sv"
+sv xil_defaultlib \
+--include $FYP_DIR/imports/json_sv/sv \
+-d "FLOAT_MAC=1" \
+-d "XSIM" \
+    $FYP_DIR/imports/json_sv/sv/json.svh \
+    $FYP_DIR/imports/json_sv/sv/util.sv \
+    $FYP_DIR/imports/json_sv/sv/json.sv
 
-sv xil_defaultlib --include "../../imports/json_sv/sv" -d "FLOAT_MAC=1" \
-"../ip/tb_lib/node_scoreboard.sv" \
-"../ip/tb_lib/tb_utils.sv"
+sv xil_defaultlib \
+--include $FYP_DIR/imports/json_sv/sv \
+-d "FLOAT_MAC=1" \
+-d "XSIM" \
+    $FYP_DIR/hw/ip/tb_lib/tb_utils.sv
 
-sv xil_defaultlib --include "../../imports/json_sv/sv" --include "../ip/tb_lib" -d "FLOAT_MAC=1" \
-"../ip/aggregation_engine/tb/aggregation_engine_interface.sv" \
-"../ip/aggregation_engine/tb/aggregation_engine_tb_monitor.sv" \
-"../ip/aggregation_engine/tb/aggregation_engine_tb_scoreboard.sv" \
-"../ip/aggregation_engine/tb/agc_allocator_interface.sv" \
-"../ip/aggregation_engine/tb/agc_allocator_monitor.sv" \
-"../ip/aggregation_engine/tb/agm_interface.sv" \
-"../ip/aggregation_engine/tb/agm_monitor.sv" \
-"../ip/aggregation_engine/tb/agc_interface.sv" \
-"../ip/aggregation_engine/tb/agc_monitor.sv" \
-"../ip/aggregation_engine/tb/bm_interface.sv" \
-"../ip/aggregation_engine/tb/bm_monitor.sv" \
-"../ip/node_scoreboard/tb/node_scoreboard_interface.sv" \
-"../ip/node_scoreboard/tb/node_scoreboard_tb_monitor.sv" \
-"../ip/node_scoreboard/tb/node_scoreboard_tb_scoreboard.sv" \
-"../ip/prefetcher/tb/prefetcher_interface.sv" \
-"../ip/prefetcher/tb/prefetcher_tb_monitor.sv" \
-"../ip/prefetcher/tb/prefetcher_tb_scoreboard.sv" \
-"../ip/top/tb/top_memory_axi_interface.sv" \
-"../ip/top/tb/test.sv" \
-"../ip/top/tb/graph_test.sv" \
-"../ip/top/tb/top_test.sv" \
-"../ip/top/tb/top_tb.sv" \
+sv xil_defaultlib \
+--include $FYP_DIR/imports/json_sv/sv \
+--include $FYP_DIR/hw/ip/tb_lib \
+-d "FLOAT_MAC=1" \
+-d "XSIM" \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/aggregation_engine_interface.sv \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/aggregation_engine_tb_monitor.sv \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/aggregation_engine_tb_scoreboard.sv \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/agc_allocator_interface.sv \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/agc_allocator_monitor.sv \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/agm_interface.sv \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/agm_monitor.sv \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/agc_interface.sv \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/agc_monitor.sv \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/bm_interface.sv \
+    $FYP_DIR/hw/ip/aggregation_engine/tb/bm_monitor.sv \
+    $FYP_DIR/hw/ip/node_scoreboard/tb/node_scoreboard_interface.sv \
+    $FYP_DIR/hw/ip/node_scoreboard/tb/node_scoreboard_tb_monitor.sv \
+    $FYP_DIR/hw/ip/node_scoreboard/tb/node_scoreboard_tb_scoreboard.sv \
+    $FYP_DIR/hw/ip/prefetcher/tb/prefetcher_interface.sv \
+    $FYP_DIR/hw/ip/prefetcher/tb/prefetcher_tb_monitor.sv \
+    $FYP_DIR/hw/ip/prefetcher/tb/prefetcher_tb_scoreboard.sv \
+    $FYP_DIR/hw/ip/top/tb/top_memory_axi_interface.sv \
+    $FYP_DIR/hw/ip/top/tb/test.sv \
+    $FYP_DIR/hw/ip/top/tb/graph_test.sv \
+    $FYP_DIR/hw/ip/top/tb/top_test.sv \
+    $FYP_DIR/hw/ip/top/tb/top_tb.sv
 
 nosort

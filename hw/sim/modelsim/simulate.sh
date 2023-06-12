@@ -16,5 +16,5 @@
 # ****************************************************************************
 bin_path="/mnt/applications/mentor/modelsim-2019.2/modelsim/modeltech/linux_x86_64"
 set -Eeuo pipefail
-$bin_path/vsim -64 -c -do "do {top_tb_simulate.do}" -l simulate.log
+$bin_path/vsim -64 xil_defaultlib.xil_defaultlib_opt -do "do {simulate.do}" -l simulate.log
 
