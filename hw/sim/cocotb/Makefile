@@ -3,9 +3,10 @@ include $(shell cocotb-config --makefiles)/Makefile.inc
 
 include sources.mk
 
-TOPLEVEL_LANG=verilog
-MODULE=test
-TOPLEVEL = top
+TOPLEVEL_LANG ?=verilog
+TEST_RUNNER   ?=runner
+MODULE        ?=runner
+TOPLEVEL      ?=top
 
 CMD_BIN := vsim
 
@@ -140,7 +141,7 @@ endif
 $(COCOTB_RESULTS_FILE): $(SIM_BUILD)/runsim.do
 	$(RM) $(COCOTB_RESULTS_FILE)
 
-	set -o pipefail; MODULE=$(MODULE) TESTCASE=$(TESTCASE) TOPLEVEL=$(TOPLEVEL) \
+	set -o pipefail; MODULE=$(TEST_RUNNER) TESTCASE=$(TESTCASE) TOPLEVEL=$(TOPLEVEL) \
 	GPI_EXTRA=$(GPI_EXTRA) TOPLEVEL_LANG=$(TOPLEVEL_LANG) \
 	$(SIM_CMD_PREFIX) $(CMD) $(RUN_ARGS) -do $(SIM_BUILD)/runsim.do $(PLUSARGS) 2>&1 | tee $(SIM_BUILD)/sim.log
 
@@ -165,22 +166,17 @@ endif
 
 # Generate optimization script
 $(SIM_BUILD)/opt.do: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do | $(SIM_BUILD)
-	@echo "vopt -l opt.log $(VSIM_LIB_OPTS) -work $(TOPLEVEL_LIBRARY) $(SIM_BUILD)/$(TOPLEVEL) $(SIM_BUILD)/$(TOPLEVEL_LIBRARY).glbl -o $(TOPLEVEL_LIBRARY)_opt" >> $@
+	@echo "vopt +acc -l opt.log $(VSIM_LIB_OPTS) -work $(TOPLEVEL_LIBRARY) $(SIM_BUILD)/$(TOPLEVEL) $(SIM_BUILD)/$(TOPLEVEL_LIBRARY).glbl -o $(TOPLEVEL_LIBRARY)_opt" >> $@
+
 
 # Generate simulation script
 $(SIM_BUILD)/simulate.do: $(SIM_BUILD)/opt.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/libs.do | $(SIM_BUILD)
 	@echo "onbreak resume" >> $@
 	@echo "set NumericStdNoWarnings 1" >> $@
 	@echo "set StdArithNoWarnings 1" >> $@
-
-ifeq ($(WAVES),1)
 	@echo "log -recursive /*" >> $@
-endif
-
-ifeq ($(GUI),1)
 	@echo "add log -r *" >> $@
-endif
-
+	@echo "do waves.do" >> $@
 	@echo "run -all" >> $@
 
 build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
@@ -189,7 +185,7 @@ build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
 	source $(SIM_BUILD)/opt.do
 
 run_sim: $(SIM_BUILD)/simulate.do
-	set -o pipefail; LIBPYTHON_LOC=$(shell cocotb-config --libpython) MODULE=$(MODULE) TESTCASE=$(TESTCASE) TOPLEVEL=$(TOPLEVEL) \
+	set -o pipefail; LIBPYTHON_LOC=$(shell cocotb-config --libpython) MODULE=$(TEST_RUNNER) TESTCASE=$(TESTCASE) TOPLEVEL=$(TOPLEVEL) \
 	GPI_EXTRA=$(GPI_EXTRA) TOPLEVEL_LANG=$(TOPLEVEL_LANG) \
 	$(SIM_CMD_PREFIX) $(CMD) $(VSIM_ARGS) \
 	$(RUN_ARGS) \

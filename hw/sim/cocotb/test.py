@@ -79,27 +79,19 @@ async def graph_test(dut):
     # dut._log.info("Define AXI Master")
     # axil_master = AxiLiteMaster(AxiBus.from_prefix(dut, "host_axil"), dut.regbank_clk, dut.regbank_resetn)
 
-    dut._log.info("Requesting weights fetch.")
-    await write(dut, nsb_base_address + nsb_registers["CTRL_FETCH_LAYER_WEIGHTS"]["addressOffset"], 1)
+    dut._log.info("Setting weights fetch precision...")
+    await axil_write(dut, nsb_base_address + nsb_registers["ctrl_fetch_layer_weights_precision"]["addressOffset"], 1)
+    dut._log.info("Done.")
 
-    # await axil_master.write(nsb_base_address + nsb_registers["CTRL_FETCH_LAYER_WEIGHTS"]["addressOffset"], bytearray([1]))
-    # dut._log.info("Weights fetch done.")
+    delay(dut, 10)
 
-    # dut.log.info("Starting wait")
-    # for _ in range(10):
-    #     await RisingEdge(dut.regbank_clk)
-    # dut.log.info("Done waiting")
-
-    # dut._log.info("Starting read.")
-    # for _ in range(10):
-    #     await RisingEdge(dut.regbank_clk)
-    #     data = await axil_master.read(nsb_base_address + nsb_registers["CTRL_FETCH_LAYER_WEIGHTS_DONE"]["addressOffset"], 1)
-    #     dut.log.info("WEIGHTS_FETCH_DONE: %s", data)
+    dut._log.info("Reading weights fetch precision...")
+    data = await axil_read(dut, nsb_base_address + nsb_registers["ctrl_fetch_layer_weights_precision"]["addressOffset"])
+    dut._log.info("Weights fetch precision reg has data %s", data)
+    assert(data)
 
     await Timer(1000, units="ns")  # wait a bit
     await RisingEdge(dut.sys_clk)  # wait for falling edge/"negedge"
-
-    dut._log.info("host_axil_awready is %s", dut.host_axil_awready.value)
 
 async def reset_axi_interface(dut):
     dut.host_axil_awvalid.value = 0
@@ -107,14 +99,14 @@ async def reset_axi_interface(dut):
     dut.host_axil_awprot.value = 0
     dut.host_axil_wvalid.value = 0
     dut.host_axil_wdata.value = 0
-    dut.host_axil_wstrb.value = 0
+    dut.host_axil_wstrb.value = 15
     dut.host_axil_bready.value = 0
     dut.host_axil_arvalid.value = 0
     dut.host_axil_araddr.value = 0
     dut.host_axil_arprot.value = 0
     dut.host_axil_rready.value = 0
 
-async def write(dut, address, data):
+async def axil_write(dut, address, data):
     # Reset signals
     dut.host_axil_awvalid.value = 0
     dut.host_axil_awaddr.value = 0
@@ -151,9 +143,34 @@ async def write(dut, address, data):
         if (dut.host_axil_bvalid.value):
             break
 
+async def axil_read(dut, address):
+    dut.host_axil_arvalid.value = 0
+    dut.host_axil_araddr.value = 0
+    dut.host_axil_arprot.value = 0
+    dut.host_axil_rready.value = 0
 
+    await RisingEdge(dut.regbank_clk)
 
+    # AR phase
+    dut.host_axil_arvalid.value = 1
+    dut.host_axil_araddr.value = address
 
+    # Wait to accept address
+    while(True):
+        await RisingEdge(dut.regbank_clk)
+        if (dut.host_axil_arready.value):
+            break
 
+    # R phase
+    dut.host_axil_arvalid.value = 0
+    dut.host_axil_rready.value = 1
 
+    # Wait to accept data
+    while(True):
+        await RisingEdge(dut.regbank_clk)
+        if (dut.host_axil_rvalid.value):
+            return dut.host_axil_rdata.value
 
+async def delay(dut, cycles):
+    for _ in range(cycles):
+        await RisingEdge(dut.regbank_clk)
