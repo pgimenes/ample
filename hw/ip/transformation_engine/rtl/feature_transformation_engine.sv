@@ -5,7 +5,7 @@ module feature_transformation_engine #(
     parameter FLOAT_WIDTH = 32,
     parameter AXIL_ADDR_WIDTH = 32,
     parameter MATRIX_N = top_pkg::TRANSFORMATION_ROWS,
-    parameter SYSTOLIC_MODULE_COUNT = 32
+    parameter SYSTOLIC_MODULE_COUNT = top_pkg::SYSTOLIC_MODULE_COUNT
 ) (
     input logic                                                 core_clk,
     input logic                                                 resetn,
