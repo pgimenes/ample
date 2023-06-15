@@ -7,30 +7,33 @@ async def delay(clk, cycles):
     for _ in range(cycles):
         await RisingEdge(clk)
 
-node_state_e = Enum('state', [
-    'EMPTY',
-    'PROG_DONE',
-    'FETCH_NB_LIST',
-    'FETCH_SCALE_FACTORS',
-    'FETCH_NEIGHBOURS',
-    'AGGREGATION',
-    'TRANSFORMATION'
-])
+def allocate_lsb(bit_str, bit_range=(0, 64)):
+    available_bits = bit_str[::-1][bit_range[0]:bit_range[1]]
+    for i, bit in enumerate(available_bits):
+        if bit == '1':
+            return i
+    return None
 
-precision_e = Enum('precision', [
-    'FLOAT_32',
-    'FIXED_8'
-])
+class NodeState(Enum):
+    EMPTY               = 0
+    PROG_DONE           = 1
+    FETCH_NB_LIST       = 2
+    FETCH_SCALE_FACTORS = 3
+    FETCH_NEIGHBOURS    = 4
+    AGGREGATION         = 5
+    TRANSFORMATION      = 6
 
-aggregation_function_e = Enum('function', [
-    'SUM',
-    'MEAN',
-    'WEIGHTED_SUM'
-])
+class NodePrecision(Enum):
+    FLOAT_32 = 0
+    FIXED_8 = 1
 
-regbanks_e = Enum('regbank', [
-    'NSB',
-    'PREFETCHER',
-    'AGE',
-    'FTE'
-])
+class AggregationFunction(Enum):
+    SUM          = 0
+    MEAN         = 1
+    WEIGHTED_SUM = 2
+
+class Regbanks(Enum):
+    NSB        = 0
+    PREFETCHER = 1
+    AGE        = 2
+    FTE        = 3
