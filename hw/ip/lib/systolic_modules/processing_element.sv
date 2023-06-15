@@ -98,7 +98,7 @@ mac #(
 if (PRECISION == top_pkg::FLOAT_32) begin
 
     fp_add bias_adder (
-    .s_axis_a_tvalid              ('1),
+    .s_axis_a_tvalid              (1'b1),
     .s_axis_a_tdata               (pe_acc),
 
     .s_axis_b_tvalid              (bias_valid),

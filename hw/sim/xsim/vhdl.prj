@@ -1,0 +1,18 @@
+vhdl xbip_utils_v3_0_10        $FYP_DIR/hw/build/build_project.ip_user_files/ipstatic/hdl/xbip_utils_v3_0_vh_rfs.vhd
+vhdl axi_utils_v2_0_6          $FYP_DIR/hw/build/build_project.ip_user_files/ipstatic/hdl/axi_utils_v2_0_vh_rfs.vhd
+vhdl xbip_pipe_v3_0_6          $FYP_DIR/hw/build/build_project.ip_user_files/ipstatic/hdl/xbip_pipe_v3_0_vh_rfs.vhd
+vhdl xbip_dsp48_wrapper_v3_0_4 $FYP_DIR/hw/build/build_project.ip_user_files/ipstatic/hdl/xbip_dsp48_wrapper_v3_0_vh_rfs.vhd
+vhdl xbip_dsp48_addsub_v3_0_6  $FYP_DIR/hw/build/build_project.ip_user_files/ipstatic/hdl/xbip_dsp48_addsub_v3_0_vh_rfs.vhd
+vhdl xbip_dsp48_multadd_v3_0_6 $FYP_DIR/hw/build/build_project.ip_user_files/ipstatic/hdl/xbip_dsp48_multadd_v3_0_vh_rfs.vhd
+vhdl xbip_bram18k_v3_0_6       $FYP_DIR/hw/build/build_project.ip_user_files/ipstatic/hdl/xbip_bram18k_v3_0_vh_rfs.vhd
+vhdl mult_gen_v12_0_16         $FYP_DIR/hw/build/build_project.ip_user_files/ipstatic/hdl/mult_gen_v12_0_vh_rfs.vhd
+vhdl floating_point_v7_1_9     $FYP_DIR/hw/build/build_project.ip_user_files/ipstatic/hdl/floating_point_v7_1_rfs.vhd
+
+vhdl xil_defaultlib  \
+    $FYP_DIR/hw/build/build_project.srcs/sources_1/ip/fp_add/sim/fp_add.vhd \
+    $FYP_DIR/hw/build/build_project.srcs/sources_1/ip/fp_mult/sim/fp_mult.vhd \
+    $FYP_DIR/hw/build/build_project.srcs/sources_1/ip/fixed16_upsampler/sim/fixed16_upsampler.vhd \
+    $FYP_DIR/hw/build/build_project.srcs/sources_1/ip/fixed8_upsampler/sim/fixed8_upsampler.vhd \
+    $FYP_DIR/hw/build/build_project.srcs/sources_1/ip/fixed4_upsampler/sim/fixed4_upsampler.vhd
+
+nosort

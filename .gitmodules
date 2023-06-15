@@ -7,3 +7,6 @@
 [submodule "imports/nocrouter"]
 	path = imports/nocrouter
 	url = https://github.com/pgimenes/NoCRouter
+[submodule "imports/cocotbext-axi"]
+	path = imports/cocotbext-axi
+	url = https://github.com/pgimenes/cocotbext-axi.git

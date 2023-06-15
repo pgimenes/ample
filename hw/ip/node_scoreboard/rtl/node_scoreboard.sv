@@ -76,7 +76,6 @@ logic [0:0] ctrl_fetch_layer_weights_done_done;                         // value
 
 logic ctrl_fetch_layer_weights_done_ack_strobe;                         // strobe signal for register 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK' (pulsed when the register is written from the bus)
 logic [0:0] ctrl_fetch_layer_weights_done_ack_ack;                      // value of field 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK.ACK'
-logic [1:0] ctrl_fetch_layer_weights_precision_value;
 
 // Layer Config
 logic layer_config_valid_strobe;
@@ -286,7 +285,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
             aggregation_done                  [nodeslot] <= '0;
             transformation_done               [nodeslot] <= '0;
 
-        end else if (nodeslot_state_n[nodeslot] == EMPTY) begin
+        end else if (nodeslot_state_n[nodeslot] == node_scoreboard_pkg::EMPTY) begin
             nsb_nodeslot_node_state_state[nodeslot] <= nodeslot_state_n[nodeslot];
 
             // Update done mask from prefetcher response
@@ -299,19 +298,19 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
         end else begin
             nsb_nodeslot_node_state_state[nodeslot] <= nodeslot_state_n[nodeslot];
 
-            if ((nodeslot_state[nodeslot] == FETCH_NB_LIST) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST)) begin
+            if ((nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NB_LIST) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::ADJACENCY_LIST)) begin
                 fetch_nb_list_resp_received[nodeslot]         <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == FETCH_SCALE_FACTORS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::SCALE_FACTOR)) begin
+            end else if ((nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_SCALE_FACTORS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::SCALE_FACTOR)) begin
                 fetch_scale_factors_resp_received[nodeslot]   <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == FETCH_NEIGHBOURS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::MESSAGES)) begin
+            end else if ((nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NEIGHBOURS) && nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.nodeslot == nodeslot) && (nsb_prefetcher_resp.response_type == top_pkg::MESSAGES)) begin
                 fetch_nbs_resp_received[nodeslot]             <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == AGGREGATION) && nsb_age_resp_valid && (nsb_age_resp.nodeslot == nodeslot)) begin
+            end else if ((nodeslot_state[nodeslot] == node_scoreboard_pkg::AGGREGATION) && nsb_age_resp_valid && (nsb_age_resp.nodeslot == nodeslot)) begin
                 aggregation_done[nodeslot]                    <= 1'b1;
 
-            end else if ((nodeslot_state[nodeslot] == TRANSFORMATION) && nsb_fte_resp_valid && nsb_fte_resp.nodeslots[nodeslot]) begin
+            end else if ((nodeslot_state[nodeslot] == node_scoreboard_pkg::TRANSFORMATION) && nsb_fte_resp_valid && nsb_fte_resp.nodeslots[nodeslot]) begin
                 transformation_done[nodeslot]                    <= 1'b1;
             end
         end
@@ -350,7 +349,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
             end
 
             node_scoreboard_pkg::AGGREGATION: begin
-                nodeslot_state_n[nodeslot] = aggregation_done[nodeslot] && accepting_transformation_request ? node_scoreboard_pkg::TRANSFORMATION
+                nodeslot_state_n[nodeslot] = aggregation_done[nodeslot] && accepting_transformation_request && nsb_fte_req.nodeslots [nodeslot] ? node_scoreboard_pkg::TRANSFORMATION
                                     : node_scoreboard_pkg::AGGREGATION;
             end
 
@@ -386,7 +385,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
             nsb_nodeslot_allocated_fetch_tag_fetch_tag [nodeslot] <= '0;
         
         // Reset flags if clearing nodeslot
-        end else if (nodeslot_state_n[nodeslot] == EMPTY) begin
+        end else if (nodeslot_state_n[nodeslot] == node_scoreboard_pkg::EMPTY) begin
             nsb_nodeslot_allocated_fetch_tag_fetch_tag [nodeslot] <= '0;
             
         end else if (nsb_prefetcher_resp_valid && (nsb_prefetcher_resp.response_type == ADJACENCY_LIST) && (nsb_prefetcher_resp.nodeslot == nodeslot)) begin
@@ -395,6 +394,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
         end
     end
 
+    assign nsb_fte_req.nodeslots [nodeslot] = nodeslots_waiting_transformation [nodeslot] && aggregation_buffer_waiting_transformation[nsb_nodeslot_precision_precision[nodeslot]];
 
 end : per_nodeslot_logic
 
@@ -405,7 +405,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         waiting_weights_fetch_req <= '0;
         ctrl_fetch_layer_weights_done_done <= '0;
-        weights_fetched <= '0;
         active_weights_fetch_precision <= top_pkg::FLOAT_32;
 
     end else if (ctrl_fetch_layer_weights_fetch) begin
@@ -420,7 +419,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end else if (nsb_prefetcher_resp_valid && nsb_prefetcher_resp.response_type == top_pkg::WEIGHTS) begin
         waiting_weights_fetch_req <= '0;
         ctrl_fetch_layer_weights_done_done <= '1;
-        weights_fetched <= '1;
         
     end else if (ctrl_fetch_layer_weights_done_ack_ack) begin
         waiting_weights_fetch_req <= '0;
@@ -429,7 +427,9 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end
 end
 
-// Update weights valid flag
+// Precision-wise logic
+// ------------------------------------------------------------
+
 for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) begin
     always_ff @(posedge core_clk or negedge resetn) begin
         if (!resetn) begin
@@ -441,22 +441,22 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
         end
     end
 
-        // Population counts
-        always_ff @(posedge core_clk or negedge resetn) begin
-            if (!resetn) begin
-                aggregation_buffer_population_count    [precision] <= '0;
+    // Population counts
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            aggregation_buffer_population_count    [precision] <= '0;
 
-            // AGE sending aggregation response
-            end else if (nsb_age_resp_valid && (nsb_nodeslot_precision_precision[nsb_age_resp.nodeslot] == precision)) begin
-                    aggregation_buffer_population_count [precision] <= aggregation_buffer_population_count + 1'b1;
+        // AGE sending aggregation response
+        end else if (nsb_age_resp_valid && (nsb_nodeslot_precision_precision[nsb_age_resp.nodeslot] == precision)) begin
+                aggregation_buffer_population_count [precision] <= aggregation_buffer_population_count [precision] + 1'b1;
 
-            // FTE accepting transformation request
-            end else if (accepting_transformation_request && (nsb_fte_req.precision == precision)) begin
-                aggregation_buffer_population_count [precision] <= '0;
-            end
+        // FTE accepting transformation request
+        end else if (accepting_transformation_request && (nsb_fte_req.precision == precision)) begin
+            aggregation_buffer_population_count [precision] <= '0;
         end
+    end
 
-        assign aggregation_buffer_waiting_transformation [precision] = (aggregation_buffer_population_count[precision] >= nsb_config_aggregation_wait_count_count) && weights_fetched [precision] && layer_config_valid_value;
+    assign aggregation_buffer_waiting_transformation [precision] = (aggregation_buffer_population_count[precision] >= nsb_config_aggregation_wait_count_count) && weights_fetched [precision] && layer_config_valid_value;
 end
 
 
@@ -538,7 +538,6 @@ rr_arbiter #(
 
 always_comb begin
     nsb_fte_req_valid     = |aggregation_buffer_waiting_transformation;
-    nsb_fte_req.nodeslots = nodeslots_waiting_transformation;
     nsb_fte_req.precision = top_pkg::NODE_PRECISION_e'(aggregation_buffer_precision_arb_bin);
 end
 

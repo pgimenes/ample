@@ -4,13 +4,16 @@ import json::*;
 // import axi_memory_master_vip_pkg::*;
 
 `define AXIL_MASTER_VIP_IF top_tb.axil_master_vip_i.inst.IF
-// `define AXI_MEMORY_MASTER_VIP_IF top_tb.axi_memory_master_vip_i.inst.IF
 class Test;
 
     virtual node_scoreboard_interface nsb_intf;
     virtual aggregation_engine_interface age_intf;
     virtual prefetcher_interface prefetcher_intf;
+
     virtual agc_allocator_interface agc_allocator_float_intf;
+    virtual agm_interface agm_intf;
+    virtual agc_interface agc_intf;
+    virtual bm_interface bm_intf;
 
     axil_master_vip_mst_t axil_agent;
     
@@ -18,7 +21,11 @@ class Test;
     node_scoreboard_tb_monitor nsb_monitor_i;
     aggregation_engine_tb_monitor age_monitor_i;
     prefetcher_tb_monitor prefetcher_monitor_i;
+
     agc_allocator_monitor agc_allocator_float_monitor_i;
+    agm_monitor agm_monitor_i;
+    agc_monitor agc_monitor_i;
+    bm_monitor bm_monitor_i;
     
     logic [63:0] busy_nodeslots_mask;
     string TESTNAME;
@@ -28,38 +35,55 @@ class Test;
 
     Node_Scoreboard sb;
 
-    function new(virtual node_scoreboard_interface nsb_intf, virtual aggregation_engine_interface age_intf, virtual prefetcher_interface prefetcher_intf);
+    function new(virtual node_scoreboard_interface nsb_intf,
+        virtual aggregation_engine_interface age_intf,
+        virtual prefetcher_interface prefetcher_intf,
+        virtual agc_allocator_interface agc_allocator_float_intf
+        // virtual agm_interface agm_intf,
+        // virtual agc_interface agc_intf,
+        // virtual bm_interface bm_intf
+        );
+
+        // Interfaces
         this.nsb_intf = nsb_intf;
         this.age_intf = age_intf;
         this.prefetcher_intf = prefetcher_intf;
 
+        this.agc_allocator_float_intf = agc_allocator_float_intf;
+        // this.agm_intf = agm_intf;
+        // this.agc_intf = agc_intf;
+        // this.bm_intf = bm_intf;
+
         $display("[TIMESTAMP]: %d, [TOP_TEST::INFO]: Starting simulation", $time);
 
-        `ifdef DRAM_MODEL
-            // Wait for DDR4 calibration to complete
-            wait(ddr4_c0_init_calib_complete);
-            $display("[TIMESTAMP]: %d, DDR4 C0 Calibration Complete", $time);
-        `endif
+`ifdef DRAM_MODEL
+        // Wait for DDR4 calibration to complete
+        wait(ddr4_c0_init_calib_complete);
+        $display("[TIMESTAMP]: %d, DDR4 C0 Calibration Complete", $time);
+`endif
 
-            // Initialize AXI-L agent
-            this.axil_agent = new("AXI-L VIP Agent", `AXIL_MASTER_VIP_IF);
+        // Initialize AXI-L agent
+        this.axil_agent = new("AXI-L VIP Agent", `AXIL_MASTER_VIP_IF);
 
-            // Initialize AXI Memory Master VIP agent
-            // this.axi_memory_agent = new("AXI Memory Master VIP Agent", `AXI_MEMORY_MASTER_VIP_IF);
+        // Initialize AXI Memory Master VIP agent
+        // this.axi_memory_agent = new("AXI Memory Master VIP Agent", `AXI_MEMORY_MASTER_VIP_IF);
 
-            // Initialize nodeslots mask as all free
-            this.busy_nodeslots_mask = '0;
+        // Initialize nodeslots mask as all free
+        this.busy_nodeslots_mask = '0;
+        this.sb = new();
 
-            this.sb = new();
+        // Environment
+        this.nsb_monitor_i        = new(this.nsb_intf, sb);
+        this.age_monitor_i        = new(this.age_intf, sb);
+        this.prefetcher_monitor_i = new(this.prefetcher_intf, sb);
 
-            // Environment
-            this.nsb_monitor_i        = new(this.nsb_intf, sb);
-            this.age_monitor_i        = new(this.age_intf, sb);
-            this.prefetcher_monitor_i = new(this.prefetcher_intf, sb);
-            this.agc_allocator_float_monitor_i = new(this.agc_allocator_float_intf, top_pkg::FLOAT_32, sb);
+        this.agc_allocator_float_monitor_i = new(this.agc_allocator_float_intf, top_pkg::FIXED_8, sb);
+        // this.agm_monitor_i                 = new(this.agm_intf, top_pkg::FIXED_8, 4, 0, sb);
+        // this.agc_monitor_i                 = new(this.agc_intf, top_pkg::FIXED_8, 0, 0, sb);
+        // this.bm_monitor_i                  = new(this.bm_intf, top_pkg::FIXED_8, 0, 8, sb);
 
-            this.nodeslots = new();
-            this.layers = new();
+        this.nodeslots = new();
+        this.layers = new();
     endfunction
 
     task automatic start_environment();
@@ -73,6 +97,11 @@ class Test;
             this.nsb_monitor_i.main();
             this.age_monitor_i.main();
             this.prefetcher_monitor_i.main();
+
+            // this.agc_allocator_float_monitor_i.main();
+            // this.agm_monitor_i.main();
+            // this.agc_monitor_i.main();
+            // this.bm_monitor_i.main();
         join
     endtask
 

@@ -47,8 +47,8 @@ class InitManager:
                 'in_feature_count': layer.in_channels,
                 'out_feature_count': layer.out_channels,
 
-                'transformation_activation': self.trained_graph.transformation_activation,
-                'leaky_relu_alpha': self.trained_graph.leaky_relu_alpha,
+                'transformation_activation': 0,
+                'leaky_relu_alpha': 0,
                 'transformation_bias': 0 if torch.all(layer.bias == 0) else layer.bias[0].item(),
 
                 'dequantization_parameter': self.trained_graph.dequantization_parameter,
@@ -56,7 +56,10 @@ class InitManager:
                 'adjacency_list_address': self.memory_mapper.offsets['adj_list'],
                 'in_messages_address': self.memory_mapper.offsets['in_messages'],
                 'weights_address': self.memory_mapper.offsets['weights'],
-                'out_messages_address': self.memory_mapper.offsets['out_messages']
+                'out_messages_address': self.memory_mapper.offsets['out_messages'],
+
+                'aggregation_wait_count': 2,
+                'transformation_wait_count': 2
             }
             self.layer_config['layers'].append(layer)
 
@@ -111,7 +114,13 @@ class InitManager:
             embeddings = self.trained_graph.dataset.x
             output = self.model(self.trained_graph.dataset.x, self.trained_graph.dataset.edge_index)
         np.savetxt(self.updated_embeddings_file, output.numpy(), delimiter=',')
+
+    # Sampling
+    # ===============================================
     
+    def reduce_graph(self):
+        self.trained_graph.reduce()
+
     # Graph info for debugging
     # ===============================================
 

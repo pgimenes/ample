@@ -78,15 +78,14 @@ always_ff @(posedge core_clk or negedge resetn) begin
 
         agm_req.allocated_cores <= '0;
         agc_counter <= '0;
-        agm_req      <= '0;
-    
-    // Accepting allocation request
+
+        // Accepting allocation request
     end else if (!busy & allocation_req_valid) begin
         busy             <= '1;
         allocation_req_q <= allocation_req;
 
+        agm_req.allocated_cores <= '0;
         agc_counter      <= '0;
-        agm_req      <= '0;
     
     end else if (busy && !done) begin
         agc_counter                 <= agc_counter + 1'b1;
