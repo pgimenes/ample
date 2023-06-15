@@ -133,10 +133,10 @@ logic [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_msg_rm_req_bin_q;
 for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 1) begin
     prefetcher_fetch_tag #(
         .TAG                  (fetch_tag),
-        .ADJ_QUEUE_WIDTH      (32),
-        .ADJ_QUEUE_DEPTH      (64),
-        .MESSAGE_QUEUE_WIDTH  (512),
-        .MESSAGE_QUEUE_DEPTH  (4096)
+        .ADJ_QUEUE_WIDTH      (prefetcher_pkg::ADJACENCY_QUEUE_WIDTH),
+        .ADJ_QUEUE_DEPTH      (prefetcher_pkg::ADJACENCY_QUEUE_DEPTH),
+        .MESSAGE_QUEUE_WIDTH  (prefetcher_pkg::MESSAGE_QUEUE_WIDTH),
+        .MESSAGE_QUEUE_DEPTH  (prefetcher_pkg::MESSAGE_QUEUE_DEPTH)
     ) fetch_tag_i (
         .core_clk,
         .resetn,
