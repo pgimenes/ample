@@ -24,6 +24,7 @@ VERILOG_SOURCES = \
 	$(FYP_DIR)/hw/build/build_project.srcs/sources_1/ip/scale_factor_queue/sim/scale_factor_queue.v \
 	$(FYP_DIR)/hw/build/ip/lib/buffers/ultraram.v \
 	$(FYP_DIR)/hw/build/ip/include/arch_defines.v \
+	$(FYP_DIR)/imports/verilog-axi/rtl/axi_ram.v \
 
 VHDL_SOURCES = \
 	$(FYP_DIR)/hw/build/build_project.srcs/sources_1/ip/fp_mult/sim/fp_mult.vhd \
@@ -115,6 +116,7 @@ VERILOG_SOURCES += \
 	$(FYP_DIR)/hw/build/ip/prefetcher/rtl/prefetcher_weight_bank.sv \
 	$(FYP_DIR)/hw/build/ip/node_scoreboard/rtl/node_scoreboard.sv \
 	$(FYP_DIR)/hw/build/ip/top/rtl/top.sv \
+	$(FYP_DIR)/hw/build/ip/top/rtl/top_wrapper_tb.sv \
 	$(FYP_DIR)/hw/build/ip/aggregation_engine/tb/agc_allocator_interface.sv \
 	$(FYP_DIR)/hw/build/ip/aggregation_engine/tb/agc_interface.sv \
 	$(FYP_DIR)/hw/build/ip/aggregation_engine/tb/aggregation_engine_interface.sv \
