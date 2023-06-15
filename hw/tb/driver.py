@@ -1,7 +1,7 @@
 from enum import Enum
 
 from tb.utils.axil_driver import AXILDriver
-from tb.utils.common import node_state_e, precision_e, aggregation_function_e
+from tb.utils.common import NodePrecision, AggregationFunction
 from tb.utils.common import delay
 
 class Driver():
@@ -20,7 +20,7 @@ class Driver():
         self.dut._log.info("Layer: %s", layer)
 
         # Prefetcher register bank
-        self.dut.log.info("Programming prefetcher register bank layer configuration.")
+        self.dut._log.info("Programming prefetcher register bank layer configuration.")
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_in_features"], layer["in_feature_count"])
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_out_features"], layer["out_feature_count"])
         # Addresses
@@ -30,17 +30,17 @@ class Driver():
         # TO DO: second precision weights
 
         # AGE register bank
-        self.dut.log.info("Programming AGE register bank layer configuration.")
+        self.dut._log.info("Programming AGE register bank layer configuration.")
         await self.axil_driver.axil_write(self.age_regs["layer_config_in_features"], layer["in_feature_count"])
         await self.axil_driver.axil_write(self.age_regs["layer_config_out_features"], layer["out_feature_count"])
 
         # FTE register bank
-        self.dut.log.info("Programming FTE register bank layer configuration.")
+        self.dut._log.info("Programming FTE register bank layer configuration.")
         await self.axil_driver.axil_write(self.fte_regs["layer_config_in_features"], layer["in_feature_count"])
         await self.axil_driver.axil_write(self.fte_regs["layer_config_out_features"], layer["out_feature_count"])
 
         # NSB register bank
-        self.dut.log.info("Programming NSB register bank layer configuration.")
+        self.dut._log.info("Programming NSB register bank layer configuration.")
         await self.axil_driver.axil_write(self.nsb_regs["layer_config_in_features"], layer["in_feature_count"])
         await self.axil_driver.axil_write(self.nsb_regs["layer_config_out_features"], layer["out_feature_count"])
         # Addresses
@@ -59,8 +59,8 @@ class Driver():
     async def program_nodeslot(self, programming, id):
         await self.axil_driver.axil_write(self.nsb_regs["NSB_NODESLOT_NODE_ID"] + 4*id, programming["node_id"])
         await self.axil_driver.axil_write(self.nsb_regs["NSB_NODESLOT_NEIGHBOUR_COUNT"] + 4*id, programming["neighbour_count"])
-        await self.axil_driver.axil_write(self.nsb_regs["NSB_NODESLOT_PRECISION"] + 4*id, programming["precision"])
-        await self.axil_driver.axil_write(self.nsb_regs["nsb_nodeslot_aggregation_function"] + 4*id, aggregation_function_e[programming["aggregation_function"]].value)
+        await self.axil_driver.axil_write(self.nsb_regs["NSB_NODESLOT_PRECISION"] + 4*id, NodePrecision[programming["precision"]].value)
+        await self.axil_driver.axil_write(self.nsb_regs["nsb_nodeslot_aggregation_function"] + 4*id, AggregationFunction[programming["aggregation_function"]].value)
         await self.axil_driver.axil_write(self.nsb_regs["NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB"] + 4*id, programming["adjacency_list_address_lsb"])
         await self.axil_driver.axil_write(self.nsb_regs["nsb_nodeslot_scale_factors_address_lsb"] + 4*id, programming["scale_factors_address_lsb"])
         await self.axil_driver.axil_write(self.nsb_regs["layer_config_out_messages_address_lsb"] + 4*id, programming["out_messages_address_lsb"])
@@ -70,8 +70,8 @@ class Driver():
         else:
             await self.axil_driver.axil_write(self.nsb_regs["NSB_NODESLOT_CONFIG_MAKE_VALID_LSB"], 2**id) # onehot representation of chosen nodeslot
 
-    async def request_weights_fetch(self, precision=precision_e["FLOAT_32"]):
-        self.dut.log.info("Requesting weights fetch for precision %s.", precision)
+    async def request_weights_fetch(self, precision=NodePrecision["FLOAT_32"]):
+        self.dut._log.info("Requesting weights fetch for precision %s.", precision.name)
         await self.axil_driver.axil_write(self.nsb_regs["ctrl_fetch_layer_weights_precision"], precision.value)
         await self.axil_driver.axil_write(self.nsb_regs["CTRL_FETCH_LAYER_WEIGHTS"], 1)
 

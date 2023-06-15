@@ -9,11 +9,37 @@ from cocotb.triggers import RisingEdge
 import tb.scoreboard as sb
 from tb.driver import Driver
 
+from tb.utils.common import NodePrecision
+
+from tb.variant import Variant
+from tb.monitors.age_monitor import AGE_Monitor
+from tb.monitors.nsb_monitor import NSB_Monitor
+from tb.monitors.prefetcher_monitor import Prefetcher_Monitor
+from tb.monitors.fte_monitor import FTE_Monitor
+
+from tb.monitors.bm_monitor import BM_Monitor
+
 class BaseTest:
     def __init__(self, dut, base_path=None):
         self.dut = dut
 
         self.driver = Driver(dut)
+
+        self.variant = Variant()
+
+        self.age_monitor = AGE_Monitor(dut.top_i.aggregation_engine_i, self.variant)
+        self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
+        # self.prefetcher_monitor = Prefetcher_Monitor(dut.top_i.prefetcher_i, self.variant)
+        # self.fte_monitor = FTE_Monitor(dut.top_i.transformation_engine_i, self.variant)
+
+        # Buffer Manager Monitors
+        # self.float_bm_monitors = [None] * self.variant.aggregation_buffer_slots
+        # self.fixed_bm_monitors = [None] * self.variant.aggregation_buffer_slots
+        # for id in range(self.variant.aggregation_buffer_slots):
+        #         self.dut._log.info("%s", dir(dut.top_i.aggregation_engine_i.precision_block[0].aggregation_mesh_i))
+        #         self.dut._log.info(f"Creating monitor for BM {id}")
+        #         self.float_bm_monitors[id] = BM_Monitor(dut.top_i.aggregation_engine_i.precision_block[0].aggregation_mesh_i.bm_block[id].buffer_manager_i,
+        #                                                         self.variant, NodePrecision.FLOAT_32.value, id)
 
         self.scoreboard = sb.Scoreboard()
         self.nodeslot_programming = {}
@@ -41,15 +67,30 @@ class BaseTest:
         await self.driver.axil_driver.reset_axi_interface()
         await self.drive_reset()
 
+        # Start monitors
+        self.nsb_monitor.start()
+        self.age_monitor.start()
+        # self.prefetcher_monitor.start()
+        # self.fte_monitor.start()
+
+        # for id in range(self.variant.aggregation_buffer_slots):
+        #     print(f"Binding monitor for BM {id}")
+        #     self.float_bm_monitors[id].start()
+
+    async def end_test(self):
+        # Stop monitors
+        self.nsb_monitor.stop()
+        self.age_monitor.stop()
+
     def load_regbank(self, regbank):
         json_path = os.path.join(self.regbank_path, regbank, regbank + "_regs.json")
-        self.dut.log.info("Loading %s from %s", regbank, json_path)
+        self.dut._log.info("Loading %s from %s", regbank, json_path)
         with open(json_path) as f:
             data = json.load(f)
         return data
 
     def load_regbanks(self):
-        self.dut.log.info("Loading register banks.")
+        self.dut._log.info("Loading register banks.")
 
         nsb_regmap = self.load_regbank("node_scoreboard_regbank")["registerMap"]
         prefetcher_regmap = self.load_regbank("prefetcher_regbank")["registerMap"]
@@ -67,16 +108,18 @@ class BaseTest:
         self.driver.fte_regs = {register["name"]: fte_regmap["baseAddress"] + register["addressOffset"] for register in self.fte_regbank.values()}
 
     def load_nodeslot_programming(self):
-        self.dut.log.info("Loading nodeslot programming")
+        self.dut._log.info("Loading nodeslot programming")
         with open(self.nodeslot_programming_file) as f:
             ns_programming = json.load(f)
         self.nodeslot_programming = ns_programming["nodeslots"]
+        return ns_programming["nodeslots"]
 
     def load_layer_config(self):
-        self.dut.log.info("Loading layer configuration")
+        self.dut._log.info("Loading layer configuration")
         with open(self.layer_config_file) as f:
             layers = json.load(f)
         self.layers = layers["layers"]
+        return layers["layers"]
 
     # Test steps
 
@@ -99,7 +142,7 @@ class BaseTest:
         self.dut.sys_rst = 0
         self.dut.regbank_resetn = 1
 
-        self.dut.log.info("Starting wait after reset")
+        self.dut._log.info("Starting wait after reset")
         for _ in range(10):
             await RisingEdge(self.dut.regbank_clk)
-        self.dut.log.info("Done waiting after reset")
+        self.dut._log.info("Done waiting after reset")
