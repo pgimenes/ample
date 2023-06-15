@@ -218,7 +218,7 @@ always_comb begin
     end
 
     AGC_FSM_SEND_BUFF_MAN: begin
-        agc_state_n = (sent_flits_counter == 'd7) ? AGC_FSM_IDLE : AGC_FSM_SEND_BUFF_MAN;
+        agc_state_n = (sent_flits_counter == 'd7) ? AGC_FSM_WAIT_DRAIN : AGC_FSM_SEND_BUFF_MAN;
     end
 
     AGC_FSM_WAIT_DRAIN: begin

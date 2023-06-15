@@ -157,6 +157,7 @@ ultraram_fifo #(
     .push           (push_adj_queue),
     .in_data        (adj_queue_write_data),
     .pop            (pop_adj_queue),
+    .reset_read_ptr ('0),
     .out_valid      (adj_queue_head_valid),
     .out_data       (adj_queue_head),
     .count          (adj_queue_count),
@@ -220,6 +221,7 @@ ultraram_fifo #(
     .in_data        (msg_queue_write_data),
     
     .pop            (pop_message_queue),
+    .reset_read_ptr ('0),
     .out_valid      (message_queue_head_valid),
     .out_data       (message_queue_head),
     
