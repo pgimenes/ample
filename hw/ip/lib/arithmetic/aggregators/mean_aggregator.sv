@@ -82,7 +82,7 @@ float_reciprocal acc_cnt_float_reciprocal (
 
 fp_div acc_feature_factor_div (
   .aclk                 (core_clk),
-  .aclken               ('1),
+  .aclken               (1'b1),
   .aresetn              (resetn),
   
   .s_axis_a_tvalid      (in_feature_valid_q),
@@ -121,10 +121,10 @@ fp_mult weighted_in_feat_factor_mult (
 
 // Adder is combinatorial
 fp_add fp_add_i (
-  .s_axis_a_tvalid              ('1),
+  .s_axis_a_tvalid              (1'b1),
   .s_axis_a_tdata               (weighted_acc_feature_q),
   
-  .s_axis_b_tvalid              ('1),
+  .s_axis_b_tvalid              (1'b1),
   .s_axis_b_tdata               (weighted_in_feature_q),
 
   .m_axis_result_tvalid         (),

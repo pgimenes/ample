@@ -6,12 +6,25 @@ import aggregation_engine_regbank_regs_pkg::*;
 import feature_transformation_engine_regbank_regs_pkg::*;
 import top_pkg::*;
 
-`include "json.svh"
-
 class GraphTest extends Test;
 
-    function new(virtual node_scoreboard_interface nsb_intf, virtual aggregation_engine_interface age_intf, virtual prefetcher_interface prefetcher_intf);
-        super.new(nsb_intf, age_intf, prefetcher_intf);
+    function new(virtual node_scoreboard_interface nsb_intf,
+                    virtual aggregation_engine_interface age_intf,
+                    virtual prefetcher_interface prefetcher_intf,
+
+                    virtual agc_allocator_interface agc_allocator_intf
+                    // virtual agm_interface agm_intf,
+                    // virtual agc_interface agc_intf,
+                    // virtual bm_interface bm_intf
+    );
+
+        super.new(nsb_intf, age_intf, prefetcher_intf
+                    , agc_allocator_intf
+                    // , agm_intf
+                    // , agc_intf
+                    // , bm_intf
+        );
+
         this.TESTNAME = "GRAPH_TEST";
     endfunction
 
@@ -35,18 +48,18 @@ class GraphTest extends Test;
         layer = this.layers.getByIndex(0);
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Finished loading layer configuration.", $time, TESTNAME);
 
-        // Load nodeslot programming
-        this.nodeslots = json::Load("nodeslot_programming.json");
-        assert (this.nodeslots!=null) else $fatal(1, "Failed to load nodeslot programming from JSON file");
-        this.nodeslots = this.nodeslots.getByKey("nodeslots");
-        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Finished loading nodeslot programming.", $time, TESTNAME);
-
         program_layer_config(layer);
         this.write_nsb_regbank("Layer Config Valid", node_scoreboard_regbank_regs_pkg::LAYER_CONFIG_VALID_OFFSET, '1);
 
         // Fetch layer weights for all supported precisions
         req_weight_fetch(top_pkg::FLOAT_32);
         req_weight_fetch(top_pkg::FIXED_8);
+
+        // Load nodeslot programming
+        this.nodeslots = json::Load("nodeslot_programming.json");
+        assert (this.nodeslots!=null) else $fatal(1, "Failed to load nodeslot programming from JSON file");
+        this.nodeslots = this.nodeslots.getByKey("nodeslots");
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Finished loading nodeslot programming.", $time, TESTNAME);
 
         // Program nodeslots from JSON dump
         nodeslot_idx = 0;
@@ -113,7 +126,9 @@ class GraphTest extends Test;
             this.delay(10);
         end
 
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Acknowledging weights fetch is done for precision: %0s.", $time, TESTNAME, precision.name());
         this.write_nsb_regbank("Ack fetch weights", node_scoreboard_regbank_regs_pkg::CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK_OFFSET, '1);
+        this.delay(100);
     endtask
 
     task automatic program_layer_config (Object layer_config);
@@ -140,16 +155,12 @@ class GraphTest extends Test;
 
         this.write_age_regbank("Define IN Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_age_regbank("Define OUT Feature Count", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
-        this.write_age_regbank("Define Upsampling parameter", aggregation_engine_regbank_regs_pkg::LAYER_CONFIG_UPSAMPLING_PARAMETER_OFFSET, $realtobits(layer_config.getByKey("dequantization_parameter").asReal()));
         
         // FTE regbank
         $display("[TIMESTAMP]: %t, [%0s::DEBUG]: Ready to program layer configuration to FTE regbank.", $time, TESTNAME);
 
         this.write_fte_regbank("Define IN Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_IN_FEATURES_OFFSET, layer_config.getByKey("in_feature_count").asInt());
         this.write_fte_regbank("Define OUT Feature Count", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_OUT_FEATURES_OFFSET, layer_config.getByKey("out_feature_count").asInt());
-        this.write_fte_regbank("Define transformation activation function", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_ACTIVATION_FUNCTION_OFFSET, layer_config.getByKey("transformation_activation").asInt());
-        this.write_fte_regbank("Define transformation leaky ReLU activation parameter", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_ACTIVATION_FUNCTION_OFFSET, layer_config.getByKey("transformation_activation").asInt());
-        this.write_fte_regbank("Define transformation bias term", feature_transformation_engine_regbank_regs_pkg::LAYER_CONFIG_LEAKY_RELU_ALPHA_OFFSET, $realtobits(layer_config.getByKey("leaky_relu_alpha").asReal()));
 
         // NSB regbank
         // NSB Layer configuration
@@ -296,6 +307,7 @@ class GraphTest extends Test;
         this.axil_write(name, .id('0),
                             .addr(NODE_SCOREBOARD_REGBANK_DEFAULT_BASEADDR + offset),
                             .data(data));
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: NSB REGBANK: Sent write: %s.", $time, TESTNAME, name);
     endtask
 
     task automatic write_prefetcher_regbank(
@@ -306,6 +318,7 @@ class GraphTest extends Test;
         this.axil_write(name, .id('0),
                             .addr(PREFETCHER_REGBANK_DEFAULT_BASEADDR + offset),
                             .data(data));
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: PREFETCHER REGBANK: Sent write: %s.", $time, TESTNAME, name);
     endtask
 
     task automatic write_age_regbank(
@@ -316,6 +329,7 @@ class GraphTest extends Test;
         this.axil_write(name, .id('0),
                             .addr(AGGREGATION_ENGINE_REGBANK_DEFAULT_BASEADDR + offset),
                             .data(data));
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: AGE REGBANK: Sent write: %s.", $time, TESTNAME, name);
     endtask
 
     task automatic write_fte_regbank(
@@ -326,6 +340,7 @@ class GraphTest extends Test;
         this.axil_write(name, .id('0),
                             .addr(FEATURE_TRANSFORMATION_ENGINE_REGBANK_DEFAULT_BASEADDR + offset),
                             .data(data));
+        $display("[TIMESTAMP]: %t, [%0s::DEBUG]: FTE REGBANK: Sent write: %s.", $time, TESTNAME, name);
     endtask
 
 endclass

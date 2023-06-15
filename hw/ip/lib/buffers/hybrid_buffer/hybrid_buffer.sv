@@ -9,15 +9,16 @@ module hybrid_buffer #(
     parameter WRITE_DEPTH = 512,
     parameter READ_WIDTH = 32,
     parameter READ_DEPTH = 1024,
-    parameter BUFFER_TYPE = "AGGREGATION"
+    parameter BUFFER_TYPE = "AGGREGATION",
+    parameter SLOT_ID_WIDTH = 20
 ) (
     input  logic                                           core_clk,
     input  logic                                           resetn,
 
     input  logic [NUM_SLOTS-1:0]                           set_node_id_valid,
-    input  logic [NUM_SLOTS-1:0] [NODE_ID_WIDTH-1:0]       set_node_id,
+    input  logic [NUM_SLOTS-1:0] [SLOT_ID_WIDTH-1:0]       set_node_id,
 
-    output logic [NUM_SLOTS-1:0] [NODE_ID_WIDTH-1:0]       slot_node_id,
+    output logic [NUM_SLOTS-1:0] [SLOT_ID_WIDTH-1:0]       slot_node_id,
 
     input  logic [NUM_SLOTS-1:0]                           write_enable,
     input  logic [NUM_SLOTS-1:0] [$clog2(WRITE_DEPTH)-1:0] write_address,

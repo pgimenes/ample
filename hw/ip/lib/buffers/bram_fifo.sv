@@ -56,6 +56,7 @@ logic wr_wrap, rd_wrap;
 
 if (BRAM_TYPE == 0) begin
 
+`ifdef XSIM
     scale_factor_queue scale_factor_queue_i (
         .clka         (core_clk),
         .ena          (1'b1),
@@ -70,6 +71,27 @@ if (BRAM_TYPE == 0) begin
         
         .sleep        (1'b0)
     );
+`endif
+
+`ifdef MODELSIM
+    asym_dp_ram #(
+        .WRITE_WIDTH (512),
+        .WRITE_DEPTH (64),
+        .READ_WIDTH  (32),
+        .READ_DEPTH  (1024)
+     ) scale_factor_queue_i (
+        .core_clk       (core_clk),
+        .resetn         (resetn),
+
+        .wea            (push),
+        .addr_a         (wr_ptr),
+        .in_data_a      (in_data),
+
+        .addr_b         (read_address),
+        .out_data_b     (out_data)
+     );
+
+`endif
     
 end else begin
     assign out_data = '0;

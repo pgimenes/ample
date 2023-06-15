@@ -11,25 +11,53 @@ module top
     input  logic                          regbank_resetn,
     
     // AXI-L interface to Host
-    input  logic [31 : 0]                 host_axil_awaddr,
-    input  logic [2 : 0]                  host_axil_awprot,
     input  logic [0 : 0]                  host_axil_awvalid,
     output logic [0 : 0]                  host_axil_awready,
+    input  logic [31 : 0]                 host_axil_awaddr,
+    input  logic [2 : 0]                  host_axil_awprot,
+
+    input  logic [0 : 0]                  host_axil_wvalid,
+    output logic [0 : 0]                  host_axil_wready,
     input  logic [31 : 0]                 host_axil_wdata,
     input  logic [3 : 0]                  host_axil_wstrb,
-    input  logic [0 : 0]                  host_axil_wvalid,
+
+    output logic [0 : 0]                  host_axil_bvalid,
     input  logic [0 : 0]                  host_axil_bready,
+    output logic [1 : 0]                  host_axil_bresp,
+
+    input  logic [0 : 0]                  host_axil_arvalid,
+    output logic [0 : 0]                  host_axil_arready,
     input  logic [31 : 0]                 host_axil_araddr,
     input  logic [2 : 0]                  host_axil_arprot,
-    input  logic [0 : 0]                  host_axil_arvalid,
+
+    output logic [0 : 0]                  host_axil_rvalid,
     input  logic [0 : 0]                  host_axil_rready,
-    output logic [0 : 0]                  host_axil_wready,
-    output logic [1 : 0]                  host_axil_bresp,
-    output logic [0 : 0]                  host_axil_bvalid,
-    output logic [0 : 0]                  host_axil_arready,
     output logic [31 : 0]                 host_axil_rdata,
     output logic [1 : 0]                  host_axil_rresp,
-    output logic [0 : 0]                  host_axil_rvalid,
+
+    // New ports for cocotb
+    input logic  [1:0]                   host_axil_awburst,
+    input logic  [3:0]                   host_axil_awcache,
+    input logic  [7:0]                   host_axil_awid,
+    input logic  [7:0]                   host_axil_awlen,
+    input logic  [0:0]                   host_axil_awlock,
+    input logic  [3:0]                   host_axil_awqos,
+    input logic  [2:0]                   host_axil_awsize,
+
+    input logic                          host_axil_wlast,
+
+    output logic [7:0]                    host_axil_bid,
+
+    input logic  [7:0]                   host_axil_arid,
+    input logic  [7:0]                   host_axil_arlen,
+    input logic  [1:0]                   host_axil_arburst,
+    input logic  [0:0]                   host_axil_arlock,
+    input logic  [3:0]                   host_axil_arcache,
+    input logic  [3:0]                   host_axil_arqos,
+    input logic  [2:0]                   host_axil_arsize,
+
+    output logic [7:0]                    host_axil_rid,
+    output logic                          host_axil_rlast,
        
     // AXI Memory Interconnect -> Memory (Routed to DRAM Controller if `DRAM_CONTROLLER defined)
     output logic  [7:0]                   c0_ddr4_s_axi_awid,
@@ -70,6 +98,10 @@ module top
     input  logic                          c0_ddr4_s_axi_rvalid,
     output logic                          c0_ddr4_s_axi_rready
 );
+
+assign host_axil_bid = '0;
+assign host_axil_rid = '0;
+assign host_axil_rlast = '1;
 
 // ====================================================================================
 // Declarations

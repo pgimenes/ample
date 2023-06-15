@@ -49,3 +49,16 @@ hw/update_regbanks.tcl
 
 # DVT
 .dvt/
+
+# Modelsim simulation
+sim_build/
+modelsim_lib/
+
+# Cocotb
+results.xml
+transcript
+*.vstf
+*.wlf
+compile.do
+simulate.do
+opt.do

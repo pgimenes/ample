@@ -31,11 +31,21 @@ add_files $env(FYP_DIR)/imports/nocrouter/src/rtl
 
 set_property top top_wrapper [current_fileset]
 
+# Add testbench files
+add_files $env(FYP_DIR)/imports/json_sv/sv
+add_files $env(FYP_DIR)/hw/ip/aggregation_engine/tb
+add_files $env(FYP_DIR)/hw/ip/node_scoreboard/tb
+add_files $env(FYP_DIR)/hw/ip/prefetcher/tb
+add_files $env(FYP_DIR)/hw/ip/top/tb
+add_files $env(FYP_DIR)/hw/ip/tb_lib
+
+set_property top top_tb [get_filesets sim_1]
+
 # Add register banks
-add_files -fileset sources_1 /scratch/pg519/wa3/hw/build/regbanks/aggregation_engine_regbank
-add_files -fileset sources_1 /scratch/pg519/wa3/hw/build/regbanks/feature_transformation_engine_regbank
-add_files -fileset sources_1 /scratch/pg519/wa3/hw/build/regbanks/node_scoreboard_regbank
-add_files -fileset sources_1 /scratch/pg519/wa3/hw/build/regbanks/prefetcher_regbank
+add_files -fileset sources_1 $env(FYP_DIR)/hw/build/regbanks/aggregation_engine_regbank
+add_files -fileset sources_1 $env(FYP_DIR)/hw/build/regbanks/feature_transformation_engine_regbank
+add_files -fileset sources_1 $env(FYP_DIR)/hw/build/regbanks/node_scoreboard_regbank
+add_files -fileset sources_1 $env(FYP_DIR)/hw/build/regbanks/prefetcher_regbank
 
 # Import Xilinx IP
 import_ip -files $env(FYP_DIR)/hw/xilinx/axi_L_register_control_crossbar.xci
@@ -74,3 +84,6 @@ export_simulation -of_objects [get_files $env(FYP_DIR)/hw/build/build_project.sr
 
 # SYNTH
 set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY none [get_runs synth_1]
+
+# Compile simulation libraries for modelsim
+# compile_simlib -simulator modelsim -simulator_exec_path {/mnt/applications/mentor/modelsim-2019.2/modelsim/modeltech/linux_x86_64} -family all -language all -library all -dir {$FYP_DIR/hw/build/build_project.cache/compile_simlib/modelsim} -verbose

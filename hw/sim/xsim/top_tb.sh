@@ -21,6 +21,7 @@ if [ "${SIM_GUI:-0}" -eq 1 ]; then
 fi
 
 if [ "${FAST_BUILD:-0}" -eq 1 ]; then
+  echo "fast build"
   xvlog_opts+=" --define TOP_FAST_BUILD"
 fi
 

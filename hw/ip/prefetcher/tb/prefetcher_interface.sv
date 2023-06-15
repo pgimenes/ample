@@ -1,4 +1,6 @@
 
+import top_pkg::*;
+
 interface prefetcher_interface(
 
     input logic                               core_clk,
@@ -162,13 +164,20 @@ interface prefetcher_interface(
     input MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp,
 
     // Weight Channels: FTE -> Prefetcher Weight Bank
-    input logic                                              weight_channel_req_valid,
-    input logic                                              weight_channel_req_ready,
-    input WEIGHT_CHANNEL_REQ_t                               weight_channel_req,
+    input logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_valid,
+    input logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_ready,
+    input WEIGHT_CHANNEL_REQ_t  [top_pkg::PRECISION_COUNT-1:0] weight_channel_req,
 
-    input logic                                              weight_channel_resp_valid,
-    input logic                                              weight_channel_resp_ready,
-    input WEIGHT_CHANNEL_RESP_t                              weight_channel_resp
+    input logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_valid,
+    input logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_ready,
+    input WEIGHT_CHANNEL_RESP_t [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp,
+
+    input  logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_pop,
+    input  logic [MESSAGE_CHANNEL_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
+    input  logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_out_valid,
+    input  logic [MESSAGE_CHANNEL_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH):0] scale_factor_queue_count,
+    input  logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_empty,
+    input  logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_full
 
 );
 

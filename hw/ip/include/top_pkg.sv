@@ -39,6 +39,9 @@ parameter MAX_REQUIRED_BYTES_FETCH_REQ = `max(`max(MAX_REQUIRED_BYTES_ADJ_FETCH_
 parameter MAX_FETCH_REQ_BYTE_COUNT = `max(MAX_REQUIRED_BYTES_ADJ_FETCH_REQ, MAX_REQUIRED_BYTES_MSG_FETCH_REQ);
 parameter MAX_PRECISION_BYTE_COUNT = 4; 
 
+// Multi-precision support
+parameter PRECISION_COUNT = 2;
+
 // Prefetcher
 parameter MESSAGE_CHANNEL_COUNT = noc_pkg::MAX_AGGREGATION_COLS * PRECISION_COUNT;
 
@@ -65,9 +68,6 @@ parameter SCALE_FACTOR_QUEUE_WRITE_WIDTH = 512;
 parameter SCALE_FACTOR_QUEUE_WRITE_DEPTH = 64;
 parameter SCALE_FACTOR_QUEUE_READ_WIDTH = 32;
 parameter SCALE_FACTOR_QUEUE_READ_DEPTH = 1024;
-
-// Multi-precision support
-parameter PRECISION_COUNT = 2;
 
 // Supported modes
 // ----------------------------------------------------
