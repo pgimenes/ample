@@ -180,20 +180,15 @@ end
 // Buffer NSB request payloads
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
-        agm_allocation.nodeslot               <= '0;
-        agm_allocation.fetch_tag              <= '0;
-        agm_allocation.node_precision         <= top_pkg::FLOAT_32;
-        agm_allocation.aggregation_function   <= top_pkg::SUM;
+        agm_allocation                   <= '0;
         
         agm_allocated_agcs               <= '0;
         agm_allocated_agcs_count         <= '0;
         
 
     end else if (age_aggregation_manager_req_valid && age_aggregation_manager_req_ready) begin
-        agm_allocation.nodeslot             <= age_aggregation_manager_req.nsb_req.nodeslot;
-        agm_allocation.fetch_tag            <= age_aggregation_manager_req.nsb_req.fetch_tag;
-        agm_allocation.node_precision       <= age_aggregation_manager_req.nsb_req.node_precision;
-        agm_allocation.aggregation_function <= age_aggregation_manager_req.nsb_req.aggregation_function;
+        agm_allocation                      <= age_aggregation_manager_req.nsb_req;
+
         agm_allocated_agcs_count            <= age_aggregation_manager_req.required_agcs;
         agm_allocated_agcs                  <= age_aggregation_manager_req.allocated_cores;
     end

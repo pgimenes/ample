@@ -104,10 +104,11 @@ logic [$clog2(MAX_FEATURE_COUNT)-1:0] required_pulses;
 logic [MAX_FEATURE_COUNT-1:0]                      row_pop_shift;
 logic [$clog2(MAX_FEATURE_COUNT):0]                row_counter;
 
+logic reset_weights;
+
 // ==================================================================================================================================================
 // Instances
 // ==================================================================================================================================================
-
 
 for (genvar row = 0; row < MAX_FEATURE_COUNT; row++) begin
     ultraram_fifo #(
@@ -119,9 +120,12 @@ for (genvar row = 0; row < MAX_FEATURE_COUNT; row++) begin
         
         .push       (row_fifo_push      [row]),
         .in_data    (row_fifo_in_data),
-        .pop        (row_fifo_pop       [row]),
+        
+        .pop            (row_fifo_pop       [row]),
+        .reset_read_ptr (reset_weights),
         .out_valid  (row_fifo_out_valid [row]),
         .out_data   (row_fifo_out_data  [row]),
+        
         .count      (row_fifo_count     [row]),
         .empty      (row_fifo_empty     [row]),
         .full       (row_fifo_full      [row])
@@ -312,7 +316,6 @@ for (genvar row = 1; row < MAX_FEATURE_COUNT; row++) begin
     end
 end
 
-
 // Round up in features to the nearest multiple of 16
 assign required_pulses = {nsb_prefetcher_weight_bank_req_q.in_features[$clog2(MAX_FEATURE_COUNT)-1:4], 4'd0} + (|nsb_prefetcher_weight_bank_req_q.in_features[3:0] ? 'd16 : '0);
 
@@ -349,5 +352,8 @@ always_comb begin
     
     accepting_weight_channel_resp = (weight_channel_resp_valid && weight_channel_resp_ready);
 end
+
+// When finished dumping weights, reset read pointer so the same weights can be used for the next FTE pass
+assign reset_weights = (weight_bank_state == WEIGHT_BANK_FSM_DUMP_WEIGHTS) && (weight_bank_state_n == WEIGHT_BANK_FSM_WEIGHTS_WAITING);
 
 endmodule

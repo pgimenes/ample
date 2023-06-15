@@ -14,11 +14,15 @@ module ultraram_fifo #(
 ) (
     input  logic                      core_clk,
     input  logic                      resetn,
+    
     input  logic                      push,
     input  logic [WIDTH-1:0]          in_data,
+    
     input  logic                      pop,
+    input  logic                      reset_read_ptr,
     output logic                      out_valid,
     output logic [WIDTH-1:0]          out_data,
+    
     output logic [$clog2(DEPTH):0]    count,
     output logic                      empty,
     output logic                      full
@@ -75,13 +79,12 @@ always_ff @(posedge core_clk or negedge resetn) begin
 
         count     <= '0;
     end else begin
-        if (push) begin
-            wr_ptr <= wr_ptr + 1'b1;
-        end
-        
-        if (pop) begin
-            rd_ptr <= rd_ptr + 1'b1;
-        end
+        wr_ptr <= push ? wr_ptr + 1'b1
+                : wr_ptr;
+
+        rd_ptr <= reset_read_ptr ? '0
+                : pop ? rd_ptr + 1'b1
+                : rd_ptr;
 
         count <= push && pop ? count
                 : push ? count + 1'b1

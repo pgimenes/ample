@@ -516,6 +516,10 @@ end
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         last_weight_resp_received <= '0;
+        
+    // Starting new request
+    end else if ((fte_state == FTE_FSM_IDLE) && nsb_fte_req_valid) begin
+        last_weight_resp_received <= '0;
     
     end else if (weight_channel_resp_valid && weight_channel_resp.done) begin
         last_weight_resp_received <= '1;
