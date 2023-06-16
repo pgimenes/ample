@@ -411,19 +411,14 @@ end
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         nodeslots_to_buffer <= '0;
-        nodeslots_to_writeback <= '0;
         
     // Accepting NSB request
     end else if (nsb_fte_req_valid && nsb_fte_req_ready) begin
         nodeslots_to_buffer    <= ctrl_buffering_enable_value ? nodeslot_count : nodeslots_to_buffer;
-        nodeslots_to_writeback <= ctrl_writeback_enable_value ? nodeslot_count : nodeslots_to_writeback;
     
     // Done flushing a row of features
     end else if (fte_state == FTE_FSM_BUFFER) begin
         nodeslots_to_buffer <= nodeslots_to_buffer - 1'b1;
-    
-    end else if (fte_state == FTE_FSM_WRITEBACK_RESP && axi_write_master_resp_valid) begin
-        nodeslots_to_writeback <= nodeslots_to_writeback - 1'b1;
     end
 end
 
