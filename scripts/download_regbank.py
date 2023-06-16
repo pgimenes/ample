@@ -37,7 +37,7 @@ import urllib.request
 
 # Your airhdl.com user name and passord
 USERNAME = "pedro.gimenes19@imperial.ac.uk"
-PASSWORD = "UKpg2012#"
+PASSWORD = "aTFjfjclbEFg0bgB"
 
 FILE_TYPES = {
     "cHeader": ("_regs", "h"),
