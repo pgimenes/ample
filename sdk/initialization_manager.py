@@ -15,8 +15,6 @@ class InitManager:
         self.trained_graph = graph
         self.model = model
         
-        self.trained_graph.init_nx_graph()
-
         self.memory_mapper = Memory_Mapper(graph.nx_graph, model, base_path=base_path, dump_file=memory_dump_file)
 
         # Create directory for output files
@@ -58,8 +56,8 @@ class InitManager:
                 'weights_address': self.memory_mapper.offsets['weights'],
                 'out_messages_address': self.memory_mapper.offsets['out_messages'],
 
-                'aggregation_wait_count': 2,
-                'transformation_wait_count': 2
+                'aggregation_wait_count': 4,
+                'transformation_wait_count': 4
             }
             self.layer_config['layers'].append(layer)
 

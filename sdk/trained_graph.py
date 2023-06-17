@@ -54,6 +54,8 @@ class TrainedGraph:
 
 
     def init_nx_graph(self):
+        counts = {"FLOAT_32": 0, "FIXED_8": 0}
+        
         for node in self.nx_graph.nodes:
                     neighbours = list(self.nx_graph.neighbors(node))
                     self.nx_graph.nodes[node]['neighbours'] = neighbours
@@ -67,12 +69,24 @@ class TrainedGraph:
                     self.nx_graph.nodes[node]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
                     
                     if (self.graph_precision == 'mixed'):
-                        prec = random.choice(["FLOAT_32", "FIXED_16"])
-                        # print(f"Initializing node {node} with precision {prec}")
-                        self.nx_graph.nodes[node]['precision'] = prec
+                        prec = random.choice(["FLOAT_32", "FIXED_8"])
                     else:
-                        self.nx_graph.nodes[node]['precision'] = self.graph_precision
-                         
+                        prec = self.graph_precision
+                    
+                    self.nx_graph.nodes[node]['precision'] = prec
+                    counts[prec] = counts[prec] + 1
+
+        for prec in ["FLOAT_32", "FIXED_8"]:
+            precision_filter = [node for node in self.nx_graph.nodes if self.nx_graph.nodes[node]['precision'] == prec]
+            mod = counts[prec] % 4
+            logging.debug(f"Precision {prec} has modulus {mod}")
+            if (mod == 0):
+                continue
+            for node in precision_filter[-mod:]: # choose last N nodes where N is modulus with wait count
+                # Invalidate nodes so they get dropped by testbench
+                logging.debug(f"Node {node} being dropped")
+                self.nx_graph.nodes[node]['neighbour_count'] = 0
+            
     def random_embeddings(self):
         logging.debug(f"Generating random graph embeddings.")
 
