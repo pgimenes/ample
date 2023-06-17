@@ -8,7 +8,10 @@ async def delay(clk, cycles):
         await RisingEdge(clk)
 
 def allocate_lsb(bit_str, bit_range=(0, 64)):
-    available_bits = bit_str[::-1][bit_range[0]:bit_range[1]]
+    available_bits = bit_str[::-1]
+    # Replace values outside the range with 0
+    available_bits = ''.join(char if i in bit_range else '0' for i, char in enumerate(available_bits))
+    # Choose least significant
     for i, bit in enumerate(available_bits):
         if bit == '1':
             return i

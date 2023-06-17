@@ -7,7 +7,7 @@ package prefetcher_pkg;
 `define divide_round_up(a,b) (a - 1)/b + 1
 
 parameter ADJACENCY_QUEUE_WIDTH   = 32; // next version will take top_pkg::NODE_ID_WIDTH
-parameter ADJACENCY_QUEUE_DEPTH = 256;
+parameter ADJACENCY_QUEUE_DEPTH   = 256;
 
 // Cannot predict message width (depends on feature count and precision), so store 512b AXI beats directly
 // This corresponds to different feature counts depending on precision

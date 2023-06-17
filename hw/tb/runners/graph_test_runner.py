@@ -19,6 +19,7 @@ async def graph_test_runner(dut):
 
         # Weights fetch
         await test.driver.request_weights_fetch(precision=NodePrecision.FLOAT_32)
+        await test.driver.request_weights_fetch(precision=NodePrecision.FIXED_8)
 
         # Program nodeslots
         test.dut._log.info("Starting nodeslot programming.")
@@ -36,9 +37,9 @@ async def graph_test_runner(dut):
 
                 # Check nodeslot range based on precision
                 if (ns_programming["precision"] == "FLOAT_32"):
-                    ns_id = allocate_lsb(bin_str, bit_range=(0, 8))
+                    ns_id = allocate_lsb(bin_str, bit_range=range(0, 8))
                 elif (ns_programming["precision"] == "FIXED_8"):
-                    ns_id = allocate_lsb(bin_str, bit_range=(8, 16))
+                    ns_id = allocate_lsb(bin_str, bit_range=range(8, 16))
                 else:
                     raise ValueError(f"Unknown precision: {ns_programming['precision']}")
 

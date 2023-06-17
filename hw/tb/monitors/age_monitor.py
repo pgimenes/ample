@@ -48,7 +48,7 @@ class AGE_Monitor (Monitor):
                         "data": self.dut.scale_factor_queue_out_data[mc]
                     }
                     _ = self._sample(data, self.scale_factors[mc])
-                    self.dut._log.info("Observed scale factor pop for fetch tag %d with data: %s", mc, data["data"].value)
+                    self.dut._log.debug("Observed scale factor pop for fetch tag %d with data: %s", mc, data["data"].value)
 
             # Aggregation Buffer Writes
             for precision in range(self.precision_count):
