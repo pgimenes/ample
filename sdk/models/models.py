@@ -16,10 +16,8 @@ class GCN_Model(pl.LightningModule):
 
     def forward(self, x, edge_index):
         for layer in self.layers:
-            x = layer(x, edge_index)
-            x = F.relu(x)
-            x = F.dropout(x, training=self.training)
-        return F.log_softmax(x, dim=1)
+            out = layer(x, edge_index)
+        return out
 
 '''
 Graph Attention Network

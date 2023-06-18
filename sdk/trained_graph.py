@@ -56,8 +56,12 @@ class TrainedGraph:
     def init_nx_graph(self):
         counts = {"FLOAT_32": 0, "FIXED_8": 0}
         
+        largest_nb_count = 0
         for node in self.nx_graph.nodes:
                     neighbours = list(self.nx_graph.neighbors(node))
+                    if (len(neighbours) > largest_nb_count):
+                        largest_nb_count = len(neighbours)
+                        logging.debug(f"Largest neighbour count so far {len(neighbours)}")
                     self.nx_graph.nodes[node]['neighbours'] = neighbours
                     self.nx_graph.nodes[node]['neighbour_count'] = len(neighbours)
                     self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
@@ -90,6 +94,7 @@ class TrainedGraph:
     def random_embeddings(self):
         logging.debug(f"Generating random graph embeddings.")
 
+        self.dataset.x = torch.zeros((self.dataset.x.shape[0], self.feature_count))
         self.embeddings = np.zeros((len(self.nx_graph.nodes), self.feature_count))
         for node in self.nx_graph.nodes:
 
@@ -107,9 +112,8 @@ class TrainedGraph:
                 embd = [random.uniform(-2, 2) for _ in range(self.feature_count)]
 
             self.nx_graph.nodes[node]['embedding'] = embd
+            self.embeddings[node] = embd
+            self.dataset.x[node] = torch.tensor(embd, dtype=torch.float)
         
-        # Update dataset object
-        self.dataset.x = torch.tensor(self.embeddings, dtype=torch.float)
-
     def __str__(self) -> str:
         return "TrainedGraph"
