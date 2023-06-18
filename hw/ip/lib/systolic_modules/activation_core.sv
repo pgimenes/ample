@@ -53,16 +53,19 @@ end
 
 if (PRECISION == top_pkg::FLOAT_32) begin
 
-    fp_mult activation_mult (
-        .s_axis_a_tvalid      (in_feature_valid),
-        .s_axis_a_tdata       (in_feature),
+    // fp_mult activation_mult (
+    //     .s_axis_a_tvalid      (in_feature_valid),
+    //     .s_axis_a_tdata       (in_feature),
 
-        .s_axis_b_tvalid      (1'b1),
-        .s_axis_b_tdata       (layer_config_leaky_relu_alpha_value),
+    //     .s_axis_b_tvalid      (1'b1),
+    //     .s_axis_b_tdata       (layer_config_leaky_relu_alpha_value),
 
-        .m_axis_result_tvalid (leaky_relu_activation_valid_comb),
-        .m_axis_result_tdata  (leaky_relu_activation_comb)
-        );
+    //     .m_axis_result_tvalid (leaky_relu_activation_valid_comb),
+    //     .m_axis_result_tdata  (leaky_relu_activation_comb)
+    //     );
+
+    assign leaky_relu_activation_valid_comb = in_feature_valid;
+    assign leaky_relu_activation_comb = in_feature;
 
     end else begin
 

@@ -1,7 +1,4 @@
 VERILOG_INCLUDE_DIRS = \
-	$(FYP_DIR)/hw/build/build_project.ip_user_files/ip/ddr4_0/ip_1/rtl/map \
-	$(FYP_DIR)/hw/build/build_project.ip_user_files/ip/ddr4_0/rtl/ip_top \
-	$(FYP_DIR)/hw/build/build_project.ip_user_files/ip/ddr4_0/rtl/cal \
 	$(FYP_DIR)/hw/build/build_project.ip_user_files/ipstatic/hdl \
 	$(FYP_DIR)/imports/json_sv/sv \
 	$(FYP_DIR)/hw/build/regbanks/aggregation_engine_regbank \
@@ -25,10 +22,6 @@ VERILOG_SOURCES = \
 	$(FYP_DIR)/hw/build/ip/lib/buffers/ultraram.v \
 	$(FYP_DIR)/hw/build/ip/include/arch_defines.v \
 	$(FYP_DIR)/imports/verilog-axi/rtl/axi_ram.v \
-
-VHDL_SOURCES = \
-	$(FYP_DIR)/hw/build/build_project.srcs/sources_1/ip/fp_mult/sim/fp_mult.vhd \
-	$(FYP_DIR)/hw/build/build_project.srcs/sources_1/ip/fp_add/sim/fp_add.vhd \
 
 # Imports
 VERILOG_SOURCES += \
@@ -134,17 +127,11 @@ VSIM_LIBS = \
 	axi_crossbar_v2_1_21 \
 	xbip_utils_v3_0_10 \
 	axi_utils_v2_0_6 \
-	xbip_pipe_v3_0_6 \
-	xbip_dsp48_wrapper_v3_0_4 \
-	xbip_dsp48_addsub_v3_0_6 \
-	xbip_dsp48_multadd_v3_0_6 \
-	xbip_bram18k_v3_0_6 \
-	mult_gen_v12_0_16 \
 	floating_point_v7_1_9 \
 	xilinx_vip \
 	unisims_ver \
 	unimacro_ver \
 	secureip \
 	xpm
-
+	
 LIST_DONE = 1
