@@ -56,19 +56,21 @@ logic [FLOAT_WIDTH-1:0]                       accumulator_float;
 
 if (PRECISION == top_pkg::FLOAT_32) begin
 
-    // fp_mult scale_factor_mult (
-    //     .s_axis_a_tvalid      (in_feature_valid && in_feature_ready),
-    //     .s_axis_a_tdata       (scale_factor),
-        
-    //     .s_axis_b_tvalid      (in_feature_valid && in_feature_ready),
-    //     .s_axis_b_tdata       (in_feature),
-        
-    //     .m_axis_result_tvalid (scaled_feature_valid_comb),
-    //     .m_axis_result_tdata  (scaled_feature_comb) 
-    // );
-
+`ifdef SIMULATION
     assign scaled_feature_valid_comb = in_feature_valid && in_feature_ready;
     assign scaled_feature_comb = in_feature;
+`else
+    fp_mult scale_factor_mult (
+        .s_axis_a_tvalid      (in_feature_valid && in_feature_ready),
+        .s_axis_a_tdata       (scale_factor),
+        
+        .s_axis_b_tvalid      (in_feature_valid && in_feature_ready),
+        .s_axis_b_tdata       (in_feature),
+        
+        .m_axis_result_tvalid (scaled_feature_valid_comb),
+        .m_axis_result_tdata  (scaled_feature_comb) 
+    );
+`endif
 
 end else begin
     assign scaled_feature_valid_comb = in_feature_valid && in_feature_ready;

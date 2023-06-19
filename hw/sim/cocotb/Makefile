@@ -41,7 +41,7 @@ TOPLEVEL_LIBRARY ?= $(RTL_LIBRARY)
 TOPLEVEL := "$(TOPLEVEL_LIBRARY).$(TOPLEVEL)"
 
 ifndef VLOG_ARGS
-    VLOG_ARGS = +define+XSIM -timescale $(COCOTB_HDL_TIMEUNIT)/$(COCOTB_HDL_TIMEPRECISION) -mfcu
+    VLOG_ARGS = +define+SIMULATION -timescale $(COCOTB_HDL_TIMEUNIT)/$(COCOTB_HDL_TIMEPRECISION) -mfcu
 endif
 
 COMPILE_ARGS += +acc
@@ -119,7 +119,7 @@ ifneq ($(VHDL_SOURCES),)
 	@echo "vcom -work $(RTL_LIBRARY) $(VCOM_ARGS) $(call to_tcl_path,$(VHDL_SOURCES))" >> $@
 endif
 ifneq ($(VERILOG_SOURCES),)
-	@echo "vlog -work $(RTL_LIBRARY) -L axi_vip_v1_1_6 -L xilinx_vip +define+COCOTB_SIM -sv $(VLOG_ARGS) $(EXTRA_ARGS) $(call to_tcl_path,$(VERILOG_SOURCES))" >> $@
+	@echo "vlog -work $(RTL_LIBRARY) -L axi_vip_v1_1_6 -L xilinx_vip +define+SIMULATION -sv $(VLOG_ARGS) $(EXTRA_ARGS) $(call to_tcl_path,$(VERILOG_SOURCES))" >> $@
 endif
 ifdef SCRIPT_FILE
 	@echo "do $(SCRIPT_FILE)" >> $@
@@ -161,7 +161,7 @@ ifneq ($(VHDL_SOURCES),)
 	@echo "vcom -work $(RTL_LIBRARY) $(VCOM_ARGS) $(call to_tcl_path,$(VHDL_SOURCES)) -l compile_vhdl.log" >> $@
 endif
 ifneq ($(VERILOG_SOURCES),)
-	@echo "vlog -work $(RTL_LIBRARY) -L axi_vip_v1_1_6 -L xilinx_vip +define+COCOTB_SIM -sv $(VLOG_ARGS) $(EXTRA_ARGS) $(call to_tcl_path,$(VERILOG_SOURCES)) -l compile_vlog.log" >> $@
+	@echo "vlog -work $(RTL_LIBRARY) -L axi_vip_v1_1_6 -L xilinx_vip +define+SIMULATION -sv $(VLOG_ARGS) $(EXTRA_ARGS) $(call to_tcl_path,$(VERILOG_SOURCES)) -l compile_vlog.log" >> $@
 endif
 
 # Generate optimization script

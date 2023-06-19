@@ -59,32 +59,40 @@ logic                   busy;
 // Instances
 // ==================================================================================================================================================
 
-// fp_mult multiplier_i (
-//   .s_axis_a_tvalid(in_valid && in_ready),
-//   .s_axis_a_tdata(a),
-
-//   .s_axis_b_tvalid(in_valid && in_ready),
-//   .s_axis_b_tdata(b),
-  
-//   .m_axis_result_tvalid(fp_mult_result_valid_comb),
-//   .m_axis_result_tdata(fp_mult_result_comb)
-// );
-
-// fp_add adder_i (
-//   .s_axis_a_tvalid              (busy && fp_mult_result_valid_q),
-//   .s_axis_a_tdata               (fp_mult_result_q),
-  
-//   .s_axis_b_tvalid              (busy && fp_mult_result_valid_q),
-//   .s_axis_b_tdata               (acc_reg),
-
-//   .m_axis_result_tvalid         (fp_add_result_valid_comb),
-//   .m_axis_result_tdata          (fp_add_result_comb)
-// );
+`ifdef SIMULATION
 
 assign fp_mult_result_valid_comb = in_valid && in_ready;
 assign fp_mult_result_comb = a;
 assign fp_add_result_valid_comb = busy && fp_mult_result_valid_q;
 assign fp_add_result_comb = acc_reg;
+
+`else
+
+fp_mult multiplier_i (
+  .s_axis_a_tvalid(in_valid && in_ready),
+  .s_axis_a_tdata(a),
+
+  .s_axis_b_tvalid(in_valid && in_ready),
+  .s_axis_b_tdata(b),
+  
+  .m_axis_result_tvalid(fp_mult_result_valid_comb),
+  .m_axis_result_tdata(fp_mult_result_comb)
+);
+
+fp_add adder_i (
+  .s_axis_a_tvalid              (busy && fp_mult_result_valid_q),
+  .s_axis_a_tdata               (fp_mult_result_q),
+  
+  .s_axis_b_tvalid              (busy && fp_mult_result_valid_q),
+  .s_axis_b_tdata               (acc_reg),
+
+  .m_axis_result_tvalid         (fp_add_result_valid_comb),
+  .m_axis_result_tdata          (fp_add_result_comb)
+);
+
+`endif
+
+
 
 // ==================================================================================================================================================
 // Logic

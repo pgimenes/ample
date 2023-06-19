@@ -97,19 +97,23 @@ mac #(
 
 if (PRECISION == top_pkg::FLOAT_32) begin
 
-    // fp_add bias_adder (
-    // .s_axis_a_tvalid              (1'b1),
-    // .s_axis_a_tdata               (pe_acc),
-
-    // .s_axis_b_tvalid              (bias_valid),
-    // .s_axis_b_tdata               (bias),
-
-    // .m_axis_result_tvalid         (bias_out_valid_comb),
-    // .m_axis_result_tdata          (pe_acc_add_bias_comb)
-    // );
-
+`ifdef SIMULATION
     assign bias_out_valid_comb = bias_valid;
     assign pe_acc_add_bias_comb = pe_acc;
+`else
+
+    fp_add bias_adder (
+    .s_axis_a_tvalid              (1'b1),
+    .s_axis_a_tdata               (pe_acc),
+
+    .s_axis_b_tvalid              (bias_valid),
+    .s_axis_b_tdata               (bias),
+
+    .m_axis_result_tvalid         (bias_out_valid_comb),
+    .m_axis_result_tdata          (pe_acc_add_bias_comb)
+    );
+
+`endif
 
     always_ff @(posedge core_clk or negedge resetn) begin
         if (!resetn) begin
