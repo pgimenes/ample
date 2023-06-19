@@ -261,7 +261,7 @@ rr_arbiter #(
     .resetn     (resetn),
 
     .request    (nsb_prefetcher_fetch_tag_resp_valid),
-    .update_lru ('1),
+    .update_lru (|nsb_prefetcher_fetch_tag_resp_valid),
     .grant_oh   (fetch_tag_resp_arb),
     .grant_bin  (fetch_tag_resp_arb_bin)
 );
