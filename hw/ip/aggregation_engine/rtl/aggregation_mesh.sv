@@ -228,7 +228,9 @@ for (genvar agm = 0; agm < AGGREGATION_COLS; agm = agm + 1) begin : agm_block
     
     aggregation_manager #(
         .X_COORD  (agm),
-        .Y_COORD  (AGGREGATION_ROWS)
+        .Y_COORD  (AGGREGATION_ROWS),
+        .AGGREGATION_COLS (AGGREGATION_COLS),
+        .AGGREGATION_ROWS (AGGREGATION_ROWS)
     ) agm_i (
         .core_clk,
         .resetn,
@@ -315,7 +317,10 @@ for (genvar agc_row = 0; agc_row < AGGREGATION_ROWS; agc_row = agc_row + 1) begi
 
             .FEATURE_COUNT (16),
             .PRECISION     (PRECISION),
-            .DATA_WIDTH    (AGGREGATION_CORE_DATA_WIDTH)
+            .DATA_WIDTH    (AGGREGATION_CORE_DATA_WIDTH),
+
+            .AGGREGATION_ROWS (AGGREGATION_ROWS),
+            .AGGREGATION_COLS (AGGREGATION_COLS)
 
         ) agc_i (
             .core_clk                       (core_clk),
@@ -358,7 +363,10 @@ for (genvar bm = 0; bm < AGGREGATION_ROWS; bm++) begin : bm_block
 
     buffer_manager #(
         .X_COORD (AGGREGATION_COLS),
-        .Y_COORD (bm)
+        .Y_COORD (bm),
+
+        .AGGREGATION_ROWS (AGGREGATION_ROWS),
+        .AGGREGATION_COLS (AGGREGATION_COLS)
     ) buffer_manager_i (
         .core_clk,
         .resetn,

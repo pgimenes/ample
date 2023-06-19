@@ -37,9 +37,9 @@ async def graph_test_runner(dut):
 
                 # Check nodeslot range based on precision
                 if (ns_programming["precision"] == "FLOAT_32"):
-                    ns_id = allocate_lsb(bin_str, bit_range=range(0, 8))
+                    ns_id = allocate_lsb(bin_str, bit_range=range(0, 16))
                 elif (ns_programming["precision"] == "FIXED_8"):
-                    ns_id = allocate_lsb(bin_str, bit_range=range(8, 16))
+                    ns_id = allocate_lsb(bin_str, bit_range=range(16, 64))
                 else:
                     raise ValueError(f"Unknown precision: {ns_programming['precision']}")
 

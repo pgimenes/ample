@@ -252,7 +252,7 @@ end
 
 // Aggregation Manager Packets
 always_comb begin
-    aggregation_manager_pkt = (packet_source_row == noc_pkg::MAX_AGGREGATION_ROWS); // 16th row, 0 indexed = last row
+    aggregation_manager_pkt = (packet_source_row == AGGREGATION_ROWS); // 16th row, 0 indexed = last row
     {aggregation_manager_packet_type, aggregation_manager_packet_last} = decode_head_packet(router_aggregation_core_data);
 end
 

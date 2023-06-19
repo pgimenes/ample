@@ -1,4 +1,4 @@
-`timescale 1ps/1ps
+`timescale 1ns/100ps
 
 import arch_package::*;
 module top_tb;

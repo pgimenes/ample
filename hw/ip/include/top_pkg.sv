@@ -11,8 +11,8 @@ package top_pkg;
 // Global parameters
 // ----------------------------------------------------
 
-parameter AGGREGATION_CHANNELS = 32;
-parameter TRANSFORMATION_CHANNELS = 32;
+parameter AGGREGATION_CHANNELS = 16;
+parameter TRANSFORMATION_CHANNELS = 16;
 
 // Graph parameters
 parameter MAX_NODES = 1024*1024; // 1M

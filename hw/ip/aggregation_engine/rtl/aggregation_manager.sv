@@ -23,7 +23,7 @@ module aggregation_manager #(
     // Buffer Manager Allocation
     input  logic                                                age_aggregation_manager_buffer_manager_allocation_valid,
     output logic                                                age_aggregation_manager_buffer_manager_allocation_ready,
-    input  logic [$clog2(MAX_AGGREGATION_ROWS)-1:0]             age_aggregation_manager_buffer_manager_allocation,
+    input  logic [$clog2(AGGREGATION_ROWS)-1:0]                 age_aggregation_manager_buffer_manager_allocation,
 
     // Message Channel: AGE -> Prefetcher (request)
     output logic                                                message_channel_req_valid,
@@ -86,7 +86,7 @@ logic                                               agc_pkt_head_sent;
 
 MESSAGE_CHANNEL_RESP_t                              message_channel_resp_q; // buffer MC response to send flits to network
 
-logic [$clog2(MAX_AGGREGATION_ROWS)-1:0]           buffer_manager_allocation_q;
+logic [$clog2(AGGREGATION_ROWS)-1:0]                buffer_manager_allocation_q;
 
 // Decode incoming packet source
 logic [$clog2(MAX_MESH_ROWS)-1:0]                       packet_source_row;
