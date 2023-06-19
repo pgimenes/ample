@@ -28,6 +28,7 @@ module prefetcher_streaming_manager #(
     input  logic [$clog2(MAX_OBJECTS)-1:0]              fetch_req_obj_count,
 
     output logic                                        fetch_resp_valid,
+    input  logic                                        fetch_resp_ready,
     output logic                                        fetch_resp_partial,
 
     input  logic [AXI_ADDRESS_WIDTH-1:0]                fetch_memory_range_start_address,
@@ -146,7 +147,7 @@ always_comb begin
     end
 
     FETCH_DONE: begin
-        fetch_state_n = fetch_resp_valid ? FETCH_IDLE
+        fetch_state_n = fetch_resp_ready ? FETCH_IDLE
                         : FETCH_DONE;
     end
 
