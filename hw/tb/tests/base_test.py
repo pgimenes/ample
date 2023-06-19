@@ -130,7 +130,7 @@ class BaseTest:
 
     async def start_clocks(self):
         cocotb.start_soon(Clock(self.dut.sys_clk, 5, units="ns").start())
-        cocotb.start_soon(Clock(self.dut.regbank_clk, 20, units="ns").start())
+        cocotb.start_soon(Clock(self.dut.regbank_clk, 5, units="ns").start())
 
     async def drive_reset(self):
         self.dut._log.info("Driving reset")

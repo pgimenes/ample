@@ -83,6 +83,7 @@ class TrainedGraph:
         for prec in ["FLOAT_32", "FIXED_8"]:
             precision_filter = [node for node in self.nx_graph.nodes if self.nx_graph.nodes[node]['precision'] == prec]
             mod = counts[prec] % 4
+            logging.info(f"Precision {prec} has {len(precision_filter)} nodes")
             logging.info(f"Precision {prec} has modulus {mod}")
             if (mod == 0):
                 continue

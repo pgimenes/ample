@@ -35,9 +35,9 @@ graph_map = {
     'erdos': {
         'class': RandomGraph
     },
-    'pubmed': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Pubmed")},
-    'cora': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Cora")},
-    'citeseer': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Citeseer")},
+    'pubmed': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Pubmed", graph_precision=graph_precision)},
+    'cora': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Cora", graph_precision=graph_precision)},
+    'citeseer': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Citeseer", graph_precision=graph_precision)},
     'reddit': { 'class': RedditGraph},
     'flickr': { 'class': FlickrGraph },
     'yelp': { 'class': YelpGraph }
