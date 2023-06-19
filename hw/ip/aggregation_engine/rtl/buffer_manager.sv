@@ -9,8 +9,8 @@ module buffer_manager #(
     parameter AGGREGATION_ROWS = top_pkg::AGGREGATION_BUFFER_SLOTS,
     parameter AGGREGATION_COLS = top_pkg::MESSAGE_CHANNEL_COUNT/top_pkg::PRECISION_COUNT,
     
-    parameter BUFFER_SLOT_WRITE_DEPTH = 512,
-    parameter BUFFER_SLOT_WRITE_WIDTH = 64
+    parameter BUFFER_SLOT_WRITE_DEPTH = 64,
+    parameter BUFFER_SLOT_WRITE_WIDTH = 512
 ) (
     input  logic core_clk,
     input  logic resetn,
@@ -41,6 +41,8 @@ module buffer_manager #(
     input  logic [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0] buffer_slot_bm_feature_count,
     input  logic                                                      buffer_slot_bm_slot_free
 );
+
+parameter EXPECTED_FLITS_PER_PACKET = 2;
 
 typedef enum logic [2:0] {
 BM_FSM_IDLE,
@@ -235,20 +237,20 @@ for (genvar agc_source = 0; agc_source < MAX_AGC_PER_NODE; agc_source++) begin
         end
     end
 
-    assign agc_done[agc_source] = allocated_agcs[agc_source] ? flit_counter[agc_source] == 'd8 : '1;
+    assign agc_done[agc_source] = allocated_agcs[agc_source] ? (flit_counter[agc_source] == EXPECTED_FLITS_PER_PACKET[3:0]) : '1;
 end
 
 // Drive aggregation buffer slot
 // -------------------------------------------------------------------------------------
 
-logic [3:0] flit_offset;
+// logic [3:0] flit_offset;
 
-assign flit_offset = flit_counter[agc_offset] - 1'b1;
+// assign flit_offset = flit_counter[agc_offset] - 1'b1;
 
 always_comb begin
     bm_buffer_slot_write_enable = (bm_state == BM_FSM_WRITE);
-    bm_buffer_slot_write_address = {agc_offset, flit_offset[2:0]};
-    bm_buffer_slot_write_data = received_flit.data.bt_pl[63:0];
+    bm_buffer_slot_write_address = agc_offset;
+    bm_buffer_slot_write_data = received_flit.data.bt_pl;
 end
 
 // Send done packet to Aggregation Manager

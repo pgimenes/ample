@@ -237,15 +237,9 @@ always_comb begin
     case(packet_state)
 
     age_pkg::PKT_FSM_IDLE: packet_state_n  = (aggregation_manager_router_on && (agm_state == AGM_FSM_SEND_AGC) && noc_router_waiting) ? PKT_FSM_HEAD : PKT_FSM_IDLE;
-    age_pkg::PKT_FSM_HEAD: packet_state_n  = PKT_FSM_BODY1;
-    age_pkg::PKT_FSM_BODY1: packet_state_n = PKT_FSM_BODY2;
-    age_pkg::PKT_FSM_BODY2: packet_state_n = PKT_FSM_BODY3;
-    age_pkg::PKT_FSM_BODY3: packet_state_n = PKT_FSM_BODY4;
-    age_pkg::PKT_FSM_BODY4: packet_state_n = PKT_FSM_BODY5;
-    age_pkg::PKT_FSM_BODY5: packet_state_n = PKT_FSM_BODY6;
-    age_pkg::PKT_FSM_BODY6: packet_state_n = PKT_FSM_BODY7;
-    age_pkg::PKT_FSM_BODY7: packet_state_n = PKT_FSM_TAIL;
+    age_pkg::PKT_FSM_HEAD: packet_state_n  = PKT_FSM_TAIL;
     age_pkg::PKT_FSM_TAIL: packet_state_n  = PKT_FSM_IDLE;
+    age_pkg::PKT_FSM_RESERVED: packet_state_n  = PKT_FSM_IDLE;
 
     default: packet_state_n = PKT_FSM_IDLE;
 
@@ -319,14 +313,7 @@ always_comb begin
                                                                                 }
 
                                             // Subsequent packets contain message channel response split into 64-bit chunks
-                                            : (packet_state == PKT_FSM_BODY1) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], message_channel_resp_q.data[511:448]}
-                                            : (packet_state == PKT_FSM_BODY2) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], message_channel_resp_q.data[447:384]}
-                                            : (packet_state == PKT_FSM_BODY3) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], message_channel_resp_q.data[383:320]}
-                                            : (packet_state == PKT_FSM_BODY4) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], message_channel_resp_q.data[319:256]}
-                                            : (packet_state == PKT_FSM_BODY5) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], message_channel_resp_q.data[255:192]}
-                                            : (packet_state == PKT_FSM_BODY6) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], message_channel_resp_q.data[191:128]}
-                                            : (packet_state == PKT_FSM_BODY7) ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], message_channel_resp_q.data[127:64]}
-                                            : (packet_state == PKT_FSM_TAIL) ?  {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], message_channel_resp_q.data[63:0]} : '0;
+                                            : (packet_state == PKT_FSM_TAIL) ?  {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], message_channel_resp_q.data[511:0]} : '0;
     
     // Buffer request packets to AGCs
     end else if (agm_state == AGM_FSM_AGC_BUFFER_REQ) begin

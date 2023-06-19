@@ -30,17 +30,11 @@ typedef struct packed {
     logic [$clog2(MAX_AGC_PER_NODE)-1:0]                     allocated_agcs_count;
 } AGE_BUFF_MAN_ALLOC_t;
 
-typedef enum logic [3:0] {
-    PKT_FSM_IDLE  = 4'd0,
-    PKT_FSM_HEAD  = 4'd1,
-    PKT_FSM_BODY1 = 4'd2,
-    PKT_FSM_BODY2 = 4'd3,
-    PKT_FSM_BODY3 = 4'd4,
-    PKT_FSM_BODY4 = 4'd5,
-    PKT_FSM_BODY5 = 4'd6,
-    PKT_FSM_BODY6 = 4'd7,
-    PKT_FSM_BODY7 = 4'd8,
-    PKT_FSM_TAIL  = 4'd9
+typedef enum logic [1:0] {
+    PKT_FSM_IDLE,
+    PKT_FSM_HEAD,
+    PKT_FSM_TAIL,
+    PKT_FSM_RESERVED
 } axi_packet_fsm_e;
 
 typedef enum logic [1:0] {

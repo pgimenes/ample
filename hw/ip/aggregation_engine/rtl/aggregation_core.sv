@@ -36,6 +36,8 @@ module aggregation_core #(
 
 parameter ALLOCATION_PKT_AGGR_FUNC_OFFSET = $clog2(top_pkg::MAX_NODESLOT_COUNT);
 
+parameter EXPECTED_FLITS_PER_PACKET = 1;
+
 typedef enum logic [3:0] {
     AGC_FSM_IDLE,
     AGC_FSM_NODESLOT_ALLOCATION,
@@ -110,7 +112,7 @@ logic                                           received_buffer_req_head;
 logic [$clog2(MAX_MESH_ROWS)-1:0]               buffer_manager_pkt_dest_row;
 logic [$clog2(MAX_MESH_COLS)-1:0]               buffer_manager_pkt_dest_col;
 
-logic [63:0]                                    bm_chosen_data;
+logic [511:0]                                   bm_chosen_data;
 logic [$clog2(FEATURE_COUNT/2)-1:0]             sent_flits_counter;
 
 logic                                           noc_router_waiting;
@@ -202,13 +204,11 @@ always_comb begin
     AGC_FSM_UPDATE_ACCS: begin
         agc_state_n = 
                     // Updating last feature accumulator and last packet flag has already been received
-                    (received_flits == 4'd8) && feature_updated[FEATURE_COUNT-1] && feature_updated[FEATURE_COUNT-2] && aggregation_manager_packet_last_q ? AGC_FSM_WAIT_BUFFER_REQ // updating final features
+                    (received_flits == EXPECTED_FLITS_PER_PACKET[3:0]) && &feature_updated && aggregation_manager_packet_last_q ? AGC_FSM_WAIT_BUFFER_REQ // updating final features
 
                     // Updating last feature accumulator but packets still pending
-                    : (received_flits == 4'd8) && feature_updated[FEATURE_COUNT-1] && feature_updated[FEATURE_COUNT-2] ? AGC_FSM_WAIT_FEATURE_HEAD
+                    : (received_flits == EXPECTED_FLITS_PER_PACKET[3:0]) && &feature_updated ? AGC_FSM_WAIT_FEATURE_HEAD
 
-                    // Feature accumulators accepting update but flits still pending for this packet
-                    : feature_updated[2*(received_flits-1)] && feature_updated[2*(received_flits-1) + 1] ? AGC_FSM_WAIT_FEATURE_BODY
                     : AGC_FSM_UPDATE_ACCS;
     end
     
@@ -218,7 +218,7 @@ always_comb begin
     end
 
     AGC_FSM_SEND_BUFF_MAN: begin
-        agc_state_n = (sent_flits_counter == 'd7) ? AGC_FSM_WAIT_DRAIN : AGC_FSM_SEND_BUFF_MAN;
+        agc_state_n = (sent_flits_counter == EXPECTED_FLITS_PER_PACKET[$clog2(FEATURE_COUNT/2)-1:0]) ? AGC_FSM_WAIT_DRAIN : AGC_FSM_SEND_BUFF_MAN;
     end
 
     AGC_FSM_WAIT_DRAIN: begin
@@ -321,13 +321,13 @@ assign feature_aggregator_reset_accumulator = (agc_state == AGC_FSM_IDLE) && (ag
 // For lower precision formats, feature is in LSBs
 for (genvar pkt = 0; pkt < 8; pkt++) begin
     always_comb begin
-        feature_aggregator_in_feature_valid [2*pkt]     = (agc_state == AGC_FSM_UPDATE_ACCS) && (received_flits == (pkt+1)) && !feature_updated[2*pkt];
-        feature_aggregator_in_feature       [2*pkt]     = router_agc_pkt_q.data.bt_pl[32+DATA_WIDTH-1 : 32];
+        feature_aggregator_in_feature_valid [2*pkt]     = (agc_state == AGC_FSM_UPDATE_ACCS);
 
-        feature_aggregator_in_feature_valid [2*pkt + 1] = (agc_state == AGC_FSM_UPDATE_ACCS) && (received_flits == (pkt+1)) && !feature_updated[2*pkt + 1];
-        feature_aggregator_in_feature       [2*pkt + 1] = router_agc_pkt_q.data.bt_pl[DATA_WIDTH-1 : 0];
+        feature_aggregator_in_feature_valid [2*pkt + 1] = (agc_state == AGC_FSM_UPDATE_ACCS);
     end
 end
+
+assign feature_aggregator_in_feature = router_agc_pkt_q.data.bt_pl[noc_pkg::PAYLOAD_DATA_WIDTH - 1 : 0];
 
 // AGC/Router interface
 // ----------------------------------------------------
@@ -343,20 +343,12 @@ always_comb begin
     
     aggregation_core_router_valid = (agc_state == AGC_FSM_SEND_BUFF_MAN);
     
-    bm_chosen_data = (sent_flits_counter == 'd0) ?  {features[1],  features[0]}
-                    : (sent_flits_counter == 'd1) ? {features[3],  features[2]}
-                    : (sent_flits_counter == 'd2) ? {features[5],  features[4]}
-                    : (sent_flits_counter == 'd3) ? {features[7],  features[6]}
-                    : (sent_flits_counter == 'd4) ? {features[9],  features[8]}
-                    : (sent_flits_counter == 'd5) ? {features[11], features[10]}
-                    : (sent_flits_counter == 'd6) ? {features[13], features[12]}
-                    : (sent_flits_counter == 'd7) ? {features[15], features[14]}
-                    : '0;
+    bm_chosen_data = features;
 
     aggregation_core_router_data.vc_id = '0;
     
     aggregation_core_router_data.flit_label = sent_flits_counter == '0 ? noc_pkg::HEAD
-                                            : sent_flits_counter == 'd7 ? noc_pkg::TAIL
+                                            : sent_flits_counter == EXPECTED_FLITS_PER_PACKET[$clog2(FEATURE_COUNT/2)-1:0] ? noc_pkg::TAIL
                                             : noc_pkg::BODY;
 
     aggregation_core_router_data.data.bt_pl = {buffer_manager_pkt_dest_col, buffer_manager_pkt_dest_row,

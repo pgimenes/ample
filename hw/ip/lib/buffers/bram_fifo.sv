@@ -117,6 +117,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
 end
 
 assign empty = (count == '0);
-assign full = (wr_ptr == rd_ptr) && (wr_wrap ^ rd_wrap);
+assign full = (count == '1);
 
 endmodule

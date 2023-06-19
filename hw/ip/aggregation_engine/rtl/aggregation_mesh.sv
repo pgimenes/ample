@@ -201,7 +201,7 @@ onehot_to_binary_comb #(
 // ----------------------------------------------------
 
 mesh #(
-    .BUFFER_SIZE (10),
+    .BUFFER_SIZE (top_pkg::MESH_INPUT_BLOCK_BUFFER_SIZE),
     .MESH_SIZE_X (AGGREGATION_COLS + 1),
     .MESH_SIZE_Y (AGGREGATION_ROWS + 1)
 ) aggregation_mesh_i (
