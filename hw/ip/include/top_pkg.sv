@@ -11,11 +11,15 @@ package top_pkg;
 // Global parameters
 // ----------------------------------------------------
 
+parameter AGGREGATION_CHANNELS = 32;
+parameter TRANSFORMATION_CHANNELS = 32;
+
 // Graph parameters
 parameter MAX_NODES = 1024*1024; // 1M
 parameter MAX_NODESLOT_COUNT = 32;
 parameter MAX_NEIGHBOURS = 1024;
 parameter MAX_FEATURE_COUNT = 1024;
+parameter FEATURE_COUNT = 512;
 
 parameter NODE_ID_WIDTH = $clog2(MAX_NODES); // 20
 
@@ -43,10 +47,10 @@ parameter MAX_FETCH_REQ_BYTE_COUNT = `max(MAX_REQUIRED_BYTES_ADJ_FETCH_REQ, MAX_
 parameter MAX_PRECISION_BYTE_COUNT = 4; 
 
 // Prefetcher
-parameter MESSAGE_CHANNEL_COUNT = noc_pkg::MAX_AGGREGATION_COLS * PRECISION_COUNT;
+parameter MESSAGE_CHANNEL_COUNT = AGGREGATION_CHANNELS * PRECISION_COUNT;
 
 // Aggregation Buffer
-parameter AGGREGATION_BUFFER_SLOTS = 4;
+parameter AGGREGATION_BUFFER_SLOTS = TRANSFORMATION_CHANNELS;
 parameter AGGREGATION_BUFFER_WRITE_DEPTH = MAX_FEATURE_COUNT * 4 / 8; // 8 bytes per 64b flit
 parameter AGGREGATION_BUFFER_WRITE_WIDTH = 64;
 parameter AGGREGATION_BUFFER_READ_DEPTH = MAX_FEATURE_COUNT * 4 / 4; // 4 bytes per float
@@ -54,8 +58,8 @@ parameter AGGREGATION_BUFFER_READ_WIDTH = 32;
 
 // Transformation Engine
 
-parameter TRANSFORMATION_ROWS = 4;
-parameter SYSTOLIC_MODULE_COUNT = 128;
+parameter TRANSFORMATION_ROWS = TRANSFORMATION_CHANNELS;
+parameter SYSTOLIC_MODULE_COUNT = FEATURE_COUNT/TRANSFORMATION_CHANNELS;
 
 // Transformation Buffer
 parameter TRANSFORMATION_BUFFER_SLOTS = 16;

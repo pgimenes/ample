@@ -69,8 +69,8 @@ module aggregation_engine #(
 );
 
 // Aggregation meshes have symmetric dimensions
-parameter AGGREGATION_ROWS = noc_pkg::MAX_AGGREGATION_ROWS;
-parameter AGGREGATION_COLS = noc_pkg::MAX_AGGREGATION_COLS;
+parameter AGGREGATION_ROWS = top_pkg::TRANSFORMATION_CHANNELS;
+parameter AGGREGATION_COLS = top_pkg::AGGREGATION_CHANNELS;
 parameter TOTAL_AGGREGATION_MANAGERS = top_pkg::PRECISION_COUNT * AGGREGATION_COLS;
 
 // ==================================================================================================================================================
