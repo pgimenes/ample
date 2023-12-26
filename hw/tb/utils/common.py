@@ -11,6 +11,7 @@ def allocate_lsb(bit_str, bit_range=(0, 64)):
     available_bits = bit_str[::-1]
     # Replace values outside the range with 0
     available_bits = ''.join(char if i in bit_range else '0' for i, char in enumerate(available_bits))
+    print(f"Available bits: {available_bits}")
     # Choose least significant
     for i, bit in enumerate(available_bits):
         if bit == '1':

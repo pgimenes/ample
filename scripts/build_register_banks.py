@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s]:%(levelname)s:: %(message)s')
 
 def download_regbank_files(regbank_id, script_file):
-    os.system("python3.6 " + script_file + " " + str(regbank_id) + " all")
+    os.system("python3.10 " + script_file + " " + str(regbank_id) + " all")
 
 def update_vivado_project(BASE_PATH, regbank_list):
     tcl_file = BASE_PATH + "/hw/update_regbanks.tcl"

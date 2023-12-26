@@ -57,18 +57,15 @@ class Driver():
 
 
     async def program_nodeslot(self, programming, id):
-        await self.write(self.nsb_regs["NSB_NODESLOT_NODE_ID"] + 4*id, programming["node_id"])
-        await self.write(self.nsb_regs["NSB_NODESLOT_NEIGHBOUR_COUNT"] + 4*id, programming["neighbour_count"])
-        await self.write(self.nsb_regs["NSB_NODESLOT_PRECISION"] + 4*id, NodePrecision[programming["precision"]].value)
+        await self.write(self.nsb_regs["nsb_nodeslot_node_id"] + 4*id, programming["node_id"])
+        await self.write(self.nsb_regs["nsb_nodeslot_neighbour_count"] + 4*id, programming["neighbour_count"])
+        await self.write(self.nsb_regs["nsb_nodeslot_precision"] + 4*id, NodePrecision[programming["precision"]].value)
         await self.write(self.nsb_regs["nsb_nodeslot_aggregation_function"] + 4*id, AggregationFunction[programming["aggregation_function"]].value)
-        await self.write(self.nsb_regs["NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB"] + 4*id, programming["adjacency_list_address_lsb"])
+        await self.write(self.nsb_regs["nsb_nodeslot_adjacency_list_address_lsb"] + 4*id, programming["adjacency_list_address_lsb"])
         await self.write(self.nsb_regs["nsb_nodeslot_scale_factors_address_lsb"] + 4*id, programming["scale_factors_address_lsb"])
-        await self.write(self.nsb_regs["NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB"] + 4*id, programming["out_messages_address_lsb"])
+        await self.write(self.nsb_regs["nsb_nodeslot_out_messages_address_lsb"] + 4*id, programming["out_messages_address_lsb"])
 
-        if (id > 31):
-            await self.axil_driver.axil_write(self.nsb_regs["NSB_NODESLOT_CONFIG_MAKE_VALID_MSB"], 2**(id % 32)) # onehot representation of chosen nodeslot
-        else:
-            await self.axil_driver.axil_write(self.nsb_regs["NSB_NODESLOT_CONFIG_MAKE_VALID_LSB"], 2**id) # onehot representation of chosen nodeslot
+        await self.axil_driver.axil_write(self.nsb_regs["nsb_nodeslot_config_make_valid"] + 4*id, 1)
 
     # Timing optimization: skip writes to registers with value equal to their reset (0)
     async def write(self, address, data):

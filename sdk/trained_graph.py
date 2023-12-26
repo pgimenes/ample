@@ -58,27 +58,27 @@ class TrainedGraph:
         
         largest_nb_count = 0
         for node in self.nx_graph.nodes:
-                    neighbours = list(self.nx_graph.neighbors(node))
-                    if (len(neighbours) > largest_nb_count):
-                        largest_nb_count = len(neighbours)
-                        logging.debug(f"Largest neighbour count so far {len(neighbours)}")
-                    self.nx_graph.nodes[node]['neighbours'] = neighbours
-                    self.nx_graph.nodes[node]['neighbour_count'] = len(neighbours)
-                    self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
-                    self.nx_graph.nodes[node]['neighbour_message_ptrs'] = [4*self.feature_count*nb_ptr for nb_ptr in neighbours]
-                    self.nx_graph.nodes[node]['adjacency_list_address_lsb'] = 0 # to be defined my init manager
-                    self.nx_graph.nodes[node]['aggregation_function'] = "SUM"
+            neighbours = list(self.nx_graph.neighbors(node))
+            if (len(neighbours) > largest_nb_count):
+                largest_nb_count = len(neighbours)
+                logging.debug(f"Largest neighbour count so far {len(neighbours)}")
+            self.nx_graph.nodes[node]['neighbours'] = neighbours
+            self.nx_graph.nodes[node]['neighbour_count'] = len(neighbours)
+            self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
+            self.nx_graph.nodes[node]['neighbour_message_ptrs'] = [4*self.feature_count*nb_ptr for nb_ptr in neighbours]
+            self.nx_graph.nodes[node]['adjacency_list_address_lsb'] = 0 # to be defined my init manager
+            self.nx_graph.nodes[node]['aggregation_function'] = "SUM"
 
-                    # Add a single scale factor to isolated nodes to occupy memory range
-                    self.nx_graph.nodes[node]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
-                    
-                    if (self.graph_precision == 'mixed'):
-                        prec = random.choice(["FLOAT_32", "FIXED_8"])
-                    else:
-                        prec = self.graph_precision
-                    
-                    self.nx_graph.nodes[node]['precision'] = prec
-                    counts[prec] = counts[prec] + 1
+            # Add a single scale factor to isolated nodes to occupy memory range
+            self.nx_graph.nodes[node]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
+            
+            if (self.graph_precision == 'mixed'):
+                prec = random.choice(["FLOAT_32", "FIXED_8"])
+            else:
+                prec = self.graph_precision
+            
+            self.nx_graph.nodes[node]['precision'] = prec
+            counts[prec] = counts[prec] + 1
 
         for prec in ["FLOAT_32", "FIXED_8"]:
             precision_filter = [node for node in self.nx_graph.nodes if self.nx_graph.nodes[node]['precision'] == prec]

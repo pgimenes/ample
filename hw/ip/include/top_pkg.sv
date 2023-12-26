@@ -11,12 +11,12 @@ package top_pkg;
 // Global parameters
 // ----------------------------------------------------
 
-parameter AGGREGATION_CHANNELS = 16;
-parameter TRANSFORMATION_CHANNELS = 16;
+parameter AGGREGATION_CHANNELS = 64;
+parameter TRANSFORMATION_CHANNELS = 64;
 
 // Graph parameters
 parameter MAX_NODES = 1024*1024; // 1M
-parameter MAX_NODESLOT_COUNT = 32;
+parameter MAX_NODESLOT_COUNT = 64;
 parameter MAX_NEIGHBOURS = 1024;
 parameter MAX_FEATURE_COUNT = 1024;
 parameter FEATURE_COUNT = 512;
@@ -28,7 +28,7 @@ parameter LARGE_PRECISION_BYTE_COUNT = 4;
 parameter LARGE_MSG_QUEUE_DEPTH = 64;
 
 // Multi-precision support
-parameter PRECISION_COUNT = 2;
+parameter PRECISION_COUNT = 1;
 
 // AXI parameters
 parameter AXI_ADDRESS_WIDTH = 34;

@@ -127,11 +127,6 @@ logic [63:0] [31:0] nsb_nodeslot_scale_factors_address_lsb_value;       // value
 logic [63:0] nsb_nodeslot_scale_factors_address_msb_strobe;             // strobe signal for register 'nsb_nodeslot_scale_factors_address_msb' (pulsed when the register is written from the bus)
 logic [63:0] [1:0] nsb_nodeslot_scale_factors_address_msb_value;        // value of field 'nsb_nodeslot_scale_factors_address_msb.value'
 
-logic nsb_nodeslot_config_make_valid_msb_strobe; // strobe signal for register 'NSB_NODESLOT_CONFIG_MAKE_VALID_MSB' (pulsed when the register is written from the bus)
-logic [31:0] nsb_nodeslot_config_make_valid_msb_make_valid; // value of field 'NSB_NODESLOT_CONFIG_MAKE_VALID_MSB.MAKE_VALID'
-logic nsb_nodeslot_config_make_valid_lsb_strobe; // strobe signal for register 'NSB_NODESLOT_CONFIG_MAKE_VALID_LSB' (pulsed when the register is written from the bus)
-logic [31:0] nsb_nodeslot_config_make_valid_lsb_make_valid;// value of field 'NSB_NODESLOT_CONFIG_MAKE_VALID_LSB.MAKE_VALID'
-
 logic nsb_config_aggregation_wait_count_strobe; // strobe signal for register 'NSB_CONFIG_AGGREGATION_WAIT_COUNT' (pulsed when the register is written from the bus)
 logic [5:0] nsb_config_aggregation_wait_count_count; // value of field 'NSB_CONFIG_AGGREGATION_WAIT_COUNT.COUNT'
 logic nsb_config_transformation_wait_count_strobe; // strobe signal for register 'NSB_CONFIG_TRANSFORMATION_WAIT_COUNT' (pulsed when the register is written from the bus)
@@ -141,14 +136,14 @@ logic [63:0] nsb_nodeslot_allocated_fetch_tag_strobe;
 logic [63:0] [5:0] nsb_nodeslot_allocated_fetch_tag_fetch_tag;
 
 // STATUS
-logic [31:0] status_nodeslots_empty_mask_msb_value;
-logic [31:0] status_nodeslots_empty_mask_lsb_value;
+logic [NODESLOT_COUNT-1:0] status_nodeslots_empty_mask_msb_value;
+logic [NODESLOT_COUNT-1:0] status_nodeslots_empty_mask_lsb_value;
 
 // Other
 // ------------------------------------------------------------
 
 logic [NODESLOT_COUNT-1:0] [3:0] nodeslot_state, nodeslot_state_n; // not defined as enum to avoid VRFC 10-2649
-logic [NODESLOT_COUNT-1:0] nodeslot_make_valid;
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_config_make_valid_value;
 
 // Done masks
 logic [NODESLOT_COUNT-1:0] fetch_nb_list_resp_received;
@@ -245,24 +240,18 @@ node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
     .nsb_nodeslot_adjacency_list_address_msb_msb,
     .nsb_nodeslot_out_messages_address_lsb_lsb,
     .nsb_nodeslot_out_messages_address_msb_msb,
-    .nsb_nodeslot_config_make_valid_msb_make_valid,
-    .nsb_nodeslot_config_make_valid_lsb_make_valid,
     .nsb_nodeslot_scale_factors_address_lsb_value,
     .nsb_nodeslot_scale_factors_address_msb_value,
     .nsb_config_aggregation_wait_count_count,
     .nsb_config_transformation_wait_count_count,
-    .status_nodeslots_empty_mask_lsb_value,
     .status_nodeslots_empty_mask_msb_value,
+    .status_nodeslots_empty_mask_lsb_value,
     .*
 );
 
 // ==================================================================================================================================================
 // Logic
 // ==================================================================================================================================================
-
-// Masks
-assign nodeslot_make_valid[31:0] = nsb_nodeslot_config_make_valid_lsb_make_valid;
-// assign nodeslot_make_valid[63:32] = nsb_nodeslot_config_make_valid_msb_make_valid;
 
 assign accepting_prefetch_request = nsb_prefetcher_req_valid && nsb_prefetcher_req_ready;
 assign accepting_aggregation_request = nsb_age_req_valid && nsb_age_req_ready;
@@ -324,7 +313,7 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
 
         case (nodeslot_state[nodeslot])
             node_scoreboard_pkg::EMPTY: begin
-                nodeslot_state_n[nodeslot] = nodeslot_make_valid[nodeslot] ? node_scoreboard_pkg::PROG_DONE
+                nodeslot_state_n[nodeslot] = nsb_nodeslot_config_make_valid_value[nodeslot] ? node_scoreboard_pkg::PROG_DONE
                                     : node_scoreboard_pkg::EMPTY;
             end
 
@@ -377,7 +366,6 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
 
     assign nodeslots_waiting_aggregation         [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::FETCH_NEIGHBOURS) && fetch_nbs_resp_received[nodeslot];
     assign nodeslots_waiting_transformation      [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::AGGREGATION) && aggregation_done[nodeslot];
-    assign status_nodeslots_empty_mask_lsb_value [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
 
     // Read-only status flags
     always_ff @(posedge core_clk or negedge resetn) begin
@@ -395,6 +383,12 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
     end
 
     assign nsb_fte_req.nodeslots [nodeslot] = nodeslots_waiting_transformation [nodeslot] && aggregation_buffer_waiting_transformation[nsb_nodeslot_precision_precision[nodeslot]];
+
+    if (nodeslot > 31) begin
+        assign status_nodeslots_empty_mask_msb_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
+    end else begin
+        assign status_nodeslots_empty_mask_lsb_value [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
+    end
 
 end : per_nodeslot_logic
 
@@ -490,6 +484,7 @@ always_comb begin : nsb_prefetcher_req_logic
                                     : nsb_prefetcher_req.req_opcode == top_pkg::SCALE_FACTOR ? {nsb_nodeslot_scale_factors_address_msb_value[prefetcher_arbiter_grant_bin], nsb_nodeslot_scale_factors_address_lsb_value[prefetcher_arbiter_grant_bin]}
                                     : '0;
     
+
     nsb_prefetcher_req.neighbour_count = nsb_nodeslot_neighbour_count_count[prefetcher_arbiter_grant_bin];
 
     nsb_prefetcher_req.nodeslot_precision = nsb_prefetcher_req.req_opcode == WEIGHTS ? top_pkg::NODE_PRECISION_e'(ctrl_fetch_layer_weights_precision_value)

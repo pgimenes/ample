@@ -197,7 +197,7 @@ always_comb begin
     end
 
     AGC_FSM_WAIT_FEATURE_BODY: begin
-        agc_state_n = router_aggregation_core_valid && aggregation_manager_pkt && correct_pkt_dest ? AGC_FSM_UPDATE_ACCS // receiving feature packet
+        agc_state_n = router_aggregation_core_valid && aggregation_manager_pkt && correct_pkt_dest && !head_packet ? AGC_FSM_UPDATE_ACCS // receiving feature packet
                     : AGC_FSM_WAIT_FEATURE_BODY;
     end
     

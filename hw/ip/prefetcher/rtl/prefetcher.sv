@@ -388,85 +388,84 @@ prefetcher_feature_bank #(
 // Weight Bank
 // --------------------------------------------------------------------------------------------
 
-// for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
+for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
+    prefetcher_weight_bank #(
+        .PRECISION         (precision),
+        .AXI_ADDRESS_WIDTH (34),
+        .AXI_DATA_WIDTH    (512),
+        .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
+        ) weight_bank_i (
+            .core_clk,
+            .resetn,
+            
+            .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid [precision]),
+            .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready [precision]),
+            .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req),
+            
+            .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid [precision]),
+            .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp       [precision]),
+            
+            .weight_bank_axi_rm_fetch_req_valid     (weight_bank_axi_rm_fetch_req_valid     [precision]),
+            .weight_bank_axi_rm_fetch_req_ready     (weight_bank_axi_rm_fetch_req_ready     [precision]),
+            .weight_bank_axi_rm_fetch_start_address (weight_bank_axi_rm_fetch_start_address [precision]),
+            .weight_bank_axi_rm_fetch_byte_count    (weight_bank_axi_rm_fetch_byte_count    [precision]),
+            
+            .weight_bank_axi_rm_fetch_resp_valid    (weight_bank_axi_rm_fetch_resp_valid  [precision]),
+            .weight_bank_axi_rm_fetch_resp_ready    (weight_bank_axi_rm_fetch_resp_ready  [precision]),
+            .weight_bank_axi_rm_fetch_resp_last     (weight_read_master_resp_last  ),
+            .weight_bank_axi_rm_fetch_resp_data     (weight_read_master_resp_data  ),
+            .weight_bank_axi_rm_fetch_resp_axi_id   (weight_read_master_resp_axi_id),
+            
+            .weight_channel_req_valid               (weight_channel_req_valid [precision]),
+            .weight_channel_req_ready               (weight_channel_req_ready [precision]),
+            .weight_channel_req                     (weight_channel_req       [precision]),
+            
+            .weight_channel_resp_valid              (weight_channel_resp_valid [precision]),
+            .weight_channel_resp_ready              (weight_channel_resp_ready [precision]),
+            .weight_channel_resp                    (weight_channel_resp       [precision]),
+            
+            .layer_config_weights_address_lsb_value (layer_config_weights_address_lsb_value [precision])
+            );
+            
+end
+        
+// prefetcher_weight_bank #(
+//     .PRECISION         (top_pkg::FIXED_8),
+//     .AXI_ADDRESS_WIDTH (34),
+//     .AXI_DATA_WIDTH    (512),
+//     .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
+// ) weight_bank_fixed_i (
+//     .core_clk,
+//     .resetn,
 
-// end
+//     .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid [top_pkg::FIXED_8]),
+//     .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready [top_pkg::FIXED_8]),
+//     .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req),
 
-prefetcher_weight_bank #(
-    .PRECISION         (top_pkg::FLOAT_32),
-    .AXI_ADDRESS_WIDTH (34),
-    .AXI_DATA_WIDTH    (512),
-    .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
-) weight_bank_float_i (
-    .core_clk,
-    .resetn,
+//     .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid [top_pkg::FIXED_8]),
+//     .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp       [top_pkg::FIXED_8]),
 
-    .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid [top_pkg::FLOAT_32]),
-    .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready [top_pkg::FLOAT_32]),
-    .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req),
+//     .weight_bank_axi_rm_fetch_req_valid     (weight_bank_axi_rm_fetch_req_valid     [top_pkg::FIXED_8]),
+//     .weight_bank_axi_rm_fetch_req_ready     (weight_bank_axi_rm_fetch_req_ready     [top_pkg::FIXED_8]),
+//     .weight_bank_axi_rm_fetch_start_address (weight_bank_axi_rm_fetch_start_address [top_pkg::FIXED_8]),
+//     .weight_bank_axi_rm_fetch_byte_count    (weight_bank_axi_rm_fetch_byte_count    [top_pkg::FIXED_8]),
 
-    .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid [top_pkg::FLOAT_32]),
-    .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp       [top_pkg::FLOAT_32]),
+//     .weight_bank_axi_rm_fetch_resp_valid    (weight_bank_axi_rm_fetch_resp_valid  [top_pkg::FIXED_8]),
+//     .weight_bank_axi_rm_fetch_resp_ready    (weight_bank_axi_rm_fetch_resp_ready  [top_pkg::FIXED_8]),
+//     .weight_bank_axi_rm_fetch_resp_last     (weight_read_master_resp_last  ),
+//     .weight_bank_axi_rm_fetch_resp_data     (weight_read_master_resp_data  ),
+//     .weight_bank_axi_rm_fetch_resp_axi_id   (weight_read_master_resp_axi_id),
 
-    .weight_bank_axi_rm_fetch_req_valid     (weight_bank_axi_rm_fetch_req_valid     [top_pkg::FLOAT_32]),
-    .weight_bank_axi_rm_fetch_req_ready     (weight_bank_axi_rm_fetch_req_ready     [top_pkg::FLOAT_32]),
-    .weight_bank_axi_rm_fetch_start_address (weight_bank_axi_rm_fetch_start_address [top_pkg::FLOAT_32]),
-    .weight_bank_axi_rm_fetch_byte_count    (weight_bank_axi_rm_fetch_byte_count    [top_pkg::FLOAT_32]),
+//     .weight_channel_req_valid               (weight_channel_req_valid [top_pkg::FIXED_8]),
+//     .weight_channel_req_ready               (weight_channel_req_ready [top_pkg::FIXED_8]),
+//     .weight_channel_req                     (weight_channel_req       [top_pkg::FIXED_8]),
 
-    .weight_bank_axi_rm_fetch_resp_valid    (weight_bank_axi_rm_fetch_resp_valid  [top_pkg::FLOAT_32]),
-    .weight_bank_axi_rm_fetch_resp_ready    (weight_bank_axi_rm_fetch_resp_ready  [top_pkg::FLOAT_32]),
-    .weight_bank_axi_rm_fetch_resp_last     (weight_read_master_resp_last  ),
-    .weight_bank_axi_rm_fetch_resp_data     (weight_read_master_resp_data  ),
-    .weight_bank_axi_rm_fetch_resp_axi_id   (weight_read_master_resp_axi_id),
+//     .weight_channel_resp_valid              (weight_channel_resp_valid [top_pkg::FIXED_8]),
+//     .weight_channel_resp_ready              (weight_channel_resp_ready [top_pkg::FIXED_8]),
+//     .weight_channel_resp                    (weight_channel_resp       [top_pkg::FIXED_8]),
 
-    .weight_channel_req_valid               (weight_channel_req_valid [top_pkg::FLOAT_32]),
-    .weight_channel_req_ready               (weight_channel_req_ready [top_pkg::FLOAT_32]),
-    .weight_channel_req                     (weight_channel_req       [top_pkg::FLOAT_32]),
-
-    .weight_channel_resp_valid              (weight_channel_resp_valid [top_pkg::FLOAT_32]),
-    .weight_channel_resp_ready              (weight_channel_resp_ready [top_pkg::FLOAT_32]),
-    .weight_channel_resp                    (weight_channel_resp       [top_pkg::FLOAT_32]),
-
-    .layer_config_weights_address_lsb_value (layer_config_weights_address_lsb_value [top_pkg::FLOAT_32])
-);
-
-prefetcher_weight_bank #(
-    .PRECISION         (top_pkg::FIXED_8),
-    .AXI_ADDRESS_WIDTH (34),
-    .AXI_DATA_WIDTH    (512),
-    .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
-) weight_bank_fixed_i (
-    .core_clk,
-    .resetn,
-
-    .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid [top_pkg::FIXED_8]),
-    .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready [top_pkg::FIXED_8]),
-    .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req),
-
-    .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid [top_pkg::FIXED_8]),
-    .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp       [top_pkg::FIXED_8]),
-
-    .weight_bank_axi_rm_fetch_req_valid     (weight_bank_axi_rm_fetch_req_valid     [top_pkg::FIXED_8]),
-    .weight_bank_axi_rm_fetch_req_ready     (weight_bank_axi_rm_fetch_req_ready     [top_pkg::FIXED_8]),
-    .weight_bank_axi_rm_fetch_start_address (weight_bank_axi_rm_fetch_start_address [top_pkg::FIXED_8]),
-    .weight_bank_axi_rm_fetch_byte_count    (weight_bank_axi_rm_fetch_byte_count    [top_pkg::FIXED_8]),
-
-    .weight_bank_axi_rm_fetch_resp_valid    (weight_bank_axi_rm_fetch_resp_valid  [top_pkg::FIXED_8]),
-    .weight_bank_axi_rm_fetch_resp_ready    (weight_bank_axi_rm_fetch_resp_ready  [top_pkg::FIXED_8]),
-    .weight_bank_axi_rm_fetch_resp_last     (weight_read_master_resp_last  ),
-    .weight_bank_axi_rm_fetch_resp_data     (weight_read_master_resp_data  ),
-    .weight_bank_axi_rm_fetch_resp_axi_id   (weight_read_master_resp_axi_id),
-
-    .weight_channel_req_valid               (weight_channel_req_valid [top_pkg::FIXED_8]),
-    .weight_channel_req_ready               (weight_channel_req_ready [top_pkg::FIXED_8]),
-    .weight_channel_req                     (weight_channel_req       [top_pkg::FIXED_8]),
-
-    .weight_channel_resp_valid              (weight_channel_resp_valid [top_pkg::FIXED_8]),
-    .weight_channel_resp_ready              (weight_channel_resp_ready [top_pkg::FIXED_8]),
-    .weight_channel_resp                    (weight_channel_resp       [top_pkg::FIXED_8]),
-
-    .layer_config_weights_address_lsb_value (layer_config_weights_address_lsb_value [top_pkg::FIXED_8])
-);
+//     .layer_config_weights_address_lsb_value (layer_config_weights_address_lsb_value [top_pkg::FIXED_8])
+// );
 
 // Adjacency Read Master
 // ----------------------------------------------------------------------------------

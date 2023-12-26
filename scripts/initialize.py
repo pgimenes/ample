@@ -19,7 +19,7 @@ import os
 
 import numpy as np
 
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s]:%(levelname)s:: %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s]:%(levelname)s:: %(message)s')
 
 '''
     Build graphs with requested embedding size and generate memory file.

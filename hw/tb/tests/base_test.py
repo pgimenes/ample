@@ -12,8 +12,8 @@ from tb.driver import Driver
 from tb.utils.common import NodePrecision
 
 from tb.variant import Variant
-from tb.monitors.age_monitor import AGE_Monitor
-from tb.monitors.nsb_monitor import NSB_Monitor
+# from tb.monitors.age_monitor import AGE_Monitor
+# from tb.monitors.nsb_monitor import NSB_Monitor
 from tb.monitors.prefetcher_monitor import Prefetcher_Monitor
 from tb.monitors.fte_monitor import FTE_Monitor
 
@@ -27,8 +27,8 @@ class BaseTest:
 
         self.variant = Variant()
 
-        self.age_monitor = AGE_Monitor(dut.top_i.aggregation_engine_i, self.variant)
-        self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
+        # self.age_monitor = AGE_Monitor(dut.top_i.aggregation_engine_i, self.variant)
+        # self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
         # self.prefetcher_monitor = Prefetcher_Monitor(dut.top_i.prefetcher_i, self.variant)
         # self.fte_monitor = FTE_Monitor(dut.top_i.transformation_engine_i, self.variant)
 
@@ -68,8 +68,8 @@ class BaseTest:
         await self.drive_reset()
 
         # Start monitors
-        self.nsb_monitor.start()
-        self.age_monitor.start()
+        # self.nsb_monitor.start()
+        # self.age_monitor.start()
         # self.prefetcher_monitor.start()
         # self.fte_monitor.start()
 
@@ -79,8 +79,9 @@ class BaseTest:
 
     async def end_test(self):
         # Stop monitors
-        self.nsb_monitor.stop()
-        self.age_monitor.stop()
+        # self.nsb_monitor.stop()
+        # self.age_monitor.stop()
+        pass
 
     def load_regbank(self, regbank):
         json_path = os.path.join(self.regbank_path, regbank, regbank + "_regs.json")

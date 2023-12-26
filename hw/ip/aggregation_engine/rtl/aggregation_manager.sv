@@ -313,7 +313,9 @@ always_comb begin
                                                                                 }
 
                                             // Subsequent packets contain message channel response split into 64-bit chunks
-                                            : (packet_state == PKT_FSM_TAIL) ?  {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], message_channel_resp_q.data[511:0]} : '0;
+                                            : (packet_state == PKT_FSM_TAIL) ?  {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr], 
+                                                                                    X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], 
+                                                                                    message_channel_resp_q.data[511:0]} : '0;
     
     // Buffer request packets to AGCs
     end else if (agm_state == AGM_FSM_AGC_BUFFER_REQ) begin
