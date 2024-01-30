@@ -6,7 +6,7 @@ from cocotb.clock import Clock
 import json
 import os
 
-base_path = os.environ.get("FYP_DIR")
+base_path = os.environ.get("WORKAREA")
 
 regbank_path = base_path + "/hw/build/regbanks"
 ns_programming_file = base_path + "/hw/sim/layer_config/nodeslot_programming.json"

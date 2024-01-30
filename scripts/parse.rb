@@ -20,7 +20,7 @@ logger.formatter = CustomFormatter.new
 # Parse command-line options
 
 options = {}
-default_base_path = "#{ENV['FYP_DIR']}/hw/build"
+default_base_path = "#{ENV['WORKAREA']}/hw/build"
 
 OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename($PROGRAM_NAME)} [options] --files FILE1 FILE2 ..."

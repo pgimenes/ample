@@ -1,19 +1,24 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a name="readme-top"></a>
 
-[![Contributors][contributors-shield]][contributors-url]
+<!-- [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
+[![Issues][issues-shield]][issues-url] -->
 
 <!-- PROJECT LOGO -->
 <br />
+
+<div align="center">
+  <img src="https://miro.medium.com/v2/resize:fit:640/format:webp/1*2s-my83GACoXqzP5uIH9Aw.png" alt="AGILE Accelerator Image" width="300"/>
+</div>
+
 <div align="center">
   <!-- <a href="https://github.com/othneildrew/Best-README-Template">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a> -->
 
-  <h3 align="center">AMPLE: Accelerated Message Passing Learning Engine</h3>
+  <h3 align="center">AGILE: Accelerated Graph Inference Logic Engine</h3>
 
   <p align="center">
     An FPGA accelerator for Graph Neural Networks following the Message Passing Mechanism.
@@ -28,7 +33,6 @@
     <a href="https://github.com/pgimenes/fuzzy_carnival/issues">Request Feature</a>
   </p>
 </div>
-
 
 
 <!-- TABLE OF CONTENTS -->
@@ -57,6 +61,15 @@
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
+In recent times, Graph Neural Networks (GNNs) have attracted great attention due to their performance on non-Euclidean data. Custom hardware acceleration proves particularly beneficial for GNNs given their irregular memory access patterns, resulting from the sparse structure of the graphs. Despite the relative success of hardware approaches to accelerate GNN inference on FPGA devices, previous works are limited to small graphs with up to 20k nodes, such as Cora, Citeseer and Pubmed. Since the computational overhead of GNN inference grows with increasing graph size, existing accelerators are unable to process medium to large-scale graphs.
+
+AGILE is an FPGA accelerator aimed at enabling GNN inference on large graphs by exploring a range of hardware optimisations:
+
+* Event-driven programming flow, which reduces pipeline gaps by addressing the non-uniform distribution in node degrees. 
+* Multi-precision dataflow architecture, enabling quantized GNN inference in hardware at node granularity. 
+* Efficient prefetcher unit is implemented to support the large graph use case
+
+Evaluation on the set of Planetoid graphs, containing up to 19717 nodes, shows up to 2.8x speed-up against GPU counterparts, and up to 6.6x against CPU.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -65,47 +78,58 @@
 <!-- GETTING STARTED -->
 ## Getting Started
 
-### Prerequisites
+Follow these instructions to set up your workarea. The following steps assume you have Vivado 2019.2 and Modelsim 2019.2 installed.
 
-* To run the Software Development Kit (SDK), create a new conda environment with the provided package list.
-  ```sh
-  conda env create -f env.yml
-  conda activate sdk
-  ```
+1. Start by cloning the repository. 
 
-### Building and Running a Simulation
+```bash
+git clone https://github.com/pgimenes/agile.git
+```
 
-1. Set the WORK_AREA environment variable
-   ```sh
-   export WORK_AREA="<path/to/repo>"
-   ```
-1. Clone the repo with SSH
-   ```sh
-   git clone git@github.com:pgimenes/fuzzy_carnival.git $WORK_AREA
-   ```
-3. Run the build script to generate Xilinx IP files and register banks and pull latest version of required submodules.
-   ```sh
-   source $WORK_AREA/scripts/build.sh
-   ```
-4. Run the SDK to generate required simulation files for desired application. The --matrix argument generates payloads for a 4x4 matrix multiplication.
-   ```sh
-   $WORK_AREA/sdk/initialize.py --matrix
-   ```
-4. Launch a simulation, and monitor the generated log at $WORK_AREA/hw/sim/top_tb_log.log.
-   ```sh
-   cd $WORK_AREA/hw/sim; ./top_tb.sh
-   ```
+2. Set the `WORKAREA` environment variable.
+```bash
+cd agile
+export WORKAREA=$(pwd)
+```
 
+3. If you don't have `conda` installed yet, download the installation file for your platform from the [link](https://www.anaconda.com/download#downloads) and execute with all default settings. For example:
+```bash
+wget https://repo.anaconda.com/archive/Anaconda3-2023.09-0-Linux-x86_64.sh
+chmod +x Anaconda3-2023.09-0-Linux-x86_64.sh
+./Anaconda3-2023.09-0-Linux-x86_64.sh -b
+``` 
 
+4. Create a conda environment from the defined yaml file and install pip dependencies.
+```bash
+conda env create -f environment.yml
+conda activate agile
+pip install -r $WORKAREA/requirements.txt
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+> Note: a common error is that conda does not update the path to use the environment version of python and pip. Check this by running `which pip` and ensuring this points to a path within your anaconda installation.
 
+5. Run the build script to update submodules, build register banks and the Vivado build project. This will ask you for the [Airhdl](https://airhdl.com/) password associated with the project. Contact a project contributor for access to this.
 
+```bash
+source $WORKAREA/scripts/build.sh
+```
 
-<!-- USAGE EXAMPLES -->
-## Usage
+6. Generate the simulation payloads. For example, for the KarateClub dataset:
 
-TO DO
+```bash
+$WORKAREA/scripts/initialize.py --karate --gcn --payloads --random
+```
+
+7. Build the testbench.
+```bash
+cd $WORKAREA/hw/sim
+make build
+```
+
+8. Run the simulation.
+```bash
+make sim GUI=1
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

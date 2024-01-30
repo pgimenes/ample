@@ -1,0 +1,10 @@
+networkx
+numpy
+torch 
+torchvision 
+torchaudio
+torch_geometric
+torch-cluster
+matplotlib
+pytorch-lightning
+cocotb

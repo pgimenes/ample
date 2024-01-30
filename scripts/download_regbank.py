@@ -34,10 +34,10 @@ import sys
 import json
 import argparse
 import urllib.request
+from getpass import getpass
 
 # Your airhdl.com user name and passord
 USERNAME = "pedro.gimenes19@imperial.ac.uk"
-PASSWORD = "aTFjfjclbEFg0bgB"
 
 FILE_TYPES = {
     "cHeader": ("_regs", "h"),
@@ -74,6 +74,7 @@ if __name__ == "__main__":
 
     # Get authentication token
     url = "https://airhdl.com/api/auth/login"
+    PASSWORD = getpass("Enter your airhdl.com password: ")
     body = {'username': USERNAME, "password": PASSWORD}
     req = urllib.request.Request(
         url=url, method="POST")

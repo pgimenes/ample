@@ -2,9 +2,7 @@
 
 set -e
 
-exec > $FYP_DIR/build_log.log
-
-cd $FYP_DIR
+cd $WORKAREA
 
 # Build submodules
 echo "======================================================="
@@ -20,12 +18,12 @@ echo "======================================================="
 echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Building register banks."
 echo "======================================================="
 
-python3.10 $FYP_DIR/scripts/build_register_banks.py
+python $WORKAREA/scripts/build_register_banks.py
 
 # Build Xilinx IP
 echo "======================================================="
 echo "[$(date +%Y-%m-%d\ %H:%M:%S)]: Generate Build Project."
 echo "======================================================="
 
-mkdir -p $FYP_DIR/hw/build && cd $FYP_DIR/hw/build || cd $FYP_DIR/hw/build
-vivado -mode batch -source $FYP_DIR/scripts/build_project.tcl
+mkdir -p $WORKAREA/hw/build && cd $WORKAREA/hw/build || cd $WORKAREA/hw/build
+vivado -mode batch -source $WORKAREA/scripts/build_project.tcl

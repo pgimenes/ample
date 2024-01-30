@@ -11,7 +11,7 @@ for ((i=0; i<num_runs; i++)); do
   echo "Running iteration $((i+1))..."
 
   # Execute the Python script and capture the output
-  output=$($FYP_DIR/scripts/initialize.py --pubmed --gcn --in_features 64 --out_features 64 --cpu --random 2>&1)
+  output=$($WORKAREA/scripts/initialize.py --pubmed --gcn --in_features 64 --out_features 64 --cpu --random 2>&1)
 
   # Extract the elapsed time from the output
   elapsed_time=$(echo "$output" | grep "Elapsed time:" | awk '{print $5}')

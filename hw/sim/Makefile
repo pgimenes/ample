@@ -180,7 +180,7 @@ $(SIM_BUILD)/simulate.do: $(SIM_BUILD)/opt.do $(SIM_BUILD)/compile.do $(SIM_BUIL
 	@echo "run -all" >> $@
 
 build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
-	source $(FYP_DIR)/scripts/add_hash.sh
+	source $(WORKAREA)/scripts/add_hash.sh
 	source $(SIM_BUILD)/libs.do
 	source $(SIM_BUILD)/compile.do
 	source $(SIM_BUILD)/opt.do

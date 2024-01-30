@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.10
+#!/usr/bin/env python
 
 import os
 import subprocess
@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s]:%(levelname)s:: %(message)s')
 
 def download_regbank_files(regbank_id, script_file):
-    os.system("python3.10 " + script_file + " " + str(regbank_id) + " all")
+    os.system("python " + script_file + " " + str(regbank_id) + " all")
 
 def update_vivado_project(BASE_PATH, regbank_list):
     tcl_file = BASE_PATH + "/hw/update_regbanks.tcl"
@@ -18,7 +18,7 @@ def update_vivado_project(BASE_PATH, regbank_list):
 
     with open(tcl_file, "w") as tfile:
         # Open project
-        tfile.write("open_project $::env(FYP_DIR)/hw/build/build_project.xpr \n")
+        tfile.write("open_project $::env(WORKAREA)/hw/build/build_project.xpr \n")
 
         for rb in regbank_list:
             tfile.write("add_files -fileset sources_1 " + BASE_PATH + "/hw/build/regbanks/" + rb + " \n")
@@ -54,7 +54,7 @@ def main(args):
     # Build register bank wrappers
     for regbank in regbanks["regbanks"]:
         logging.info(f"Building CDC wrapper for {regbank['name']}.")
-        os.system("python3.10 $FYP_DIR/scripts/regbank_wrapper.py --regbank_name " + regbank["name"])
+        os.system("python $WORKAREA/scripts/regbank_wrapper.py --regbank_name " + regbank["name"])
 
     if (args.update_project):
         logging.info("Updating Vivado project with new regbanks.")
@@ -65,11 +65,11 @@ def main(args):
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
-    default_base_path = os.environ.get("FYP_DIR")
-    parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $FYP_DIR)')
-    parser.add_argument('--download_script', default=default_base_path+"/scripts/download_regbank.py", help='AirHDL Download Script (default: $FYP_DIR/scripts/download_regbank.py)')
-    parser.add_argument('--regbank_list', default=default_base_path+"/hw/regbanks.json", help='Register bank JSON file (default: $FYP_DIR/hw/regbanks.json)')
-    parser.add_argument('--build_directory', default=default_base_path+"/hw/build", help='Build directory path (default: $FYP_DIR/hw/build)')
+    default_base_path = os.environ.get("WORKAREA")
+    parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $WORKAREA)')
+    parser.add_argument('--download_script', default=default_base_path+"/scripts/download_regbank.py", help='AirHDL Download Script (default: $WORKAREA/scripts/download_regbank.py)')
+    parser.add_argument('--regbank_list', default=default_base_path+"/hw/regbanks.json", help='Register bank JSON file (default: $WORKAREA/hw/regbanks.json)')
+    parser.add_argument('--build_directory', default=default_base_path+"/hw/build", help='Build directory path (default: $WORKAREA/hw/build)')
     parser.add_argument('--skip_wrappers', action='store_true', help='Skip building register bank wrappers')
     parser.add_argument('--update_project', action='store_true', help='Update Vivado project with new regbanks')
 

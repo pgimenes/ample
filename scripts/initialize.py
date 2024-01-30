@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.10
+#!/usr/bin/env python
 import argparse
 from sdk.initialization_manager import InitManager
 
@@ -141,8 +141,8 @@ def parse_arguments():
     parser.add_argument('--gat', action='store_true', help='Use GAT Model')
     parser.add_argument('--sage', action='store_true', help='Use GraphSAGE Model')
 
-    default_base_path = os.environ.get("FYP_DIR") + "/hw/sim/layer_config"
-    parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $FYP_DIR/hw/sim/layer_config)')
+    default_base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
+    parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $WORKAREA/hw/sim/layer_config)')
     
     parser.add_argument('--in_features', type=int, default=4, help='Input feature count')
     parser.add_argument('--out_features', type=int, default=4, help='Output feature count')

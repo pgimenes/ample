@@ -51,7 +51,7 @@ class BaseTest:
         self.fte_regbank = {}
 
         # Paths
-        self.base_path = base_path if base_path is not None else os.environ.get("FYP_DIR")
+        self.base_path = base_path if base_path is not None else os.environ.get("WORKAREA")
         self.regbank_path = self.base_path + "/hw/build/regbanks"
         self.nodeslot_programming_file = self.base_path + "/hw/sim/layer_config/nodeslot_programming.json"
         self.layer_config_file = self.base_path + "/hw/sim/layer_config/layer_config.json"

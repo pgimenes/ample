@@ -18,6 +18,7 @@ class InitManager:
         self.memory_mapper = Memory_Mapper(graph.nx_graph, model, base_path=base_path, dump_file=memory_dump_file)
 
         # Create directory for output files
+        breakpoint()
         os.makedirs(base_path, exist_ok=True)
 
         # Paths

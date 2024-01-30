@@ -1,4 +1,4 @@
-# #!/usr/bin/env python3.10
+# #!/usr/bin/env python
 
 import argparse
 import json
@@ -200,7 +200,7 @@ if __name__ == "__main__":
     
     parser.add_argument("--regbank_name", help="Name of the register bank")
     
-    default_path = os.path.join(os.environ["FYP_DIR"], "hw/build/regbanks/")
+    default_path = os.path.join(os.environ["WORKAREA"], "hw/build/regbanks/")
     parser.add_argument("--base_path", default=default_path, help="Name of the register bank")
     
     args = parser.parse_args()

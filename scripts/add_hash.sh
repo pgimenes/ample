@@ -1,29 +1,29 @@
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/aggregation_engine/rtl/ --destination $FYP_DIR/hw/build/ip/aggregation_engine/rtl
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/aggregation_engine/include/ --destination $FYP_DIR/hw/build/ip/aggregation_engine/include
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/aggregation_engine/tb/ --destination $FYP_DIR/hw/build/ip/aggregation_engine/tb
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/aggregation_engine/rtl/ --destination $WORKAREA/hw/build/ip/aggregation_engine/rtl
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/aggregation_engine/include/ --destination $WORKAREA/hw/build/ip/aggregation_engine/include
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/aggregation_engine/tb/ --destination $WORKAREA/hw/build/ip/aggregation_engine/tb
 
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/include --destination $FYP_DIR/hw/build/ip/include
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/include --destination $WORKAREA/hw/build/ip/include
 
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/lib/arithmetic --destination $FYP_DIR/hw/build/ip/lib/arithmetic
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/lib/arithmetic/aggregators --destination $FYP_DIR/hw/build/ip/lib/arithmetic/aggregators
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/lib/axi --destination $FYP_DIR/hw/build/ip/lib/axi
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/lib/base_components --destination $FYP_DIR/hw/build/ip/lib/base_components
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/lib/buffers --destination $FYP_DIR/hw/build/ip/lib/buffers
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/lib/buffers/hybrid_buffer --destination $FYP_DIR/hw/build/ip/lib/buffers/hybrid_buffer
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/lib/systolic_modules --destination $FYP_DIR/hw/build/ip/lib/systolic_modules
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/lib/arithmetic --destination $WORKAREA/hw/build/ip/lib/arithmetic
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/lib/arithmetic/aggregators --destination $WORKAREA/hw/build/ip/lib/arithmetic/aggregators
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/lib/axi --destination $WORKAREA/hw/build/ip/lib/axi
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/lib/base_components --destination $WORKAREA/hw/build/ip/lib/base_components
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/lib/buffers --destination $WORKAREA/hw/build/ip/lib/buffers
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/lib/buffers/hybrid_buffer --destination $WORKAREA/hw/build/ip/lib/buffers/hybrid_buffer
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/lib/systolic_modules --destination $WORKAREA/hw/build/ip/lib/systolic_modules
 
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/node_scoreboard/rtl --destination $FYP_DIR/hw/build/ip/node_scoreboard/rtl
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/node_scoreboard/tb --destination $FYP_DIR/hw/build/ip/node_scoreboard/tb
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/node_scoreboard/include --destination $FYP_DIR/hw/build/ip/node_scoreboard/include
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/node_scoreboard/rtl --destination $WORKAREA/hw/build/ip/node_scoreboard/rtl
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/node_scoreboard/tb --destination $WORKAREA/hw/build/ip/node_scoreboard/tb
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/node_scoreboard/include --destination $WORKAREA/hw/build/ip/node_scoreboard/include
 
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/prefetcher/rtl --destination $FYP_DIR/hw/build/ip/prefetcher/rtl
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/prefetcher/tb --destination $FYP_DIR/hw/build/ip/prefetcher/tb
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/prefetcher/include --destination $FYP_DIR/hw/build/ip/prefetcher/include
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/prefetcher/rtl --destination $WORKAREA/hw/build/ip/prefetcher/rtl
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/prefetcher/tb --destination $WORKAREA/hw/build/ip/prefetcher/tb
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/prefetcher/include --destination $WORKAREA/hw/build/ip/prefetcher/include
 
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/tb_lib --destination $FYP_DIR/hw/build/ip/tb_lib
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/tb_lib --destination $FYP_DIR/hw/build/ip/tb_lib
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/tb_lib --destination $WORKAREA/hw/build/ip/tb_lib
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/tb_lib --destination $WORKAREA/hw/build/ip/tb_lib
 
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/top/rtl --destination $FYP_DIR/hw/build/ip/top/rtl
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/top/tb --destination $FYP_DIR/hw/build/ip/top/tb
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/top/rtl --destination $WORKAREA/hw/build/ip/top/rtl
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/top/tb --destination $WORKAREA/hw/build/ip/top/tb
 
-$FYP_DIR/scripts/add_hash.py --source $FYP_DIR/hw/ip/transformation_engine/rtl --destination $FYP_DIR/hw/build/ip/transformation_engine/rtl
+$WORKAREA/scripts/add_hash.py --source $WORKAREA/hw/ip/transformation_engine/rtl --destination $WORKAREA/hw/build/ip/transformation_engine/rtl
