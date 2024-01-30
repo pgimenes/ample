@@ -22,6 +22,11 @@ VERILOG_SOURCES = \
 	$(WORKAREA)/hw/build/ip/lib/buffers/ultraram.v \
 	$(WORKAREA)/hw/build/ip/include/arch_defines.v \
 	$(WORKAREA)/imports/verilog-axi/rtl/axi_ram.v \
+	$(WORKAREA)/imports/verilog-axi/rtl/priority_encoder.v \
+	$(WORKAREA)/imports/verilog-axi/rtl/arbiter.v \
+	$(WORKAREA)/imports/verilog-axi/rtl/axil_crossbar.v \
+	$(WORKAREA)/imports/verilog-axi/rtl/axil_interconnect.v \
+	$(WORKAREA)/imports/verilog-axi/rtl/axil_interconnect_wrap_1x4.v \
 
 # Imports
 VERILOG_SOURCES += \
@@ -99,6 +104,7 @@ VERILOG_SOURCES += \
 	$(WORKAREA)/hw/build/ip/aggregation_engine/rtl/aggregation_manager.sv \
 	$(WORKAREA)/hw/build/ip/aggregation_engine/rtl/aggregation_mesh.sv \
 	$(WORKAREA)/hw/build/ip/aggregation_engine/rtl/buffer_manager.sv \
+	$(WORKAREA)/hw/build/ip/aggregation_engine/rtl/buffer_manager_arbiter.sv \
 	$(WORKAREA)/hw/build/ip/aggregation_engine/rtl/feature_aggregator.sv \
 	$(WORKAREA)/hw/build/ip/transformation_engine/rtl/feature_transformation_core.sv \
 	$(WORKAREA)/hw/build/ip/transformation_engine/rtl/feature_transformation_engine.sv \

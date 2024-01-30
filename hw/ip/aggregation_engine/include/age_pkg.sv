@@ -5,6 +5,9 @@ package age_pkg;
 
 parameter MAX_AGC_PER_NODE = top_pkg::MAX_FEATURE_COUNT / 16;
 
+parameter AGC_ALLOCATION_MODE_STATIC = 0;
+parameter AGC_ALLOCATION_MODE_SEQUENTIAL_RR = 1;
+
 // Types
 // -------------------------------------------------------------------------------------
 

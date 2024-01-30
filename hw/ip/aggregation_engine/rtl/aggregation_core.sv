@@ -7,7 +7,7 @@ module aggregation_core #(
     parameter Y_COORD = 0,
 
     parameter AGGREGATION_ROWS = top_pkg::AGGREGATION_BUFFER_SLOTS,
-    parameter AGGREGATION_COLS = top_pkg::MESSAGE_CHANNEL_COUNT/top_pkg::PRECISION_COUNT,
+    parameter AGGREGATION_COLS = top_pkg::MESSAGE_CHANNEL_COUNT/top_pkg::PRECISION_COUNT/top_pkg::MESH_MULTIPLIER,
 
     parameter FEATURE_COUNT = 16,
 
@@ -252,7 +252,7 @@ end
 
 // Aggregation Manager Packets
 always_comb begin
-    aggregation_manager_pkt = (packet_source_row == AGGREGATION_ROWS); // 16th row, 0 indexed = last row
+    aggregation_manager_pkt = (packet_source_col == 0); // 16th row, 0 indexed = last row
     {aggregation_manager_packet_type, aggregation_manager_packet_last} = decode_head_packet(router_aggregation_core_data);
 end
 
@@ -334,7 +334,7 @@ assign feature_aggregator_in_feature = router_agc_pkt_q.data.bt_pl[noc_pkg::PAYL
 
 always_comb begin
     buffer_manager_pkt_dest_row = router_agc_pkt_q[$clog2(MAX_MESH_ROWS)-1:0];
-    buffer_manager_pkt_dest_col = AGGREGATION_COLS;
+    buffer_manager_pkt_dest_col = (AGGREGATION_COLS + 1);
 
     // Packets from Aggregation manager
     router_aggregation_core_ready = (agc_state == AGC_FSM_IDLE) || (agc_state == AGC_FSM_NODESLOT_ALLOCATION) || (agc_state == AGC_FSM_WAIT_FEATURE_HEAD) || (agc_state == AGC_FSM_WAIT_FEATURE_BODY) || (agc_state == AGC_FSM_WAIT_BUFFER_REQ);

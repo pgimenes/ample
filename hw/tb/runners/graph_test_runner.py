@@ -5,6 +5,8 @@ from tb.utils.common import NodeState, NodePrecision
 from tb.utils.common import delay, allocate_lsb
 from tb.tests.base_test import BaseTest
 
+NODESLOT_COUNT = 256
+
 async def graph_test_runner(dut):
     dut._log.info("Starting Graph Test")
 
@@ -23,7 +25,7 @@ async def graph_test_runner(dut):
 
         # Program nodeslots
         test.dut._log.info("Starting nodeslot programming.")
-        free_mask = "1" * 64
+        free_mask = "1" * NODESLOT_COUNT
         
         for ns_programming in test.nodeslot_programming:
 
@@ -32,20 +34,20 @@ async def graph_test_runner(dut):
                 continue
 
             # Read empty_mask if all previously free nodeslots have been programmed
-            if (free_mask == "0"*64):
+            if (free_mask == "0"*NODESLOT_COUNT):
                 test.dut._log.info("Waiting for free nodeslot.")
                 while ("1" not in free_mask):
-                    empty_mask_msb = await test.driver.axil_driver.axil_read(test.driver.nsb_regs["status_nodeslots_empty_mask_msb"])
-                    empty_mask_lsb = await test.driver.axil_driver.axil_read(test.driver.nsb_regs["status_nodeslots_empty_mask_lsb"])
-                    
-                    free_mask = empty_mask_msb.binstr + empty_mask_lsb.binstr
+                    free_mask = ''
+                    for i in range(0, int(NODESLOT_COUNT/32)):
+                        empty_mask = await test.driver.axil_driver.axil_read(test.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
+                        free_mask = empty_mask.binstr + free_mask
                     test.dut._log.info("Free nodeslots: %s", free_mask)
 
             # Check nodeslot range based on precision
             if (ns_programming["precision"] == "FLOAT_32"):
-                chosen_ns = allocate_lsb(free_mask, bit_range=range(0, 64))
+                chosen_ns = allocate_lsb(free_mask, bit_range=range(0, NODESLOT_COUNT))
             # elif (ns_programming["precision"] == "FIXED_8"):
-            #     chosen_ns = allocate_lsb(free_mask, bit_range=range(16, 64))
+            #     chosen_ns = allocate_lsb(free_mask, bit_range=range(16, NODESLOT_COUNT))
             else:
                 raise ValueError(f"Unknown precision: {ns_programming['precision']}")
 

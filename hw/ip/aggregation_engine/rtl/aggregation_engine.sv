@@ -4,7 +4,8 @@ import noc_pkg::*;
 import age_pkg::*;
 
 module aggregation_engine #(
-    parameter AXI_ADDR_WIDTH = 32
+    parameter AXI_ADDR_WIDTH = 32,
+    parameter MESH_MULTIPLPIER = top_pkg::MESH_MULTIPLIER
 ) (
     input logic core_clk,
     input logic resetn,
@@ -54,7 +55,7 @@ module aggregation_engine #(
     // AGE -> Aggregation Buffer
     output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_set_node_id_valid,
     output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [NODE_ID_WIDTH-1:0]                                   aggregation_buffer_slot_set_node_id,
-
+    
     output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_write_enable,
     output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] aggregation_buffer_slot_write_address,
     output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [noc_pkg::PAYLOAD_DATA_WIDTH-1:0]                     aggregation_buffer_slot_write_data,
@@ -71,7 +72,8 @@ module aggregation_engine #(
 // Aggregation meshes have symmetric dimensions
 parameter AGGREGATION_ROWS = top_pkg::TRANSFORMATION_CHANNELS;
 parameter AGGREGATION_COLS = top_pkg::AGGREGATION_CHANNELS;
-parameter TOTAL_AGGREGATION_MANAGERS = top_pkg::PRECISION_COUNT * AGGREGATION_COLS;
+parameter AGGREGATION_MANAGERS_PER_PRECISION = top_pkg::MESH_MULTIPLIER * AGGREGATION_ROWS;
+parameter TOTAL_AGGREGATION_MANAGERS = top_pkg::PRECISION_COUNT * AGGREGATION_MANAGERS_PER_PRECISION;
 
 // ==================================================================================================================================================
 // Declarations
@@ -91,23 +93,36 @@ logic [31:0] layer_config_upsampling_parameter_value;
 // ------------------------------------------------------------
 
 // AGE -> Aggregation Mesh: Request Interface
-logic [top_pkg::PRECISION_COUNT-1:0]                                                        aggregation_req_valid;
-logic [top_pkg::PRECISION_COUNT-1:0]                                                        aggregation_req_ready;
+logic [top_pkg::PRECISION_COUNT-1:0] [MESH_MULTIPLIER-1:0]                                  aggregation_req_valid;
+logic [top_pkg::PRECISION_COUNT-1:0] [MESH_MULTIPLIER-1:0]                                  aggregation_req_ready;
 top_pkg::NSB_AGE_REQ_t                                                                      aggregation_req;
 
 // Aggregation Mesh -> AGE : Request Interface
-logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_COLS-1:0]                                 aggregation_manager_done_valid;
-logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_COLS-1:0] [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] aggregation_manager_done_nodeslot;
-logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_COLS-1:0]                                 aggregation_manager_done_ready;
+logic [top_pkg::PRECISION_COUNT-1:0] [MESH_MULTIPLIER-1:0] [AGGREGATION_ROWS-1:0]                                           aggregation_manager_done_valid;
+logic [top_pkg::PRECISION_COUNT-1:0] [MESH_MULTIPLIER-1:0] [AGGREGATION_ROWS-1:0] [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] aggregation_manager_done_nodeslot;
+logic [top_pkg::PRECISION_COUNT-1:0] [MESH_MULTIPLIER-1:0] [AGGREGATION_ROWS-1:0]                                           aggregation_manager_done_ready;
 
 // AGM-wise signal for reading from AGM resp arbitration
-logic [top_pkg::PRECISION_COUNT * AGGREGATION_COLS -1:0] [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] agm_nodeslot;
+logic [top_pkg::PRECISION_COUNT * MESH_MULTIPLIER * AGGREGATION_ROWS -1:0] [$clog2(top_pkg::MAX_NODESLOT_COUNT)-1:0] agm_nodeslot;
 
 // NSB Response Arbitration
 // ------------------------------------------------------------
 
-logic [top_pkg::PRECISION_COUNT * AGGREGATION_COLS - 1 : 0] aggregation_manager_resp_arbitration_oh;
-logic [$clog2(top_pkg::PRECISION_COUNT * AGGREGATION_COLS) - 1 : 0] aggregation_manager_resp_arbitration_bin;
+logic [top_pkg::PRECISION_COUNT * MESH_MULTIPLIER * AGGREGATION_ROWS - 1 : 0] aggregation_manager_resp_arbitration_oh;
+logic [$clog2(top_pkg::PRECISION_COUNT * MESH_MULTIPLIER * AGGREGATION_ROWS) - 1 : 0] aggregation_manager_resp_arbitration_bin;
+
+// Buffer manager arbiter
+// ------------------------------------------------------------
+
+logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       bm_set_node_id_valid;
+logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       bm_set_node_id_ready;
+logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [NODE_ID_WIDTH-1:0]                                   bm_set_node_id;
+logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       bm_write_enable;
+logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       bm_write_ready;
+logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] bm_write_address;
+logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [noc_pkg::PAYLOAD_DATA_WIDTH-1:0]                     bm_write_data;
+
+logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_ROWS-1:0] buffer_manager_done;
 
 // ==================================================================================================================================================
 // Instances
@@ -117,7 +132,7 @@ logic [$clog2(top_pkg::PRECISION_COUNT * AGGREGATION_COLS) - 1 : 0] aggregation_
 // ----------------------------------------------------
 
 aggregation_engine_regbank_wrapper #(
-    .AXI_ADDR_WIDTH(32)
+    .AXI_ADDR_WIDTH                 (32)
 ) aggregation_engine_regbank_regs_i (
     .axi_aclk                       (regbank_clk),
     .axi_aresetn                    (regbank_resetn),
@@ -155,59 +170,68 @@ aggregation_engine_regbank_wrapper #(
 
 for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) begin : precision_block
 
-    aggregation_mesh #(
-        .AGGREGATION_ROWS            (AGGREGATION_ROWS),
-        .AGGREGATION_COLS            (AGGREGATION_COLS),
-        .PRECISION                   (precision),
-        .AGGREGATION_CORE_DATA_WIDTH (top_pkg::bits_per_precision(top_pkg::NODE_PRECISION_e'(precision)))
-    ) aggregation_mesh_i (
-    
-        .core_clk,
-        .resetn,
-    
-        // AGE -> Aggregation Mesh: Request Interface
-        .aggregation_req_valid                                         (aggregation_req_valid                     [precision]),
-        .aggregation_req_ready                                         (aggregation_req_ready                     [precision]),
-        .aggregation_req                                               (aggregation_req),                         
+    // Multiple mesh blocks to interleave columns of aggregation managers
+    for (genvar mesh = 0; mesh < MESH_MULTIPLPIER; mesh++) begin : mesh_block
 
-        // Aggregation Mesh -> AGE : Response Interface
-        .aggregation_manager_done_valid                                (aggregation_manager_done_valid            [precision]),
-        .aggregation_manager_done_nodeslot                             (aggregation_manager_done_nodeslot         [precision]),
-        .aggregation_manager_done_ready                                (aggregation_manager_done_ready            [precision]),
-
-        // Message Channel: AGE -> Prefetcher (request)
-        .message_channel_req_valid                                     (message_channel_req_valid                 [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
-        .message_channel_req_ready                                     (message_channel_req_ready                 [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
-        .message_channel_req                                           (message_channel_req                       [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
-
-        // Message Channel: Prefetcher -> AGE (response)
-        .message_channel_resp_valid                                    (message_channel_resp_valid                [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
-        .message_channel_resp_ready                                    (message_channel_resp_ready                [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
-        .message_channel_resp                                          (message_channel_resp                      [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
-
-        // Aggregation Mesh -> Fetch Tag: Scale Factor Queue Interface
-        .scale_factor_queue_pop                                        (scale_factor_queue_pop                    [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
-        .scale_factor_queue_out_data                                   (scale_factor_queue_out_data               [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
-        .scale_factor_queue_out_valid                                  (scale_factor_queue_out_valid              [(precision + 1) * AGGREGATION_COLS - 1 : precision * AGGREGATION_COLS]),
+        aggregation_mesh #(
+            .AGGREGATION_ROWS            (AGGREGATION_ROWS),
+            .AGGREGATION_COLS            (AGGREGATION_COLS),
+            .PRECISION                   (precision),
+            .AGGREGATION_CORE_DATA_WIDTH (top_pkg::bits_per_precision(top_pkg::NODE_PRECISION_e'(precision)))
+        ) aggregation_mesh_i (
         
-        // AGE -> Aggregation Buffer
-        .aggregation_buffer_slot_set_node_id_valid                     (aggregation_buffer_slot_set_node_id_valid [precision]),
-        .aggregation_buffer_slot_set_node_id                           (aggregation_buffer_slot_set_node_id       [precision]),
+            .core_clk                                                      (core_clk),
+            .resetn                                                        (resetn),
         
-        .aggregation_buffer_slot_write_enable                          (aggregation_buffer_slot_write_enable      [precision]),
-        .aggregation_buffer_slot_write_address                         (aggregation_buffer_slot_write_address     [precision]),
-        .aggregation_buffer_slot_write_data                            (aggregation_buffer_slot_write_data        [precision]),
-        
-        .aggregation_buffer_slot_feature_count                         (aggregation_buffer_slot_feature_count     [precision]),
-        .aggregation_buffer_slot_slot_free                             (aggregation_buffer_slot_slot_free         [precision]),
-        
-        // Layer configuration parameters
-        .layer_config_in_features_count                                (layer_config_in_features_count)
-    
-    );
+            // AGE -> Aggregation Mesh: Request Interface
+            .aggregation_req_valid                                         (aggregation_req_valid                     [precision] [mesh]),
+            .aggregation_req_ready                                         (aggregation_req_ready                     [precision] [mesh]),
+            .aggregation_req                                               (aggregation_req),                         
 
-    assign aggregation_req_valid [precision] = nsb_age_req_valid && (nsb_age_req.node_precision == precision);
-    assign aggregation_manager_done_ready [precision] = aggregation_manager_resp_arbitration_oh [(precision+1)*AGGREGATION_COLS - 1 : precision*AGGREGATION_COLS];
+            // Aggregation Mesh -> AGE : Response Interface
+            .aggregation_manager_done_valid                                (aggregation_manager_done_valid            [precision] [mesh]),
+            .aggregation_manager_done_nodeslot                             (aggregation_manager_done_nodeslot         [precision] [mesh]),
+            .aggregation_manager_done_ready                                (aggregation_manager_done_ready            [precision] [mesh]),
+
+            // Message Channel: AGE -> Prefetcher (request)
+            .message_channel_req_valid                                     (message_channel_req_valid                 [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
+            .message_channel_req_ready                                     (message_channel_req_ready                 [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
+            .message_channel_req                                           (message_channel_req                       [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
+
+            // Message Channel: Prefetcher -> AGE (response)
+            .message_channel_resp_valid                                    (message_channel_resp_valid                [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
+            .message_channel_resp_ready                                    (message_channel_resp_ready                [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
+            .message_channel_resp                                          (message_channel_resp                      [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
+
+            // Aggregation Mesh -> Fetch Tag: Scale Factor Queue Interface
+            .scale_factor_queue_pop                                        (scale_factor_queue_pop                    [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
+            .scale_factor_queue_out_data                                   (scale_factor_queue_out_data               [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
+            .scale_factor_queue_out_valid                                  (scale_factor_queue_out_valid              [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
+            
+            // AGE -> Aggregation Buffer
+            .aggregation_buffer_slot_set_node_id_valid                     (bm_set_node_id_valid [precision][mesh]),
+            .aggregation_buffer_slot_set_node_id_ready                     (bm_set_node_id_ready [precision][mesh]),
+            .aggregation_buffer_slot_set_node_id                           (bm_set_node_id       [precision][mesh]),
+            
+            .aggregation_buffer_slot_write_enable                          (bm_write_enable      [precision][mesh]),
+            .aggregation_buffer_slot_write_ready                           (bm_write_ready       [precision][mesh]),
+            .aggregation_buffer_slot_write_address                         (bm_write_address     [precision][mesh]),
+            .aggregation_buffer_slot_write_data                            (bm_write_data        [precision][mesh]),
+            
+            .aggregation_buffer_slot_feature_count                         (aggregation_buffer_slot_feature_count     [precision]),
+            .aggregation_buffer_slot_slot_free                             (aggregation_buffer_slot_slot_free         [precision]),
+            
+            // Layer configuration parameters
+            .layer_config_in_features_count                                (layer_config_in_features_count),
+
+            .buffer_manager_done                                           (buffer_manager_done [precision] [mesh])
+        
+        );
+
+        assign aggregation_req_valid [precision] [mesh] = nsb_age_req_valid && (nsb_age_req.node_precision == precision) && ((nsb_age_req.nodeslot / AGGREGATION_ROWS) == mesh);
+        assign aggregation_manager_done_ready [precision] [mesh] = aggregation_manager_resp_arbitration_oh [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS];
+
+    end : mesh_block
 
 end : precision_block
 
@@ -226,6 +250,34 @@ rr_arbiter #(
     .update_lru (|aggregation_manager_done_valid),
     .grant_oh   (aggregation_manager_resp_arbitration_oh),
     .grant_bin  (aggregation_manager_resp_arbitration_bin)
+);
+
+// Aggregation Manager Response Arbitration
+// ----------------------------------------------------
+
+buffer_manager_arbiter bm_arb_i (
+    .core_clk                    (core_clk),
+    .resetn                      (resetn),
+
+    // Valid-ready interface from buffer managers
+    .input_bm_set_node_id_valid  (bm_set_node_id_valid),
+    .input_bm_set_node_id_ready  (bm_set_node_id_ready),
+    .input_bm_set_node_id        (bm_set_node_id),
+
+    .input_bm_write_enable       (bm_write_enable),
+    .input_bm_write_ready        (bm_write_ready),
+    .input_bm_write_address      (bm_write_address),
+    .input_bm_write_data         (bm_write_data),
+
+    // Valid-only interface to buffer slots
+    .slot_set_node_id_valid (aggregation_buffer_slot_set_node_id_valid),
+    .slot_set_node_id       (aggregation_buffer_slot_set_node_id),
+    
+    .slot_write_enable      (aggregation_buffer_slot_write_enable),
+    .slot_write_address     (aggregation_buffer_slot_write_address),
+    .slot_write_data        (aggregation_buffer_slot_write_data),
+    
+    .buffer_manager_done    (buffer_manager_done)
 );
 
 // ==================================================================================================================================================

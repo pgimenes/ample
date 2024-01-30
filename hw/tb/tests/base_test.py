@@ -41,7 +41,7 @@ class BaseTest:
         #         self.float_bm_monitors[id] = BM_Monitor(dut.top_i.aggregation_engine_i.precision_block[0].aggregation_mesh_i.bm_block[id].buffer_manager_i,
         #                                                         self.variant, NodePrecision.FLOAT_32.value, id)
 
-        self.scoreboard = sb.Scoreboard()
+        self.scoreboard = sb.Scoreboard(nodeslot_count=256)
         self.nodeslot_programming = {}
         self.layers = {}
 

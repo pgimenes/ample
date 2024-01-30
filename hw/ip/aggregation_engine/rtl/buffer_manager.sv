@@ -7,7 +7,7 @@ module buffer_manager #(
     parameter Y_COORD = 0,
 
     parameter AGGREGATION_ROWS = top_pkg::AGGREGATION_BUFFER_SLOTS,
-    parameter AGGREGATION_COLS = top_pkg::MESSAGE_CHANNEL_COUNT/top_pkg::PRECISION_COUNT,
+    parameter AGGREGATION_COLS = top_pkg::MESSAGE_CHANNEL_COUNT/top_pkg::PRECISION_COUNT/top_pkg::MESH_MULTIPLIER,
     
     parameter BUFFER_SLOT_WRITE_DEPTH = 64,
     parameter BUFFER_SLOT_WRITE_WIDTH = 512
@@ -19,6 +19,9 @@ module buffer_manager #(
     input  logic                                                      age_buffer_manager_nodeslot_allocation_valid,
     output logic                                                      age_buffer_manager_nodeslot_allocation_ready,
     input  AGE_BUFF_MAN_ALLOC_t                                       age_buffer_manager_nodeslot_allocation,
+
+    // Buffer Manager -> Buffer Manager Arbiter
+    output logic                                                      buffer_manager_done,
 
     // Buffer Manager -> Router
     input  logic                                                      buffer_manager_router_on,
@@ -34,23 +37,30 @@ module buffer_manager #(
 
     // Buffer Manager -> Aggregation Buffer slot
     output logic                                                      buffer_slot_set_node_id_valid,
-    output logic [NODE_ID_WIDTH-1:0]                                  buffer_slot_set_node_id,
+    input  logic                                                      buffer_slot_set_node_id_ready,
+    output logic [top_pkg::NODE_ID_WIDTH-1:0]                         buffer_slot_set_node_id,
+
     output logic                                                      bm_buffer_slot_write_enable,
+    input  logic                                                      bm_buffer_slot_write_ready,
     output logic [$clog2(BUFFER_SLOT_WRITE_DEPTH)-1:0]                bm_buffer_slot_write_address,
     output logic [BUFFER_SLOT_WRITE_WIDTH-1:0]                        bm_buffer_slot_write_data,
+
     input  logic [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0] buffer_slot_bm_feature_count,
     input  logic                                                      buffer_slot_bm_slot_free
 );
 
 parameter EXPECTED_FLITS_PER_PACKET = 2;
 
-typedef enum logic [2:0] {
-BM_FSM_IDLE,
-BM_FSM_WAIT_FEATURES,
-BM_FSM_WRITE,
-BM_FSM_SEND_DONE,
-BM_FSM_WAIT_DRAIN,
-BM_FSM_WAIT_TRANSFORMATION
+typedef enum logic [3:0] {
+    BM_FSM_IDLE,
+    BM_FSM_SET_NODE_ID,
+    BM_FSM_WAIT_FEATURES,
+    BM_FSM_WAIT_SLOT_ALLOCATION,
+    BM_FSM_SEND_READY,
+    BM_FSM_WRITE,
+    BM_FSM_SEND_DONE,
+    BM_FSM_WAIT_DRAIN,
+    BM_FSM_WAIT_TRANSFORMATION
 } BM_FSM_e;
 
 // ==================================================================================================================================================
@@ -59,10 +69,11 @@ BM_FSM_WAIT_TRANSFORMATION
 
 BM_FSM_e                                                   bm_state, bm_state_n;
 
-logic [$clog2(MAX_AGGREGATION_COLS)-1:0]                   allocated_agm_q;
+logic [$clog2(MAX_AGGREGATION_ROWS)-1:0]                   allocated_agm_q;
 logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_COLS)-1:0]   allocated_agcs_x_coords_q;
 logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_ROWS)-1:0]   allocated_agcs_y_coords_q;
 logic [$clog2(MAX_AGC_PER_NODE)-1:0]                       allocated_agcs_count_q;
+logic [top_pkg::NODE_ID_WIDTH-1:0]                         allocated_node_id_q;
 
 logic [MAX_AGC_PER_NODE-1:0]                               allocated_agcs_oh;
 logic [MAX_AGC_PER_NODE-1:0]                               allocated_agcs;
@@ -113,8 +124,8 @@ onehot_to_binary_comb #(
 // ==================================================================================================================================================
 
 // Set node ID for buffer slot
-assign buffer_slot_set_node_id = age_buffer_manager_nodeslot_allocation.node_id;
-assign buffer_slot_set_node_id_valid = (bm_state == BM_FSM_IDLE) && age_buffer_manager_nodeslot_allocation_valid;
+assign buffer_slot_set_node_id = allocated_node_id_q;
+assign buffer_slot_set_node_id_valid = (bm_state == BM_FSM_SET_NODE_ID);
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
@@ -130,7 +141,11 @@ always_comb begin
     case(bm_state)
 
         BM_FSM_IDLE: begin
-            bm_state_n = age_buffer_manager_nodeslot_allocation_valid ? BM_FSM_WAIT_FEATURES : BM_FSM_IDLE;
+            bm_state_n = age_buffer_manager_nodeslot_allocation_valid ? BM_FSM_SET_NODE_ID : BM_FSM_IDLE;
+        end
+
+        BM_FSM_SET_NODE_ID: begin
+            bm_state_n = buffer_slot_set_node_id_ready ? BM_FSM_WAIT_FEATURES : BM_FSM_SET_NODE_ID;
         end
 
         BM_FSM_WAIT_FEATURES: begin
@@ -138,7 +153,9 @@ always_comb begin
         end
 
         BM_FSM_WRITE: begin
-            bm_state_n = &agc_done ? BM_FSM_SEND_DONE : BM_FSM_WAIT_FEATURES;
+            bm_state_n = &agc_done ? BM_FSM_SEND_DONE 
+                        : bm_buffer_slot_write_ready ? BM_FSM_WAIT_FEATURES
+                        : BM_FSM_WRITE;
         end
 
         BM_FSM_SEND_DONE: begin
@@ -146,7 +163,7 @@ always_comb begin
         end
 
         BM_FSM_WAIT_DRAIN: begin
-            bm_state_n = noc_router_waiting ? BM_FSM_IDLE : BM_FSM_WAIT_TRANSFORMATION;
+            bm_state_n = noc_router_waiting ? BM_FSM_WAIT_TRANSFORMATION : BM_FSM_WAIT_DRAIN;
         end
 
         BM_FSM_WAIT_TRANSFORMATION: begin
@@ -171,6 +188,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         allocated_agcs_x_coords_q <= '0;
         allocated_agcs_y_coords_q <= '0;
         allocated_agcs_count_q    <= '0;
+        allocated_node_id_q       <= '0;
 
     // Accepting the AGE buffer request
     end else if (age_buffer_manager_nodeslot_allocation_valid && age_buffer_manager_nodeslot_allocation_ready) begin
@@ -178,10 +196,13 @@ always_ff @(posedge core_clk or negedge resetn) begin
         allocated_agcs_x_coords_q <= age_buffer_manager_nodeslot_allocation.allocated_agcs_x_coords;
         allocated_agcs_y_coords_q <= age_buffer_manager_nodeslot_allocation.allocated_agcs_y_coords;
         allocated_agcs_count_q    <= age_buffer_manager_nodeslot_allocation.allocated_agcs_count;
+        allocated_node_id_q       <= age_buffer_manager_nodeslot_allocation.node_id;
     end
 end
 
 assign allocated_agcs = allocated_agcs_oh - 1'b1;
+
+assign buffer_manager_done = (bm_state == BM_FSM_WAIT_TRANSFORMATION) && (bm_state_n == BM_FSM_IDLE);
 
 // Decode incoming packets
 // -------------------------------------------------------------------------------------
@@ -243,12 +264,8 @@ end
 // Drive aggregation buffer slot
 // -------------------------------------------------------------------------------------
 
-// logic [3:0] flit_offset;
-
-// assign flit_offset = flit_counter[agc_offset] - 1'b1;
-
 always_comb begin
-    bm_buffer_slot_write_enable = (bm_state == BM_FSM_WRITE);
+    bm_buffer_slot_write_enable = (bm_state == BM_FSM_WRITE) && !(&agc_done); // at least one agc isn't done yet
     bm_buffer_slot_write_address = agc_offset;
     bm_buffer_slot_write_data = received_flit.data.bt_pl;
 end
@@ -259,8 +276,8 @@ end
 always_comb begin
     buffer_manager_router_valid = (bm_state == BM_FSM_SEND_DONE);
 
-    outgoing_packet_dest_col = {1'b0, allocated_agm_q}; // column width always 1 bit larger than AGM width
-    outgoing_packet_dest_row = AGGREGATION_ROWS;
+    outgoing_packet_dest_col = 0; // column width always 1 bit larger than AGM width
+    outgoing_packet_dest_row = {1'b0, allocated_agm_q};
 
     buffer_manager_router_data.vc_id = '0;
     buffer_manager_router_data.flit_label = done_head_sent ? noc_pkg::TAIL : noc_pkg::HEAD;

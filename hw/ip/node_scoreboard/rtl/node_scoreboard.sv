@@ -104,40 +104,46 @@ logic layer_config_out_messages_address_msb_strobe;
 logic [1:0] layer_config_out_messages_address_msb_msb;
 
 // Nodeslots
-logic [63:0] nsb_nodeslot_neighbour_count_strobe;                       // strobe signal for register 'NSB_NODESLOT_NEIGHBOUR_COUNT' (pulsed when the register is written from the bus)
-logic [63:0] [19:0] nsb_nodeslot_neighbour_count_count;                 // value of field 'NSB_NODESLOT_NEIGHBOUR_COUNT.COUNT'
-logic [63:0] nsb_nodeslot_node_id_strobe;                               // strobe signal for register 'NSB_NODESLOT_NODE_ID' (pulsed when the register is written from the bus)
-logic [63:0] [19:0] nsb_nodeslot_node_id_id;                            // value of field 'NSB_NODESLOT_NODE_ID.ID'
-logic [63:0] nsb_nodeslot_node_state_strobe;                            // strobe signal for register 'NSB_NODESLOT_NODE_STATE' (pulsed when the register is written from the bus)
-logic [63:0] [3:0] nsb_nodeslot_node_state_state;                       // value of field 'NSB_NODESLOT_NODE_STATE.STATE'
-logic [63:0] nsb_nodeslot_precision_strobe;                             // strobe signal for register 'NSB_NODESLOT_PRECISION' (pulsed when the register is written from the bus)
-logic [63:0] [1:0] nsb_nodeslot_precision_precision;                    // value of field 'NSB_NODESLOT_PRECISION.PRECISION'
-logic [63:0] nsb_nodeslot_adjacency_list_address_lsb_strobe;            // strobe signal for register 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB' (pulsed when the register is written from the bus)
-logic [63:0] [31:0] nsb_nodeslot_adjacency_list_address_lsb_lsb;        // value of field 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB.LSB'
-logic [63:0] nsb_nodeslot_adjacency_list_address_msb_strobe;            // strobe signal for register 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB' (pulsed when the register is written from the bus)
-logic [63:0] [1:0] nsb_nodeslot_adjacency_list_address_msb_msb;         // value of field 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB.MSB'
-logic [63:0] nsb_nodeslot_out_messages_address_lsb_strobe;              // strobe signal for register 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB' (pulsed when the register is written from the bus)
-logic [63:0] [31:0] nsb_nodeslot_out_messages_address_lsb_lsb;          // value of field 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB.LSB'
-logic [63:0] nsb_nodeslot_out_messages_address_msb_strobe;              // strobe signal for register 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB' (pulsed when the register is written from the bus)
-logic [63:0] [1:0] nsb_nodeslot_out_messages_address_msb_msb;           // value of field 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB.MSB'
-logic [63:0] nsb_nodeslot_aggregation_function_strobe;                  // strobe signal for register 'nsb_nodeslot_aggregation_function' (pulsed when the register is written from the bus)
-logic [63:0] [1:0] nsb_nodeslot_aggregation_function_value;             // value of field 'nsb_nodeslot_aggregation_function.value'
-logic [63:0] nsb_nodeslot_scale_factors_address_lsb_strobe;             // strobe signal for register 'nsb_nodeslot_scale_factors_address_lsb' (pulsed when the register is written from the bus)
-logic [63:0] [31:0] nsb_nodeslot_scale_factors_address_lsb_value;       // value of field 'nsb_nodeslot_scale_factors_address_lsb.value'
-logic [63:0] nsb_nodeslot_scale_factors_address_msb_strobe;             // strobe signal for register 'nsb_nodeslot_scale_factors_address_msb' (pulsed when the register is written from the bus)
-logic [63:0] [1:0] nsb_nodeslot_scale_factors_address_msb_value;        // value of field 'nsb_nodeslot_scale_factors_address_msb.value'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_neighbour_count_strobe;                       // strobe signal for register 'NSB_NODESLOT_NEIGHBOUR_COUNT' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [19:0] nsb_nodeslot_neighbour_count_count;                 // value of field 'NSB_NODESLOT_NEIGHBOUR_COUNT.COUNT'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_node_id_strobe;                               // strobe signal for register 'NSB_NODESLOT_NODE_ID' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [19:0] nsb_nodeslot_node_id_id;                            // value of field 'NSB_NODESLOT_NODE_ID.ID'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_node_state_strobe;                            // strobe signal for register 'NSB_NODESLOT_NODE_STATE' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [3:0] nsb_nodeslot_node_state_state;                       // value of field 'NSB_NODESLOT_NODE_STATE.STATE'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_precision_strobe;                             // strobe signal for register 'NSB_NODESLOT_PRECISION' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_precision_precision;                    // value of field 'NSB_NODESLOT_PRECISION.PRECISION'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_adjacency_list_address_lsb_strobe;            // strobe signal for register 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [31:0] nsb_nodeslot_adjacency_list_address_lsb_lsb;        // value of field 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB.LSB'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_adjacency_list_address_msb_strobe;            // strobe signal for register 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_adjacency_list_address_msb_msb;         // value of field 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB.MSB'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_out_messages_address_lsb_strobe;              // strobe signal for register 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [31:0] nsb_nodeslot_out_messages_address_lsb_lsb;          // value of field 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB.LSB'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_out_messages_address_msb_strobe;              // strobe signal for register 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_out_messages_address_msb_msb;           // value of field 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB.MSB'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_aggregation_function_strobe;                  // strobe signal for register 'nsb_nodeslot_aggregation_function' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_aggregation_function_value;             // value of field 'nsb_nodeslot_aggregation_function.value'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_scale_factors_address_lsb_strobe;             // strobe signal for register 'nsb_nodeslot_scale_factors_address_lsb' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [31:0] nsb_nodeslot_scale_factors_address_lsb_value;       // value of field 'nsb_nodeslot_scale_factors_address_lsb.value'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_scale_factors_address_msb_strobe;             // strobe signal for register 'nsb_nodeslot_scale_factors_address_msb' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_scale_factors_address_msb_value;        // value of field 'nsb_nodeslot_scale_factors_address_msb.value'
 
 logic nsb_config_aggregation_wait_count_strobe; // strobe signal for register 'NSB_CONFIG_AGGREGATION_WAIT_COUNT' (pulsed when the register is written from the bus)
 logic [5:0] nsb_config_aggregation_wait_count_count; // value of field 'NSB_CONFIG_AGGREGATION_WAIT_COUNT.COUNT'
 logic nsb_config_transformation_wait_count_strobe; // strobe signal for register 'NSB_CONFIG_TRANSFORMATION_WAIT_COUNT' (pulsed when the register is written from the bus)
 logic [5:0] nsb_config_transformation_wait_count_count;// value of field 'NSB_CONFIG_TRANSFORMATION_WAIT_COUNT.COUNT'
 
-logic [63:0] nsb_nodeslot_allocated_fetch_tag_strobe;
-logic [63:0] [5:0] nsb_nodeslot_allocated_fetch_tag_fetch_tag;
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_allocated_fetch_tag_strobe;
+logic [NODESLOT_COUNT-1:0] [5:0] nsb_nodeslot_allocated_fetch_tag_fetch_tag;
 
 // STATUS
-logic [NODESLOT_COUNT-1:0] status_nodeslots_empty_mask_msb_value;
-logic [NODESLOT_COUNT-1:0] status_nodeslots_empty_mask_lsb_value;
+logic [31:0] status_nodeslots_empty_mask_0_value;
+logic [31:0] status_nodeslots_empty_mask_1_value;
+logic [31:0] status_nodeslots_empty_mask_2_value;
+logic [31:0] status_nodeslots_empty_mask_3_value;
+logic [31:0] status_nodeslots_empty_mask_4_value;
+logic [31:0] status_nodeslots_empty_mask_5_value;
+logic [31:0] status_nodeslots_empty_mask_6_value;
+logic [31:0] status_nodeslots_empty_mask_7_value;
 
 // Other
 // ------------------------------------------------------------
@@ -254,8 +260,14 @@ node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
     .nsb_nodeslot_scale_factors_address_msb_value,
     .nsb_config_aggregation_wait_count_count,
     .nsb_config_transformation_wait_count_count,
-    .status_nodeslots_empty_mask_msb_value,
-    .status_nodeslots_empty_mask_lsb_value,
+    .status_nodeslots_empty_mask_0_value,
+    .status_nodeslots_empty_mask_1_value,
+    .status_nodeslots_empty_mask_2_value,
+    .status_nodeslots_empty_mask_3_value,
+    .status_nodeslots_empty_mask_4_value,
+    .status_nodeslots_empty_mask_5_value,
+    .status_nodeslots_empty_mask_6_value,
+    .status_nodeslots_empty_mask_7_value,
     .*
 );
 
@@ -394,10 +406,22 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
 
     assign nsb_fte_req.nodeslots [nodeslot] = nodeslots_waiting_transformation [nodeslot] && aggregation_buffer_waiting_transformation[nsb_nodeslot_precision_precision[nodeslot]];
 
-    if (nodeslot > 31) begin
-        assign status_nodeslots_empty_mask_msb_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
+    if (nodeslot > 223) begin
+        assign status_nodeslots_empty_mask_7_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
+    end else if (nodeslot > 191) begin
+        assign status_nodeslots_empty_mask_6_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
+    end else if (nodeslot > 159) begin
+        assign status_nodeslots_empty_mask_5_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
+    end else if (nodeslot > 127) begin
+        assign status_nodeslots_empty_mask_4_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
+    end else if (nodeslot > 95) begin
+        assign status_nodeslots_empty_mask_3_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
+    end else if (nodeslot > 63) begin
+        assign status_nodeslots_empty_mask_2_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
+    end else if (nodeslot > 31) begin
+        assign status_nodeslots_empty_mask_1_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
     end else begin
-        assign status_nodeslots_empty_mask_lsb_value [nodeslot] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
+        assign status_nodeslots_empty_mask_0_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
     end
 
 end : per_nodeslot_logic

@@ -8,10 +8,10 @@ class Nodeslot:
         self.programming = {}
 
 class Scoreboard:
-    def __init__(self, nodeslot_count=64):
+    def __init__(self, nodeslot_count=256):
         self.nodeslots = [Nodeslot() for _ in range(nodeslot_count)]
 
-    def get_empty_nodeslot(self, ns_range=(0, 64)):
+    def get_empty_nodeslot(self, ns_range=(0, 256)):
         for i, ns in enumerate(self.nodeslots)[ns_range[0]:ns_range[1]]:
             if ns.state == NodeState.EMPTY:
                 return i

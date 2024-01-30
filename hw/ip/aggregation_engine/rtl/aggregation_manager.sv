@@ -160,7 +160,7 @@ always_comb begin
     end
 
     AGM_FSM_WAIT_BUFFER_DONE: begin
-        agm_state_n = router_aggregation_manager_valid && (packet_source_col == AGGREGATION_COLS) && (packet_source_row == buffer_manager_allocation_q) ? AGM_FSM_NSB_RESP
+        agm_state_n = router_aggregation_manager_valid && (packet_source_col == (AGGREGATION_COLS + 1)) && (packet_source_row == buffer_manager_allocation_q) && (router_aggregation_manager_data.flit_label == TAIL) ? AGM_FSM_NSB_RESP
                     : AGM_FSM_WAIT_BUFFER_DONE;
     end
 

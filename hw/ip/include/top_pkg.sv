@@ -11,12 +11,15 @@ package top_pkg;
 // Global parameters
 // ----------------------------------------------------
 
-parameter AGGREGATION_CHANNELS = 64;
-parameter TRANSFORMATION_CHANNELS = 64;
+// New arrangement
+parameter MESH_MULTIPLIER = 8;
+
+parameter AGGREGATION_CHANNELS = 4; // per mesh
+parameter TRANSFORMATION_CHANNELS = 32;
 
 // Graph parameters
 parameter MAX_NODES = 1024*1024; // 1M
-parameter MAX_NODESLOT_COUNT = 64;
+parameter MAX_NODESLOT_COUNT = 256;
 parameter MAX_NEIGHBOURS = 1024;
 parameter MAX_FEATURE_COUNT = 1024;
 parameter FEATURE_COUNT = 512;
@@ -47,10 +50,10 @@ parameter MAX_FETCH_REQ_BYTE_COUNT = `max(MAX_REQUIRED_BYTES_ADJ_FETCH_REQ, MAX_
 parameter MAX_PRECISION_BYTE_COUNT = 4; 
 
 // Prefetcher
-parameter MESSAGE_CHANNEL_COUNT = AGGREGATION_CHANNELS * PRECISION_COUNT;
+parameter MESSAGE_CHANNEL_COUNT = MESH_MULTIPLIER * TRANSFORMATION_CHANNELS * PRECISION_COUNT;
 
 // AGE
-parameter MESH_INPUT_BLOCK_BUFFER_SIZE = 2;
+parameter MESH_INPUT_BLOCK_BUFFER_SIZE = 8;
 
 // Aggregation Buffer
 parameter AGGREGATION_BUFFER_SLOTS = TRANSFORMATION_CHANNELS;

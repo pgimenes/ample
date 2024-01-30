@@ -778,49 +778,182 @@ feature_transformation_engine transformation_engine_i (
 // M02: NSB
 // M03: Prefetcher
 
-axi_L_register_control_crossbar axi_L_register_control_crossbar_i (
-  .aclk                                 (regbank_clk),                    // input wire aclk
-  .aresetn                              (regbank_resetn),              // input wire aresetn
+// axi_L_register_control_crossbar axi_L_register_control_crossbar_i (
+//   .aclk                                 (regbank_clk),                    // input wire aclk
+//   .aresetn                              (regbank_resetn),              // input wire aresetn
 
-  .s_axi_awaddr                         (host_axil_awaddr),    // input wire [31 : 0] s_axi_awaddr
-  .s_axi_awprot                         (host_axil_awprot),    // input wire [2 : 0] s_axi_awprot
-  .s_axi_awvalid                        (host_axil_awvalid),  // input wire [0 : 0] s_axi_awvalid
-  .s_axi_awready                        (host_axil_awready),  // output wire [0 : 0] s_axi_awready
-  .s_axi_wdata                          (host_axil_wdata),      // input wire [31 : 0] s_axi_wdata
-  .s_axi_wstrb                          (host_axil_wstrb),      // input wire [3 : 0] s_axi_wstrb
-  .s_axi_wvalid                         (host_axil_wvalid),    // input wire [0 : 0] s_axi_wvalid
-  .s_axi_wready                         (host_axil_wready),    // output wire [0 : 0] s_axi_wready
-  .s_axi_bresp                          (host_axil_bresp),      // output wire [1 : 0] s_axi_bresp
-  .s_axi_bvalid                         (host_axil_bvalid),    // output wire [0 : 0] s_axi_bvalid
-  .s_axi_bready                         (host_axil_bready),    // input wire [0 : 0] s_axi_bready
-  .s_axi_araddr                         (host_axil_araddr),    // input wire [31 : 0] s_axi_araddr
-  .s_axi_arprot                         (host_axil_arprot),    // input wire [2 : 0] s_axi_arprot
-  .s_axi_arvalid                        (host_axil_arvalid),  // input wire [0 : 0] s_axi_arvalid
-  .s_axi_arready                        (host_axil_arready),  // output wire [0 : 0] s_axi_arready
-  .s_axi_rdata                          (host_axil_rdata),      // output wire [31 : 0] s_axi_rdata
-  .s_axi_rresp                          (host_axil_rresp),      // output wire [1 : 0] s_axi_rresp
-  .s_axi_rvalid                         (host_axil_rvalid),    // output wire [0 : 0] s_axi_rvalid
-  .s_axi_rready                         (host_axil_rready),    // input wire [0 : 0] s_axi_rready
+//   .s_axi_awaddr                         (host_axil_awaddr),    // input wire [31 : 0] s_axi_awaddr
+//   .s_axi_awprot                         (host_axil_awprot),    // input wire [2 : 0] s_axi_awprot
+//   .s_axi_awvalid                        (host_axil_awvalid),  // input wire [0 : 0] s_axi_awvalid
+//   .s_axi_awready                        (host_axil_awready),  // output wire [0 : 0] s_axi_awready
+//   .s_axi_wdata                          (host_axil_wdata),      // input wire [31 : 0] s_axi_wdata
+//   .s_axi_wstrb                          (host_axil_wstrb),      // input wire [3 : 0] s_axi_wstrb
+//   .s_axi_wvalid                         (host_axil_wvalid),    // input wire [0 : 0] s_axi_wvalid
+//   .s_axi_wready                         (host_axil_wready),    // output wire [0 : 0] s_axi_wready
+//   .s_axi_bresp                          (host_axil_bresp),      // output wire [1 : 0] s_axi_bresp
+//   .s_axi_bvalid                         (host_axil_bvalid),    // output wire [0 : 0] s_axi_bvalid
+//   .s_axi_bready                         (host_axil_bready),    // input wire [0 : 0] s_axi_bready
+//   .s_axi_araddr                         (host_axil_araddr),    // input wire [31 : 0] s_axi_araddr
+//   .s_axi_arprot                         (host_axil_arprot),    // input wire [2 : 0] s_axi_arprot
+//   .s_axi_arvalid                        (host_axil_arvalid),  // input wire [0 : 0] s_axi_arvalid
+//   .s_axi_arready                        (host_axil_arready),  // output wire [0 : 0] s_axi_arready
+//   .s_axi_rdata                          (host_axil_rdata),      // output wire [31 : 0] s_axi_rdata
+//   .s_axi_rresp                          (host_axil_rresp),      // output wire [1 : 0] s_axi_rresp
+//   .s_axi_rvalid                         (host_axil_rvalid),    // output wire [0 : 0] s_axi_rvalid
+//   .s_axi_rready                         (host_axil_rready),    // input wire [0 : 0] s_axi_rready
 
-  .m_axi_awaddr                         (axil_interconnect_m_axi_awaddr),    // output wire [127 : 0] m_axi_awaddr
-  .m_axi_awprot                         (axil_interconnect_m_axi_awprot),    // output wire [11 : 0] m_axi_awprot
-  .m_axi_awvalid                        (axil_interconnect_m_axi_awvalid),  // output wire [3 : 0] m_axi_awvalid
-  .m_axi_awready                        (axil_interconnect_m_axi_awready),  // input wire [3 : 0] m_axi_awready
-  .m_axi_wdata                          (axil_interconnect_m_axi_wdata),      // output wire [127 : 0] m_axi_wdata
-  .m_axi_wstrb                          (axil_interconnect_m_axi_wstrb),      // output wire [15 : 0] m_axi_wstrb
-  .m_axi_wvalid                         (axil_interconnect_m_axi_wvalid),    // output wire [3 : 0] m_axi_wvalid
-  .m_axi_wready                         (axil_interconnect_m_axi_wready),    // input wire [3 : 0] m_axi_wready
-  .m_axi_bresp                          (axil_interconnect_m_axi_bresp),      // input wire [7 : 0] m_axi_bresp
-  .m_axi_bvalid                         (axil_interconnect_m_axi_bvalid),    // input wire [3 : 0] m_axi_bvalid
-  .m_axi_bready                         (axil_interconnect_m_axi_bready),    // output wire [3 : 0] m_axi_bready
-  .m_axi_araddr                         (axil_interconnect_m_axi_araddr),    // output wire [127 : 0] m_axi_araddr
-  .m_axi_arprot                         (axil_interconnect_m_axi_arprot),    // output wire [11 : 0] m_axi_arprot
-  .m_axi_arvalid                        (axil_interconnect_m_axi_arvalid),  // output wire [3 : 0] m_axi_arvalid
-  .m_axi_arready                        (axil_interconnect_m_axi_arready),  // input wire [3 : 0] m_axi_arready
-  .m_axi_rdata                          (axil_interconnect_m_axi_rdata),      // input wire [127 : 0] m_axi_rdata
-  .m_axi_rresp                          (axil_interconnect_m_axi_rresp),      // input wire [7 : 0] m_axi_rresp
-  .m_axi_rvalid                         (axil_interconnect_m_axi_rvalid),    // input wire [3 : 0] m_axi_rvalid
-  .m_axi_rready                         (axil_interconnect_m_axi_rready)    // output wire [3 : 0] m_axi_rready
+//   .m_axi_awaddr                         (axil_interconnect_m_axi_awaddr),    // output wire [127 : 0] m_axi_awaddr
+//   .m_axi_awprot                         (axil_interconnect_m_axi_awprot),    // output wire [11 : 0] m_axi_awprot
+//   .m_axi_awvalid                        (axil_interconnect_m_axi_awvalid),  // output wire [3 : 0] m_axi_awvalid
+//   .m_axi_awready                        (axil_interconnect_m_axi_awready),  // input wire [3 : 0] m_axi_awready
+//   .m_axi_wdata                          (axil_interconnect_m_axi_wdata),      // output wire [127 : 0] m_axi_wdata
+//   .m_axi_wstrb                          (axil_interconnect_m_axi_wstrb),      // output wire [15 : 0] m_axi_wstrb
+//   .m_axi_wvalid                         (axil_interconnect_m_axi_wvalid),    // output wire [3 : 0] m_axi_wvalid
+//   .m_axi_wready                         (axil_interconnect_m_axi_wready),    // input wire [3 : 0] m_axi_wready
+//   .m_axi_bresp                          (axil_interconnect_m_axi_bresp),      // input wire [7 : 0] m_axi_bresp
+//   .m_axi_bvalid                         (axil_interconnect_m_axi_bvalid),    // input wire [3 : 0] m_axi_bvalid
+//   .m_axi_bready                         (axil_interconnect_m_axi_bready),    // output wire [3 : 0] m_axi_bready
+//   .m_axi_araddr                         (axil_interconnect_m_axi_araddr),    // output wire [127 : 0] m_axi_araddr
+//   .m_axi_arprot                         (axil_interconnect_m_axi_arprot),    // output wire [11 : 0] m_axi_arprot
+//   .m_axi_arvalid                        (axil_interconnect_m_axi_arvalid),  // output wire [3 : 0] m_axi_arvalid
+//   .m_axi_arready                        (axil_interconnect_m_axi_arready),  // input wire [3 : 0] m_axi_arready
+//   .m_axi_rdata                          (axil_interconnect_m_axi_rdata),      // input wire [127 : 0] m_axi_rdata
+//   .m_axi_rresp                          (axil_interconnect_m_axi_rresp),      // input wire [7 : 0] m_axi_rresp
+//   .m_axi_rvalid                         (axil_interconnect_m_axi_rvalid),    // input wire [3 : 0] m_axi_rvalid
+//   .m_axi_rready                         (axil_interconnect_m_axi_rready)    // output wire [3 : 0] m_axi_rready
+// );
+
+// axil interconnect uses either M<x>_BASE_ADDR or M<x>_ADDR_WIDTH
+// to calculate ranges for each master
+// setting ADDR_WIDTH to 30 for each master leads to 4 regular ranges
+// (see calcBaseAddrs function)
+axil_interconnect_wrap_1x4 #(
+    .ADDR_WIDTH     (32),
+    
+    .M00_ADDR_WIDTH (30),
+    .M01_ADDR_WIDTH (30),
+    .M02_ADDR_WIDTH (30),
+    .M03_ADDR_WIDTH (30)
+    // .M00_CONNECT_READ  = 1'b1,
+    // .M00_CONNECT_WRITE = 1'b1,
+
+    // parameter M01_CONNECT_READ = 1'b1,
+    // parameter M01_CONNECT_WRITE = 1'b1,
+
+    // parameter M02_CONNECT_READ = 1'b1,
+    // parameter M02_CONNECT_WRITE = 1'b1,
+
+    // parameter M03_CONNECT_READ = 1'b1,
+    // parameter M03_CONNECT_WRITE = 1'b1,
+) axil_interconnect_i (
+    .clk                            (regbank_clk),
+    .rst                            (!regbank_resetn),
+
+    /*
+     * AXI lite slave interfaces
+      */
+    .s00_axil_awaddr                (host_axil_awaddr),
+    .s00_axil_awprot                (host_axil_awprot),
+    .s00_axil_awvalid               (host_axil_awvalid),
+    .s00_axil_awready               (host_axil_awready),
+    .s00_axil_wdata                 (host_axil_wdata),
+    .s00_axil_wstrb                 (host_axil_wstrb),
+    .s00_axil_wvalid                (host_axil_wvalid),
+    .s00_axil_wready                (host_axil_wready),
+    .s00_axil_bresp                 (host_axil_bresp),
+    .s00_axil_bvalid                (host_axil_bvalid),
+    .s00_axil_bready                (host_axil_bready),
+    .s00_axil_araddr                (host_axil_araddr),
+    .s00_axil_arprot                (host_axil_arprot),
+    .s00_axil_arvalid               (host_axil_arvalid),
+    .s00_axil_arready               (host_axil_arready),
+    .s00_axil_rdata                 (host_axil_rdata),
+    .s00_axil_rresp                 (host_axil_rresp),
+    .s00_axil_rvalid                (host_axil_rvalid),
+    .s00_axil_rready                (host_axil_rready),
+
+    /*
+     * AXI lite master interfaces
+    */
+    .m00_axil_awaddr                (axil_interconnect_m_axi_awaddr     [31:0]),
+    .m00_axil_awprot                (axil_interconnect_m_axi_awprot     [2:0]),
+    .m00_axil_awvalid               (axil_interconnect_m_axi_awvalid    [0]),
+    .m00_axil_awready               (axil_interconnect_m_axi_awready    [0]),
+    .m00_axil_wdata                 (axil_interconnect_m_axi_wdata      [31:0]),
+    .m00_axil_wstrb                 (axil_interconnect_m_axi_wstrb      [3:0]),
+    .m00_axil_wvalid                (axil_interconnect_m_axi_wvalid     [0]),
+    .m00_axil_wready                (axil_interconnect_m_axi_wready     [0]),
+    .m00_axil_bresp                 (axil_interconnect_m_axi_bresp      [1:0]),
+    .m00_axil_bvalid                (axil_interconnect_m_axi_bvalid     [0]),
+    .m00_axil_bready                (axil_interconnect_m_axi_bready     [0]),
+    .m00_axil_araddr                (axil_interconnect_m_axi_araddr     [31:0]),
+    .m00_axil_arprot                (axil_interconnect_m_axi_arprot     [2:0]),
+    .m00_axil_arvalid               (axil_interconnect_m_axi_arvalid    [0]),
+    .m00_axil_arready               (axil_interconnect_m_axi_arready    [0]),
+    .m00_axil_rdata                 (axil_interconnect_m_axi_rdata      [31:0]),
+    .m00_axil_rresp                 (axil_interconnect_m_axi_rresp      [1:0]),
+    .m00_axil_rvalid                (axil_interconnect_m_axi_rvalid     [0]),
+    .m00_axil_rready                (axil_interconnect_m_axi_rready     [0]),
+
+    .m01_axil_awaddr                (axil_interconnect_m_axi_awaddr     [63:32]),
+    .m01_axil_awprot                (axil_interconnect_m_axi_awprot     [5:3]),
+    .m01_axil_awvalid               (axil_interconnect_m_axi_awvalid    [1:1]),
+    .m01_axil_awready               (axil_interconnect_m_axi_awready    [1:1]),
+    .m01_axil_wdata                 (axil_interconnect_m_axi_wdata      [63:32]),
+    .m01_axil_wstrb                 (axil_interconnect_m_axi_wstrb      [7:4]),
+    .m01_axil_wvalid                (axil_interconnect_m_axi_wvalid     [1:1]),
+    .m01_axil_wready                (axil_interconnect_m_axi_wready     [1:1]),
+    .m01_axil_bresp                 (axil_interconnect_m_axi_bresp      [3:2]),
+    .m01_axil_bvalid                (axil_interconnect_m_axi_bvalid     [1:1]),
+    .m01_axil_bready                (axil_interconnect_m_axi_bready     [1:1]),
+    .m01_axil_araddr                (axil_interconnect_m_axi_araddr     [63:32]),
+    .m01_axil_arprot                (axil_interconnect_m_axi_arprot     [5:3]),
+    .m01_axil_arvalid               (axil_interconnect_m_axi_arvalid    [1:1]),
+    .m01_axil_arready               (axil_interconnect_m_axi_arready    [1:1]),
+    .m01_axil_rdata                 (axil_interconnect_m_axi_rdata      [63:32]),
+    .m01_axil_rresp                 (axil_interconnect_m_axi_rresp      [3:2]),
+    .m01_axil_rvalid                (axil_interconnect_m_axi_rvalid     [1:1]),
+    .m01_axil_rready                (axil_interconnect_m_axi_rready     [1:1]),
+
+    .m02_axil_awaddr                (axil_interconnect_m_axi_awaddr     [95:64]),
+    .m02_axil_awprot                (axil_interconnect_m_axi_awprot     [8:6]),
+    .m02_axil_awvalid               (axil_interconnect_m_axi_awvalid    [2:2]),
+    .m02_axil_awready               (axil_interconnect_m_axi_awready    [2:2]),
+    .m02_axil_wdata                 (axil_interconnect_m_axi_wdata      [95:64]),
+    .m02_axil_wstrb                 (axil_interconnect_m_axi_wstrb      [11:8]),
+    .m02_axil_wvalid                (axil_interconnect_m_axi_wvalid     [2:2]),
+    .m02_axil_wready                (axil_interconnect_m_axi_wready     [2:2]),
+    .m02_axil_bresp                 (axil_interconnect_m_axi_bresp      [5:4]),
+    .m02_axil_bvalid                (axil_interconnect_m_axi_bvalid     [2:2]),
+    .m02_axil_bready                (axil_interconnect_m_axi_bready     [2:2]),
+    .m02_axil_araddr                (axil_interconnect_m_axi_araddr     [95:64]),
+    .m02_axil_arprot                (axil_interconnect_m_axi_arprot     [8:6]),
+    .m02_axil_arvalid               (axil_interconnect_m_axi_arvalid    [2:2]),
+    .m02_axil_arready               (axil_interconnect_m_axi_arready    [2:2]),
+    .m02_axil_rdata                 (axil_interconnect_m_axi_rdata      [95:64]),
+    .m02_axil_rresp                 (axil_interconnect_m_axi_rresp      [5:4]),
+    .m02_axil_rvalid                (axil_interconnect_m_axi_rvalid     [2:2]),
+    .m02_axil_rready                (axil_interconnect_m_axi_rready     [2:2]),
+ 
+    .m03_axil_awaddr                (axil_interconnect_m_axi_awaddr     [127:96]),
+    .m03_axil_awprot                (axil_interconnect_m_axi_awprot     [11:9]),
+    .m03_axil_awvalid               (axil_interconnect_m_axi_awvalid    [3:3]),
+    .m03_axil_awready               (axil_interconnect_m_axi_awready    [3:3]),
+    .m03_axil_wdata                 (axil_interconnect_m_axi_wdata      [127:96]),
+    .m03_axil_wstrb                 (axil_interconnect_m_axi_wstrb      [15:12]),
+    .m03_axil_wvalid                (axil_interconnect_m_axi_wvalid     [3:3]),
+    .m03_axil_wready                (axil_interconnect_m_axi_wready     [3:3]),
+    .m03_axil_bresp                 (axil_interconnect_m_axi_bresp      [7:6]),
+    .m03_axil_bvalid                (axil_interconnect_m_axi_bvalid     [3:3]),
+    .m03_axil_bready                (axil_interconnect_m_axi_bready     [3:3]),
+    .m03_axil_araddr                (axil_interconnect_m_axi_araddr     [127:96]),
+    .m03_axil_arprot                (axil_interconnect_m_axi_arprot     [11:9]),
+    .m03_axil_arvalid               (axil_interconnect_m_axi_arvalid    [3:3]),
+    .m03_axil_arready               (axil_interconnect_m_axi_arready    [3:3]),
+    .m03_axil_rdata                 (axil_interconnect_m_axi_rdata      [127:96]),
+    .m03_axil_rresp                 (axil_interconnect_m_axi_rresp      [7:6]),
+    .m03_axil_rvalid                (axil_interconnect_m_axi_rvalid     [3:3]),
+    .m03_axil_rready                (axil_interconnect_m_axi_rready     [3:3])
 );
 
 // ====================================================================================

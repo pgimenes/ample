@@ -2,9 +2,12 @@ import age_pkg::*;
 import noc_pkg::*;
 
 module aggregation_core_allocator #(
-    parameter NUM_CORES            = noc_pkg::MAX_AGC_COUNT,
-    parameter NUM_MANAGERS         = noc_pkg::MAX_AGGREGATION_COLS,
-    parameter PRECISION            = top_pkg::FLOAT_32
+    parameter NUM_CORES            = top_pkg::TRANSFORMATION_CHANNELS * top_pkg::AGGREGATION_CHANNELS,
+    parameter NUM_MANAGERS         = top_pkg::TRANSFORMATION_CHANNELS,
+    parameter AGGREGATION_COLUMNS  = top_pkg::AGGREGATION_CHANNELS,
+    
+    // TO DO: replace this with runtime parameter
+    parameter ALLOCATION_MODE = age_pkg::AGC_ALLOCATION_MODE_STATIC
 ) (
     input  logic                                           core_clk,
     input  logic                                           resetn,
@@ -14,128 +17,76 @@ module aggregation_core_allocator #(
     output logic                                           allocation_req_ready,
     input  top_pkg::NSB_AGE_REQ_t                          allocation_req,
 
+    // Generated AGM request
+    output logic [NUM_MANAGERS-1:0]                        agm_req_valid,
+    input  logic [NUM_MANAGERS-1:0]                        agm_req_ready,
+    output age_pkg::AGE_AGM_REQ_t                          agm_req,
+    
+    // For sequential RR allocator
     input  logic [NUM_CORES-1:0]                           cores_free,
     input  logic [9:0]                                     layer_config_in_features_count,
     
     // Deallocation request
     input  logic                                           deallocation_valid,
-    input  logic [NUM_CORES-1:0]                           deallocation_cores,
-
-    // Generated AGM request
-    output logic [NUM_MANAGERS-1:0]                        agm_req_valid,
-    input  logic [NUM_MANAGERS-1:0]                        agm_req_ready,
-    output age_pkg::AGE_AGM_REQ_t                          agm_req
+    input  logic [NUM_CORES-1:0]                           deallocation_cores
 
 );
-
-logic                                         busy;
-logic                                         done;
-
-top_pkg::NSB_AGE_REQ_t                        allocation_req_q;
-
-// Keep track of allocated cores that haven't yet received allocation packet
-logic [NUM_CORES-1:0]                         allocatable_cores;
-
-logic [$clog2(age_pkg::MAX_AGC_PER_NODE)-1:0] agc_counter;
-
-logic [NUM_CORES-1:0]                         allocated_core;
-logic [$clog2(NUM_CORES)-1:0]                 allocated_core_bin;
 
 // ==================================================================================================================================================
 // Instances
 // ==================================================================================================================================================
 
-rr_arbiter #(
-    .NUM_REQUESTERS (NUM_CORES)
-) arbiter_i (
-    .clk            (core_clk),
-    .resetn         (resetn),
+if (ALLOCATION_MODE == age_pkg::AGC_ALLOCATION_MODE_SEQUENTIAL_RR) begin
 
-    .request        (cores_free & allocatable_cores),
-    .update_lru     (busy && !done),
+    aggregation_core_allocator_sequential_rr #(
+        .NUM_CORES           (NUM_CORES),
+        .NUM_MANAGERS        (NUM_MANAGERS),
+        .AGGREGATION_COLUMNS (AGGREGATION_COLUMNS)
+    ) aggregation_core_allocator_sequential_rr_i (
+        .core_clk,
+        .resetn,
+        .allocation_req_valid,
+        .allocation_req_ready,
+        .allocation_req,
+        .agm_req_valid,
+        .agm_req_ready,
+        .agm_req,
+        .cores_free,
+        .layer_config_in_features_count,
+        .deallocation_valid,
+        .deallocation_cores
+    
+    );
 
-    .grant_oh       (allocated_core),
-    .grant_bin      (allocated_core_bin)
-);
+end
 
 // ==================================================================================================================================================
 // Logic
 // ==================================================================================================================================================
 
-always_comb begin
-    // Static AGM req payloads
-    agm_req.nsb_req = allocation_req_q;
-    agm_req.required_agcs = layer_config_in_features_count[9:4] + (|layer_config_in_features_count[3:0] ? 1'b1 : '0);
-
-    allocation_req_ready = !busy;
-    done = (agc_counter == agm_req.required_agcs);
-end
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        busy <= '0;
-        allocation_req_q <= '0;
-
-        agm_req.allocated_cores <= '0;
-        agc_counter <= '0;
-
-        // Accepting allocation request
-    end else if (!busy & allocation_req_valid) begin
-        busy             <= '1;
-        allocation_req_q <= allocation_req;
-
-        agm_req.allocated_cores <= '0;
-        agc_counter      <= '0;
-    
-    end else if (busy && !done) begin
-        agc_counter                 <= agc_counter + 1'b1;
-        agm_req.allocated_cores <= agm_req.allocated_cores | allocated_core;
-    
-    // AGM accepting request with allocated AGCs
-    end else if (|(agm_req_valid & agm_req_ready)) begin
-        busy <= '0;
+if (ALLOCATION_MODE == age_pkg::AGC_ALLOCATION_MODE_STATIC) begin
+    for (genvar agm = 0; agm < NUM_MANAGERS; agm++) begin
+        assign agm_req_valid [agm] = allocation_req_valid && (allocation_req.nodeslot % NUM_MANAGERS == agm); // && (allocation_req_q.fetch_tag == (NUM_MANAGERS * PRECISION[$bits(top_pkg::NODE_PRECISION_e)-1:0] + agm))
     end
-end
+    assign allocation_req_ready = agm_req_ready[allocation_req.nodeslot % NUM_MANAGERS];
 
-for (genvar allocation_slot = 0; allocation_slot < age_pkg::MAX_AGC_PER_NODE; allocation_slot++) begin
-    always_ff @(posedge core_clk or negedge resetn) begin
-        if (!resetn) begin
-            agm_req.coords_x [allocation_slot] <= '0;
-            agm_req.coords_y [allocation_slot] <= '0;
-            
-        end else if (busy && !done && (agc_counter == allocation_slot)) begin
-            agm_req.coords_x [allocation_slot] <= (allocated_core_bin % NUM_MANAGERS); // TO DO: replace with AGGREGATION_COLS when merging with generalized aggregation mesh
-            agm_req.coords_y [allocation_slot] <= allocated_core_bin / NUM_MANAGERS;
+    always_comb begin
+        agm_req.nsb_req = allocation_req;
+        agm_req.required_agcs = layer_config_in_features_count[9:4] + (|layer_config_in_features_count[3:0] ? 1'b1 : '0);
+
+        // Mask of allocated cores, size NUM_CORES = (AGGREGATION_ROWS * AGGREGATION_COLUMNS)
+        // Used later for deallocating AGCs when AGM is finished so they become available for next AGM
+        // Not needed here since allocation is static
+        agm_req.allocated_cores = '0;
+    end
+
+    for (genvar allocation_slot = 0; allocation_slot < age_pkg::MAX_AGC_PER_NODE; allocation_slot++) begin
+        always_comb begin
+            agm_req.coords_x [allocation_slot] = 1'b1 + allocation_slot;
+            agm_req.coords_y [allocation_slot] = (allocation_req.nodeslot % NUM_MANAGERS);
         end
     end
-end
 
-// Keep snapshot of allocated aggregation cores when NSB request is accepted
-// This accounts for race condition between AGC aggregation and message channel (aggregation manager)
-//      sending nodeslot allocation packet to AGC
-
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        allocatable_cores <= '1;
-
-    end else begin
-        // This operation is 8 gates deep
-        // done: 3 gates (agc_count bitwise AND with required_agcs), AND reduction, inverse
-        // allocation_valid: 1 gate (done && !busy)
-
-        allocatable_cores <= 
-                            // Inverse and bitwise AND to drop cores being allocated
-                            // But only drop when allocation is valid (i.e. busy && !done)
-                            allocatable_cores & ~(allocated_core & {NUM_CORES{busy && !done}}) 
-                            
-                            // Bitwise OR to assert cores being deallocated
-                            // But only assert when deallocation is valid
-                            | (deallocation_cores & {NUM_CORES{deallocation_valid}});
-    end
-end
-
-for (genvar agm = 0; agm < NUM_MANAGERS; agm++) begin
-    assign agm_req_valid [agm] = busy && done && (allocation_req_q.fetch_tag == (NUM_MANAGERS * PRECISION[$bits(top_pkg::NODE_PRECISION_e)-1:0] + agm));
 end
 
 endmodule
