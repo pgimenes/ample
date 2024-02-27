@@ -100,6 +100,11 @@ class InitManager:
         print(f"dense node count {len(dense_nodes)}")
         avg_nb_cnt = avg_nb_cnt / len(self.trained_graph.nx_graph.nodes)
         print(f"Average neighbour count {avg_nb_cnt}")
+        
+        # Cull nodes to make mod 4 = 0
+        mod = len(self.nodeslot_programming['nodeslots']) % 4
+        self.nodeslot_programming['nodeslots'] = self.nodeslot_programming['nodeslots'][:-mod]
+        # breakpoint()
 
 
     def dump_nodeslot_programming(self):

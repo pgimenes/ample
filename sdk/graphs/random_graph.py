@@ -1,12 +1,23 @@
 
 from sdk.trained_graph import TrainedGraph
-from networkx.generators.random_graphs import erdos_renyi_graph
+from torch_geometric.datasets import FakeDataset
 
 class RandomGraph(TrainedGraph):
-    def __init__(self, node_count=64, 
-                p=0.5,
-                feature_count=64, 
-                graph_precision="FLOAT_32"):
-
+    def __init__(
+            self,
+            num_nodes = 10000,
+            avg_degree = 2,
+            num_channels=64,
+            graph_precision="FLOAT_32"
+            ):
         
-        super().__init__(dataset=dataset, feature_count=feature_count, graph_precision=graph_precision)
+        self.num_nodes = num_nodes
+        self.avg_degree = avg_degree
+
+        dataset = FakeDataset(
+                                num_graphs=1, 
+                                avg_num_nodes = num_nodes,
+                                avg_degree=avg_degree,
+                                num_channels=num_channels
+                            )[0]
+        super().__init__(dataset=dataset, feature_count=num_channels, graph_precision=graph_precision)

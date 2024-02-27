@@ -83,13 +83,13 @@ class TrainedGraph:
         for prec in ["FLOAT_32", "FIXED_8"]:
             precision_filter = [node for node in self.nx_graph.nodes if self.nx_graph.nodes[node]['precision'] == prec]
             mod = counts[prec] % 4
-            logging.info(f"Precision {prec} has {len(precision_filter)} nodes")
-            logging.info(f"Precision {prec} has modulus {mod}")
+            logging.debug(f"Precision {prec} has {len(precision_filter)} nodes")
+            logging.debug(f"Precision {prec} has modulus {mod}")
             if (mod == 0):
                 continue
             for node in precision_filter[-mod:]: # choose last N nodes where N is modulus with wait count
                 # Invalidate nodes so they get dropped by testbench
-                logging.info(f"Node {node} being dropped")
+                logging.debug(f"Node {node} being dropped")
                 self.nx_graph.nodes[node]['neighbour_count'] = 0
             
     def random_embeddings(self):
