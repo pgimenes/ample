@@ -18,7 +18,6 @@ class InitManager:
         self.memory_mapper = Memory_Mapper(graph.nx_graph, model, base_path=base_path, dump_file=memory_dump_file)
 
         # Create directory for output files
-        breakpoint()
         os.makedirs(base_path, exist_ok=True)
 
         # Paths
@@ -72,10 +71,15 @@ class InitManager:
     def program_nodeslots(self, ignore_isolated_nodes=False):
         logging.debug(f"Generating nodeslot programming.")
 
+        dense_nodes = []
+        avg_nb_cnt = 0
         for node in self.trained_graph.nx_graph.nodes:
             nb_cnt = self.trained_graph.nx_graph.nodes[node]['neighbour_count']
-            # if (nb_cnt > 64):
-            #     print(f"node {node} has neighbour count {nb_cnt}")
+            avg_nb_cnt += nb_cnt
+            if (nb_cnt > 256):
+                # print(f"node {node} has neighbour count {nb_cnt}, dropping")
+                dense_nodes.append(node)
+                continue
             if (ignore_isolated_nodes and nb_cnt == 0):
                 continue
             nodeslot = {'node_id' : node,
@@ -93,6 +97,10 @@ class InitManager:
                         'out_messages_address_msb': 0
                         }
             self.nodeslot_programming['nodeslots'].append(nodeslot)
+        print(f"dense node count {len(dense_nodes)}")
+        avg_nb_cnt = avg_nb_cnt / len(self.trained_graph.nx_graph.nodes)
+        print(f"Average neighbour count {avg_nb_cnt}")
+
 
     def dump_nodeslot_programming(self):
         self.nodeslot_programming = {'nodeslots':[]}

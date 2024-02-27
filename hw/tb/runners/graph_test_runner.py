@@ -1,5 +1,6 @@
 
 from cocotb.triggers import RisingEdge, Timer
+from cocotb.utils import get_sim_time
 
 from tb.utils.common import NodeState, NodePrecision
 from tb.utils.common import delay, allocate_lsb
@@ -65,13 +66,26 @@ async def graph_test_runner(dut):
         # Wait for work to finish
         test.dut._log.info("Nodeslot programming done. Waiting for nodeslots to be empty.")
         while(True):
-            empty_mask = await test.driver.axil_driver.axil_read(test.driver.nsb_regs["status_nodeslots_empty_mask_lsb"])
-            if (empty_mask == 0xFFFFFFFF):
+            # Build free mask
+            free_mask = ''
+            for i in range(0, int(NODESLOT_COUNT/32)):
+                empty_mask = await test.driver.axil_driver.axil_read(test.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
+                free_mask = empty_mask.binstr + free_mask
+            
+            test.dut._log.info("Free nodeslots: %s", free_mask)
+
+            if (free_mask == "1" * NODESLOT_COUNT):
                 break
+            
             await delay(dut.regbank_clk, 10)
 
         test.dut._log.info("Layer finished.")
         await delay(dut.regbank_clk, 10)
 
-    test.dut._log.info("Test finished.")
+    stime = get_sim_time("ms")
+    test.dut._log.info(f"Test finished. Simulation time: {stime}ms.")
+
+    with open(f"sim_time.txt", "w") as f:
+        f.write(str(stime))
+
     await test.end_test()

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import argparse
 from sdk.initialization_manager import InitManager
 
@@ -38,9 +37,9 @@ graph_map = {
     'pubmed': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Pubmed", graph_precision=graph_precision)},
     'cora': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Cora", graph_precision=graph_precision)},
     'citeseer': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Citeseer", graph_precision=graph_precision)},
-    'reddit': { 'class': RedditGraph},
-    'flickr': { 'class': FlickrGraph },
-    'yelp': { 'class': YelpGraph }
+    'reddit': { 'class': lambda feature_count, graph_precision: RedditGraph(graph_precision=graph_precision)},
+    'flickr': { 'class': lambda feature_count, graph_precision: FlickrGraph(graph_precision=graph_precision)},
+    'yelp': { 'class': lambda feature_count, graph_precision: YelpGraph(graph_precision=graph_precision)}
 }
 
 model_map = {

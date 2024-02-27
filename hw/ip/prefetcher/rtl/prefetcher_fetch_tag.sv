@@ -312,8 +312,8 @@ always_comb begin
 end
 
 always_comb begin
-    // adj_queue_slots_available = ADJ_QUEUE_DEPTH - adj_queue_count;
-    adj_queue_slots_available = 7'd64 - adj_queue_count;
+    adj_queue_slots_available = ADJ_QUEUE_DEPTH - adj_queue_count;
+    // adj_queue_slots_available = 7'd64 - adj_queue_count;
 end
 
 // Message queue fetch state machine

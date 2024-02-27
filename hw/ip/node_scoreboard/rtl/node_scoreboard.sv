@@ -185,15 +185,13 @@ top_pkg::NODE_PRECISION_e active_weights_fetch_precision;
 logic [top_pkg::PRECISION_COUNT-1:0] aggregation_buffer_waiting_transformation;
 logic [$clog2(top_pkg::PRECISION_COUNT)-1:0] aggregation_buffer_precision_arb_bin;
 
-// temporary fix
-logic [31:0] status_nodeslots_empty_mask_0_value;
-logic [31:0] status_nodeslots_empty_mask_1_value;
-logic [31:0] status_nodeslots_empty_mask_2_value;
-logic [31:0] status_nodeslots_empty_mask_3_value;
-logic [31:0] status_nodeslots_empty_mask_4_value;
-logic [31:0] status_nodeslots_empty_mask_5_value;
-logic [31:0] status_nodeslots_empty_mask_6_value;
-logic [31:0] status_nodeslots_empty_mask_7_value;
+// temporary
+logic [31:0] status_nodeslots_empty_mask_lsb_value;
+logic [31:0] status_nodeslots_empty_mask_msb_value;
+logic layer_config_scale_factors_address_lsb_strobe;
+logic [31:0] layer_config_scale_factors_address_lsb_value;
+logic layer_config_scale_factors_address_msb_strobe;
+logic [31:0] layer_config_scale_factors_address_msb_value;
 
 // ==================================================================================================================================================
 // Instances
