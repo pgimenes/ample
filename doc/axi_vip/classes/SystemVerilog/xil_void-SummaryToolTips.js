@@ -1,1 +1,0 @@
-NDSummary.OnToolTipsLoaded("SystemVerilogClass:xil_void",{405:"<div class=\"NDToolTip TClass LSystemVerilog\"><div class=\"TTSummary\">The xil_void class is the base class for all Xilinx Verification Component classes.&nbsp; It is an abstract class with no data memebers or functions.</div></div>"});

@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("pre",["Function"],[["pre_load_mem",,[["xil_axi_slv_mem_model",,,,0,"File:axi_vip_pkg.sv:xil_axi_slv_mem_model.pre_load_mem","SystemVerilogClass:xil_axi_slv_mem_model:pre_load_mem"]]]]);

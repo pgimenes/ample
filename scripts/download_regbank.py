@@ -1,36 +1,4 @@
-# -------------------------------------------------------------------------------
-#
-#  Download generated files from airhdl.com
-#
-#  Usage:
-#    python download.py register_map_id file_type
-#
-#  Arguments:
-#    register_map_id  ID of the airhdl register map
-#    file_type        type of the file to download (e.g. vhdlComponent)
-#
-#  Example:
-#    python download.py 176820 vhdlComponent
-#
-# -------------------------------------------------------------------------------
-#
-#  Copyright (c) 2023 noasic GmbH
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-#
-# -------------------------------------------------------------------------------
-
-import sys
+import sys, os
 import json
 import argparse
 import urllib.request
@@ -74,8 +42,7 @@ if __name__ == "__main__":
 
     # Get authentication token
     url = "https://airhdl.com/api/auth/login"
-    # PASSWORD = getpass("Enter your airhdl.com password: ")
-    PASSWORD = "aTFjfjclbEFg0bgB"
+    PASSWORD = os.environ[f"AIRHDL_PASSWORD"]
     body = {'username': USERNAME, "password": PASSWORD}
     req = urllib.request.Request(
         url=url, method="POST")

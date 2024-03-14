@@ -4,7 +4,8 @@ import noc_pkg::*;
 module prefetcher_feature_bank #(
     parameter AXI_ADDRESS_WIDTH = 34,
     parameter AXI_DATA_WIDTH    = 512,
-    parameter FETCH_TAG_COUNT   = top_pkg::MESSAGE_CHANNEL_COUNT
+    parameter FETCH_TAG_COUNT   = top_pkg::MESSAGE_CHANNEL_COUNT,
+    parameter HBM_BANKS = 32
 ) (
     input logic core_clk,
     input logic resetn,
@@ -17,29 +18,17 @@ module prefetcher_feature_bank #(
     output logic                                              nsb_prefetcher_feature_bank_resp_valid,
     output NSB_PREF_RESP_t                                    nsb_prefetcher_feature_bank_resp,
 
-    // Adjacency Read Master
-    output logic                                              adj_rm_fetch_req_valid,
-    input  logic                                              adj_rm_fetch_req_ready,
-    output logic [AXI_ADDRESS_WIDTH-1:0]                      adj_rm_fetch_start_address,
-    output logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       adj_rm_fetch_byte_count,
-
-    input  logic                                              adj_rm_fetch_resp_valid,
-    output logic                                              adj_rm_fetch_resp_ready,
-    input  logic                                              adj_rm_fetch_resp_last,
-    input  logic [AXI_DATA_WIDTH-1:0]                         adj_rm_fetch_resp_data,
-    input  logic [3:0]                                        adj_rm_fetch_resp_axi_id,
-
-    // Message Read Master    
-    output logic                                              msg_rm_fetch_req_valid,
-    input  logic                                              msg_rm_fetch_req_ready,
-    output logic [AXI_ADDRESS_WIDTH-1:0]                      msg_rm_fetch_start_address,
-    output logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       msg_rm_fetch_byte_count,
-
-    input  logic                                              msg_rm_fetch_resp_valid,
-    output logic                                              msg_rm_fetch_resp_ready,
-    input  logic                                              msg_rm_fetch_resp_last,
-    input  logic [AXI_DATA_WIDTH-1:0]                         msg_rm_fetch_resp_data,
-    input  logic [3:0]                                        msg_rm_fetch_resp_axi_id,
+    // Read Masters
+    output logic [HBM_BANKS-1:0]                                              read_master_fetch_req_valid,
+    input  logic [HBM_BANKS-1:0]                                              read_master_fetch_req_ready,
+    output logic [HBM_BANKS-1:0] [AXI_ADDRESS_WIDTH-1:0]                      read_master_fetch_start_address,
+    output logic [HBM_BANKS-1:0] [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       read_master_fetch_byte_count,
+    
+    input  logic [HBM_BANKS-1:0]                                              read_master_fetch_resp_valid,
+    output logic [HBM_BANKS-1:0]                                              read_master_fetch_resp_ready,
+    input  logic [HBM_BANKS-1:0]                                              read_master_fetch_resp_last,
+    input  logic [HBM_BANKS-1:0] [AXI_DATA_WIDTH-1:0]                         read_master_fetch_resp_data,
+    input  logic [HBM_BANKS-1:0] [3:0]                                        read_master_fetch_resp_axi_id,
 
     // Message Channels: AGE -> Prefetcher Feature Bank
     input  logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_req_valid,
@@ -66,6 +55,7 @@ module prefetcher_feature_bank #(
     
 );
 
+parameter FETCH_TAGS_PER_BANK = FETCH_TAG_COUNT / HBM_BANKS;
 
 // ==================================================================================================================================================
 // Declarations
@@ -114,14 +104,16 @@ logic [FETCH_TAG_COUNT-1:0]                                        fetch_tag_res
 logic [$clog2(FETCH_TAG_COUNT)-1:0]                                fetch_tag_resp_arb_bin;
 
 // Adjacency Read Master request arbitration
-logic [FETCH_TAG_COUNT-1:0]         chosen_fetch_tag_adj_rm_req;
-logic [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_adj_rm_req_bin;
-logic [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_adj_rm_req_bin_q;
+logic [HBM_BANKS - 1 : 0] [FETCH_TAG_COUNT-1:0]         chosen_fetch_tag_rm_req;
+logic [HBM_BANKS - 1 : 0] [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_rm_req_bin;
+logic [HBM_BANKS - 1 : 0] [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_rm_req_bin_q;
 
-// Message Read Master request arbitration
-logic [FETCH_TAG_COUNT-1:0]         chosen_fetch_tag_msg_rm_req;
-logic [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_msg_rm_req_bin;
-logic [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_msg_rm_req_bin_q;
+logic [HBM_BANKS - 1 : 0] [FETCH_TAG_COUNT / HBM_BANKS - 1 : 0] requesting_fetch_tags;
+logic [HBM_BANKS-1:0] fetch_req_was_adj_q;
+logic [HBM_BANKS-1:0] fetch_req_was_msg_q;
+
+logic [HBM_BANKS-1:0] [$clog2(FETCH_TAG_COUNT)-1:0] read_master_req_fetch_tag;
+logic [HBM_BANKS-1:0] [$clog2(FETCH_TAG_COUNT)-1:0] read_master_req_fetch_tag_q;
 
 // ==================================================================================================================================================
 // Instances
@@ -203,6 +195,62 @@ for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 
         .layer_config_scale_factors_address_lsb_value,
         .layer_config_scale_factors_address_msb_value
     );
+end
+
+// Fetch Tag response arbitration
+// --------------------------------------------------------------------------------------------------
+
+rr_arbiter #(
+    .NUM_REQUESTERS (FETCH_TAG_COUNT)
+) fetch_tag_resp_arb_i (
+    .clk        (core_clk),
+    .resetn     (resetn),
+
+    .request    (nsb_prefetcher_fetch_tag_resp_valid),
+    .update_lru (|nsb_prefetcher_fetch_tag_resp_valid),
+    .grant_oh   (fetch_tag_resp_arb),
+    .grant_bin  (fetch_tag_resp_arb_bin)
+);
+
+// Adjacency Read Master request arbitration
+// --------------------------------------------------------------------------------------------------
+
+for (genvar bank = 0; bank < HBM_BANKS; bank++) begin
+    rr_arbiter #(
+        .NUM_REQUESTERS (FETCH_TAG_COUNT)
+    ) read_master_arb (
+        .clk        (core_clk),
+        .resetn     (resetn),
+
+        .request    (requesting_fetch_tags       [bank]),
+        .update_lru (read_master_fetch_req_ready [bank]),
+        .grant_oh   (chosen_fetch_tag_rm_req     [bank]),
+        .grant_bin  (chosen_fetch_tag_rm_req_bin [bank])
+    );
+end
+
+// ==================================================================================================================================================
+// Logic
+// ==================================================================================================================================================
+
+// NSB REQ/RESP
+// ----------------------------------------------------------------------------------
+
+always_comb begin
+    nsb_prefetcher_feature_bank_req_ready    = nsb_prefetcher_fetch_tag_req_ready [nsb_prefetcher_feature_bank_req.nodeslot];
+
+    // NSB responses
+    nsb_prefetcher_feature_bank_resp_valid   = |nsb_prefetcher_fetch_tag_resp_valid;
+    nsb_prefetcher_feature_bank_resp         = nsb_prefetcher_fetch_tag_resp [fetch_tag_resp_arb_bin];
+end
+
+// Fetch Tags
+// ----------------------------------------------------------------------------------
+
+logic [FETCH_TAG_COUNT-1:0] [$clog2(HBM_BANKS)-1:0] fetch_tag_bank;
+logic [FETCH_TAG_COUNT-1:0] [$clog2(FETCH_TAGS_PER_BANK)-1:0] chosen_ft_group_idx;
+
+for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 1) begin
 
     // Fetch tag allocation/de-allocation
     // --------------------------------------------------------------------------------------------------
@@ -232,125 +280,71 @@ for (genvar fetch_tag = 0; fetch_tag < FETCH_TAG_COUNT; fetch_tag = fetch_tag + 
         nsb_prefetcher_fetch_tag_req        [fetch_tag]  = nsb_prefetcher_feature_bank_req;
     end
 
+    assign fetch_tag_bank [fetch_tag] = fetch_tag / FETCH_TAGS_PER_BANK;
+    assign chosen_ft_group_idx [fetch_tag] = fetch_tag % FETCH_TAGS_PER_BANK;
+
     // Accept read master requests for chosen fetch tags
-    assign fetch_tag_adj_rm_req_ready [fetch_tag] = chosen_fetch_tag_adj_rm_req [fetch_tag] && adj_rm_fetch_req_ready;
-    assign fetch_tag_msg_rm_req_ready [fetch_tag] = chosen_fetch_tag_msg_rm_req [fetch_tag] && msg_rm_fetch_req_ready;
+    assign fetch_tag_adj_rm_req_ready [fetch_tag] = chosen_fetch_tag_rm_req_bin [fetch_tag_bank[fetch_tag]] == chosen_ft_group_idx[fetch_tag] && read_master_fetch_req_ready[fetch_tag_bank[fetch_tag]];
+    assign fetch_tag_msg_rm_req_ready [fetch_tag] = chosen_fetch_tag_rm_req_bin [fetch_tag_bank[fetch_tag]] == chosen_ft_group_idx[fetch_tag] && read_master_fetch_req_ready[fetch_tag_bank[fetch_tag]];
 
     // Drive read master responses to appropriate fetch tag
     always_comb begin 
-        fetch_tag_adj_rm_resp_valid  [fetch_tag] = adj_rm_fetch_resp_valid && (chosen_fetch_tag_adj_rm_req_bin_q == fetch_tag);
-        fetch_tag_adj_rm_resp_last   [fetch_tag] = adj_rm_fetch_resp_last;
-        fetch_tag_adj_rm_resp_data   [fetch_tag] = adj_rm_fetch_resp_data;
-        fetch_tag_adj_rm_resp_axi_id [fetch_tag] = adj_rm_fetch_resp_axi_id;
+        fetch_tag_adj_rm_resp_valid  [fetch_tag] = read_master_fetch_resp_valid[fetch_tag_bank[fetch_tag]] && (chosen_fetch_tag_rm_req_bin_q [fetch_tag_bank[fetch_tag]] == chosen_ft_group_idx [fetch_tag]) && fetch_req_was_adj_q [fetch_tag_bank[fetch_tag]];
+        fetch_tag_adj_rm_resp_last   [fetch_tag] = read_master_fetch_resp_last [fetch_tag_bank[fetch_tag]];
+        fetch_tag_adj_rm_resp_data   [fetch_tag] = read_master_fetch_resp_data [fetch_tag_bank[fetch_tag]];
+        fetch_tag_adj_rm_resp_axi_id [fetch_tag] = read_master_fetch_resp_axi_id [fetch_tag_bank[fetch_tag]];
 
-        fetch_tag_msg_rm_resp_valid  [fetch_tag] = msg_rm_fetch_resp_valid && (chosen_fetch_tag_msg_rm_req_bin_q == fetch_tag);
-        fetch_tag_msg_rm_resp_last   [fetch_tag] = msg_rm_fetch_resp_last;
-        fetch_tag_msg_rm_resp_data   [fetch_tag] = msg_rm_fetch_resp_data;
-        fetch_tag_msg_rm_resp_axi_id [fetch_tag] = msg_rm_fetch_resp_axi_id;
+        fetch_tag_msg_rm_resp_valid  [fetch_tag] = read_master_fetch_resp_valid[fetch_tag_bank[fetch_tag]] && (chosen_fetch_tag_rm_req_bin_q [fetch_tag_bank[fetch_tag]] == chosen_ft_group_idx [fetch_tag]) && fetch_req_was_msg_q [fetch_tag_bank[fetch_tag]];
+        fetch_tag_msg_rm_resp_last   [fetch_tag] = read_master_fetch_resp_last [fetch_tag_bank[fetch_tag]];
+        fetch_tag_msg_rm_resp_data   [fetch_tag] = read_master_fetch_resp_data [fetch_tag_bank[fetch_tag]];
+        fetch_tag_msg_rm_resp_axi_id [fetch_tag] = read_master_fetch_resp_axi_id [fetch_tag_bank[fetch_tag]];
     end
 
 end
-
-// Fetch Tag response arbitration
-// --------------------------------------------------------------------------------------------------
-
-rr_arbiter #(
-    .NUM_REQUESTERS (FETCH_TAG_COUNT)
-) fetch_tag_resp_arb_i (
-    .clk        (core_clk),
-    .resetn     (resetn),
-
-    .request    (nsb_prefetcher_fetch_tag_resp_valid),
-    .update_lru (|nsb_prefetcher_fetch_tag_resp_valid),
-    .grant_oh   (fetch_tag_resp_arb),
-    .grant_bin  (fetch_tag_resp_arb_bin)
-);
-
-// Adjacency Read Master request arbitration
-// --------------------------------------------------------------------------------------------------
-
-rr_arbiter #(
-    .NUM_REQUESTERS (FETCH_TAG_COUNT)
-) adj_rm_req_arb (
-    .clk        (core_clk),
-    .resetn     (resetn),
-
-    .request    (fetch_tag_adj_rm_req_valid),
-    .update_lru (adj_rm_fetch_req_ready),
-    .grant_oh   (chosen_fetch_tag_adj_rm_req),
-    .grant_bin  (chosen_fetch_tag_adj_rm_req_bin)
-);
-
-
-// Message Read Master request arbitration
-// --------------------------------------------------------------------------------------------------
-
-rr_arbiter #(
-    .NUM_REQUESTERS (FETCH_TAG_COUNT)
-) msg_rm_req_arb (
-    .clk        (core_clk),
-    .resetn     (resetn),
-
-    .request    (fetch_tag_msg_rm_req_valid),
-    .update_lru (msg_rm_fetch_req_ready),
-    .grant_oh   (chosen_fetch_tag_msg_rm_req),
-    .grant_bin  (chosen_fetch_tag_msg_rm_req_bin)
-);
-
-// ==================================================================================================================================================
-// Logic
-// ==================================================================================================================================================
-
-// NSB REQ/RESP
-// ----------------------------------------------------------------------------------
-
-always_comb begin
-    nsb_prefetcher_feature_bank_req_ready    = nsb_prefetcher_fetch_tag_req_ready [nsb_prefetcher_feature_bank_req.nodeslot];
-
-    // NSB responses
-    nsb_prefetcher_feature_bank_resp_valid   = |nsb_prefetcher_fetch_tag_resp_valid;
-    nsb_prefetcher_feature_bank_resp         = nsb_prefetcher_fetch_tag_resp [fetch_tag_resp_arb_bin];
-end
-
 
 // Drive Read Master requests
 // ----------------------------------------------------------------------------------
 
-// Keep track of chosen fetch tag for read master requests in-flight
-always_ff @(posedge core_clk or negedge resetn) begin
-    if (!resetn) begin
-        chosen_fetch_tag_adj_rm_req_bin_q <= '0;
-        chosen_fetch_tag_msg_rm_req_bin_q <= '0;
+for (genvar bank = 0; bank < HBM_BANKS; bank++) begin
+    // Create fetch tag mask for each HBM bank read master arbiter
+    assign requesting_fetch_tags [bank] = fetch_tag_adj_rm_req_valid [(bank+1) * FETCH_TAGS_PER_BANK - 1 : bank * FETCH_TAGS_PER_BANK] | fetch_tag_msg_rm_req_valid [(bank+1) * FETCH_TAGS_PER_BANK - 1 : bank * FETCH_TAGS_PER_BANK];
+    
+    // Keep track of chosen fetch tag and adj/msg flag for each read master request
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            chosen_fetch_tag_rm_req_bin_q [bank] <= '0;
+            fetch_req_was_adj_q [bank] <= '0;
+            fetch_req_was_msg_q [bank] <= '0;
 
-    end else begin
-        // Accepting adjacency read master request
-        if (adj_rm_fetch_req_valid && adj_rm_fetch_req_ready) begin
-            chosen_fetch_tag_adj_rm_req_bin_q <= chosen_fetch_tag_adj_rm_req_bin;
-        end
-
-        // Accepting message read master request
-        if (msg_rm_fetch_req_valid && msg_rm_fetch_req_ready) begin
-            chosen_fetch_tag_msg_rm_req_bin_q <= chosen_fetch_tag_msg_rm_req_bin;
+        end else begin
+            // Accepting read master request
+            if (read_master_fetch_req_valid [bank] && read_master_fetch_req_ready [bank]) begin
+                chosen_fetch_tag_rm_req_bin_q [bank] <= chosen_fetch_tag_rm_req_bin[bank];
+                fetch_req_was_adj_q [bank] <= fetch_tag_adj_rm_req_valid[bank * FETCH_TAGS_PER_BANK + chosen_fetch_tag_rm_req_bin[bank]];
+                fetch_req_was_msg_q [bank] <= fetch_tag_msg_rm_req_valid[bank * FETCH_TAGS_PER_BANK + chosen_fetch_tag_rm_req_bin[bank]];
+            end
         end
     end
-end
+    
+    // Drive read master requests
+    always_comb begin
+        read_master_req_fetch_tag [bank] = bank * FETCH_TAGS_PER_BANK + chosen_fetch_tag_rm_req_bin[bank];
+        read_master_req_fetch_tag_q [bank] = bank * FETCH_TAGS_PER_BANK + chosen_fetch_tag_rm_req_bin_q[bank];
 
-// Drive adjacency read master requests
-always_comb begin
-    adj_rm_fetch_req_valid              = |fetch_tag_adj_rm_req_valid;
-    adj_rm_fetch_start_address          = fetch_tag_adj_rm_start_address [chosen_fetch_tag_adj_rm_req_bin];
-    adj_rm_fetch_byte_count             = fetch_tag_adj_rm_byte_count    [chosen_fetch_tag_adj_rm_req_bin];
+        read_master_fetch_req_valid [bank]     = |requesting_fetch_tags[bank];
+        read_master_fetch_start_address [bank] = fetch_tag_adj_rm_req_valid [read_master_req_fetch_tag[bank]] ? fetch_tag_adj_rm_start_address [read_master_req_fetch_tag[bank]]
+                                                    : fetch_tag_msg_rm_req_valid [read_master_req_fetch_tag[bank]] ? fetch_tag_msg_rm_start_address [read_master_req_fetch_tag[bank]]
+                                                    : '0;
 
-    adj_rm_fetch_resp_ready             = fetch_tag_adj_rm_resp_ready [chosen_fetch_tag_adj_rm_req_bin_q];
-end
+        read_master_fetch_byte_count [bank] = fetch_tag_adj_rm_req_valid [read_master_req_fetch_tag[bank]] ? fetch_tag_adj_rm_byte_count    [read_master_req_fetch_tag[bank]]
+                                                : fetch_tag_msg_rm_req_valid [read_master_req_fetch_tag[bank]] ? fetch_tag_msg_rm_byte_count    [read_master_req_fetch_tag[bank]]
+                                                : '0;
 
-// Drive message read master requests
-always_comb begin
-    msg_rm_fetch_req_valid     = |fetch_tag_msg_rm_req_valid;
-    msg_rm_fetch_start_address = fetch_tag_msg_rm_start_address [chosen_fetch_tag_msg_rm_req_bin];
-    msg_rm_fetch_byte_count    = fetch_tag_msg_rm_byte_count    [chosen_fetch_tag_msg_rm_req_bin];
+        read_master_fetch_resp_ready [bank]    = fetch_req_was_adj_q[bank] ? fetch_tag_adj_rm_resp_ready [read_master_req_fetch_tag_q[bank]]
+                                                    : fetch_req_was_msg_q[bank] ? fetch_tag_msg_rm_resp_ready [read_master_req_fetch_tag_q[bank]]
+                                                    : '0;
+    end
 
-    msg_rm_fetch_resp_ready  = fetch_tag_msg_rm_resp_ready [chosen_fetch_tag_msg_rm_req_bin_q];
 end
 
 // ==================================================================================================================================================

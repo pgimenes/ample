@@ -1,1 +1,0 @@
-NDContentPage.OnToolTipsLoaded({97:"<div class=\"NDToolTip TClass LSystemVerilog\"><div class=\"TTSummary\">The xil_componennt class is a class which extends from xil_reporter and added its own new and get_type_name function</div></div>"});

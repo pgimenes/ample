@@ -2,7 +2,8 @@ import top_pkg::*;
 import noc_pkg::*;
 
 module prefetcher #(
-    parameter FETCH_TAG_COUNT = top_pkg::MESSAGE_CHANNEL_COUNT
+    parameter FETCH_TAG_COUNT = top_pkg::MESSAGE_CHANNEL_COUNT,
+    parameter HBM_BANKS = 32
 ) (
     input logic                               core_clk,
     input logic                               resetn,
@@ -39,122 +40,83 @@ module prefetcher #(
     output logic                              s_axi_bvalid,
     input  logic                              s_axi_bready,
 
-    // Prefetcher Adjacency Read Master -> AXI Memory Interconnect
-    output logic [33:0]                       prefetcher_adj_rm_axi_interconnect_axi_araddr,
-    output logic [1:0]                        prefetcher_adj_rm_axi_interconnect_axi_arburst,
-    output logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_arcache,
-    output logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_arid,
-    output logic [7:0]                        prefetcher_adj_rm_axi_interconnect_axi_arlen,
-    output logic [0:0]                        prefetcher_adj_rm_axi_interconnect_axi_arlock,
-    output logic [2:0]                        prefetcher_adj_rm_axi_interconnect_axi_arprot,
-    output logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_arqos,
-    output logic [2:0]                        prefetcher_adj_rm_axi_interconnect_axi_arsize,
-    output logic                              prefetcher_adj_rm_axi_interconnect_axi_arvalid,
-    input  logic                              prefetcher_adj_rm_axi_interconnect_axi_arready,
-    output logic [33:0]                       prefetcher_adj_rm_axi_interconnect_axi_awaddr,
-    output logic [1:0]                        prefetcher_adj_rm_axi_interconnect_axi_awburst,
-    output logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_awcache,
-    output logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_awid,
-    output logic [7:0]                        prefetcher_adj_rm_axi_interconnect_axi_awlen,
-    output logic [0:0]                        prefetcher_adj_rm_axi_interconnect_axi_awlock,
-    output logic [2:0]                        prefetcher_adj_rm_axi_interconnect_axi_awprot,
-    output logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_awqos,
-    input  logic                              prefetcher_adj_rm_axi_interconnect_axi_awready,
-    output logic [2:0]                        prefetcher_adj_rm_axi_interconnect_axi_awsize,
-    output logic                              prefetcher_adj_rm_axi_interconnect_axi_awvalid,
-    input  logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_bid,
-    output logic                              prefetcher_adj_rm_axi_interconnect_axi_bready,
-    input  logic [1:0]                        prefetcher_adj_rm_axi_interconnect_axi_bresp,
-    input  logic                              prefetcher_adj_rm_axi_interconnect_axi_bvalid,
-    input  logic [511:0]                      prefetcher_adj_rm_axi_interconnect_axi_rdata,
-    input  logic [3:0]                        prefetcher_adj_rm_axi_interconnect_axi_rid,
-    input  logic                              prefetcher_adj_rm_axi_interconnect_axi_rlast,
-    output logic                              prefetcher_adj_rm_axi_interconnect_axi_rready,
-    input  logic [1:0]                        prefetcher_adj_rm_axi_interconnect_axi_rresp,
-    input  logic                              prefetcher_adj_rm_axi_interconnect_axi_rvalid,
-    output logic [511:0]                      prefetcher_adj_rm_axi_interconnect_axi_wdata,
-    output logic                              prefetcher_adj_rm_axi_interconnect_axi_wlast,
-    input  logic                              prefetcher_adj_rm_axi_interconnect_axi_wready,
-    output logic [63:0]                       prefetcher_adj_rm_axi_interconnect_axi_wstrb,
-    output logic                              prefetcher_adj_rm_axi_interconnect_axi_wvalid,
-
-    // Prefetcher Message Read Master -> AXI Memory Interconnect
-    output logic [33:0]                       prefetcher_msg_rm_axi_interconnect_axi_araddr,
-    output logic [1:0]                        prefetcher_msg_rm_axi_interconnect_axi_arburst,
-    output logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_arcache,
-    output logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_arid,
-    output logic [7:0]                        prefetcher_msg_rm_axi_interconnect_axi_arlen,
-    output logic [0:0]                        prefetcher_msg_rm_axi_interconnect_axi_arlock,
-    output logic [2:0]                        prefetcher_msg_rm_axi_interconnect_axi_arprot,
-    output logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_arqos,
-    output logic [2:0]                        prefetcher_msg_rm_axi_interconnect_axi_arsize,
-    output logic                              prefetcher_msg_rm_axi_interconnect_axi_arvalid,
-    input  logic                              prefetcher_msg_rm_axi_interconnect_axi_arready,
-    output logic [33:0]                       prefetcher_msg_rm_axi_interconnect_axi_awaddr,
-    output logic [1:0]                        prefetcher_msg_rm_axi_interconnect_axi_awburst,
-    output logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_awcache,
-    output logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_awid,
-    output logic [7:0]                        prefetcher_msg_rm_axi_interconnect_axi_awlen,
-    output logic [0:0]                        prefetcher_msg_rm_axi_interconnect_axi_awlock,
-    output logic [2:0]                        prefetcher_msg_rm_axi_interconnect_axi_awprot,
-    output logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_awqos,
-    input  logic                              prefetcher_msg_rm_axi_interconnect_axi_awready,
-    output logic [2:0]                        prefetcher_msg_rm_axi_interconnect_axi_awsize,
-    output logic                              prefetcher_msg_rm_axi_interconnect_axi_awvalid,
-    input  logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_bid,
-    output logic                              prefetcher_msg_rm_axi_interconnect_axi_bready,
-    input  logic [1:0]                        prefetcher_msg_rm_axi_interconnect_axi_bresp,
-    input  logic                              prefetcher_msg_rm_axi_interconnect_axi_bvalid,
-    input  logic [511:0]                      prefetcher_msg_rm_axi_interconnect_axi_rdata,
-    input  logic [3:0]                        prefetcher_msg_rm_axi_interconnect_axi_rid,
-    input  logic                              prefetcher_msg_rm_axi_interconnect_axi_rlast,
-    output logic                              prefetcher_msg_rm_axi_interconnect_axi_rready,
-    input  logic [1:0]                        prefetcher_msg_rm_axi_interconnect_axi_rresp,
-    input  logic                              prefetcher_msg_rm_axi_interconnect_axi_rvalid,
-    output logic [511:0]                      prefetcher_msg_rm_axi_interconnect_axi_wdata,
-    output logic                              prefetcher_msg_rm_axi_interconnect_axi_wlast,
-    input  logic                              prefetcher_msg_rm_axi_interconnect_axi_wready,
-    output logic [63:0]                       prefetcher_msg_rm_axi_interconnect_axi_wstrb,
-    output logic                              prefetcher_msg_rm_axi_interconnect_axi_wvalid,
+    // Prefetcher Read Master -> AXI Interface
+    output logic [HBM_BANKS-1:0] [33:0]                       read_master_axi_araddr,
+    output logic [HBM_BANKS-1:0] [1:0]                        read_master_axi_arburst,
+    output logic [HBM_BANKS-1:0] [3:0]                        read_master_axi_arcache,
+    output logic [HBM_BANKS-1:0] [3:0]                        read_master_axi_arid,
+    output logic [HBM_BANKS-1:0] [7:0]                        read_master_axi_arlen,
+    output logic [HBM_BANKS-1:0] [0:0]                        read_master_axi_arlock,
+    output logic [HBM_BANKS-1:0] [2:0]                        read_master_axi_arprot,
+    output logic [HBM_BANKS-1:0] [3:0]                        read_master_axi_arqos,
+    output logic [HBM_BANKS-1:0] [2:0]                        read_master_axi_arsize,
+    output logic [HBM_BANKS-1:0]                              read_master_axi_arvalid,
+    input  logic [HBM_BANKS-1:0]                              read_master_axi_arready,
+    output logic [HBM_BANKS-1:0] [33:0]                       read_master_axi_awaddr,
+    output logic [HBM_BANKS-1:0] [1:0]                        read_master_axi_awburst,
+    output logic [HBM_BANKS-1:0] [3:0]                        read_master_axi_awcache,
+    output logic [HBM_BANKS-1:0] [3:0]                        read_master_axi_awid,
+    output logic [HBM_BANKS-1:0] [7:0]                        read_master_axi_awlen,
+    output logic [HBM_BANKS-1:0] [0:0]                        read_master_axi_awlock,
+    output logic [HBM_BANKS-1:0] [2:0]                        read_master_axi_awprot,
+    output logic [HBM_BANKS-1:0] [3:0]                        read_master_axi_awqos,
+    input  logic [HBM_BANKS-1:0]                              read_master_axi_awready,
+    output logic [HBM_BANKS-1:0] [2:0]                        read_master_axi_awsize,
+    output logic [HBM_BANKS-1:0]                              read_master_axi_awvalid,
+    input  logic [HBM_BANKS-1:0] [3:0]                        read_master_axi_bid,
+    output logic [HBM_BANKS-1:0]                              read_master_axi_bready,
+    input  logic [HBM_BANKS-1:0] [1:0]                        read_master_axi_bresp,
+    input  logic [HBM_BANKS-1:0]                              read_master_axi_bvalid,
+    input  logic [HBM_BANKS-1:0] [511:0]                      read_master_axi_rdata,
+    input  logic [HBM_BANKS-1:0] [3:0]                        read_master_axi_rid,
+    input  logic [HBM_BANKS-1:0]                              read_master_axi_rlast,
+    output logic [HBM_BANKS-1:0]                              read_master_axi_rready,
+    input  logic [HBM_BANKS-1:0] [1:0]                        read_master_axi_rresp,
+    input  logic [HBM_BANKS-1:0]                              read_master_axi_rvalid,
+    output logic [HBM_BANKS-1:0] [511:0]                      read_master_axi_wdata,
+    output logic [HBM_BANKS-1:0]                              read_master_axi_wlast,
+    input  logic [HBM_BANKS-1:0]                              read_master_axi_wready,
+    output logic [HBM_BANKS-1:0] [63:0]                       read_master_axi_wstrb,
+    output logic [HBM_BANKS-1:0]                              read_master_axi_wvalid,
 
     // Prefetcher Weight Bank Read Master -> AXI Memory Interconnect
-    output logic [33:0]                       prefetcher_weight_bank_rm_axi_interconnect_axi_araddr,
-    output logic [1:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_arburst,
-    output logic [3:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_arcache,
-    output logic [3:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_arid,
-    output logic [7:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_arlen,
-    output logic [0:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_arlock,
-    output logic [2:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_arprot,
-    output logic [3:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_arqos,
-    output logic [2:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_arsize,
-    output logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_arvalid,
-    input  logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_arready,
-    output logic [33:0]                       prefetcher_weight_bank_rm_axi_interconnect_axi_awaddr,
-    output logic [1:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_awburst,
-    output logic [3:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_awcache,
-    output logic [3:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_awid,
-    output logic [7:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_awlen,
-    output logic [0:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_awlock,
-    output logic [2:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_awprot,
-    output logic [3:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_awqos,
-    input  logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_awready,
-    output logic [2:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_awsize,
-    output logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_awvalid,
-    input  logic [3:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_bid,
-    output logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_bready,
-    input  logic [1:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_bresp,
-    input  logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_bvalid,
-    input  logic [511:0]                      prefetcher_weight_bank_rm_axi_interconnect_axi_rdata,
-    input  logic [3:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_rid,
-    input  logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_rlast,
-    output logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_rready,
-    input  logic [1:0]                        prefetcher_weight_bank_rm_axi_interconnect_axi_rresp,
-    input  logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_rvalid,
-    output logic [511:0]                      prefetcher_weight_bank_rm_axi_interconnect_axi_wdata,
-    output logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_wlast,
-    input  logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_wready,
-    output logic [63:0]                       prefetcher_weight_bank_rm_axi_interconnect_axi_wstrb,
-    output logic                              prefetcher_weight_bank_rm_axi_interconnect_axi_wvalid,
+    output logic [33:0]                       weight_bank_axi_araddr,
+    output logic [1:0]                        weight_bank_axi_arburst,
+    output logic [3:0]                        weight_bank_axi_arcache,
+    output logic [3:0]                        weight_bank_axi_arid,
+    output logic [7:0]                        weight_bank_axi_arlen,
+    output logic [0:0]                        weight_bank_axi_arlock,
+    output logic [2:0]                        weight_bank_axi_arprot,
+    output logic [3:0]                        weight_bank_axi_arqos,
+    output logic [2:0]                        weight_bank_axi_arsize,
+    output logic                              weight_bank_axi_arvalid,
+    input  logic                              weight_bank_axi_arready,
+    output logic [33:0]                       weight_bank_axi_awaddr,
+    output logic [1:0]                        weight_bank_axi_awburst,
+    output logic [3:0]                        weight_bank_axi_awcache,
+    output logic [3:0]                        weight_bank_axi_awid,
+    output logic [7:0]                        weight_bank_axi_awlen,
+    output logic [0:0]                        weight_bank_axi_awlock,
+    output logic [2:0]                        weight_bank_axi_awprot,
+    output logic [3:0]                        weight_bank_axi_awqos,
+    input  logic                              weight_bank_axi_awready,
+    output logic [2:0]                        weight_bank_axi_awsize,
+    output logic                              weight_bank_axi_awvalid,
+    input  logic [3:0]                        weight_bank_axi_bid,
+    output logic                              weight_bank_axi_bready,
+    input  logic [1:0]                        weight_bank_axi_bresp,
+    input  logic                              weight_bank_axi_bvalid,
+    input  logic [511:0]                      weight_bank_axi_rdata,
+    input  logic [3:0]                        weight_bank_axi_rid,
+    input  logic                              weight_bank_axi_rlast,
+    output logic                              weight_bank_axi_rready,
+    input  logic [1:0]                        weight_bank_axi_rresp,
+    input  logic                              weight_bank_axi_rvalid,
+    output logic [511:0]                      weight_bank_axi_wdata,
+    output logic                              weight_bank_axi_wlast,
+    input  logic                              weight_bank_axi_wready,
+    output logic [63:0]                       weight_bank_axi_wstrb,
+    output logic                              weight_bank_axi_wvalid,
 
     // Message Channels: AGE -> Prefetcher Feature Bank
     input  logic [MESSAGE_CHANNEL_COUNT-1:0]                  message_channel_req_valid,
@@ -229,28 +191,15 @@ logic                                              nsb_prefetcher_feature_bank_r
 NSB_PREF_RESP_t                                    nsb_prefetcher_feature_bank_resp;
 
 // Adjacency Read Master
-logic                                              adj_rm_fetch_req_valid;
-logic                                              adj_rm_fetch_req_ready;
-logic [AXI_ADDRESS_WIDTH-1:0]                      adj_rm_fetch_start_address;
-logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       adj_rm_fetch_byte_count;
-
-logic                                              adj_rm_fetch_resp_valid;
-logic                                              adj_rm_fetch_resp_ready;
-logic                                              adj_rm_fetch_resp_last;
-logic [AXI_DATA_WIDTH-1:0]                         adj_rm_fetch_resp_data;
-logic [3:0]                                        adj_rm_fetch_resp_axi_id;
-
-// Message Read Master
-logic                                              msg_rm_fetch_req_valid;
-logic                                              msg_rm_fetch_req_ready;
-logic [AXI_ADDRESS_WIDTH-1:0]                      msg_rm_fetch_start_address;
-logic [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       msg_rm_fetch_byte_count;
-
-logic                                              msg_rm_fetch_resp_valid;
-logic                                              msg_rm_fetch_resp_ready;
-logic                                              msg_rm_fetch_resp_last;
-logic [AXI_DATA_WIDTH-1:0]                         msg_rm_fetch_resp_data;
-logic [3:0]                                        msg_rm_fetch_resp_axi_id;
+logic [HBM_BANKS-1:0]                                              read_master_req_valid;
+logic [HBM_BANKS-1:0]                                              read_master_req_ready;
+logic [HBM_BANKS-1:0] [AXI_ADDRESS_WIDTH-1:0]                      read_master_start_address;
+logic [HBM_BANKS-1:0] [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       read_master_byte_count;
+logic [HBM_BANKS-1:0]                                              read_master_resp_valid;
+logic [HBM_BANKS-1:0]                                              read_master_resp_ready;
+logic [HBM_BANKS-1:0]                                              read_master_resp_last;
+logic [HBM_BANKS-1:0] [AXI_DATA_WIDTH-1:0]                         read_master_resp_data;
+logic [HBM_BANKS-1:0] [3:0]                                        read_master_resp_axi_id;
 
 // Weight Bank
 // --------------------------------------------------------------------------------------------
@@ -337,29 +286,17 @@ prefetcher_feature_bank #(
     .nsb_prefetcher_feature_bank_resp_valid                             (nsb_prefetcher_feature_bank_resp_valid),
     .nsb_prefetcher_feature_bank_resp                                   (nsb_prefetcher_feature_bank_resp),
 
-    // Adjacency Read Master
-    .adj_rm_fetch_req_valid                                             (adj_rm_fetch_req_valid),
-    .adj_rm_fetch_req_ready                                             (adj_rm_fetch_req_ready),
-    .adj_rm_fetch_start_address                                         (adj_rm_fetch_start_address),
-    .adj_rm_fetch_byte_count                                            (adj_rm_fetch_byte_count),
+    // Read Masters
+    .read_master_fetch_req_valid                                             (read_master_req_valid),
+    .read_master_fetch_req_ready                                             (read_master_req_ready),
+    .read_master_fetch_start_address                                         (read_master_start_address),
+    .read_master_fetch_byte_count                                            (read_master_byte_count),
 
-    .adj_rm_fetch_resp_valid                                            (adj_rm_fetch_resp_valid),
-    .adj_rm_fetch_resp_ready                                            (adj_rm_fetch_resp_ready),
-    .adj_rm_fetch_resp_last                                             (adj_rm_fetch_resp_last),
-    .adj_rm_fetch_resp_data                                             (adj_rm_fetch_resp_data),
-    .adj_rm_fetch_resp_axi_id                                           (adj_rm_fetch_resp_axi_id),
-
-    // Message Read Master    
-    .msg_rm_fetch_req_valid                                             (msg_rm_fetch_req_valid),
-    .msg_rm_fetch_req_ready                                             (msg_rm_fetch_req_ready),
-    .msg_rm_fetch_start_address                                         (msg_rm_fetch_start_address),
-    .msg_rm_fetch_byte_count                                            (msg_rm_fetch_byte_count),
-
-    .msg_rm_fetch_resp_valid                                            (msg_rm_fetch_resp_valid),
-    .msg_rm_fetch_resp_ready                                            (msg_rm_fetch_resp_ready),
-    .msg_rm_fetch_resp_last                                             (msg_rm_fetch_resp_last),
-    .msg_rm_fetch_resp_data                                             (msg_rm_fetch_resp_data),
-    .msg_rm_fetch_resp_axi_id                                           (msg_rm_fetch_resp_axi_id),
+    .read_master_fetch_resp_valid                                            (read_master_resp_valid),
+    .read_master_fetch_resp_ready                                            (read_master_resp_ready),
+    .read_master_fetch_resp_last                                             (read_master_resp_last),
+    .read_master_fetch_resp_data                                             (read_master_resp_data),
+    .read_master_fetch_resp_axi_id                                           (read_master_resp_axi_id),
 
     // Message Channels
     .message_channel_req_valid                                          (message_channel_req_valid),
@@ -428,129 +365,49 @@ for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT;
             );
             
 end
+
+// Read Masters
+// ----------------------------------------------------------------------------------
+
+for (genvar bank = 0; bank < HBM_BANKS; bank++) begin : read_master_block
+    axi_read_master #(
+        .MAX_BYTE_COUNT (MAX_FETCH_REQ_BYTE_COUNT),
+        .DATA_WIDTH     (AXI_DATA_WIDTH)
+    ) read_master_i (
+        .core_clk    (core_clk),
+        .resetn      (resetn),
         
-// prefetcher_weight_bank #(
-//     .PRECISION         (top_pkg::FIXED_8),
-//     .AXI_ADDRESS_WIDTH (34),
-//     .AXI_DATA_WIDTH    (512),
-//     .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
-// ) weight_bank_fixed_i (
-//     .core_clk,
-//     .resetn,
-
-//     .nsb_prefetcher_weight_bank_req_valid   (nsb_prefetcher_weight_bank_req_valid [top_pkg::FIXED_8]),
-//     .nsb_prefetcher_weight_bank_req_ready   (nsb_prefetcher_weight_bank_req_ready [top_pkg::FIXED_8]),
-//     .nsb_prefetcher_weight_bank_req         (nsb_prefetcher_req),
-
-//     .nsb_prefetcher_weight_bank_resp_valid  (nsb_prefetcher_weight_bank_resp_valid [top_pkg::FIXED_8]),
-//     .nsb_prefetcher_weight_bank_resp        (nsb_prefetcher_weight_bank_resp       [top_pkg::FIXED_8]),
-
-//     .weight_bank_axi_rm_fetch_req_valid     (weight_bank_axi_rm_fetch_req_valid     [top_pkg::FIXED_8]),
-//     .weight_bank_axi_rm_fetch_req_ready     (weight_bank_axi_rm_fetch_req_ready     [top_pkg::FIXED_8]),
-//     .weight_bank_axi_rm_fetch_start_address (weight_bank_axi_rm_fetch_start_address [top_pkg::FIXED_8]),
-//     .weight_bank_axi_rm_fetch_byte_count    (weight_bank_axi_rm_fetch_byte_count    [top_pkg::FIXED_8]),
-
-//     .weight_bank_axi_rm_fetch_resp_valid    (weight_bank_axi_rm_fetch_resp_valid  [top_pkg::FIXED_8]),
-//     .weight_bank_axi_rm_fetch_resp_ready    (weight_bank_axi_rm_fetch_resp_ready  [top_pkg::FIXED_8]),
-//     .weight_bank_axi_rm_fetch_resp_last     (weight_read_master_resp_last  ),
-//     .weight_bank_axi_rm_fetch_resp_data     (weight_read_master_resp_data  ),
-//     .weight_bank_axi_rm_fetch_resp_axi_id   (weight_read_master_resp_axi_id),
-
-//     .weight_channel_req_valid               (weight_channel_req_valid [top_pkg::FIXED_8]),
-//     .weight_channel_req_ready               (weight_channel_req_ready [top_pkg::FIXED_8]),
-//     .weight_channel_req                     (weight_channel_req       [top_pkg::FIXED_8]),
-
-//     .weight_channel_resp_valid              (weight_channel_resp_valid [top_pkg::FIXED_8]),
-//     .weight_channel_resp_ready              (weight_channel_resp_ready [top_pkg::FIXED_8]),
-//     .weight_channel_resp                    (weight_channel_resp       [top_pkg::FIXED_8]),
-
-//     .layer_config_weights_address_lsb_value (layer_config_weights_address_lsb_value [top_pkg::FIXED_8])
-// );
-
-// Adjacency Read Master
-// ----------------------------------------------------------------------------------
-
-axi_read_master #(
-    .MAX_BYTE_COUNT (MAX_FETCH_REQ_BYTE_COUNT),
-    .DATA_WIDTH     (AXI_DATA_WIDTH)
-) adj_read_master (
-    .core_clk    (core_clk),
-    .resetn      (resetn),
+        .fetch_req_valid            (read_master_req_valid     [bank]),
+        .fetch_req_ready            (read_master_req_ready     [bank]),
+        .fetch_start_address        (read_master_start_address [bank]),
+        .fetch_byte_count           (read_master_byte_count    [bank]),
+        
+        .fetch_resp_valid           (read_master_resp_valid    [bank]),
+        .fetch_resp_ready           (read_master_resp_ready    [bank]),
+        .fetch_resp_last            (read_master_resp_last     [bank]),
+        .fetch_resp_data            (read_master_resp_data     [bank]),
+        .fetch_resp_axi_id          (read_master_resp_axi_id   [bank]),
     
-    .fetch_req_valid            (adj_rm_fetch_req_valid),
-    .fetch_req_ready            (adj_rm_fetch_req_ready),
-    .fetch_start_address        (adj_rm_fetch_start_address),
-    .fetch_byte_count           (adj_rm_fetch_byte_count),
-
-    // Response interface
-    .fetch_resp_valid           (adj_rm_fetch_resp_valid),
-    .fetch_resp_ready           (adj_rm_fetch_resp_ready),
-    .fetch_resp_last            (adj_rm_fetch_resp_last),
-    .fetch_resp_data            (adj_rm_fetch_resp_data),
-    .fetch_resp_axi_id          (adj_rm_fetch_resp_axi_id),
-
-    // AXI Read-Only Interface
-   .axi_araddr                  (prefetcher_adj_rm_axi_interconnect_axi_araddr),
-   .axi_arburst                 (prefetcher_adj_rm_axi_interconnect_axi_arburst),
-   .axi_arcache                 (prefetcher_adj_rm_axi_interconnect_axi_arcache),
-   .axi_arid                    (prefetcher_adj_rm_axi_interconnect_axi_arid),
-   .axi_arlen                   (prefetcher_adj_rm_axi_interconnect_axi_arlen),
-   .axi_arlock                  (prefetcher_adj_rm_axi_interconnect_axi_arlock),
-   .axi_arprot                  (prefetcher_adj_rm_axi_interconnect_axi_arprot),
-   .axi_arqos                   (prefetcher_adj_rm_axi_interconnect_axi_arqos),
-   .axi_arsize                  (prefetcher_adj_rm_axi_interconnect_axi_arsize),
-   .axi_arvalid                 (prefetcher_adj_rm_axi_interconnect_axi_arvalid),
-   .axi_arready                 (prefetcher_adj_rm_axi_interconnect_axi_arready),
-   .axi_rdata                   (prefetcher_adj_rm_axi_interconnect_axi_rdata),
-   .axi_rid                     (prefetcher_adj_rm_axi_interconnect_axi_rid),
-   .axi_rlast                   (prefetcher_adj_rm_axi_interconnect_axi_rlast),
-   .axi_rvalid                  (prefetcher_adj_rm_axi_interconnect_axi_rvalid),
-   .axi_rready                  (prefetcher_adj_rm_axi_interconnect_axi_rready),
-   .axi_rresp                   (prefetcher_adj_rm_axi_interconnect_axi_rresp)
-);
-
-// Message Read Master
-// ----------------------------------------------------------------------------------
-
-axi_read_master #(
-    .MAX_BYTE_COUNT (MAX_FETCH_REQ_BYTE_COUNT),
-    .DATA_WIDTH     (AXI_DATA_WIDTH)
-) msg_read_master (
-    .core_clk    (core_clk),
-    .resetn      (resetn),
-    
-    // Request interface
-    .fetch_req_valid            (msg_rm_fetch_req_valid),
-    .fetch_req_ready            (msg_rm_fetch_req_ready),
-    .fetch_start_address        (msg_rm_fetch_start_address),
-    .fetch_byte_count           (msg_rm_fetch_byte_count),
-
-    // Response interface
-    .fetch_resp_valid           (msg_rm_fetch_resp_valid),
-    .fetch_resp_ready           (msg_rm_fetch_resp_ready),
-    .fetch_resp_last            (msg_rm_fetch_resp_last),
-    .fetch_resp_data            (msg_rm_fetch_resp_data),
-    .fetch_resp_axi_id          (msg_rm_fetch_resp_axi_id),
-
-    // AXI Read-Only Interface
-   .axi_araddr                  (prefetcher_msg_rm_axi_interconnect_axi_araddr),
-   .axi_arburst                 (prefetcher_msg_rm_axi_interconnect_axi_arburst),
-   .axi_arcache                 (prefetcher_msg_rm_axi_interconnect_axi_arcache),
-   .axi_arid                    (prefetcher_msg_rm_axi_interconnect_axi_arid),
-   .axi_arlen                   (prefetcher_msg_rm_axi_interconnect_axi_arlen),
-   .axi_arlock                  (prefetcher_msg_rm_axi_interconnect_axi_arlock),
-   .axi_arprot                  (prefetcher_msg_rm_axi_interconnect_axi_arprot),
-   .axi_arqos                   (prefetcher_msg_rm_axi_interconnect_axi_arqos),
-   .axi_arsize                  (prefetcher_msg_rm_axi_interconnect_axi_arsize),
-   .axi_arvalid                 (prefetcher_msg_rm_axi_interconnect_axi_arvalid),
-   .axi_arready                 (prefetcher_msg_rm_axi_interconnect_axi_arready),
-   .axi_rdata                   (prefetcher_msg_rm_axi_interconnect_axi_rdata),
-   .axi_rid                     (prefetcher_msg_rm_axi_interconnect_axi_rid),
-   .axi_rlast                   (prefetcher_msg_rm_axi_interconnect_axi_rlast),
-   .axi_rvalid                  (prefetcher_msg_rm_axi_interconnect_axi_rvalid),
-   .axi_rready                  (prefetcher_msg_rm_axi_interconnect_axi_rready),
-   .axi_rresp                   (prefetcher_msg_rm_axi_interconnect_axi_rresp)
-);
+        // AXI Read-Only Interface
+       .axi_araddr                  (read_master_axi_araddr    [bank]),
+       .axi_arburst                 (read_master_axi_arburst   [bank]),
+       .axi_arcache                 (read_master_axi_arcache   [bank]),
+       .axi_arid                    (read_master_axi_arid      [bank]),
+       .axi_arlen                   (read_master_axi_arlen     [bank]),
+       .axi_arlock                  (read_master_axi_arlock    [bank]),
+       .axi_arprot                  (read_master_axi_arprot    [bank]),
+       .axi_arqos                   (read_master_axi_arqos     [bank]),
+       .axi_arsize                  (read_master_axi_arsize    [bank]),
+       .axi_arvalid                 (read_master_axi_arvalid   [bank]),
+       .axi_arready                 (read_master_axi_arready   [bank]),
+       .axi_rdata                   (read_master_axi_rdata     [bank]),
+       .axi_rid                     (read_master_axi_rid       [bank]),
+       .axi_rlast                   (read_master_axi_rlast     [bank]),
+       .axi_rvalid                  (read_master_axi_rvalid    [bank]),
+       .axi_rready                  (read_master_axi_rready    [bank]),
+       .axi_rresp                   (read_master_axi_rresp     [bank])
+    );
+end : read_master_block
 
 // Weight Bank AXI Read Master
 // --------------------------------------------------------------------------------------------
@@ -574,23 +431,23 @@ axi_read_master #(
     .fetch_resp_axi_id    (weight_read_master_resp_axi_id),
 
     // AXI Read-Only Interface
-    .axi_araddr  (prefetcher_weight_bank_rm_axi_interconnect_axi_araddr),
-    .axi_arburst (prefetcher_weight_bank_rm_axi_interconnect_axi_arburst),
-    .axi_arcache (prefetcher_weight_bank_rm_axi_interconnect_axi_arcache),
-    .axi_arid    (prefetcher_weight_bank_rm_axi_interconnect_axi_arid),
-    .axi_arlen   (prefetcher_weight_bank_rm_axi_interconnect_axi_arlen),
-    .axi_arlock  (prefetcher_weight_bank_rm_axi_interconnect_axi_arlock),
-    .axi_arprot  (prefetcher_weight_bank_rm_axi_interconnect_axi_arprot),
-    .axi_arqos   (prefetcher_weight_bank_rm_axi_interconnect_axi_arqos),
-    .axi_arsize  (prefetcher_weight_bank_rm_axi_interconnect_axi_arsize),
-    .axi_arvalid (prefetcher_weight_bank_rm_axi_interconnect_axi_arvalid),
-    .axi_arready (prefetcher_weight_bank_rm_axi_interconnect_axi_arready),
-    .axi_rdata   (prefetcher_weight_bank_rm_axi_interconnect_axi_rdata),
-    .axi_rid     (prefetcher_weight_bank_rm_axi_interconnect_axi_rid),
-    .axi_rlast   (prefetcher_weight_bank_rm_axi_interconnect_axi_rlast),
-    .axi_rvalid  (prefetcher_weight_bank_rm_axi_interconnect_axi_rvalid),
-    .axi_rready  (prefetcher_weight_bank_rm_axi_interconnect_axi_rready),
-    .axi_rresp   (prefetcher_weight_bank_rm_axi_interconnect_axi_rresp)
+    .axi_araddr  (weight_bank_axi_araddr),
+    .axi_arburst (weight_bank_axi_arburst),
+    .axi_arcache (weight_bank_axi_arcache),
+    .axi_arid    (weight_bank_axi_arid),
+    .axi_arlen   (weight_bank_axi_arlen),
+    .axi_arlock  (weight_bank_axi_arlock),
+    .axi_arprot  (weight_bank_axi_arprot),
+    .axi_arqos   (weight_bank_axi_arqos),
+    .axi_arsize  (weight_bank_axi_arsize),
+    .axi_arvalid (weight_bank_axi_arvalid),
+    .axi_arready (weight_bank_axi_arready),
+    .axi_rdata   (weight_bank_axi_rdata),
+    .axi_rid     (weight_bank_axi_rid),
+    .axi_rlast   (weight_bank_axi_rlast),
+    .axi_rvalid  (weight_bank_axi_rvalid),
+    .axi_rready  (weight_bank_axi_rready),
+    .axi_rresp   (weight_bank_axi_rresp)
 );
 
 // ==================================================================================================================================================
@@ -644,55 +501,38 @@ end
 
 always_comb begin 
     // Adjacency read master
-    prefetcher_adj_rm_axi_interconnect_axi_awaddr  = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_awburst = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_awcache = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_awid    = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_awlen   = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_awlock  = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_awprot  = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_awqos   = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_awsize  = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_awvalid = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_bready  = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_wdata   = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_wlast   = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_wstrb   = '0;
-    prefetcher_adj_rm_axi_interconnect_axi_wvalid  = '0;
-
-    // Message read master
-    prefetcher_msg_rm_axi_interconnect_axi_awaddr   = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_awburst  = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_awcache  = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_awid     = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_awlen    = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_awlock   = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_awprot   = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_awqos    = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_awsize   = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_awvalid  = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_bready   = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_wdata    = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_wlast    = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_wstrb    = '0;
-    prefetcher_msg_rm_axi_interconnect_axi_wvalid   = '0;
+    read_master_axi_awaddr  = '0;
+    read_master_axi_awburst = '0;
+    read_master_axi_awcache = '0;
+    read_master_axi_awid    = '0;
+    read_master_axi_awlen   = '0;
+    read_master_axi_awlock  = '0;
+    read_master_axi_awprot  = '0;
+    read_master_axi_awqos   = '0;
+    read_master_axi_awsize  = '0;
+    read_master_axi_awvalid = '0;
+    read_master_axi_bready  = '0;
+    read_master_axi_wdata   = '0;
+    read_master_axi_wlast   = '0;
+    read_master_axi_wstrb   = '0;
+    read_master_axi_wvalid  = '0;
 
     // Weight Bank
-    prefetcher_weight_bank_rm_axi_interconnect_axi_awaddr   = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_awburst  = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_awcache  = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_awid     = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_awlen    = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_awlock   = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_awprot   = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_awqos    = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_awsize   = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_awvalid  = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_bready   = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_wdata    = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_wlast    = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_wstrb    = '0;
-    prefetcher_weight_bank_rm_axi_interconnect_axi_wvalid   = '0;
+    weight_bank_axi_awaddr   = '0;
+    weight_bank_axi_awburst  = '0;
+    weight_bank_axi_awcache  = '0;
+    weight_bank_axi_awid     = '0;
+    weight_bank_axi_awlen    = '0;
+    weight_bank_axi_awlock   = '0;
+    weight_bank_axi_awprot   = '0;
+    weight_bank_axi_awqos    = '0;
+    weight_bank_axi_awsize   = '0;
+    weight_bank_axi_awvalid  = '0;
+    weight_bank_axi_bready   = '0;
+    weight_bank_axi_wdata    = '0;
+    weight_bank_axi_wlast    = '0;
+    weight_bank_axi_wstrb    = '0;
+    weight_bank_axi_wvalid   = '0;
 end
 
 // ==================================================================================================================================================

@@ -1,1 +1,0 @@
-NDFramePage.OnPageTitleLoaded("SystemVerilogClass:axi_scoreboard_transaction","axi_scoreboard_transaction");NDSummary.OnSummaryLoaded("SystemVerilogClass:axi_scoreboard_transaction",[["SystemVerilog","SystemVerilog"]],[["Classes","Class"],["Functions","Function"],["Groups","Group"]],[[741,0,0,"axi_scoreboard_transaction"],[742,0,2,"Functions","Functions"],[743,0,1,"new","new"]]);

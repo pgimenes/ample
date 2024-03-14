@@ -80,6 +80,9 @@ parameter SCALE_FACTOR_QUEUE_WRITE_DEPTH = 64;
 parameter SCALE_FACTOR_QUEUE_READ_WIDTH = 32;
 parameter SCALE_FACTOR_QUEUE_READ_DEPTH = 1024;
 
+// HBM
+parameter HBM_BANKS = 32;
+
 // Supported modes
 // ----------------------------------------------------
 

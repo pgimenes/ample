@@ -174,8 +174,9 @@ $(SIM_BUILD)/simulate.do: $(SIM_BUILD)/opt.do $(SIM_BUILD)/compile.do $(SIM_BUIL
 	@echo "onbreak resume" >> $@
 	@echo "set NumericStdNoWarnings 1" >> $@
 	@echo "set StdArithNoWarnings 1" >> $@
-	# @echo "log -recursive -depth 2 /*" >> $@
-	# @echo "do waves.do" >> $@
+	@echo "log -recursive /*" >> $@
+	@echo "add log -r *" >> $@
+	@echo "do waves.do" >> $@
 	@echo "run -all" >> $@
 
 build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do

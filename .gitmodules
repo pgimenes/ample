@@ -1,6 +1,3 @@
-[submodule "imports/json_sv"]
-	path = imports/json_sv
-	url = https://github.com/pgimenes/json_sv
 [submodule "imports/verilog-axi"]
 	path = imports/verilog-axi
 	url = https://github.com/pgimenes/verilog-axi

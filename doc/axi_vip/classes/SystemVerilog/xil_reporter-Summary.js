@@ -1,1 +1,0 @@
-NDFramePage.OnPageTitleLoaded("SystemVerilogClass:xil_reporter","xil_reporter");NDSummary.OnSummaryLoaded("SystemVerilogClass:xil_reporter",[["SystemVerilog","SystemVerilog"]],[["Classes","Class"],["Functions","Function"],["Groups","Group"]],[[421,0,0,"xil_reporter"],[422,0,2,"Functions","Functions"],[423,0,1,"new","new"],[424,0,1,"get_type_name","get_type_name"]]);

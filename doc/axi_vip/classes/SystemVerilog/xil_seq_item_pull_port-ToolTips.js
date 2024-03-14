@@ -1,1 +1,0 @@
-NDContentPage.OnToolTipsLoaded({117:"<div class=\"NDToolTip TClass LSystemVerilog\"><div class=\"TTSummary\">xil_sqr_if_base is a base class which provides the interfaces necessary in order to receive or send sequence items and/or other sequences. xil_sqr_if_base #(T1, T2)</div></div>"});
