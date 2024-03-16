@@ -5,8 +5,11 @@ Use transaction size of 64 bytes (ARSIZE = 0x6) to saturate 512b data bus
 Calculate required burst length and number of transactions
 When crossing a 4 kb address boundary, issue several transactions with varying ID
 
-Currently issuing all read transactions before asserting rready to receive read responses
-This may be bottleneck - in the future, implement two separate state machines
+TO DO
+1. Currently issuing all read transactions before asserting rready to receive read responses
+    This is not valid
+
+2. Currently doesn't support multiple transactions
 
 */ 
 

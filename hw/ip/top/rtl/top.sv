@@ -5,7 +5,7 @@ import top_pkg::*;
 module top
 (
     input logic                           sys_clk,
-    input logic                           sys_rst, //Common port for all controllers
+    input logic                           sys_rst,
 
     input  logic                          regbank_clk,
     input  logic                          regbank_resetn,
@@ -74,7 +74,46 @@ module top
     input  logic [top_pkg::HBM_BANKS-1:0]                          read_master_axi_rvalid,
     output logic [top_pkg::HBM_BANKS-1:0]                          read_master_axi_rready,
 
-    // Feature Transformation Engine -> DRAM (Write Only)
+    // Nodeslot fetch AXI interface -> DRAM Channel 2
+    output logic [top_pkg::HBM_BANKS-1:0]  [7:0]                   nodeslot_fetch_axi_awid,
+    output logic [top_pkg::HBM_BANKS-1:0]  [33:0]                  nodeslot_fetch_axi_awaddr,
+    output logic [top_pkg::HBM_BANKS-1:0]  [7:0]                   nodeslot_fetch_axi_awlen,
+    output logic [top_pkg::HBM_BANKS-1:0]  [2:0]                   nodeslot_fetch_axi_awsize,
+    output logic [top_pkg::HBM_BANKS-1:0]  [1:0]                   nodeslot_fetch_axi_awburst,
+    output logic [top_pkg::HBM_BANKS-1:0]  [0:0]                   nodeslot_fetch_axi_awlock,
+    output logic [top_pkg::HBM_BANKS-1:0]  [3:0]                   nodeslot_fetch_axi_awcache,
+    output logic [top_pkg::HBM_BANKS-1:0]  [2:0]                   nodeslot_fetch_axi_awprot,
+    output logic [top_pkg::HBM_BANKS-1:0]  [3:0]                   nodeslot_fetch_axi_awqos,
+    output logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_awvalid,
+    input  logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_awready,
+    output logic [top_pkg::HBM_BANKS-1:0]  [511:0]                 nodeslot_fetch_axi_wdata,
+    output logic [top_pkg::HBM_BANKS-1:0]  [63:0]                  nodeslot_fetch_axi_wstrb,
+    output logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_wlast,
+    output logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_wvalid,
+    input  logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_wready,
+    input  logic [top_pkg::HBM_BANKS-1:0] [7:0]                    nodeslot_fetch_axi_bid,
+    input  logic [top_pkg::HBM_BANKS-1:0] [1:0]                    nodeslot_fetch_axi_bresp,
+    input  logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_bvalid,
+    output logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_bready,
+    output logic [top_pkg::HBM_BANKS-1:0]  [7:0]                   nodeslot_fetch_axi_arid,
+    output logic [top_pkg::HBM_BANKS-1:0]  [33:0]                  nodeslot_fetch_axi_araddr,
+    output logic [top_pkg::HBM_BANKS-1:0]  [7:0]                   nodeslot_fetch_axi_arlen,
+    output logic [top_pkg::HBM_BANKS-1:0]  [2:0]                   nodeslot_fetch_axi_arsize,
+    output logic [top_pkg::HBM_BANKS-1:0]  [1:0]                   nodeslot_fetch_axi_arburst,
+    output logic [top_pkg::HBM_BANKS-1:0]  [0:0]                   nodeslot_fetch_axi_arlock,
+    output logic [top_pkg::HBM_BANKS-1:0]  [3:0]                   nodeslot_fetch_axi_arcache,
+    output logic [top_pkg::HBM_BANKS-1:0]  [2:0]                   nodeslot_fetch_axi_arprot,
+    output logic [top_pkg::HBM_BANKS-1:0]  [3:0]                   nodeslot_fetch_axi_arqos,
+    output logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_arvalid,
+    input  logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_arready,
+    input  logic [top_pkg::HBM_BANKS-1:0] [7:0]                    nodeslot_fetch_axi_rid,
+    input  logic [top_pkg::HBM_BANKS-1:0] [511:0]                  nodeslot_fetch_axi_rdata,
+    input  logic [top_pkg::HBM_BANKS-1:0] [1:0]                    nodeslot_fetch_axi_rresp,
+    input  logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_rlast,
+    input  logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_rvalid,
+    output logic [top_pkg::HBM_BANKS-1:0]                          nodeslot_fetch_axi_rready,
+
+    // Feature Transformation Engine -> DRAM Channel 1 (Write Only)
     output logic [33:0]                       transformation_engine_axi_araddr,
     output logic [1:0]                        transformation_engine_axi_arburst,
     output logic [3:0]                        transformation_engine_axi_arcache,
@@ -250,6 +289,33 @@ logic [top_pkg::MESSAGE_CHANNEL_COUNT-1:0] [$clog2(SCALE_FACTOR_QUEUE_READ_DEPTH
 logic [top_pkg::MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_empty;
 logic [top_pkg::MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_full;
 
+// Instruction pre-fetcher
+logic [255:0] [19:0]                                 nsb_nodeslot_neighbour_count_count_hw;
+logic [255:0] [19:0]                                 nsb_nodeslot_node_id_id_hw;
+logic [255:0] [1:0]                                  nsb_nodeslot_precision_precision_hw;
+logic [255:0] [0:0]                                  nsb_nodeslot_config_make_valid_value_hw;
+
+logic [255:0]                                   nsb_nodeslot_neighbour_count_strobe_hw;
+logic [255:0]                                   nsb_nodeslot_node_id_strobe_hw;
+logic [255:0]                                   nsb_nodeslot_precision_strobe_hw;
+logic [255:0]                                   nsb_nodeslot_config_make_valid_strobe_hw;
+
+logic [31:0]         graph_config_node_count_value;
+logic [0:0]          ctrl_start_nodeslot_fetch_value;
+logic                ctrl_start_nodeslot_fetch_done_value;
+logic                ctrl_start_nodeslot_fetch_done_ack_value;
+
+logic [top_pkg::MAX_NODESLOT_COUNT-1:0] nodeslot_finished;
+
+logic [31:0] status_nodeslots_empty_mask_0_value;
+logic [31:0] status_nodeslots_empty_mask_1_value;
+logic [31:0] status_nodeslots_empty_mask_2_value;
+logic [31:0] status_nodeslots_empty_mask_3_value;
+logic [31:0] status_nodeslots_empty_mask_4_value;
+logic [31:0] status_nodeslots_empty_mask_5_value;
+logic [31:0] status_nodeslots_empty_mask_6_value;
+logic [31:0] status_nodeslots_empty_mask_7_value;
+
 // ====================================================================================
 // Node Scoreboard
 // ====================================================================================
@@ -303,7 +369,103 @@ node_scoreboard #(
     .nsb_prefetcher_req_ready                           (nsb_prefetcher_req_ready),
     .nsb_prefetcher_req                                 (nsb_prefetcher_req),
     .nsb_prefetcher_resp_valid                          (nsb_prefetcher_resp_valid),
-    .nsb_prefetcher_resp                                (nsb_prefetcher_resp)
+    .nsb_prefetcher_resp                                (nsb_prefetcher_resp),
+
+    // Instruction pre-fetcher
+    .graph_config_node_count_value,
+    .ctrl_start_nodeslot_fetch_value,
+    .ctrl_start_nodeslot_fetch_done_value,
+    .ctrl_start_nodeslot_fetch_done_ack_value,
+    .nodeslot_finished,
+
+    .nsb_nodeslot_neighbour_count_count_hw              (nsb_nodeslot_neighbour_count_count_hw),
+    .nsb_nodeslot_node_id_id_hw                         (nsb_nodeslot_node_id_id_hw),
+    .nsb_nodeslot_precision_precision_hw                (nsb_nodeslot_precision_precision_hw),
+    .nsb_nodeslot_config_make_valid_value_hw            (nsb_nodeslot_config_make_valid_value_hw),
+    
+    .nsb_nodeslot_neighbour_count_strobe_hw             (nsb_nodeslot_neighbour_count_strobe_hw),
+    .nsb_nodeslot_node_id_strobe_hw                     (nsb_nodeslot_node_id_strobe_hw),
+    .nsb_nodeslot_precision_strobe_hw                   (nsb_nodeslot_precision_strobe_hw),
+    .nsb_nodeslot_config_make_valid_strobe_hw           (nsb_nodeslot_config_make_valid_strobe_hw),
+    
+    .status_nodeslots_empty_mask_0_value,
+    .status_nodeslots_empty_mask_1_value,
+    .status_nodeslots_empty_mask_2_value,
+    .status_nodeslots_empty_mask_3_value,
+    .status_nodeslots_empty_mask_4_value,
+    .status_nodeslots_empty_mask_5_value,
+    .status_nodeslots_empty_mask_6_value,
+    .status_nodeslots_empty_mask_7_value
+
+);
+
+nodeslot_prefetcher nodeslot_prefetcher_i (
+    .core_clk                    (sys_clk),
+    .resetn                      (!sys_rst),
+
+    // Instruction fetching AXI interface
+    .read_master_axi_awid        (nodeslot_fetch_axi_awid),
+    .read_master_axi_awaddr      (nodeslot_fetch_axi_awaddr),
+    .read_master_axi_awlen       (nodeslot_fetch_axi_awlen),
+    .read_master_axi_awsize      (nodeslot_fetch_axi_awsize),
+    .read_master_axi_awburst     (nodeslot_fetch_axi_awburst),
+    .read_master_axi_awlock      (nodeslot_fetch_axi_awlock),
+    .read_master_axi_awcache     (nodeslot_fetch_axi_awcache),
+    .read_master_axi_awprot      (nodeslot_fetch_axi_awprot),
+    .read_master_axi_awqos       (nodeslot_fetch_axi_awqos),
+    .read_master_axi_awvalid     (nodeslot_fetch_axi_awvalid),
+    .read_master_axi_awready     (nodeslot_fetch_axi_awready),
+    .read_master_axi_wdata       (nodeslot_fetch_axi_wdata),
+    .read_master_axi_wstrb       (nodeslot_fetch_axi_wstrb),
+    .read_master_axi_wlast       (nodeslot_fetch_axi_wlast),
+    .read_master_axi_wvalid      (nodeslot_fetch_axi_wvalid),
+    .read_master_axi_wready      (nodeslot_fetch_axi_wready),
+    .read_master_axi_bid         (nodeslot_fetch_axi_bid),
+    .read_master_axi_bresp       (nodeslot_fetch_axi_bresp),
+    .read_master_axi_bvalid      (nodeslot_fetch_axi_bvalid),
+    .read_master_axi_bready      (nodeslot_fetch_axi_bready),
+    .read_master_axi_arid        (nodeslot_fetch_axi_arid),
+    .read_master_axi_araddr      (nodeslot_fetch_axi_araddr),
+    .read_master_axi_arlen       (nodeslot_fetch_axi_arlen),
+    .read_master_axi_arsize      (nodeslot_fetch_axi_arsize),
+    .read_master_axi_arburst     (nodeslot_fetch_axi_arburst),
+    .read_master_axi_arlock      (nodeslot_fetch_axi_arlock),
+    .read_master_axi_arcache     (nodeslot_fetch_axi_arcache),
+    .read_master_axi_arprot      (nodeslot_fetch_axi_arprot),
+    .read_master_axi_arqos       (nodeslot_fetch_axi_arqos),
+    .read_master_axi_arvalid     (nodeslot_fetch_axi_arvalid),
+    .read_master_axi_arready     (nodeslot_fetch_axi_arready),
+    .read_master_axi_rid         (nodeslot_fetch_axi_rid),
+    .read_master_axi_rdata       (nodeslot_fetch_axi_rdata),
+    .read_master_axi_rresp       (nodeslot_fetch_axi_rresp),
+    .read_master_axi_rlast       (nodeslot_fetch_axi_rlast),
+    .read_master_axi_rvalid      (nodeslot_fetch_axi_rvalid),
+    .read_master_axi_rready      (nodeslot_fetch_axi_rready),
+
+    .nsb_nodeslot_neighbour_count_count_hw,
+    .nsb_nodeslot_node_id_id_hw,
+    .nsb_nodeslot_precision_precision_hw,
+    .nsb_nodeslot_config_make_valid_value_hw,
+
+    .nsb_nodeslot_neighbour_count_strobe_hw,
+    .nsb_nodeslot_node_id_strobe_hw,
+    .nsb_nodeslot_precision_strobe_hw,
+    .nsb_nodeslot_config_make_valid_strobe_hw,
+    
+    .status_nodeslots_empty_mask_0_value,
+    .status_nodeslots_empty_mask_1_value,
+    .status_nodeslots_empty_mask_2_value,
+    .status_nodeslots_empty_mask_3_value,
+    .status_nodeslots_empty_mask_4_value,
+    .status_nodeslots_empty_mask_5_value,
+    .status_nodeslots_empty_mask_6_value,
+    .status_nodeslots_empty_mask_7_value,
+
+    .graph_config_node_count_value,
+    .ctrl_start_nodeslot_fetch_value,
+    .ctrl_start_nodeslot_fetch_done_value,
+    .ctrl_start_nodeslot_fetch_done_ack_value,
+    .nodeslot_finished
 );
 
 // ====================================================================================
@@ -770,14 +932,14 @@ axil_interconnect_wrap_1x4 #(
 
 axi_ram #(
     .DATA_WIDTH(512),
-    .ADDR_WIDTH(34),
+    .ADDR_WIDTH(22),
     .ID_WIDTH(8)
 ) weight_ram_i (
     .clk                    (sys_clk),
     .rst                    (sys_rst),
 
     .s_axi_awid             (weight_bank_axi_awid),
-    .s_axi_awaddr           (weight_bank_axi_awaddr),
+    .s_axi_awaddr           (weight_bank_axi_awaddr[21:0]),
     .s_axi_awlen            (weight_bank_axi_awlen),
     .s_axi_awsize           (weight_bank_axi_awsize),
     .s_axi_awburst          (weight_bank_axi_awburst),
@@ -796,7 +958,7 @@ axi_ram #(
     .s_axi_bvalid           (weight_bank_axi_bvalid),
     .s_axi_bready           (weight_bank_axi_bready),
     .s_axi_arid             (weight_bank_axi_arid),
-    .s_axi_araddr           (weight_bank_axi_araddr),
+    .s_axi_araddr           (weight_bank_axi_araddr[21:0]),
     .s_axi_arlen            (weight_bank_axi_arlen),
     .s_axi_arsize           (weight_bank_axi_arsize),
     .s_axi_arburst          (weight_bank_axi_arburst),

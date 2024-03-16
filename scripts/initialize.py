@@ -5,7 +5,7 @@ from sdk.graphs.matrix_graph import MatrixGraph
 from sdk.graphs.karate_club import KarateClubGraph
 from sdk.graphs.random_graph import RandomGraph
 from sdk.graphs.planetoid_graph import PlanetoidGraph
-from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph
+from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
 
 from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model
 
@@ -58,7 +58,8 @@ graph_map = {
     'citeseer': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Citeseer", graph_precision=graph_precision)},
     'reddit': { 'class': lambda feature_count, graph_precision: RedditGraph(graph_precision=graph_precision)},
     'flickr': { 'class': lambda feature_count, graph_precision: FlickrGraph(graph_precision=graph_precision)},
-    'yelp': { 'class': lambda feature_count, graph_precision: YelpGraph(graph_precision=graph_precision)}
+    'yelp': { 'class': lambda feature_count, graph_precision: YelpGraph(graph_precision=graph_precision)},
+    'amazon': { 'class': lambda feature_count, graph_precision: AmazonProductsGraph(graph_precision=graph_precision)}
 }
 
 model_map = {
@@ -138,7 +139,6 @@ def run_pass(
     else:
         init_manager.trained_graph.train_embeddings()
 
-
     if (payloads):
         # Initialize Memory
         init_manager.memory_mapper.map()
@@ -148,6 +148,7 @@ def run_pass(
         init_manager.dump_layer_config()
         init_manager.dump_nodeslot_programming()
     
+    metrics = {}
     if (args.cpu or args.gpu or args.sweep):
         metrics = bman.benchmark()
 
@@ -218,6 +219,7 @@ def parse_arguments():
     parser.add_argument('--reddit', action='store_true', help='Use Reddit graph')
     parser.add_argument('--flickr', action='store_true', help='Use Flickr graph')
     parser.add_argument('--yelp', action='store_true', help='Use Yelp graph')
+    parser.add_argument('--amazon', action='store_true', help='Use Amazon graph')
 
     # Models
     parser.add_argument('--gcn', action='store_true', help='Use GCN Model')

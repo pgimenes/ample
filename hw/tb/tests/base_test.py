@@ -43,6 +43,7 @@ class BaseTest:
 
         self.scoreboard = sb.Scoreboard(nodeslot_count=256)
         self.nodeslot_programming = {}
+        self.global_config = {}
         self.layers = {}
 
         self.nsb_regbank = {}
@@ -118,9 +119,10 @@ class BaseTest:
     def load_layer_config(self):
         self.dut._log.info("Loading layer configuration")
         with open(self.layer_config_file) as f:
-            layers = json.load(f)
-        self.layers = layers["layers"]
-        return layers["layers"]
+            data = json.load(f)
+        self.global_config = data["global_config"]
+        self.layers = data["layers"]
+        return data["layers"]
 
     # Test steps
 

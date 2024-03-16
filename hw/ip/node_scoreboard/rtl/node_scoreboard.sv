@@ -52,7 +52,33 @@ module node_scoreboard #(
     input  logic                                                nsb_prefetcher_req_ready,
     output NSB_PREF_REQ_t                                       nsb_prefetcher_req,
     input  logic                                                nsb_prefetcher_resp_valid, // valid only for now
-    input  NSB_PREF_RESP_t                                      nsb_prefetcher_resp
+    input  NSB_PREF_RESP_t                                      nsb_prefetcher_resp,
+
+    // HW programming
+    output logic [31:0]                                         graph_config_node_count_value,
+    output logic [0:0]                                          ctrl_start_nodeslot_fetch_value,
+    input  logic                                                ctrl_start_nodeslot_fetch_done_value,
+    output logic                                                ctrl_start_nodeslot_fetch_done_ack_value,
+    output logic [NODESLOT_COUNT-1:0]                           nodeslot_finished,
+
+    input  logic [255:0] [19:0]                                 nsb_nodeslot_neighbour_count_count_hw,
+    input  logic [255:0] [19:0]                                 nsb_nodeslot_node_id_id_hw,
+    input  logic [255:0] [1:0]                                  nsb_nodeslot_precision_precision_hw,
+    input  logic [255:0] [0:0]                                  nsb_nodeslot_config_make_valid_value_hw,
+
+    input  logic [255:0]                                        nsb_nodeslot_neighbour_count_strobe_hw,
+    input  logic [255:0]                                        nsb_nodeslot_node_id_strobe_hw,
+    input  logic [255:0]                                        nsb_nodeslot_precision_strobe_hw,
+    input  logic [255:0]                                        nsb_nodeslot_config_make_valid_strobe_hw,
+
+    output logic [31:0] status_nodeslots_empty_mask_0_value,
+    output logic [31:0] status_nodeslots_empty_mask_1_value,
+    output logic [31:0] status_nodeslots_empty_mask_2_value,
+    output logic [31:0] status_nodeslots_empty_mask_3_value,
+    output logic [31:0] status_nodeslots_empty_mask_4_value,
+    output logic [31:0] status_nodeslots_empty_mask_5_value,
+    output logic [31:0] status_nodeslots_empty_mask_6_value,
+    output logic [31:0] status_nodeslots_empty_mask_7_value
 );
 
 parameter AXI_ADDRESS_MSB_BITS = AXI_ADDRESS_WIDTH % 32;
@@ -77,10 +103,16 @@ logic [0:0] ctrl_fetch_layer_weights_done_done;                         // value
 logic ctrl_fetch_layer_weights_done_ack_strobe;                         // strobe signal for register 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK' (pulsed when the register is written from the bus)
 logic [0:0] ctrl_fetch_layer_weights_done_ack_ack;                      // value of field 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK.ACK'
 
+logic ctrl_start_nodeslot_fetch_strobe;
+logic ctrl_start_nodeslot_fetch_done_strobe;
+logic ctrl_start_nodeslot_fetch_done_ack_strobe;
+
+// Graph config
+logic graph_config_node_count_strobe;
+
 // Layer Config
 logic layer_config_valid_strobe;
 logic [0:0] layer_config_valid_value;
-
 logic layer_config_in_features_strobe;
 logic [9:0] layer_config_in_features_count;
 logic layer_config_out_features_strobe;
@@ -90,66 +122,29 @@ logic layer_config_adjacency_list_address_lsb_strobe;
 logic [31:0] layer_config_adjacency_list_address_lsb_lsb;
 logic layer_config_adjacency_list_address_msb_strobe;
 logic [1:0] layer_config_adjacency_list_address_msb_msb;
-logic layer_config_in_messages_address_lsb_strobe;
-logic [31:0] layer_config_in_messages_address_lsb_lsb;
-logic layer_config_in_messages_address_msb_strobe;
-logic [1:0] layer_config_in_messages_address_msb_msb;
 logic layer_config_weights_address_lsb_strobe;                          // strobe signal for register 'LAYER_CONFIG_WEIGHTS_ADDRESS_LSB' (pulsed when the register is written from the bus)
 logic [3:0] [31:0] layer_config_weights_address_lsb_lsb;                      // value of field 'LAYER_CONFIG_WEIGHTS_ADDRESS_LSB.LSB'
 logic layer_config_weights_address_msb_strobe;                          // strobe signal for register 'LAYER_CONFIG_WEIGHTS_ADDRESS_MSB' (pulsed when the register is written from the bus)
 logic [3:0] [1:0] layer_config_weights_address_msb_msb;                       // value of field 'LAYER_CONFIG_WEIGHTS_ADDRESS_MSB.MSB'
-logic layer_config_out_messages_address_lsb_strobe;
-logic [31:0] layer_config_out_messages_address_lsb_lsb;
-logic layer_config_out_messages_address_msb_strobe;
-logic [1:0] layer_config_out_messages_address_msb_msb;
 
 // Nodeslots
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_neighbour_count_strobe;                       // strobe signal for register 'NSB_NODESLOT_NEIGHBOUR_COUNT' (pulsed when the register is written from the bus)
-logic [NODESLOT_COUNT-1:0] [19:0] nsb_nodeslot_neighbour_count_count;                 // value of field 'NSB_NODESLOT_NEIGHBOUR_COUNT.COUNT'
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_node_id_strobe;                               // strobe signal for register 'NSB_NODESLOT_NODE_ID' (pulsed when the register is written from the bus)
-logic [NODESLOT_COUNT-1:0] [19:0] nsb_nodeslot_node_id_id;                            // value of field 'NSB_NODESLOT_NODE_ID.ID'
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_node_state_strobe;                            // strobe signal for register 'NSB_NODESLOT_NODE_STATE' (pulsed when the register is written from the bus)
+
 logic [NODESLOT_COUNT-1:0] [3:0] nsb_nodeslot_node_state_state;                       // value of field 'NSB_NODESLOT_NODE_STATE.STATE'
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_precision_strobe;                             // strobe signal for register 'NSB_NODESLOT_PRECISION' (pulsed when the register is written from the bus)
-logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_precision_precision;                    // value of field 'NSB_NODESLOT_PRECISION.PRECISION'
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_adjacency_list_address_lsb_strobe;            // strobe signal for register 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB' (pulsed when the register is written from the bus)
-logic [NODESLOT_COUNT-1:0] [31:0] nsb_nodeslot_adjacency_list_address_lsb_lsb;        // value of field 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_LSB.LSB'
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_adjacency_list_address_msb_strobe;            // strobe signal for register 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB' (pulsed when the register is written from the bus)
-logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_adjacency_list_address_msb_msb;         // value of field 'NSB_NODESLOT_ADJACENCY_LIST_ADDRESS_MSB.MSB'
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_out_messages_address_lsb_strobe;              // strobe signal for register 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB' (pulsed when the register is written from the bus)
-logic [NODESLOT_COUNT-1:0] [31:0] nsb_nodeslot_out_messages_address_lsb_lsb;          // value of field 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_LSB.LSB'
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_out_messages_address_msb_strobe;              // strobe signal for register 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB' (pulsed when the register is written from the bus)
-logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_out_messages_address_msb_msb;           // value of field 'NSB_NODESLOT_OUT_MESSAGES_ADDRESS_MSB.MSB'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_node_state_strobe;                            // strobe signal for register 'NSB_NODESLOT_NODE_STATE' (pulsed when the register is written from the bus)
+
 logic [NODESLOT_COUNT-1:0] nsb_nodeslot_aggregation_function_strobe;                  // strobe signal for register 'nsb_nodeslot_aggregation_function' (pulsed when the register is written from the bus)
 logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_aggregation_function_value;             // value of field 'nsb_nodeslot_aggregation_function.value'
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_scale_factors_address_lsb_strobe;             // strobe signal for register 'nsb_nodeslot_scale_factors_address_lsb' (pulsed when the register is written from the bus)
-logic [NODESLOT_COUNT-1:0] [31:0] nsb_nodeslot_scale_factors_address_lsb_value;       // value of field 'nsb_nodeslot_scale_factors_address_lsb.value'
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_scale_factors_address_msb_strobe;             // strobe signal for register 'nsb_nodeslot_scale_factors_address_msb' (pulsed when the register is written from the bus)
-logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_scale_factors_address_msb_value;        // value of field 'nsb_nodeslot_scale_factors_address_msb.value'
 
 logic nsb_config_aggregation_wait_count_strobe; // strobe signal for register 'NSB_CONFIG_AGGREGATION_WAIT_COUNT' (pulsed when the register is written from the bus)
 logic [5:0] nsb_config_aggregation_wait_count_count; // value of field 'NSB_CONFIG_AGGREGATION_WAIT_COUNT.COUNT'
-logic nsb_config_transformation_wait_count_strobe; // strobe signal for register 'NSB_CONFIG_TRANSFORMATION_WAIT_COUNT' (pulsed when the register is written from the bus)
-logic [5:0] nsb_config_transformation_wait_count_count;// value of field 'NSB_CONFIG_TRANSFORMATION_WAIT_COUNT.COUNT'
 
 logic [NODESLOT_COUNT-1:0] nsb_nodeslot_allocated_fetch_tag_strobe;
 logic [NODESLOT_COUNT-1:0] [5:0] nsb_nodeslot_allocated_fetch_tag_fetch_tag;
 
-// STATUS
-logic [31:0] status_nodeslots_empty_mask_0_value;
-logic [31:0] status_nodeslots_empty_mask_1_value;
-logic [31:0] status_nodeslots_empty_mask_2_value;
-logic [31:0] status_nodeslots_empty_mask_3_value;
-logic [31:0] status_nodeslots_empty_mask_4_value;
-logic [31:0] status_nodeslots_empty_mask_5_value;
-logic [31:0] status_nodeslots_empty_mask_6_value;
-logic [31:0] status_nodeslots_empty_mask_7_value;
-
 // Other
 // ------------------------------------------------------------
 
-logic [NODESLOT_COUNT-1:0] [3:0] nodeslot_state, nodeslot_state_n; // not defined as enum to avoid VRFC 10-2649
-logic [NODESLOT_COUNT-1:0] nsb_nodeslot_config_make_valid_value;
+logic [NODESLOT_COUNT-1:0] [3:0] nodeslot_state, nodeslot_state_n;
 
 // Done masks
 logic [NODESLOT_COUNT-1:0] fetch_nb_list_resp_received;
@@ -184,14 +179,42 @@ top_pkg::NODE_PRECISION_e active_weights_fetch_precision;
 
 logic [top_pkg::PRECISION_COUNT-1:0] aggregation_buffer_waiting_transformation;
 logic [$clog2(top_pkg::PRECISION_COUNT)-1:0] aggregation_buffer_precision_arb_bin;
+logic [top_pkg::PRECISION_COUNT-1:0] [31:0] fte_request_timeout;
 
 // temporary
 logic [31:0] status_nodeslots_empty_mask_lsb_value;
+logic [31:0] status_nodeslots_empty_mask_lsb_strobe;
 logic [31:0] status_nodeslots_empty_mask_msb_value;
+logic [31:0] status_nodeslots_empty_mask_msb_strobe;
 logic layer_config_scale_factors_address_lsb_strobe;
 logic [31:0] layer_config_scale_factors_address_lsb_value;
 logic layer_config_scale_factors_address_msb_strobe;
 logic [31:0] layer_config_scale_factors_address_msb_value;
+
+// Instruction pre-fetcher
+logic [NODESLOT_COUNT-1:0] [19:0] nsb_nodeslot_neighbour_count_count;                 // value of field 'NSB_NODESLOT_NEIGHBOUR_COUNT.COUNT'
+logic [NODESLOT_COUNT-1:0] [19:0] nsb_nodeslot_node_id_id;                            // value of field 'NSB_NODESLOT_NODE_ID.ID'
+logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_precision_precision;                    // value of field 'NSB_NODESLOT_PRECISION.PRECISION'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_config_make_valid_value;
+
+logic [NODESLOT_COUNT-1:0] [19:0] nsb_nodeslot_neighbour_count_count_sw;                 // value of field 'NSB_NODESLOT_NEIGHBOUR_COUNT.COUNT'
+logic [NODESLOT_COUNT-1:0] [19:0] nsb_nodeslot_node_id_id_sw;                            // value of field 'NSB_NODESLOT_NODE_ID.ID'
+logic [NODESLOT_COUNT-1:0] [1:0] nsb_nodeslot_precision_precision_sw;                    // value of field 'NSB_NODESLOT_PRECISION.PRECISION'
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_config_make_valid_value_sw;
+
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_neighbour_count_strobe_sw;                       // strobe signal for register 'NSB_NODESLOT_NEIGHBOUR_COUNT' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_node_id_strobe_sw;                               // strobe signal for register 'NSB_NODESLOT_NODE_ID' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_precision_strobe_sw;                             // strobe signal for register 'NSB_NODESLOT_PRECISION' (pulsed when the register is written from the bus)
+logic [NODESLOT_COUNT-1:0] nsb_nodeslot_config_make_valid_strobe_sw;
+
+logic [31:0] status_nodeslots_empty_mask_0_strobe;
+logic [31:0] status_nodeslots_empty_mask_1_strobe;
+logic [31:0] status_nodeslots_empty_mask_2_strobe;
+logic [31:0] status_nodeslots_empty_mask_3_strobe;
+logic [31:0] status_nodeslots_empty_mask_4_strobe;
+logic [31:0] status_nodeslots_empty_mask_5_strobe;
+logic [31:0] status_nodeslots_empty_mask_6_strobe;
+logic [31:0] status_nodeslots_empty_mask_7_strobe;
 
 // ==================================================================================================================================================
 // Instances
@@ -199,14 +222,16 @@ logic [31:0] layer_config_scale_factors_address_msb_value;
 
 // Regbank
 // ------------------------------------------------------------
-node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
+node_scoreboard_regbank_regs node_scoreboard_regbank_i (
     // Clock and Reset (SLOW)
     .axi_aclk                       (regbank_clk),
     .axi_aresetn                    (regbank_resetn),
 
-    // Clock and Reset (FAST)
-    .fast_clk                       (core_clk),
-    .fast_resetn                    (resetn),
+    // // Clock and Reset (FAST)
+    // .fast_clk                       (core_clk),
+    // .fast_resetn                    (resetn),
+
+
 
     // AXI Write Address Channel
     .s_axi_awaddr,
@@ -235,29 +260,15 @@ node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
 
     .layer_config_adjacency_list_address_lsb_lsb,
     .layer_config_adjacency_list_address_msb_msb,
-    .layer_config_in_messages_address_lsb_lsb,
-    .layer_config_in_messages_address_msb_msb,
     .layer_config_weights_address_lsb_lsb,
     .layer_config_weights_address_msb_msb,
-    .layer_config_out_messages_address_lsb_lsb,
-    .layer_config_out_messages_address_msb_msb,
 
     .ctrl_fetch_layer_weights_fetch,
     .ctrl_fetch_layer_weights_done_done,
     .ctrl_fetch_layer_weights_done_ack_ack,
     .ctrl_fetch_layer_weights_precision_value,
-    .nsb_nodeslot_neighbour_count_count,
-    .nsb_nodeslot_node_id_id,
     .nsb_nodeslot_node_state_state,
-    .nsb_nodeslot_precision_precision,
-    .nsb_nodeslot_adjacency_list_address_lsb_lsb,
-    .nsb_nodeslot_adjacency_list_address_msb_msb,
-    .nsb_nodeslot_out_messages_address_lsb_lsb,
-    .nsb_nodeslot_out_messages_address_msb_msb,
-    .nsb_nodeslot_scale_factors_address_lsb_value,
-    .nsb_nodeslot_scale_factors_address_msb_value,
     .nsb_config_aggregation_wait_count_count,
-    .nsb_config_transformation_wait_count_count,
     .status_nodeslots_empty_mask_0_value,
     .status_nodeslots_empty_mask_1_value,
     .status_nodeslots_empty_mask_2_value,
@@ -266,6 +277,17 @@ node_scoreboard_regbank_wrapper node_scoreboard_regbank_i (
     .status_nodeslots_empty_mask_5_value,
     .status_nodeslots_empty_mask_6_value,
     .status_nodeslots_empty_mask_7_value,
+
+    .nsb_nodeslot_neighbour_count_count   (nsb_nodeslot_neighbour_count_count_sw),
+    .nsb_nodeslot_node_id_id              (nsb_nodeslot_node_id_id_sw),
+    .nsb_nodeslot_precision_precision     (nsb_nodeslot_precision_precision_sw),
+    .nsb_nodeslot_config_make_valid_value (nsb_nodeslot_config_make_valid_value_sw),
+    
+    .nsb_nodeslot_neighbour_count_strobe   (nsb_nodeslot_neighbour_count_strobe_sw),
+    .nsb_nodeslot_node_id_strobe           (nsb_nodeslot_node_id_strobe_sw),
+    .nsb_nodeslot_precision_strobe         (nsb_nodeslot_precision_strobe_sw),
+    .nsb_nodeslot_config_make_valid_strobe (nsb_nodeslot_config_make_valid_strobe_sw),
+
     .*
 );
 
@@ -284,6 +306,7 @@ assign accepting_transformation_request = nsb_fte_req_valid && nsb_fte_req_ready
 for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) begin : per_nodeslot_logic
 
     assign nodeslot_state[nodeslot] = nsb_nodeslot_node_state_state[nodeslot];
+    assign nodeslot_finished[nodeslot] = (nodeslot_state[nodeslot] != node_scoreboard_pkg::EMPTY) && (nodeslot_state_n[nodeslot] == node_scoreboard_pkg::EMPTY);
 
     always_ff @( posedge core_clk or negedge resetn) begin
         if (!resetn) begin
@@ -422,6 +445,51 @@ for (genvar nodeslot = 0; nodeslot < NODESLOT_COUNT; nodeslot = nodeslot + 1) be
         assign status_nodeslots_empty_mask_0_value [nodeslot % 32] = (nodeslot_state[nodeslot] == node_scoreboard_pkg::EMPTY);
     end
 
+    // Quick programming
+    // --------------------------------------------
+
+    always_ff @(posedge core_clk or negedge resetn) begin
+
+        if (!resetn) begin
+            nsb_nodeslot_neighbour_count_count [nodeslot] <= '0;
+            nsb_nodeslot_node_id_id [nodeslot] <= '0;
+            nsb_nodeslot_precision_precision [nodeslot] <= '0;
+            nsb_nodeslot_config_make_valid_value [nodeslot] <= '0;
+        
+        end else begin
+            // Neighbour count
+            if (nsb_nodeslot_neighbour_count_strobe_sw[nodeslot]) begin
+                nsb_nodeslot_neighbour_count_count[nodeslot] <= nsb_nodeslot_neighbour_count_count_sw[nodeslot];
+            end else if (nsb_nodeslot_neighbour_count_strobe_hw[nodeslot]) begin
+                nsb_nodeslot_neighbour_count_count[nodeslot] <= nsb_nodeslot_neighbour_count_count_hw[nodeslot];
+            end
+
+            // Node ID
+            if (nsb_nodeslot_node_id_strobe_sw[nodeslot]) begin
+                nsb_nodeslot_node_id_id[nodeslot] <= nsb_nodeslot_node_id_id_sw[nodeslot];
+            end if (nsb_nodeslot_node_id_strobe_hw[nodeslot]) begin
+                nsb_nodeslot_node_id_id[nodeslot] <= nsb_nodeslot_node_id_id_hw[nodeslot];
+            end
+
+            // Precision
+            if (nsb_nodeslot_precision_strobe_sw[nodeslot]) begin
+                nsb_nodeslot_precision_precision[nodeslot] <= nsb_nodeslot_precision_precision_sw[nodeslot];
+            end else if (nsb_nodeslot_precision_strobe_hw[nodeslot]) begin
+                nsb_nodeslot_precision_precision[nodeslot] <= nsb_nodeslot_precision_precision_hw[nodeslot];
+            end
+
+            // Make valid
+            if (nsb_nodeslot_config_make_valid_value[nodeslot]) begin
+                // Self auto-clearing, so this condition needs to be above
+                nsb_nodeslot_config_make_valid_value[nodeslot] <= '0;
+            end else if (nsb_nodeslot_config_make_valid_value_sw[nodeslot]) begin
+                nsb_nodeslot_config_make_valid_value[nodeslot] <= '1;
+            end else if (nsb_nodeslot_config_make_valid_value_hw[nodeslot]) begin
+                nsb_nodeslot_config_make_valid_value[nodeslot] <= '1;
+            end
+        end
+    end
+
 end : per_nodeslot_logic
 
 // Layer weights fetching logic
@@ -482,7 +550,25 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
         end
     end
 
-    assign aggregation_buffer_waiting_transformation [precision] = (aggregation_buffer_population_count[precision] >= nsb_config_aggregation_wait_count_count) && weights_fetched [precision] && layer_config_valid_value;
+    // Timeout counter ensures any leftover nodeslots are processed at the end of graph
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            fte_request_timeout [precision] <= '0;
+        end else if (accepting_transformation_request && nsb_fte_req.precision == precision) begin
+            fte_request_timeout [precision] <= '0;
+        end else begin
+            fte_request_timeout [precision] <= fte_request_timeout [precision] + 1'b1;
+        end
+    end
+
+    assign aggregation_buffer_waiting_transformation [precision] = weights_fetched [precision] && layer_config_valid_value
+                                                            && (
+                                                                // Buffer has at least WAIT_COUNT slots waiting
+                                                                (aggregation_buffer_population_count[precision] >= nsb_config_aggregation_wait_count_count) 
+                                                                
+                                                                // OR: There's at least one slot waiting and request timeout has been reached
+                                                                || (fte_request_timeout [precision] >= 'd5120 && |aggregation_buffer_population_count[precision])
+                                                            );
 end
 
 

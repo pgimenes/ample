@@ -5,18 +5,12 @@ VERILOG_INCLUDE_DIRS = \
 	$(WORKAREA)/hw/build/regbanks/feature_transformation_engine_regbank \
 	$(WORKAREA)/hw/build/regbanks/node_scoreboard_regbank \
 	$(WORKAREA)/hw/build/regbanks/prefetcher_regbank \
-	/mnt/applications/Xilinx/19.2/Vivado/2019.2/data/xilinx_vip/include \
-	$(WORKAREA)/hw/build/ip/aggregation_engine/tb \
-	$(WORKAREA)/hw/build/ip/prefetcher/tb \
-	$(WORKAREA)/hw/build/ip/node_scoreboard/tb \
+	/mnt/applications/Xilinx/19.2/Vivado/2019.2/data/xilinx_vip/include
 
 # Xilinx IP
 VERILOG_SOURCES = \
 	$(WORKAREA)/hw/sim/glbl.v \
 	$(WORKAREA)/hw/build/build_project.ip_user_files/ipstatic/simulation/blk_mem_gen_v8_4.v \
-	$(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/axi_memory_interconnect/sim/axi_memory_interconnect.v \
-	$(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/axi_L_register_control_crossbar/sim/axi_L_register_control_crossbar.v \
-	$(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/transformation_buffer_sdp_bram/sim/transformation_buffer_sdp_bram.v \
 	$(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/aggregation_buffer_sdp_bram/sim/aggregation_buffer_sdp_bram.v \
 	$(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/scale_factor_queue/sim/scale_factor_queue.v \
 	$(WORKAREA)/hw/build/ip/lib/buffers/ultraram.v \
@@ -113,14 +107,10 @@ VERILOG_SOURCES += \
 	$(WORKAREA)/hw/build/ip/prefetcher/rtl/prefetcher_fetch_tag.sv \
 	$(WORKAREA)/hw/build/ip/prefetcher/rtl/prefetcher_streaming_manager.sv \
 	$(WORKAREA)/hw/build/ip/prefetcher/rtl/prefetcher_weight_bank.sv \
+	$(WORKAREA)/hw/build/ip/node_scoreboard/rtl/nodeslot_prefetcher.sv \
 	$(WORKAREA)/hw/build/ip/node_scoreboard/rtl/node_scoreboard.sv \
 	$(WORKAREA)/hw/build/ip/top/rtl/top.sv \
-	$(WORKAREA)/hw/build/ip/top/rtl/top_wrapper_tb.sv \
-	$(WORKAREA)/hw/build/ip/aggregation_engine/tb/agc_allocator_interface.sv \
-	$(WORKAREA)/hw/build/ip/aggregation_engine/tb/agc_interface.sv \
-	$(WORKAREA)/hw/build/ip/aggregation_engine/tb/aggregation_engine_interface.sv \
-	$(WORKAREA)/hw/build/ip/aggregation_engine/tb/agm_interface.sv \
-	$(WORKAREA)/hw/build/ip/aggregation_engine/tb/bm_interface.sv
+	$(WORKAREA)/hw/build/ip/top/rtl/top_wrapper_tb.sv
 
 VSIM_LIBS = \
 	axi_infrastructure_v1_1_0 \

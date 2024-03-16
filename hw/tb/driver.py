@@ -45,12 +45,9 @@ class Driver():
         await self.axil_driver.axil_write(self.nsb_regs["layer_config_out_features"], layer["out_feature_count"])
         # Addresses
         await self.axil_driver.axil_write(self.nsb_regs["layer_config_adjacency_list_address_lsb"], layer["adjacency_list_address"])
-        await self.axil_driver.axil_write(self.nsb_regs["layer_config_in_messages_address_lsb"], layer["in_messages_address"])
-        await self.axil_driver.axil_write(self.nsb_regs["layer_config_out_messages_address_lsb"], layer["out_messages_address"])
         await self.axil_driver.axil_write(self.nsb_regs["layer_config_weights_address_lsb"], layer["weights_address"])
         # Wait counts
         await self.axil_driver.axil_write(self.nsb_regs["NSB_CONFIG_AGGREGATION_WAIT_COUNT"], layer["aggregation_wait_count"])
-        await self.axil_driver.axil_write(self.nsb_regs["NSB_CONFIG_TRANSFORMATION_WAIT_COUNT"], layer["transformation_wait_count"])
 
         # Set config valid
         await self.axil_driver.axil_write(self.nsb_regs["layer_config_valid"], 1)
@@ -69,16 +66,27 @@ class Driver():
         else:
             await self.axil_driver.axil_write(address, data)
 
+    async def wait_done_ack(self, done_reg, ack_reg, tries=100):
+        done = False
+        for _ in range(tries):
+            done = await self.axil_driver.axil_read(done_reg)
+            if (done):
+                # Weights fetch done, write to ACK
+                self.dut._log.info(f"{done_reg} register is asserted")
+                await self.axil_driver.axil_write(ack_reg, 1)
+                break
+            await delay(self.dut.regbank_clk, 10)
+        
+        if (not done):
+            self.dut._log.info(f"Tried reading {done_reg} register {tries} times, but still not done. Simulation hung?")
+
+
     async def request_weights_fetch(self, precision=NodePrecision["FLOAT_32"]):
         self.dut._log.info("Requesting weights fetch for precision %s.", precision.name)
         await self.axil_driver.axil_write(self.nsb_regs["ctrl_fetch_layer_weights_precision"], precision.value)
         await self.axil_driver.axil_write(self.nsb_regs["CTRL_FETCH_LAYER_WEIGHTS"], 1)
 
-        while(True):
-            done = await self.axil_driver.axil_read(self.nsb_regs["CTRL_FETCH_LAYER_WEIGHTS_DONE"])
-            if (done):
-                break
-            await delay(self.dut.regbank_clk, 10)
-
-        # Weights fetch done, write to ACK
-        await self.axil_driver.axil_write(self.nsb_regs["CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK"], 1)
+        await self.wait_done_ack(
+            done_reg = self.nsb_regs["CTRL_FETCH_LAYER_WEIGHTS_DONE"],
+            ack_reg = self.nsb_regs["CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK"]
+        )

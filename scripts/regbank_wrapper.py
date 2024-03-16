@@ -4,13 +4,25 @@ import argparse
 import json
 import os
 
-def dump_regs (data, line_start="",
-                declaration=False, port=False, declare_postfix="",
-                assign_lhs_postfix="", assign_rhs_postfix="", assignment=False, 
-                instance_lhs_postfix="", instance_rhs_postfix="", instance=False,
-                line_end="", final_char="",
-                filter_out=[], only_allow=["READ_WRITE", "READ_ONLY", "WRITE_ONLY", "INTERRUPT"], debug=False):
-    
+def run_pass (data, line_start="",
+                declaration=False, 
+                port=False, 
+                declare_postfix="",
+                
+                assignment=False, 
+                assign_lhs_postfix="", 
+                assign_rhs_postfix="", 
+
+                instance=False,
+                instance_lhs_postfix="", 
+                instance_rhs_postfix="", 
+                
+                line_end="", 
+                final_char="",
+                
+                filter_out=[], 
+                only_allow=["READ_WRITE", "READ_ONLY", "WRITE_ONLY", "INTERRUPT"]
+                ):
 
     out_str = ""
     for reg_idx, register in enumerate(data["registerMap"]["registers"]):        
@@ -21,17 +33,23 @@ def dump_regs (data, line_start="",
         if (register["access"] in filter_out) or (register["access"] not in only_allow):
             continue
 
-        for field_idx, field in enumerate(register["fields"]):
+        fields = register["fields"]
+        # if (not assignment):
+        #     fields += [{"name": "strobe", "bitWidth": 1}]
+
+        for field_idx, field in enumerate(fields):
             field_name = field["name"]
             width = field["bitWidth"]
             
             array_suffix = f"[{array_length-1}:0] " if is_register_array else ""
             size_suffix = f"{array_suffix}[{width-1}:0]"
 
+            # out_str += dump_reg
             if declaration:
                 declaration_prefix = "input  logic" if register["access"] == "READ_ONLY" else "output logic"
                 declaration_prefix = "logic" if not port else declaration_prefix
                 out_str += (f"{line_start}{declaration_prefix} {size_suffix} {name.lower()}_{field_name.lower()}{declare_postfix}")
+            
             elif assignment:
                 out_str += f"{line_start} {name.lower()}_{field_name.lower()}{assign_lhs_postfix} <= {name.lower()}_{field_name.lower()}{assign_rhs_postfix}"
             
@@ -42,7 +60,7 @@ def dump_regs (data, line_start="",
                 out_str += (f"{line_start} {name.lower()}_{field_name.lower()}")
 
             # Add either comma or semicolon
-            if reg_idx == len(data["registerMap"]["registers"]) - 1 and field_idx == len(register["fields"]) - 1:
+            if reg_idx == len(data["registerMap"]["registers"]) - 1 and field_idx == len(fields) - 1:
                 out_str += final_char
             else:
                 out_str += f"{line_end}\n"
@@ -95,16 +113,17 @@ module {regbank_name}_wrapper #(
     input  wire                      s_axi_bready,
 
     // User Ports
-{dump_regs(data, declaration=True, port=True, line_start="    ", line_end=",", final_char="")}
+
+{run_pass(data, declaration=True, port=True, line_start="    ", line_end=",", final_char="")}
 );
 
 // ====================================================================================================================
 // Declarations
 // ====================================================================================================================
 
-{dump_regs(data, declaration=True, line_start="", declare_postfix="_slow", line_end=";", final_char=";")}
+{run_pass(data, declaration=True, line_start="", declare_postfix="_slow", line_end=";", final_char=";")}
 
-{dump_regs(data, declaration=True, line_start="", declare_postfix="_q", line_end=";", final_char=";")}
+{run_pass(data, declaration=True, line_start="", declare_postfix="_q", line_end=";", final_char=";")}
 
 // ====================================================================================================================
 // Register Bank Instance
@@ -137,7 +156,7 @@ module {regbank_name}_wrapper #(
 .s_axi_bvalid                   (s_axi_bvalid),
 .s_axi_bready                   (s_axi_bready),
 
-{dump_regs(data, instance=True, line_start=".", instance_rhs_postfix="_slow", line_end=",", final_char="")}
+{run_pass(data, instance=True, line_start=".", instance_rhs_postfix="_slow", line_end=",", final_char="")}
 
 );
 
@@ -152,15 +171,15 @@ always_ff @(posedge axi_aclk or negedge axi_aresetn) begin
 
     if (!axi_aresetn) begin
 
-{dump_regs(data, line_start="       ", line_end="_q <= '0;", final_char="_q <= '0;", only_allow=["READ_ONLY"])}
+{run_pass(data, line_start="       ", line_end="_q <= '0;", final_char="_q <= '0;", only_allow=["READ_ONLY"])}
 
-{dump_regs(data, line_start="       ", line_end="_slow <= '0;", final_char="_slow <= '0;", only_allow=["READ_ONLY"])}
+{run_pass(data, line_start="       ", line_end="_slow <= '0;", final_char="_slow <= '0;", only_allow=["READ_ONLY"])}
 
     end else begin
 
-{dump_regs(data, assignment=True, line_start="       ", assign_lhs_postfix="_q", assign_rhs_postfix="", line_end=";", final_char=";", only_allow=["READ_ONLY"])}
+{run_pass(data, assignment=True, line_start="       ", assign_lhs_postfix="_q", assign_rhs_postfix="", line_end=";", final_char=";", only_allow=["READ_ONLY"])}
 
-{dump_regs(data, assignment=True, line_start="       ", assign_lhs_postfix="_slow", assign_rhs_postfix="_q", line_end=";", final_char=";", only_allow=["READ_ONLY"])}
+{run_pass(data, assignment=True, line_start="       ", assign_lhs_postfix="_slow", assign_rhs_postfix="_q", line_end=";", final_char=";", only_allow=["READ_ONLY"])}
 
     end
 
@@ -173,15 +192,15 @@ always_ff @(posedge fast_clk or negedge fast_resetn) begin
 
     if (!fast_resetn) begin
 
-{dump_regs(data, line_start="       ", line_end="_q <= '0;", final_char="_q <= '0;", filter_out=["READ_ONLY"])}
+{run_pass(data, line_start="       ", line_end="_q <= '0;", final_char="_q <= '0;", filter_out=["READ_ONLY"])}
 
-{dump_regs(data, line_start="       ", line_end=" <= '0;", final_char=" <= '0;", filter_out=["READ_ONLY"])}
+{run_pass(data, line_start="       ", line_end=" <= '0;", final_char=" <= '0;", filter_out=["READ_ONLY"])}
 
     end else begin
 
-{dump_regs(data, assignment=True, line_start="       ", assign_lhs_postfix="_q", assign_rhs_postfix="_slow", line_end=";", final_char=";", filter_out=["READ_ONLY"])}
+{run_pass(data, assignment=True, line_start="       ", assign_lhs_postfix="_q", assign_rhs_postfix="_slow", line_end=";", final_char=";", filter_out=["READ_ONLY"])}
 
-{dump_regs(data, assignment=True, line_start="       ", assign_lhs_postfix="", assign_rhs_postfix="_q", line_end=";", final_char=";", filter_out=["READ_ONLY"])}
+{run_pass(data, assignment=True, line_start="       ", assign_lhs_postfix="", assign_rhs_postfix="_q", line_end=";", final_char=";", filter_out=["READ_ONLY"])}
 
     end
 
