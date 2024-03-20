@@ -46,9 +46,7 @@ if (BUFFER_TYPE == "AGGREGATION") begin
         .clkb     (core_clk),    // input wire clkb
         .enb      ('1),      // input wire enb
         .addrb    (read_address),  // input wire [9 : 0] addrb
-        .doutb    (out_feature),  // output wire [31 : 0] doutb
-        
-        .sleep    ('0)  // input wire sleep
+        .doutb    (out_feature)
     );
 
 end else if (BUFFER_TYPE == "TRANSFORMATION") begin

@@ -13,7 +13,7 @@ module prefetcher_weight_bank #(
     parameter DATA_WIDTH = 32,
     parameter AXI_ADDRESS_WIDTH = 34,
     parameter AXI_DATA_WIDTH    = 512,
-    parameter MAX_FEATURE_COUNT = (top_pkg::MAX_FEATURE_COUNT)
+    parameter FEATURE_COUNT = (top_pkg::FEATURE_COUNT)
 ) (
     input logic                                               core_clk,
     input logic                                               resetn,
@@ -73,22 +73,22 @@ logic                                              accepting_weight_channel_resp
 // Weight Matrix row FIFOs
 // ----------------------------------------------------------------
 
-logic [MAX_FEATURE_COUNT-1:0]                               row_fifo_push;
+logic [FEATURE_COUNT-1:0]                               row_fifo_push;
 logic [31:0]                                                row_fifo_in_data;
 
-logic [MAX_FEATURE_COUNT-1:0]                               row_fifo_pop;
-logic [MAX_FEATURE_COUNT-1:0]                               row_fifo_out_valid;
-logic [MAX_FEATURE_COUNT-1:0] [31:0]                        row_fifo_out_data;
+logic [FEATURE_COUNT-1:0]                               row_fifo_pop;
+logic [FEATURE_COUNT-1:0]                               row_fifo_out_valid;
+logic [FEATURE_COUNT-1:0] [31:0]                        row_fifo_out_data;
 
-logic [MAX_FEATURE_COUNT-1:0] [$clog2(MAX_FEATURE_COUNT):0] row_fifo_count;
-logic [MAX_FEATURE_COUNT-1:0]                               row_fifo_empty;
-logic [MAX_FEATURE_COUNT-1:0]                               row_fifo_full;
+logic [FEATURE_COUNT-1:0] [$clog2(FEATURE_COUNT):0] row_fifo_count;
+logic [FEATURE_COUNT-1:0]                               row_fifo_empty;
+logic [FEATURE_COUNT-1:0]                               row_fifo_full;
 
 // Fetching
 // ----------------------------------------------------------------
 
-logic [$clog2(MAX_FEATURE_COUNT):0]   features_written;
-logic [$clog2(MAX_FEATURE_COUNT):0]   rows_fetched;
+logic [$clog2(FEATURE_COUNT):0]   features_written;
+logic [$clog2(FEATURE_COUNT):0]   rows_fetched;
 logic [$clog2(AXI_DATA_WIDTH/32)-1:0] feature_offset;
 logic [4:0]                           expected_responses;
 logic                                 weight_bank_axi_rm_fetch_resp_last_q;
@@ -96,13 +96,13 @@ logic [AXI_DATA_WIDTH-1:0]            weight_bank_axi_rm_fetch_resp_data_q;
 logic [3:0]                           weight_bank_axi_rm_fetch_resp_axi_id_q;
 
 
-logic [$clog2(MAX_FEATURE_COUNT*4)-1:0] bytes_per_row;
-logic [$clog2(MAX_FEATURE_COUNT*4)-1:0] bytes_per_row_padded;
+logic [$clog2(FEATURE_COUNT*4)-1:0] bytes_per_row;
+logic [$clog2(FEATURE_COUNT*4)-1:0] bytes_per_row_padded;
 
 // Driving weight channel responses
-logic [$clog2(MAX_FEATURE_COUNT)-1:0] required_pulses;
-logic [MAX_FEATURE_COUNT-1:0]                      row_pop_shift;
-logic [$clog2(MAX_FEATURE_COUNT):0]                row_counter;
+logic [$clog2(FEATURE_COUNT)-1:0] required_pulses;
+logic [FEATURE_COUNT-1:0]                      row_pop_shift;
+logic [$clog2(FEATURE_COUNT):0]                row_counter;
 
 logic reset_weights;
 
@@ -110,10 +110,10 @@ logic reset_weights;
 // Instances
 // ==================================================================================================================================================
 
-for (genvar row = 0; row < MAX_FEATURE_COUNT; row++) begin
+for (genvar row = 0; row < FEATURE_COUNT; row++) begin
     ultraram_fifo #(
         .WIDTH (32),
-        .DEPTH (MAX_FEATURE_COUNT)
+        .DEPTH (FEATURE_COUNT)
     ) weight_matrix_row (
         .core_clk,
         .resetn,
@@ -225,7 +225,7 @@ always_comb begin
     weight_bank_axi_rm_fetch_byte_count = nsb_prefetcher_weight_bank_req_q.in_features * 4;
     
     bytes_per_row = nsb_prefetcher_weight_bank_req_q.in_features * 4;
-    bytes_per_row_padded = {bytes_per_row[$clog2(MAX_FEATURE_COUNT*4)-1:6], 6'b0} + (|bytes_per_row[5:0] ? 'd64 : '0); // round up to nearest multiple of 64
+    bytes_per_row_padded = {bytes_per_row[$clog2(FEATURE_COUNT*4)-1:6], 6'b0} + (|bytes_per_row[5:0] ? 'd64 : '0); // round up to nearest multiple of 64
     weight_bank_axi_rm_fetch_start_address = nsb_prefetcher_weight_bank_req_q.start_address + rows_fetched * bytes_per_row_padded;
 end
 
@@ -243,7 +243,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         rows_fetched <= rows_fetched + 1'b1;
         
         // divide by 16 (features per AXI beat), round up
-        expected_responses <= nsb_prefetcher_weight_bank_req_q.in_features[$clog2(MAX_FEATURE_COUNT):4] + (|nsb_prefetcher_weight_bank_req_q.in_features[3:0] ? 1'b1 : 1'b0);
+        expected_responses <= nsb_prefetcher_weight_bank_req_q.in_features[$clog2(FEATURE_COUNT):4] + (|nsb_prefetcher_weight_bank_req_q.in_features[3:0] ? 1'b1 : 1'b0);
 
     // Accepting response from weight read master
     end else if (weight_bank_axi_rm_fetch_resp_valid && weight_bank_axi_rm_fetch_resp_ready) begin
@@ -300,7 +300,7 @@ end
 assign weight_channel_req_ready = (weight_bank_state == WEIGHT_BANK_FSM_WEIGHTS_WAITING);
 
 // Shift register to flush through weights matrix diagonally
-for (genvar row = 1; row < MAX_FEATURE_COUNT; row++) begin
+for (genvar row = 1; row < FEATURE_COUNT; row++) begin
     always_ff @(posedge core_clk or negedge resetn) begin
         if (!resetn) begin
             row_pop_shift[row] <= '0;
@@ -317,7 +317,7 @@ for (genvar row = 1; row < MAX_FEATURE_COUNT; row++) begin
 end
 
 // Round up in features to the nearest multiple of 16
-assign required_pulses = {nsb_prefetcher_weight_bank_req_q.in_features[$clog2(MAX_FEATURE_COUNT)-1:4], 4'd0} + (|nsb_prefetcher_weight_bank_req_q.in_features[3:0] ? 'd16 : '0);
+assign required_pulses = {nsb_prefetcher_weight_bank_req_q.in_features[$clog2(FEATURE_COUNT)-1:4], 4'd0} + (|nsb_prefetcher_weight_bank_req_q.in_features[3:0] ? 'd16 : '0);
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin

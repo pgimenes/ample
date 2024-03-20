@@ -11,8 +11,8 @@ if {[file exists $project_name.xpr]} {
 } else {
     # Project doesn't exist, create a new project
     puts "Creating build project."
-    create_project $project_name -part xcu250-figd2104-2L-e -force
-    set_property board_part xilinx.com:au250:part0:1.3 [current_project]
+    create_project $project_name -part xcu280-fsvh2892-2L-e -force
+    set_property board_part xilinx.com:au280:part0:1.1 [current_project]
 }
 
 # Update IP files
@@ -43,12 +43,12 @@ add_files -fileset sources_1 $env(WORKAREA)/hw/build/regbanks/node_scoreboard_re
 add_files -fileset sources_1 $env(WORKAREA)/hw/build/regbanks/prefetcher_regbank
 
 # Import Xilinx IP
-import_ip -files $env(WORKAREA)/hw/xilinx_ip/axi_memory_interconnect.xci
 import_ip -files $env(WORKAREA)/hw/xilinx_ip/fp_add.xci
 import_ip -files $env(WORKAREA)/hw/xilinx_ip/fp_mult.xci
 import_ip -files $env(WORKAREA)/hw/xilinx_ip/aggregation_buffer_sdp_bram.xci
 import_ip -files $env(WORKAREA)/hw/xilinx_ip/scale_factor_queue.xci
-import_ip -files $env(WORKAREA)/hw/xilinx_ip/ddr4_0.xcix
+import_ip -files $env(WORKAREA)/hw/xilinx_ip/ddr4_0.xci
+import_ip -files $env(WORKAREA)/hw/xilinx_ip/ddr4_1.xci
 
 generate_target all [get_ips]
 
@@ -61,7 +61,8 @@ export_simulation -of_objects [get_files $env(WORKAREA)/hw/build/build_project.s
 export_simulation -of_objects [get_files $env(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/fp_add/fp_add.xci]                                                   -directory $env(WORKAREA)/hw/build/build_project.ip_user_files/sim_scripts -ip_user_files_dir $env(WORKAREA)/hw/build/build_project.ip_user_files -ipstatic_source_dir $env(WORKAREA)/hw/build/build_project.ip_user_files/ipstatic -lib_map_path [list {modelsim=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/modelsim} {questa=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/questa} {ies=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/ies} {xcelium=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/xcelium} {vcs=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/vcs} {riviera=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet
 export_simulation -of_objects [get_files $env(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/fp_mult/fp_mult.xci]                                                 -directory $env(WORKAREA)/hw/build/build_project.ip_user_files/sim_scripts -ip_user_files_dir $env(WORKAREA)/hw/build/build_project.ip_user_files -ipstatic_source_dir $env(WORKAREA)/hw/build/build_project.ip_user_files/ipstatic -lib_map_path [list {modelsim=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/modelsim} {questa=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/questa} {ies=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/ies} {xcelium=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/xcelium} {vcs=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/vcs} {riviera=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet
 export_simulation -of_objects [get_files $env(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/scale_factor_queue/scale_factor_queue.xci]                           -directory $env(WORKAREA)/hw/build/build_project.ip_user_files/sim_scripts -ip_user_files_dir $env(WORKAREA)/hw/build/build_project.ip_user_files -ipstatic_source_dir $env(WORKAREA)/hw/build/build_project.ip_user_files/ipstatic -lib_map_path [list {modelsim=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/modelsim} {questa=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/questa} {ies=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/ies} {xcelium=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/xcelium} {vcs=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/vcs} {riviera=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet
-export_simulation -of_objects [get_files $env(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/ddr4_0/ddr4_0.xcix]                                                  -directory $env(WORKAREA)/hw/build/build_project.ip_user_files/sim_scripts -ip_user_files_dir $env(WORKAREA)/hw/build/build_project.ip_user_files -ipstatic_source_dir $env(WORKAREA)/hw/build/build_project.ip_user_files/ipstatic -lib_map_path [list {modelsim=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/modelsim} {questa=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/questa} {ies=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/ies} {xcelium=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/xcelium} {vcs=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/vcs} {riviera=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet
+export_simulation -of_objects [get_files $env(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/ddr4_0/ddr4_0.xci]                                                  -directory $env(WORKAREA)/hw/build/build_project.ip_user_files/sim_scripts -ip_user_files_dir $env(WORKAREA)/hw/build/build_project.ip_user_files -ipstatic_source_dir $env(WORKAREA)/hw/build/build_project.ip_user_files/ipstatic -lib_map_path [list {modelsim=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/modelsim} {questa=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/questa} {ies=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/ies} {xcelium=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/xcelium} {vcs=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/vcs} {riviera=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet
+export_simulation -of_objects [get_files $env(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/ddr4_1/ddr4_1.xci]                                                  -directory $env(WORKAREA)/hw/build/build_project.ip_user_files/sim_scripts -ip_user_files_dir $env(WORKAREA)/hw/build/build_project.ip_user_files -ipstatic_source_dir $env(WORKAREA)/hw/build/build_project.ip_user_files/ipstatic -lib_map_path [list {modelsim=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/modelsim} {questa=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/questa} {ies=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/ies} {xcelium=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/xcelium} {vcs=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/vcs} {riviera=$env(WORKAREA)/hw/build/build_project.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet
 
 # SYNTH
 set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY none [get_runs synth_1]

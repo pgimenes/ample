@@ -66,9 +66,7 @@ if (BRAM_TYPE == 0) begin
         .clkb         (core_clk),
         .enb          (1'b1),
         .addrb        (read_address),
-        .doutb        (out_data),
-        
-        .sleep        (1'b0)
+        .doutb        (out_data)
     );
 
 end else begin

@@ -330,7 +330,7 @@ for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT;
         .PRECISION         (precision),
         .AXI_ADDRESS_WIDTH (34),
         .AXI_DATA_WIDTH    (512),
-        .MAX_FEATURE_COUNT (top_pkg::MAX_FEATURE_COUNT)
+        .FEATURE_COUNT (top_pkg::FEATURE_COUNT)
         ) weight_bank_i (
             .core_clk,
             .resetn,

@@ -1,7 +1,5 @@
 #!/bin/bash -f
 
-set -e
-
 cd $WORKAREA
 
 # Build submodules

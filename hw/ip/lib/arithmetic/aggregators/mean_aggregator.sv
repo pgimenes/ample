@@ -97,38 +97,38 @@ fp_div acc_feature_factor_div (
 
 // Multiplier is combinatorial
 fp_mult weighted_acc_feat_factor_mult (
-  .s_axis_a_tvalid(in_feature_valid_q2),
-  .s_axis_a_tdata(acc_feature),
+  // .s_axis_a_tvalid(in_feature_valid_q2),
+  .in1(acc_feature),
 
-  .s_axis_b_tvalid(in_feature_valid_q2),
-  .s_axis_b_tdata(acc_feature_factor),
+  // .s_axis_b_tvalid(in_feature_valid_q2),
+  .in2(acc_feature_factor),
   
-  .m_axis_result_tvalid(),
-  .m_axis_result_tdata(weighted_acc_feature)
+  // .m_axis_result_tvalid(),
+  .res(weighted_acc_feature)
 );
 
 // Multiplier is combinatorial
 fp_mult weighted_in_feat_factor_mult (
-  .s_axis_a_tvalid(in_feature_valid_q2),
-  .s_axis_a_tdata(in_feature),
+  // .s_axis_a_tvalid(in_feature_valid_q2),
+  .in1(in_feature),
 
-  .s_axis_b_tvalid(in_feature_valid_q2),
-  .s_axis_b_tdata(in_feature_factor),
+  // .s_axis_b_tvalid(in_feature_valid_q2),
+  .in2(in_feature_factor),
   
-  .m_axis_result_tvalid(),
-  .m_axis_result_tdata(weighted_in_feature)
+  // .m_axis_result_tvalid(),
+  .res(weighted_in_feature)
 );
 
 // Adder is combinatorial
 fp_add fp_add_i (
-  .s_axis_a_tvalid              (1'b1),
-  .s_axis_a_tdata               (weighted_acc_feature_q),
+  // .s_axis_a_tvalid              (1'b1),
+  .in1               (weighted_acc_feature_q),
   
-  .s_axis_b_tvalid              (1'b1),
-  .s_axis_b_tdata               (weighted_in_feature_q),
+  // .s_axis_b_tvalid              (1'b1),
+  .in2               (weighted_in_feature_q),
 
-  .m_axis_result_tvalid         (),
-  .m_axis_result_tdata          (out_feature)
+  // .m_axis_result_tvalid         (),
+  .res          (out_feature)
 );
 
 // ==================================================================================================================================================
