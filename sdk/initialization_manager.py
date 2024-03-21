@@ -11,6 +11,8 @@ import logging
 
 from tqdm import tqdm
 
+from torch_geometric.nn import GCNConv, GINConv, SAGEConv
+
 class InitManager:
 
     def __init__(self, 
@@ -56,13 +58,24 @@ class InitManager:
             "node_count": self.trained_graph.dataset.x.shape[0]
         }
         for layer in self.model.layers:
+            if isinstance(layer, GCNConv):
+                inc = layer.in_channels
+                outc = layer.out_channels
+            elif isinstance(layer, GINConv):
+                inc = layer.nn.in_features
+                outc = layer.nn.out_features
+            elif isinstance(layer, SAGEConv):
+                inc = layer.in_channels
+                outc = layer.out_channels
+            else:
+                raise RuntimeError(f"Unrecognized layer type {type(layer)}")
             layer = {
-                'in_feature_count': layer.in_channels,
-                'out_feature_count': layer.out_channels,
+                'in_feature_count': inc,
+                'out_feature_count': outc,
 
                 'transformation_activation': 0,
                 'leaky_relu_alpha': 0,
-                'transformation_bias': 0 if torch.all(layer.bias == 0) else layer.bias[0].item(),
+                'transformation_bias': 0,
 
                 'dequantization_parameter': self.trained_graph.dequantization_parameter,
                 
@@ -88,7 +101,7 @@ class InitManager:
         dense_nodes = []
         avg_nb_cnt = 0
         for node in self.trained_graph.nx_graph.nodes:
-            nb_cnt = self.trained_graph.nx_graph.nodes[node]['neighbour_count']
+            nb_cnt = self.trained_graph.nx_graph.nodes[node]["meta"]['neighbour_count']
             avg_nb_cnt += nb_cnt
             if (nb_cnt > 256):
                 # print(f"node {node} has neighbour count {nb_cnt}, dropping")
@@ -98,13 +111,13 @@ class InitManager:
                 continue
             nodeslot = {'node_id' : node,
                         'neighbour_count': nb_cnt,
-                        'precision': self.trained_graph.nx_graph.nodes[node]['precision'],
-                        'aggregation_function': self.trained_graph.nx_graph.nodes[node]['aggregation_function'],
+                        'precision': self.trained_graph.nx_graph.nodes[node]["meta"]['precision'],
+                        'aggregation_function': self.trained_graph.nx_graph.nodes[node]["meta"]['aggregation_function'],
                         
-                        'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node]['adjacency_list_address'],
+                        'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node]["meta"]['adjacency_list_address'],
                         'adjacency_list_address_msb': 0,
                         
-                        'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node]['scale_factors_address'],
+                        'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node]["meta"]['scale_factors_address'],
                         'scale_factors_address_msb': 0,
                         
                         'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node * self.trained_graph.feature_count * 4,

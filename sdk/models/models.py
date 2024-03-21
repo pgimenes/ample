@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, GATConv, SAGEConv
+from torch_geometric.nn import GCNConv, GATConv, SAGEConv, GINConv
 import pytorch_lightning as pl
 
 '''
@@ -9,10 +9,53 @@ Graph Convolutional Network
 '''
 
 class GCN_Model(pl.LightningModule):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=64):
         super().__init__()
         self.layers = nn.ModuleList()
-        self.layers.append(GCNConv(in_channels, out_channels))
+        if layer_count == 1:
+            self.layers.append(GCNConv(in_channels, out_channels))
+        else:
+            self.layers.append(GCNConv(in_channels, hidden_dimension))
+            for _ in range(layer_count-2):
+                self.layers.append(GCNConv(hidden_dimension, hidden_dimension))
+            self.layers.append(GCNConv(hidden_dimension, out_channels))
+
+    def forward(self, x, edge_index):
+        for layer in self.layers:
+            out = layer(x, edge_index)
+        return out
+
+'''
+Graph Isomorphism Network
+'''
+
+class GINLinear(pl.LightningModule):
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+        self.layer = torch.nn.Linear(in_channels, out_channels, bias=False)
+    
+    def forward(self, x):
+        return self.layer(x)
+
+class GIN_Model(pl.LightningModule):
+    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=64):
+        super().__init__()
+        self.layers = nn.ModuleList()
+        if layer_count == 1:
+            self.layers.append(GINConv(
+                torch.nn.Linear(in_channels, out_channels, bias=False)
+                ))
+        else:
+            self.layers.append(GINConv(
+                torch.nn.Linear(in_channels, hidden_dimension, bias=False)
+                ))
+            for _ in range(layer_count-2):
+                self.layers.append(GINConv(
+                    torch.nn.Linear(hidden_dimension, hidden_dimension, bias=False)
+                    ))
+            self.layers.append(GINConv(
+                torch.nn.Linear(hidden_dimension, out_channels, bias=False)
+                ))
 
     def forward(self, x, edge_index):
         for layer in self.layers:
@@ -48,23 +91,18 @@ class GAT_Model(pl.LightningModule):
 GraphSAGE
 '''
 class GraphSAGE_Model(pl.LightningModule):
-    def __init__(self, num_features, num_classes):
+    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=64):
         super().__init__()
-
-        self.dim_in = num_features
-        self.dim_h = 64
-        self.dim_out = num_classes
-
-        self.sage1 = SAGEConv(self.dim_in, self.dim_h*2)
-        self.sage2 = SAGEConv(self.dim_h*2, self.dim_h)
-        self.sage3 = SAGEConv(self.dim_h, self.dim_out)
+        self.layers = nn.ModuleList()
+        if layer_count == 1:
+            self.layers.append(SAGEConv(in_channels, out_channels))
+        else:
+            self.layers.append(SAGEConv(in_channels, hidden_dimension))
+            for _ in range(layer_count-2):
+                self.layers.append(SAGEConv(hidden_dimension, hidden_dimension))
+            self.layers.append(SAGEConv(hidden_dimension, out_channels))
 
     def forward(self, x, edge_index):
-        x = self.sage1(x, edge_index)
-        x = torch.relu(x)
-        x = F.dropout(x, p=0.5, training=self.training)
-        x = self.sage2(x, edge_index)
-        x = torch.relu(x)
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.sage3(x, edge_index)
-        return F.log_softmax(x, dim=1)
+        for layer in self.layers:
+            out = layer(x, edge_index)
+        return out

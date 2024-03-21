@@ -4,6 +4,7 @@ import struct
 import logging
 import os
 from .utilities import int_list_to_byte_list, float_list_to_byte_list
+from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 class Memory_Mapper:
 
     def __init__(self, graph, model, base_path="config_files", dump_file="memory.mem"):
@@ -23,35 +24,45 @@ class Memory_Mapper:
 
     def map_adj_list(self):
         for node in self.graph.nodes:
-            self.graph.nodes[node]['adjacency_list_address'] = len(self.memory_hex)
-            self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+            self.graph.nodes[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
+            self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
 
         # Set offset for next memory range
         self.offsets['scale_factors'] = len(self.memory_hex)
 
     def map_scale_factors(self):
         for node in self.graph.nodes:
-            self.graph.nodes[node]['scale_factors_address'] = len(self.memory_hex)
-            if (self.graph.nodes[node]['precision'] == 'FLOAT_32'):
-                self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]['scale_factors'], align=True, alignment=64, pad_side='left')
+            self.graph.nodes[node]["meta"]['scale_factors_address'] = len(self.memory_hex)
+            if (self.graph.nodes[node]["meta"]['precision'] == 'FLOAT_32'):
+                self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]["meta"]['scale_factors'], align=True, alignment=64, pad_side='left')
             else:
-                self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]['scale_factors'], align=True, alignment=64, pad_side='left')
+                self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['scale_factors'], align=True, alignment=64, pad_side='left')
         
         # Set offset for next memory range
         self.offsets['in_messages'] = len(self.memory_hex)
 
     def map_in_messages(self):
         for node in self.graph.nodes:
-            self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]['embedding'], align=True, alignment=64)
+            self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]["meta"]['embedding'], align=True, alignment=64)
         
         # Set offset for next memory range
         self.offsets['weights'] = len(self.memory_hex)
 
     def map_weights(self):
         for layer in self.model.layers:
-            out_feature_count = layer.lin.weight.shape[0]
+            if isinstance(layer, GCNConv):
+                linear = layer.lin
+            elif isinstance(layer, GINConv):
+                linear = layer.nn
+            elif isinstance(layer, SAGEConv):
+                linear = layer.lin_l
+            else:
+                raise RuntimeError(f"Unrecognized layer {layer}")
+            
+            out_feature_count = linear.weight.shape[0]
+
             for outf in range(out_feature_count):
-                self.memory_hex += float_list_to_byte_list(layer.lin.weight[outf], align=True, alignment=64)
+                self.memory_hex += float_list_to_byte_list(linear.weight[outf], align=True, alignment=64)
 
         # Set offset for next memory range
         self.offsets['out_messages'] = len(self.memory_hex)

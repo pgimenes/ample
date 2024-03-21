@@ -7,7 +7,7 @@ from sdk.graphs.random_graph import RandomGraph
 from sdk.graphs.planetoid_graph import PlanetoidGraph
 from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
 
-from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model
+from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model
 
 from sdk.benchmarking_manager import BenchmarkingManager
 
@@ -39,61 +39,42 @@ file_handler.setLevel(logging.INFO)
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
+from functools import partial
+
 '''
     Build graphs with requested embedding size and generate memory file.
 '''
 
 graph_map = {
-    'matrix': {
-        'class': MatrixGraph
-    },
-    'karate': { 
-        'class': KarateClubGraph
-    },
-    'erdos': {
-        'class': lambda feature_count, graph_precision: RandomGraph(num_nodes=1, avg_degree=1, num_channels=feature_count, graph_precision=graph_precision)
-    },
-    'pubmed': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Pubmed", graph_precision=graph_precision)},
-    'cora': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Cora", graph_precision=graph_precision)},
-    'citeseer': { 'class': lambda feature_count, graph_precision: PlanetoidGraph(name="Citeseer", graph_precision=graph_precision)},
-    'reddit': { 'class': lambda feature_count, graph_precision: RedditGraph(graph_precision=graph_precision)},
-    'flickr': { 'class': lambda feature_count, graph_precision: FlickrGraph(graph_precision=graph_precision)},
-    'yelp': { 'class': lambda feature_count, graph_precision: YelpGraph(graph_precision=graph_precision)},
-    'amazon': { 'class': lambda feature_count, graph_precision: AmazonProductsGraph(graph_precision=graph_precision)}
+    'matrix': MatrixGraph,
+    'karate': KarateClubGraph,
+    'erdos': RandomGraph,
+    'pubmed': partial(PlanetoidGraph, name="Pubmed"),
+    'cora': partial(PlanetoidGraph, name="Cora"),
+    'citeseer': partial(PlanetoidGraph, name="Citeseer"),
+    'reddit': RedditGraph,
+    'flickr': FlickrGraph,
+    'yelp': YelpGraph,
+    'amazon': AmazonProductsGraph,
 }
 
 model_map = {
-  'gcn': {
-    'class': lambda in_features, out_features: GCN_Model (in_features, out_features)
-  },
-
-  'gat': {
-    'class': GAT_Model
-  },
-
-  'sage': {
-    'class': GraphSAGE_Model
-  }
+  'gcn': GCN_Model,
+  'gat': GAT_Model,
+  'gin': GIN_Model,
+  'sage': GraphSAGE_Model
 }
 
 def main(args):
     # Load Graphs
     graphs = []
-    for arg, graph_info in graph_map.items():
+    for arg, graph_cls in graph_map.items():
         if getattr(args, arg):
             # To do: temporary
             if arg == "erdos":
                 graph = RandomGraph(num_nodes=args.num_nodes, avg_degree=args.avg_degree, num_channels=args.in_features, graph_precision=args.precision)
             else:
-                graph = graph_info['class'](feature_count=args.in_features, graph_precision=args.precision)
-            
-            # Apply options
-            options = graph_info.get('options', {})
-            apply_graph_options(graph, options)
-            
-            # Run pre-processing commands
-            commands = graph_info.get('commands', [])
-            run_graph_commands(graph, commands)
+                graph = graph_cls(feature_count=args.in_features, graph_precision=args.precision)
             
             graphs.append(graph)
 
@@ -127,10 +108,25 @@ def run_pass(
                 payloads=False, 
                 base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
             ):
-    model = model_map[model]['class'](args.in_features, args.out_features)
-
+    model = model_map[model](
+        graph.dataset.x.shape[1], 
+        graph.dataset.x.shape[1],
+        layer_count = args.layers,
+        hidden_dimension = args.hidden_dimension
+        )
     init_manager = InitManager(graph, model, base_path=base_path)
     bman = BenchmarkingManager(graph=graph, model=model, args=args)
+    
+    if isinstance(model, GIN_Model):
+        graph.apply_self_connection()
+
+    if isinstance(model, GraphSAGE_Model):
+        scale_factors = []
+        for node in graph.nx_graph.nodes:
+            nb_cnt = graph.nx_graph.nodes[node]["meta"]["neighbour_count"]
+            scale_factors.append([1 / nb_cnt] * nb_cnt)
+        breakpoint()
+        graph.set_scale_factors(scale_factors)
 
     if (args.reduce):
         init_manager.reduce_graph()
@@ -223,8 +219,12 @@ def parse_arguments():
 
     # Models
     parser.add_argument('--gcn', action='store_true', help='Use GCN Model')
+    parser.add_argument('--gin', action='store_true', help='Use GIN Model')
     parser.add_argument('--gat', action='store_true', help='Use GAT Model')
     parser.add_argument('--sage', action='store_true', help='Use GraphSAGE Model')
+
+    parser.add_argument('--layers', type=int, default=2, help='Number of layers')
+    parser.add_argument('--hidden-dimension', type=int, default=64, help='Hidden dimension size')
 
     default_base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
     parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $WORKAREA/hw/sim/layer_config)')

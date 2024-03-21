@@ -10,7 +10,7 @@ import random
 
 import logging
 class TrainedGraph:
-    def __init__(self, dataset, feature_count=64, embeddings=[], graph_precision="FLOAT_32"):
+    def __init__(self, dataset, feature_count=64, embeddings=[], graph_precision="FLOAT_32", self_connection=False):
         self.dataset = dataset
         self.nx_graph = to_networkx(self.dataset)
         self.graph_precision = graph_precision
@@ -22,9 +22,9 @@ class TrainedGraph:
             self.node_offsets[i] = node_offsets[idx]
 
         # Feature count initialization may change when embeddings are trained
-        self.feature_count = feature_count
+        self.feature_count = dataset.x.shape[1]
 
-        self.init_nx_graph()
+        self.init_nx_graph(self_connection=self_connection)
 
         # Local copy of embeddings stored in node objects
         self.embeddings = embeddings
@@ -32,10 +32,41 @@ class TrainedGraph:
         # TO DO: read dequantization parameter from QAT
         self.dequantization_parameter = 1
 
-    def visualize(self):
-        pos = nx.spring_layout(self.nx_graph)
-        nx.draw(self.nx_graph, pos, with_labels=True)
-        plt.show()
+    def init_nx_graph(self, self_connection=False):
+        for node in self.nx_graph.nodes:
+            neighbours = list(self.nx_graph.neighbors(node))
+            if self_connection:
+                neighbours += [node]
+            self.nx_graph.nodes[node]["meta"] = {
+                'neighbours' : neighbours,
+                'neighbour_count': len(neighbours),
+                'aggregation_function': "SUM",
+                
+                'adj_list_offset': int(self.node_offsets[node]),
+                'neighbour_message_ptrs': [4*self.feature_count*nb_ptr for nb_ptr in neighbours],
+                'adjacency_list_address_lsb': 0, # to be defined by init manager
+                
+                # Add a single scale factor to isolated nodes to occupy memory range
+                'scale_factors': [1] * len(neighbours) if len(neighbours) > 0 else [1],
+
+                'precision': random.choice(["FLOAT_32", "FIXED_8"]) if self.graph_precision == 'mixed' else self.graph_precision
+            }
+
+    def apply_self_connection(self):
+        for node in self.nx_graph.nodes:
+            neighbours = self.nx_graph.nodes[node]["meta"]["neighbours"] + [node]
+            self.nx_graph.nodes[node]["meta"]["neighbours"] = neighbours
+            self.nx_graph.nodes[node]["meta"]["neighbour_count"] = len(neighbours)
+            self.nx_graph.nodes[node]["meta"]["neighbour_message_ptrs"] = [4*self.feature_count*nb_ptr for nb_ptr in self.nx_graph.nodes[node]["meta"]["neighbours"]]
+            self.nx_graph.nodes[node]["meta"]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
+
+    def set_aggregation(self, aggregation):
+        for node in self.nx_graph.nodes:
+            self.nx_graph.nodes[node]["meta"]["aggregation_function"] = aggregation[node]
+
+    def set_scale_factors(self, scale_factors):
+        for node in self.nx_graph.nodes:
+            self.nx_graph.nodes[node]["meta"]["scale_factors"] = scale_factors[node]
 
     def reduce(self):
         logging.info("Reducing graph.")
@@ -51,46 +82,6 @@ class TrainedGraph:
         for data in loader:
             logging.info(f"Data shape: {data.x.shape}")
             logging.info(f"Edge index: {data.edge_index.shape}")
-
-
-    def init_nx_graph(self):
-        counts = {"FLOAT_32": 0, "FIXED_8": 0}
-        
-        largest_nb_count = 0
-        for node in self.nx_graph.nodes:
-            neighbours = list(self.nx_graph.neighbors(node))
-            if (len(neighbours) > largest_nb_count):
-                largest_nb_count = len(neighbours)
-                logging.debug(f"Largest neighbour count so far {len(neighbours)}")
-            self.nx_graph.nodes[node]['neighbours'] = neighbours
-            self.nx_graph.nodes[node]['neighbour_count'] = len(neighbours)
-            self.nx_graph.nodes[node]['adj_list_offset'] = int(self.node_offsets[node])
-            self.nx_graph.nodes[node]['neighbour_message_ptrs'] = [4*self.feature_count*nb_ptr for nb_ptr in neighbours]
-            self.nx_graph.nodes[node]['adjacency_list_address_lsb'] = 0 # to be defined my init manager
-            self.nx_graph.nodes[node]['aggregation_function'] = "SUM"
-
-            # Add a single scale factor to isolated nodes to occupy memory range
-            self.nx_graph.nodes[node]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
-            
-            if (self.graph_precision == 'mixed'):
-                prec = random.choice(["FLOAT_32", "FIXED_8"])
-            else:
-                prec = self.graph_precision
-            
-            self.nx_graph.nodes[node]['precision'] = prec
-            counts[prec] = counts[prec] + 1
-
-        for prec in ["FLOAT_32", "FIXED_8"]:
-            precision_filter = [node for node in self.nx_graph.nodes if self.nx_graph.nodes[node]['precision'] == prec]
-            mod = counts[prec] % 4
-            logging.debug(f"Precision {prec} has {len(precision_filter)} nodes")
-            logging.debug(f"Precision {prec} has modulus {mod}")
-            if (mod == 0):
-                continue
-            for node in precision_filter[-mod:]: # choose last N nodes where N is modulus with wait count
-                # Invalidate nodes so they get dropped by testbench
-                logging.debug(f"Node {node} being dropped")
-                self.nx_graph.nodes[node]['neighbour_count'] = 0
             
     def random_embeddings(self):
         logging.debug(f"Generating random graph embeddings.")
@@ -100,21 +91,26 @@ class TrainedGraph:
         for node in self.nx_graph.nodes:
 
             # Define range according to precision
-            if (self.nx_graph.nodes[node]['precision'] == "FLOAT_32"):
+            if (self.nx_graph.nodes[node]["meta"]['precision'] == "FLOAT_32"):
                 embd = [random.uniform(-2, 2) for _ in range(self.feature_count)]
-            elif (self.nx_graph.nodes[node]['precision'] == "FIXED_16"):
+            elif (self.nx_graph.nodes[node]["meta"]['precision'] == "FIXED_16"):
                 embd = [random.randint(-8, 7) for _ in range(self.feature_count)]
-            elif (self.nx_graph.nodes[node]['precision'] == "FIXED_8"):
+            elif (self.nx_graph.nodes[node]["meta"]['precision'] == "FIXED_8"):
                 embd = [random.randint(-8, 7) for _ in range(self.feature_count)]
-            elif (self.nx_graph.nodes[node]['precision'] == "FIXED_4"):
+            elif (self.nx_graph.nodes[node]["meta"]['precision'] == "FIXED_4"):
                 embd = [random.randint(-8, 7) for _ in range(self.feature_count)]
             else:
                 print(f"Unrecognized precision, defaulting to float.")
                 embd = [random.uniform(-2, 2) for _ in range(self.feature_count)]
 
-            self.nx_graph.nodes[node]['embedding'] = embd
+            self.nx_graph.nodes[node]["meta"]['embedding'] = embd
             self.embeddings[node] = embd
             self.dataset.x[node] = torch.tensor(embd, dtype=torch.float)
+
+    def visualize(self):
+        pos = nx.spring_layout(self.nx_graph)
+        nx.draw(self.nx_graph, pos, with_labels=True)
+        plt.show()
         
     def __str__(self) -> str:
         return "TrainedGraph"
