@@ -125,7 +125,6 @@ def run_pass(
         for node in graph.nx_graph.nodes:
             nb_cnt = graph.nx_graph.nodes[node]["meta"]["neighbour_count"]
             scale_factors.append([1 / nb_cnt] * nb_cnt)
-        breakpoint()
         graph.set_scale_factors(scale_factors)
 
     if (args.reduce):
@@ -136,11 +135,8 @@ def run_pass(
         init_manager.trained_graph.train_embeddings()
 
     if (payloads):
-        # Initialize Memory
         init_manager.memory_mapper.map()
-
-        # Dump
-        # init_manager.dump_memory()
+        init_manager.dump_memory()
         init_manager.dump_layer_config()
         init_manager.dump_nodeslot_programming()
     
