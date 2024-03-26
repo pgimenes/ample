@@ -1,12 +1,6 @@
 
 import top_pkg::*;
 
-/*
- * 
- * 
- * 
- */
-
 module buffer_manager_arbiter #(
     parameter AGGREGATION_BUFFER_SLOTS = top_pkg::AGGREGATION_BUFFER_SLOTS
 ) (
@@ -109,9 +103,9 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
             slot_set_node_id [precision] [slot]       = input_bm_set_node_id [precision] [granted_bm_bin [precision] [slot]] [slot];
             
             // Write to each slot from the allocated mesh
-            slot_write_enable [precision][slot]  = input_bm_write_enable  [precision] [granted_bm_bin [precision] [slot]] [slot];
-            slot_write_address [precision][slot] = input_bm_write_address [precision] [granted_bm_bin [precision] [slot]] [slot];
-            slot_write_data [precision][slot]    = input_bm_write_data    [precision] [granted_bm_bin [precision] [slot]] [slot];
+            slot_write_enable [precision][slot]  = input_bm_write_enable  [precision] [granted_bm_bin_q [precision] [slot]] [slot];
+            slot_write_address [precision][slot] = input_bm_write_address [precision] [granted_bm_bin_q [precision] [slot]] [slot];
+            slot_write_data [precision][slot]    = input_bm_write_data    [precision] [granted_bm_bin_q [precision] [slot]] [slot];
         end
     end : slot_block_logic
 end : precision_block_logic

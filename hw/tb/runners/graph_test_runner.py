@@ -92,6 +92,7 @@ async def graph_test_runner(dut):
         await test.driver.wait_done_ack(
             done_reg = test.driver.nsb_regs["ctrl_start_nodeslot_fetch_done"],
             ack_reg = test.driver.nsb_regs["ctrl_start_nodeslot_fetch_done_ack"],
+            tries = 10000
         )
         
         dut._log.info("Nodeslot fetching done, waiting for nodeslots to be flushed.")

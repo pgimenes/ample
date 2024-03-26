@@ -129,7 +129,7 @@ logic [$clog2(MAX_WRITEBACK_BEATS_PER_NODESLOT):0]   writeback_required_beats;
 logic [MATRIX_N:0] [top_pkg::NODE_ID_WIDTH-1:0]      sys_module_node_id_snapshot;
 logic [$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1:0] out_features_required_bytes;
 
-logic [$clog2(MATRIX_N-1)-1:0]                       fast_pulse_counter;
+logic [31:0]                       fast_pulse_counter;
 
 logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] [31:0] debug_update_counter;
 logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N-1:0] [MATRIX_N-1:0] [31:0] debug_update_counter_inv;
@@ -145,7 +145,7 @@ logic bias_applied, activation_applied;
 // Systolic Modules
 // --------------------------------------------------------------------------------
 
-for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) begin
+for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) begin : sys_modules
     // Driving from weight channel
     always_comb begin
         sys_module_down_in_valid [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = {MATRIX_N{weight_channel_resp_valid}} & weight_channel_resp.valid_mask[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
@@ -192,7 +192,7 @@ for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) be
         .debug_update_counter                (debug_update_counter     [sys_module])
     );
 
-end
+end : sys_modules
 
 // Transformation Buffer slot arbitration
 // --------------------------------------------------------------------------------
@@ -260,7 +260,7 @@ always_comb begin
         end
 
         FTE_FSM_MULT_FAST: begin
-            fte_state_n = fast_pulse_counter == MATRIX_N - 1 ? FTE_FSM_BIAS : FTE_FSM_MULT_FAST;
+            fte_state_n = (fast_pulse_counter == MATRIX_N * 2) ? FTE_FSM_BIAS : FTE_FSM_MULT_FAST;
         end
 
         FTE_FSM_BIAS: begin
@@ -330,19 +330,36 @@ end
 // Take snapshot of busy slots and respective node IDs after NSB request
 // -------------------------------------------------------------------------------------
 
+for (genvar slot = 0; slot < top_pkg::AGGREGATION_BUFFER_SLOTS; slot++) begin : slot_logic
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            busy_aggregation_slots_snapshot [slot] <= '0;
+        end else begin
+            // Assert snapshot flag for given slot when starting transformation, if the slot is currently filled
+            if ((fte_state == FTE_FSM_IDLE) && (fte_state_n == FTE_FSM_REQ_WC)) begin
+                busy_aggregation_slots_snapshot [slot] <= !transformation_core_aggregation_buffer_slot_free[slot] && nsb_fte_req.slots[slot];
+
+            // Drop the snapshot bit during transformation when the slot becomes free, i.e. the slot was fully driven
+            // This prevents reading from the slot while it's being populated by a buffer manager for the next systolic array pass
+            end else if (fte_state != FTE_FSM_IDLE && transformation_core_aggregation_buffer_slot_free[slot]) begin
+                busy_aggregation_slots_snapshot [slot] <= '0;
+            end
+        end
+    end
+end : slot_logic
+
+
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
-        busy_aggregation_slots_snapshot <= '0;
         nsb_req_nodeslots_q <= '0;
         
     // Starting multiplication
     end else if ((fte_state == FTE_FSM_IDLE) && (fte_state_n == FTE_FSM_REQ_WC)) begin
-        busy_aggregation_slots_snapshot <= ~transformation_core_aggregation_buffer_slot_free;
         nsb_req_nodeslots_q <= nsb_fte_req.nodeslots;
     end
 end
 
-for (genvar row = 0; row < MATRIX_N; row++) begin
+for (genvar row = 0; row < MATRIX_N; row++) begin : per_row_logic
     always_ff @(posedge core_clk or negedge resetn) begin
         if (!resetn) begin
             sys_module_node_id_snapshot [row]          <= '0;
@@ -356,7 +373,7 @@ for (genvar row = 0; row < MATRIX_N; row++) begin
             sys_module_node_id_snapshot [row]          <= sys_module_node_id_snapshot [row+1];
         end
     end
-end
+end : per_row_logic
 
 assign sys_module_node_id_snapshot [MATRIX_N] = '0;
 
@@ -400,13 +417,13 @@ end
 // Buffering Logic
 // -------------------------------------------------------------------------------------
 
-for (genvar slot = 0; slot < TRANSFORMATION_BUFFER_SLOTS; slot++) begin
+for (genvar slot = 0; slot < TRANSFORMATION_BUFFER_SLOTS; slot++) begin : slot_buffering_logic
     always_comb begin
         transformation_buffer_write_enable  [slot] = transformation_buffer_slot_arb_oh[slot] && (fte_state == FTE_FSM_BUFFER);
         transformation_buffer_write_address [slot] = '0;
         transformation_buffer_write_data    [slot] = sys_module_pe_acc [0] [0]; // 16*32 bits = 512b
     end    
-end
+end : slot_buffering_logic
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
@@ -488,7 +505,6 @@ end
 always_comb begin
     nsb_fte_req_ready           = (fte_state == FTE_FSM_IDLE);
     
-    // TO DO: NSB resp
     nsb_fte_resp_valid          = (fte_state == FTE_FSM_NSB_RESP);
     nsb_fte_resp.nodeslots      = nsb_req_nodeslots_q;
 end

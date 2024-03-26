@@ -181,7 +181,7 @@ class InitManager:
                 if (nb_cnt > 256):
                     dense_nodes.append(node)
                     continue
-                nodeslot = self.default_nodeslot(node)
+                nodeslot = self.get_default_nodeslot(node)
                 self.nodeslot_programming['nodeslots'].append(nodeslot)
             
             logging.debug(f"Dense node count: {len(dense_nodes)}")

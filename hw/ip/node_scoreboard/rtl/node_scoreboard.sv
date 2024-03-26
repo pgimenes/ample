@@ -166,7 +166,7 @@ logic accepting_prefetch_request;
 logic accepting_aggregation_request;
 logic accepting_transformation_request;
 
-logic [top_pkg::PRECISION_COUNT-1:0] [5:0] aggregation_buffer_population_count;
+logic [top_pkg::PRECISION_COUNT-1:0] [31:0] aggregation_buffer_population_count;
 
 logic [NODESLOT_COUNT-1:0]         prefetcher_arbiter_grant_oh;
 logic [$clog2(NODESLOT_COUNT)-1:0] prefetcher_arbiter_grant_bin;
@@ -178,6 +178,7 @@ logic                     waiting_weights_fetch_req;
 top_pkg::NODE_PRECISION_e active_weights_fetch_precision;
 
 logic [top_pkg::PRECISION_COUNT-1:0] aggregation_buffer_waiting_transformation;
+logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] aggregation_buffer_slots_waiting_transformation;
 logic [$clog2(top_pkg::PRECISION_COUNT)-1:0] aggregation_buffer_precision_arb_bin;
 logic [top_pkg::PRECISION_COUNT-1:0] [31:0] fte_request_timeout;
 
@@ -569,6 +570,25 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
                                                                 // OR: There's at least one slot waiting and request timeout has been reached
                                                                 || (fte_request_timeout [precision] >= 'd5120 && |aggregation_buffer_population_count[precision])
                                                             );
+
+    for (genvar slot = 0; slot < top_pkg::AGGREGATION_BUFFER_SLOTS; slot++) begin
+        always_ff @(posedge core_clk or negedge resetn) begin
+            if (!resetn) begin
+                aggregation_buffer_slots_waiting_transformation [precision] [slot] <= '0;
+            
+            end else begin
+                // Accepting FTE request so all slots currently waiting will now be served
+                if (nsb_fte_req_valid && nsb_fte_req_ready) begin
+                    aggregation_buffer_slots_waiting_transformation [precision] [slot] <= '0;
+                end
+                
+                // Aggregation done -> consume features from written buffer slot in next FTE pass
+                if (nsb_age_resp_valid && (nsb_age_resp.nodeslot % top_pkg::AGGREGATION_BUFFER_SLOTS) == slot) begin
+                    aggregation_buffer_slots_waiting_transformation [precision] [slot] <= '1;
+                end
+            end
+        end
+    end
 end
 
 
@@ -652,6 +672,7 @@ rr_arbiter #(
 always_comb begin
     nsb_fte_req_valid     = |aggregation_buffer_waiting_transformation;
     nsb_fte_req.precision = top_pkg::NODE_PRECISION_e'(aggregation_buffer_precision_arb_bin);
+    nsb_fte_req.slots     = aggregation_buffer_slots_waiting_transformation[aggregation_buffer_precision_arb_bin];
 end
 
 // ==================================================================================================================================================
