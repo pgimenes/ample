@@ -4,8 +4,17 @@ import top_pkg::*;
 module feature_transformation_engine #(
     parameter FLOAT_WIDTH = 32,
     parameter AXIL_ADDR_WIDTH = 32,
-    parameter MATRIX_N = top_pkg::TRANSFORMATION_ROWS,
-    parameter SYSTOLIC_MODULE_COUNT = top_pkg::SYSTOLIC_MODULE_COUNT
+    parameter MATRIX_N = 64,
+    parameter SYSTOLIC_MODULE_COUNT = 1,
+    parameter MAX_NODESLOT_COUNT = 256,
+    parameter AGGREGATION_BUFFER_SLOTS = 64,
+    parameter PRECISION_COUNT = 1,
+    parameter NODE_ID_WIDTH = 20,
+    parameter AGGREGATION_BUFFER_READ_WIDTH = 32,
+    parameter MAX_FEATURE_COUNT = 1024,
+    parameter TRANSFORMATION_BUFFER_SLOTS = 16,
+    parameter TRANSFORMATION_BUFFER_WRITE_DEPTH = 1024*32/512,
+    parameter TRANSFORMATION_BUFFER_WRITE_WIDTH = 512
 ) (
     input logic                                                 core_clk,
     input logic                                                 resetn,
@@ -43,26 +52,26 @@ module feature_transformation_engine #(
     output NSB_FTE_RESP_t                                       nsb_fte_resp,
 
     // Aggregation Buffer Interface
-    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::NODE_ID_WIDTH-1:0]                 aggregation_buffer_node_id,
-    output logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_pop,
-    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_out_feature_valid,
-    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0] [top_pkg::AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_out_feature,
-    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free,
+    input  logic [PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [NODE_ID_WIDTH-1:0]                 aggregation_buffer_node_id,
+    output logic [PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_pop,
+    input  logic [PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_out_feature_valid,
+    input  logic [PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [AGGREGATION_BUFFER_READ_WIDTH-1:0] aggregation_buffer_out_feature,
+    input  logic [PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_slot_free,
 
     // Weight Channels: FTE -> Prefetcher Weight Bank (REQ)
-    output logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_valid,
-    input  logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_ready,
-    output WEIGHT_CHANNEL_REQ_t  [top_pkg::PRECISION_COUNT-1:0] weight_channel_req,
+    output logic                 [PRECISION_COUNT-1:0] weight_channel_req_valid,
+    input  logic                 [PRECISION_COUNT-1:0] weight_channel_req_ready,
+    output WEIGHT_CHANNEL_REQ_t  [PRECISION_COUNT-1:0] weight_channel_req,
 
-    input  logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_valid,
-    output logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_ready,
-    input  WEIGHT_CHANNEL_RESP_t [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp,
+    input  logic                 [PRECISION_COUNT-1:0] weight_channel_resp_valid,
+    output logic                 [PRECISION_COUNT-1:0] weight_channel_resp_ready,
+    input  WEIGHT_CHANNEL_RESP_t [PRECISION_COUNT-1:0] weight_channel_resp,
 
     // Transformation Buffer Interface
-    output logic [top_pkg::PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_write_enable,
-    output logic [top_pkg::PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0]    transformation_buffer_write_address,
-    output logic [top_pkg::PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]            transformation_buffer_write_data,
-    input  logic [top_pkg::PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_slot_free,
+    output logic [PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_write_enable,
+    output logic [PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0] [$clog2(TRANSFORMATION_BUFFER_WRITE_DEPTH)-1:0]    transformation_buffer_write_address,
+    output logic [PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0] [TRANSFORMATION_BUFFER_WRITE_WIDTH-1:0]            transformation_buffer_write_data,
+    input  logic [PRECISION_COUNT-1:0] [TRANSFORMATION_BUFFER_SLOTS-1:0]                                                    transformation_buffer_slot_free,
 
     // Feature Transformation Engine -> AXI Interconnect
     output logic [33:0]                       transformation_engine_axi_interconnect_axi_araddr,
@@ -159,27 +168,27 @@ logic                              axi_write_master_resp_ready;
 // Transformation Cores
 // -------------------------------------------------------------------------------------
 
-logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_req_ready;
+logic [PRECISION_COUNT-1:0]          transformation_core_req_ready;
 
-logic          [top_pkg::PRECISION_COUNT-1:0] transformation_core_resp_valid;
-logic          [top_pkg::PRECISION_COUNT-1:0] transformation_core_resp_ready;
-NSB_FTE_RESP_t [top_pkg::PRECISION_COUNT-1:0] transformation_core_resp;
+logic          [PRECISION_COUNT-1:0] transformation_core_resp_valid;
+logic          [PRECISION_COUNT-1:0] transformation_core_resp_ready;
+NSB_FTE_RESP_t [PRECISION_COUNT-1:0] transformation_core_resp;
 
-logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_req_valid;
-logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_req_ready;
-logic [top_pkg::PRECISION_COUNT-1:0] [33:0]   transformation_core_axi_write_master_req_start_address;
-logic [top_pkg::PRECISION_COUNT-1:0] [7:0]    transformation_core_axi_write_master_req_len;
+logic [PRECISION_COUNT-1:0]          transformation_core_axi_write_master_req_valid;
+logic [PRECISION_COUNT-1:0]          transformation_core_axi_write_master_req_ready;
+logic [PRECISION_COUNT-1:0] [33:0]   transformation_core_axi_write_master_req_start_address;
+logic [PRECISION_COUNT-1:0] [7:0]    transformation_core_axi_write_master_req_len;
 
-logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_pop;
-logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_data_valid;
-logic [top_pkg::PRECISION_COUNT-1:0] [511:0]  transformation_core_axi_write_master_data;
-logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_resp_valid;
-logic [top_pkg::PRECISION_COUNT-1:0]          transformation_core_axi_write_master_resp_ready;
+logic [PRECISION_COUNT-1:0]          transformation_core_axi_write_master_pop;
+logic [PRECISION_COUNT-1:0]          transformation_core_axi_write_master_data_valid;
+logic [PRECISION_COUNT-1:0] [511:0]  transformation_core_axi_write_master_data;
+logic [PRECISION_COUNT-1:0]          transformation_core_axi_write_master_resp_valid;
+logic [PRECISION_COUNT-1:0]          transformation_core_axi_write_master_resp_ready;
 
-logic [$clog2(top_pkg::PRECISION_COUNT)-1:0] transformation_core_resp_valid_bin;
+logic [$clog2(PRECISION_COUNT)-1:0] transformation_core_resp_valid_bin;
 
-logic [$clog2(top_pkg::PRECISION_COUNT)-1:0] transformation_core_write_master_alloc_bin;
-logic [$clog2(top_pkg::PRECISION_COUNT)-1:0] transformation_core_write_master_alloc_bin_q;
+logic [$clog2(PRECISION_COUNT)-1:0] transformation_core_write_master_alloc_bin;
+logic [$clog2(PRECISION_COUNT)-1:0] transformation_core_write_master_alloc_bin_q;
 
 // ==================================================================================================================================================
 // Instances
@@ -231,7 +240,7 @@ feature_transformation_engine_regbank_wrapper feature_transformation_engine_regb
 // Transformation Cores
 // --------------------------------------------------------------------------------
 
-for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) begin
+for (genvar precision = 0; precision < PRECISION_COUNT; precision++) begin
     feature_transformation_core #(
         .PRECISION             (top_pkg::NODE_PRECISION_e'(precision)),
         .FLOAT_WIDTH           (FLOAT_WIDTH),
@@ -369,7 +378,7 @@ axi_write_master write_master_i (
 // -------------------------------------------------------------------------------------
 
 rr_arbiter #(
-    .NUM_REQUESTERS     (top_pkg::PRECISION_COUNT)
+    .NUM_REQUESTERS     (PRECISION_COUNT)
 ) nsb_response_arb (
     .clk                (core_clk),
     .resetn             (resetn),
@@ -386,7 +395,7 @@ rr_arbiter #(
 // -------------------------------------------------------------------------------------
 
 rr_arbiter #(
-    .NUM_REQUESTERS     (top_pkg::PRECISION_COUNT)
+    .NUM_REQUESTERS     (PRECISION_COUNT)
 ) prefetcher_req_arb (
     .clk                (core_clk),
     .resetn             (resetn),
@@ -439,7 +448,7 @@ always_comb begin
     axi_write_master_resp_ready = transformation_core_axi_write_master_resp_ready [transformation_core_write_master_alloc_bin_q];
 end
 
-for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
+for (genvar precision = top_pkg::FLOAT_32; precision < PRECISION_COUNT; precision++) begin
 
     always_comb begin
         transformation_core_axi_write_master_req_ready [precision] = axi_write_master_req_ready && (transformation_core_write_master_alloc_bin == precision);

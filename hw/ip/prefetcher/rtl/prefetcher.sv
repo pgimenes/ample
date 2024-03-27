@@ -1,9 +1,14 @@
 import top_pkg::*;
-import noc_pkg::*;
 
 module prefetcher #(
-    parameter FETCH_TAG_COUNT = top_pkg::MESSAGE_CHANNEL_COUNT,
-    parameter HBM_BANKS = 32
+    parameter FETCH_TAG_COUNT = 256,
+    parameter HBM_BANKS = 32,
+    parameter PRECISION_COUNT = 1,
+    parameter MAX_FEATURE_COUNT = 1024,
+    parameter MAX_NODESLOT_COUNT = 256,
+    parameter MAX_NEIGHBOURS = 1024,
+    parameter MESSAGE_CHANNEL_COUNT = 256,
+    parameter MAX_FETCH_REQ_BYTE_COUNT = 1024*1024
 ) (
     input logic                               core_clk,
     input logic                               resetn,
@@ -128,13 +133,13 @@ module prefetcher #(
     output MESSAGE_CHANNEL_RESP_t [MESSAGE_CHANNEL_COUNT-1:0] message_channel_resp,
 
     // Weight Channels: FTE -> Prefetcher Weight Bank
-    input  logic                [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_valid,
-    output logic                [top_pkg::PRECISION_COUNT-1:0] weight_channel_req_ready,
-    input  WEIGHT_CHANNEL_REQ_t [top_pkg::PRECISION_COUNT-1:0] weight_channel_req,
+    input  logic                [PRECISION_COUNT-1:0] weight_channel_req_valid,
+    output logic                [PRECISION_COUNT-1:0] weight_channel_req_ready,
+    input  WEIGHT_CHANNEL_REQ_t [PRECISION_COUNT-1:0] weight_channel_req,
 
-    output logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_valid,
-    input  logic                 [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp_ready,
-    output WEIGHT_CHANNEL_RESP_t [top_pkg::PRECISION_COUNT-1:0] weight_channel_resp,
+    output logic                 [PRECISION_COUNT-1:0] weight_channel_resp_valid,
+    input  logic                 [PRECISION_COUNT-1:0] weight_channel_resp_ready,
+    output WEIGHT_CHANNEL_RESP_t [PRECISION_COUNT-1:0] weight_channel_resp,
 
     input  logic [MESSAGE_CHANNEL_COUNT-1:0]                                           scale_factor_queue_pop,
     output logic [MESSAGE_CHANNEL_COUNT-1:0] [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_queue_out_data,
@@ -204,21 +209,21 @@ logic [HBM_BANKS-1:0] [3:0]                                        read_master_r
 // Weight Bank
 // --------------------------------------------------------------------------------------------
 
-logic           [top_pkg::PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_req_valid;
-logic           [top_pkg::PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_req_ready;
+logic           [PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_req_valid;
+logic           [PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_req_ready;
 
-logic           [top_pkg::PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_resp_valid;
-NSB_PREF_RESP_t [top_pkg::PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_resp;
+logic           [PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_resp_valid;
+NSB_PREF_RESP_t [PRECISION_COUNT-1:0]                                              nsb_prefetcher_weight_bank_resp;
 
-logic           [top_pkg::PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_req_valid;
+logic           [PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_req_valid;
 logic                                                                                       weight_read_master_fetch_req_ready;
-logic           [top_pkg::PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_req_ready;
-logic           [top_pkg::PRECISION_COUNT-1:0] [AXI_ADDRESS_WIDTH-1:0]                      weight_bank_axi_rm_fetch_start_address;
-logic           [top_pkg::PRECISION_COUNT-1:0] [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       weight_bank_axi_rm_fetch_byte_count;
+logic           [PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_req_ready;
+logic           [PRECISION_COUNT-1:0] [AXI_ADDRESS_WIDTH-1:0]                      weight_bank_axi_rm_fetch_start_address;
+logic           [PRECISION_COUNT-1:0] [$clog2(MAX_FETCH_REQ_BYTE_COUNT)-1:0]       weight_bank_axi_rm_fetch_byte_count;
 
 logic                                                                                       weight_read_master_fetch_resp_valid;
-logic           [top_pkg::PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_resp_valid;
-logic           [top_pkg::PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_resp_ready;
+logic           [PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_resp_valid;
+logic           [PRECISION_COUNT-1:0]                                              weight_bank_axi_rm_fetch_resp_ready;
 logic                                                                                       weight_read_master_resp_last;
 logic           [AXI_DATA_WIDTH-1:0]                                                        weight_read_master_resp_data;
 logic           [3:0]                                                                       weight_read_master_resp_axi_id;
@@ -325,12 +330,12 @@ prefetcher_feature_bank #(
 // Weight Bank
 // --------------------------------------------------------------------------------------------
 
-for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
+for (genvar precision = top_pkg::FLOAT_32; precision < PRECISION_COUNT; precision++) begin
     prefetcher_weight_bank #(
         .PRECISION         (precision),
         .AXI_ADDRESS_WIDTH (34),
         .AXI_DATA_WIDTH    (512),
-        .FEATURE_COUNT (top_pkg::FEATURE_COUNT)
+        .FEATURE_COUNT (FEATURE_COUNT)
         ) weight_bank_i (
             .core_clk,
             .resetn,
@@ -488,7 +493,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
 end
 
 // Drive weight bank request
-for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
+for (genvar precision = top_pkg::FLOAT_32; precision < PRECISION_COUNT; precision++) begin
     assign nsb_prefetcher_weight_bank_req_valid [precision]  = nsb_prefetcher_req_valid && (nsb_prefetcher_req.req_opcode == WEIGHTS) && (precision == nsb_prefetcher_req.nodeslot_precision);
 
     assign weight_bank_axi_rm_fetch_req_ready [precision] = weight_read_master_fetch_req_ready && (precision == active_weight_fetch_precision);
