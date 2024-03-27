@@ -10,7 +10,7 @@ import random
 
 import logging
 class TrainedGraph:
-    def __init__(self, dataset, feature_count=64, embeddings=[], graph_precision="FLOAT_32", self_connection=False):
+    def __init__(self, dataset, feature_count=None, embeddings=[], graph_precision="FLOAT_32", self_connection=False):
         self.dataset = dataset
         self.nx_graph = to_networkx(self.dataset)
         self.graph_precision = graph_precision
@@ -22,7 +22,7 @@ class TrainedGraph:
             self.node_offsets[i] = node_offsets[idx]
 
         # Feature count initialization may change when embeddings are trained
-        self.feature_count = dataset.x.shape[1]
+        self.feature_count = dataset.x.shape[1] if feature_count is None else feature_count
 
         self.init_nx_graph(self_connection=self_connection)
 

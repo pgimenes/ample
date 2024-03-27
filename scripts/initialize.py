@@ -109,8 +109,8 @@ def run_pass(
                 base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
             ):
     model = model_map[model](
-        graph.dataset.x.shape[1], 
-        graph.dataset.x.shape[1],
+        graph.dataset.x.shape[1] if args.in_features is None else args.in_features,
+        graph.dataset.x.shape[1] if args.out_features is None else args.out_features,
         layer_count = args.layers,
         hidden_dimension = args.hidden_dimension
         )
@@ -124,6 +124,7 @@ def run_pass(
         scale_factors = []
         for node in graph.nx_graph.nodes:
             nb_cnt = graph.nx_graph.nodes[node]["meta"]["neighbour_count"]
+            nb_cnt = 1 if nb_cnt == 0 else nb_cnt
             scale_factors.append([1 / nb_cnt] * nb_cnt)
         graph.set_scale_factors(scale_factors)
 
@@ -225,8 +226,8 @@ def parse_arguments():
     default_base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
     parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $WORKAREA/hw/sim/layer_config)')
     
-    parser.add_argument('--in_features', type=int, default=64, help='Input feature count')
-    parser.add_argument('--out_features', type=int, default=64, help='Output feature count')
+    parser.add_argument('--in_features', type=int, default=None, help='Input feature count')
+    parser.add_argument('--out_features', type=int, default=None, help='Output feature count')
 
     # For random (erdos) graphs
     
