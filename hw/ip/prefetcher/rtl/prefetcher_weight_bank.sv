@@ -155,15 +155,18 @@ always_comb begin
     case (weight_bank_state)
 
     WEIGHT_BANK_FSM_IDLE: begin
-        weight_bank_state_n = nsb_prefetcher_weight_bank_req_valid && (nsb_prefetcher_weight_bank_req.req_opcode == top_pkg::WEIGHTS) ? WEIGHT_BANK_FSM_FETCH_REQ : WEIGHT_BANK_FSM_IDLE;
+        weight_bank_state_n = nsb_prefetcher_weight_bank_req_valid && (nsb_prefetcher_weight_bank_req.req_opcode == top_pkg::WEIGHTS) ? WEIGHT_BANK_FSM_FETCH_REQ 
+                                : WEIGHT_BANK_FSM_IDLE;
     end
 
     WEIGHT_BANK_FSM_FETCH_REQ: begin
-        weight_bank_state_n = weight_bank_axi_rm_fetch_req_ready ? WEIGHT_BANK_FSM_WAIT_RESP : WEIGHT_BANK_FSM_FETCH_REQ;
+        weight_bank_state_n = weight_bank_axi_rm_fetch_req_ready ? WEIGHT_BANK_FSM_WAIT_RESP 
+                                : WEIGHT_BANK_FSM_FETCH_REQ;
     end
 
     WEIGHT_BANK_FSM_WAIT_RESP: begin
-        weight_bank_state_n = weight_bank_axi_rm_fetch_resp_valid ? WEIGHT_BANK_FSM_WRITE : WEIGHT_BANK_FSM_WAIT_RESP;
+        weight_bank_state_n = weight_bank_axi_rm_fetch_resp_valid ? WEIGHT_BANK_FSM_WRITE 
+                                : WEIGHT_BANK_FSM_WAIT_RESP;
     end
 
     WEIGHT_BANK_FSM_WRITE: begin
@@ -182,7 +185,9 @@ always_comb begin
     end
 
     WEIGHT_BANK_FSM_WEIGHTS_WAITING: begin
-        weight_bank_state_n = weight_channel_req_valid ? WEIGHT_BANK_FSM_DUMP_WEIGHTS : WEIGHT_BANK_FSM_WEIGHTS_WAITING;
+        weight_bank_state_n = weight_channel_req_valid ? WEIGHT_BANK_FSM_DUMP_WEIGHTS 
+                                : nsb_prefetcher_weight_bank_req_valid && (nsb_prefetcher_weight_bank_req.req_opcode == top_pkg::WEIGHTS) ? WEIGHT_BANK_FSM_FETCH_REQ
+                                : WEIGHT_BANK_FSM_WEIGHTS_WAITING;
     end
 
     WEIGHT_BANK_FSM_DUMP_WEIGHTS: begin
@@ -207,7 +212,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
 end
 
 always_comb begin
-    nsb_prefetcher_weight_bank_req_ready = (weight_bank_state == WEIGHT_BANK_FSM_IDLE);
+    nsb_prefetcher_weight_bank_req_ready = (weight_bank_state == WEIGHT_BANK_FSM_IDLE) || (weight_bank_state == WEIGHT_BANK_FSM_WEIGHTS_WAITING);
     
     nsb_prefetcher_weight_bank_resp_valid = (weight_bank_state == WEIGHT_BANK_FSM_WRITE) && (weight_bank_state_n == WEIGHT_BANK_FSM_WEIGHTS_WAITING);
     
@@ -237,6 +242,10 @@ always_ff @(posedge core_clk or negedge resetn) begin
         weight_bank_axi_rm_fetch_resp_last_q   <= '0;
         weight_bank_axi_rm_fetch_resp_data_q   <= '0;
         weight_bank_axi_rm_fetch_resp_axi_id_q <= '0;
+
+    // Starting fetch request for another layer
+    end else if (weight_bank_state == WEIGHT_BANK_FSM_WEIGHTS_WAITING && weight_bank_state_n == WEIGHT_BANK_FSM_FETCH_REQ) begin
+        rows_fetched <= '0;
 
     // Accepting request to weight read master
     end else if (weight_bank_axi_rm_fetch_req_valid && weight_bank_axi_rm_fetch_req_ready) begin

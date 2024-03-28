@@ -12,17 +12,17 @@ package top_pkg;
 // ----------------------------------------------------
 
 // New arrangement
-parameter MESH_MULTIPLIER = 8;
+parameter MESH_MULTIPLIER = 4;
 
 parameter AGGREGATION_CHANNELS = 4; // per mesh
-parameter TRANSFORMATION_CHANNELS = 32;
+parameter TRANSFORMATION_CHANNELS = 64;
 
 // Graph parameters
 parameter MAX_NODES = 1024*1024; // 1M
 parameter MAX_NODESLOT_COUNT = 256;
 parameter MAX_NEIGHBOURS = 1024;
 parameter MAX_FEATURE_COUNT = 1024;
-parameter FEATURE_COUNT = 512;
+parameter FEATURE_COUNT = 64;
 
 parameter NODE_ID_WIDTH = $clog2(MAX_NODES); // 20
 
@@ -136,8 +136,9 @@ typedef struct packed {
 } NSB_AGE_RESP_t;
 
 typedef struct packed {
-    logic [MAX_NODESLOT_COUNT-1:0]         nodeslots;
-    NODE_PRECISION_e                       precision;
+    logic [MAX_NODESLOT_COUNT-1:0]       nodeslots;
+    NODE_PRECISION_e                     precision;
+    logic [AGGREGATION_BUFFER_SLOTS-1:0] slots;
 } NSB_FTE_REQ_t;
 
 typedef struct packed {

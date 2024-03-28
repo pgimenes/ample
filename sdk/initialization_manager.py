@@ -10,8 +10,11 @@ from sdk.memory_mapper import Memory_Mapper
 import logging
 
 from tqdm import tqdm
+from copy import deepcopy
 
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
+
+from .models.models import GraphSAGE_Model
 
 class InitManager:
 
@@ -51,43 +54,72 @@ class InitManager:
     # Nodeslot programming and layer configuration
     # ===============================================
 
+    def get_layer_feature_count(self, layer):
+        if isinstance(layer, GCNConv):
+            inc = layer.in_channels
+            outc = layer.out_channels
+        elif isinstance(layer, GINConv):
+            inc = layer.nn.in_features
+            outc = layer.nn.out_features
+        elif isinstance(layer, SAGEConv):
+            inc = layer.in_channels
+            outc = layer.out_channels
+        else:
+            raise RuntimeError(f"Unrecognized layer type {type(layer)}")        
+        return inc, outc
+    
+    def get_default_layer_config(self, layer):
+        inc, outc = self.get_layer_feature_count(layer)
+        return {
+            'nodeslot_count': len(self.trained_graph.nx_graph.nodes),
+            'in_feature_count': inc,
+            'out_feature_count': outc,
+            'transformation_activation': 0,
+            'leaky_relu_alpha': 0,
+            'transformation_bias': 0,
+            'dequantization_parameter': self.trained_graph.dequantization_parameter,
+            'adjacency_list_address': self.memory_mapper.offsets['adj_list'],
+            'in_messages_address': self.memory_mapper.offsets['in_messages'],
+            'weights_address': self.memory_mapper.offsets['weights'],
+            'out_messages_address': self.memory_mapper.offsets['out_messages'],
+            'aggregation_wait_count': 4,
+            'transformation_wait_count': 4
+        }
+
+    def set_layer_config_graphsage(self):
+        # 4 layers per actual SAGEConv layer
+        self.layer_config["global_config"]["layer_count"] = len(self.model.layers) * 4
+
+        for layer in self.model.layers:
+            l1 = self.get_default_layer_config(layer)
+            l1["transformation_wait_count"] = 16
+            self.layer_config['layers'].append(l1)
+            
+            l2 = self.get_default_layer_config(layer)
+            l2["transformation_wait_count"] = 16
+            self.layer_config['layers'].append(l2)
+
+            l3 = self.get_default_layer_config(layer)
+            self.layer_config['layers'].append(l3)
+
+            l4 = self.get_default_layer_config(layer)
+            self.layer_config['layers'].append(l4)
+
     def set_layer_config(self):
-        logging.debug(f"Generating layer configuration.")
+        logging.info(f"Generating layer configuration.")
+
         self.layer_config['global_config'] = {
             "layer_count": len(self.model.layers),
             "node_count": self.trained_graph.dataset.x.shape[0]
         }
-        for layer in self.model.layers:
-            if isinstance(layer, GCNConv):
-                inc = layer.in_channels
-                outc = layer.out_channels
-            elif isinstance(layer, GINConv):
-                inc = layer.nn.in_features
-                outc = layer.nn.out_features
-            elif isinstance(layer, SAGEConv):
-                inc = layer.in_channels
-                outc = layer.out_channels
-            else:
-                raise RuntimeError(f"Unrecognized layer type {type(layer)}")
-            layer = {
-                'in_feature_count': inc,
-                'out_feature_count': outc,
 
-                'transformation_activation': 0,
-                'leaky_relu_alpha': 0,
-                'transformation_bias': 0,
-
-                'dequantization_parameter': self.trained_graph.dequantization_parameter,
-                
-                'adjacency_list_address': self.memory_mapper.offsets['adj_list'],
-                'in_messages_address': self.memory_mapper.offsets['in_messages'],
-                'weights_address': self.memory_mapper.offsets['weights'],
-                'out_messages_address': self.memory_mapper.offsets['out_messages'],
-
-                'aggregation_wait_count': 4,
-                'transformation_wait_count': 4
-            }
-            self.layer_config['layers'].append(layer)
+        if (isinstance(self.model, GraphSAGE_Model)):
+            self.set_layer_config_graphsage()
+        else :
+            # Default layer configuration
+            for layer in self.model.layers:
+                layer = self.get_default_layer_config(layer)
+                self.layer_config['layers'].append(layer)
 
     def dump_layer_config (self):
         self.layer_config = {'global_config': {}, 'layers': []}
@@ -96,42 +128,63 @@ class InitManager:
         with open(self.layer_config_file, 'w') as file:
             json.dump(self.layer_config, file, indent=4)
 
-    def program_nodeslots(self, ignore_isolated_nodes=False):
-        logging.debug(f"Generating nodeslot programming.")
-        dense_nodes = []
-        avg_nb_cnt = 0
+    def get_default_nodeslot(self, node_id):
+        return {
+                'node_id' : node_id,
+                'neighbour_count': self.trained_graph.nx_graph.nodes[node_id]["meta"]['neighbour_count'],
+                'precision': self.trained_graph.nx_graph.nodes[node_id]["meta"]['precision'],
+                'aggregation_function': self.trained_graph.nx_graph.nodes[node_id]["meta"]['aggregation_function'],
+                'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['adjacency_list_address'],
+                'adjacency_list_address_msb': 0,
+                'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['scale_factors_address'],
+                'scale_factors_address_msb': 0,
+                'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.trained_graph.feature_count * 4,
+                'out_messages_address_msb': 0
+            }
+
+    def program_nodeslots_graphsage(self):
+        # Layer 1: W1 projection
         for node in self.trained_graph.nx_graph.nodes:
-            nb_cnt = self.trained_graph.nx_graph.nodes[node]["meta"]['neighbour_count']
-            avg_nb_cnt += nb_cnt
-            if (nb_cnt > 256):
-                # print(f"node {node} has neighbour count {nb_cnt}, dropping")
-                dense_nodes.append(node)
-                continue
-            if (ignore_isolated_nodes and nb_cnt == 0):
-                continue
-            nodeslot = {'node_id' : node,
-                        'neighbour_count': nb_cnt,
-                        'precision': self.trained_graph.nx_graph.nodes[node]["meta"]['precision'],
-                        'aggregation_function': self.trained_graph.nx_graph.nodes[node]["meta"]['aggregation_function'],
-                        
-                        'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node]["meta"]['adjacency_list_address'],
-                        'adjacency_list_address_msb': 0,
-                        
-                        'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node]["meta"]['scale_factors_address'],
-                        'scale_factors_address_msb': 0,
-                        
-                        'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node * self.trained_graph.feature_count * 4,
-                        'out_messages_address_msb': 0
-                        }
+            nodeslot = self.get_default_nodeslot(node)
+            nodeslot["neighbour_count"] = 1
             self.nodeslot_programming['nodeslots'].append(nodeslot)
-        print(f"dense node count {len(dense_nodes)}")
-        avg_nb_cnt = avg_nb_cnt / len(self.trained_graph.nx_graph.nodes)
-        print(f"Average neighbour count {avg_nb_cnt}")
+
+        # Layer 2: W3 projection
+        for node in self.trained_graph.nx_graph.nodes:
+            nodeslot = self.get_default_nodeslot(node)
+            nodeslot["neighbour_count"] = 1
+            self.nodeslot_programming['nodeslots'].append(nodeslot)
+
+        # Layer 3: mean aggregation + W2 transformation
+        for node in self.trained_graph.nx_graph.nodes:
+            nodeslot = self.get_default_nodeslot(node)
+            self.nodeslot_programming['nodeslots'].append(nodeslot)
+
+        # Layer 4: sum aggregation result with residual
+        for node in self.trained_graph.nx_graph.nodes:
+            nodeslot = self.get_default_nodeslot(node)
+            nodeslot["neighbour_count"] = 2
+            nodeslot["aggregation_function"] = "SUM"
+            self.nodeslot_programming['nodeslots'].append(nodeslot)
+
+    def program_nodeslots(self, ignore_isolated_nodes=True):
+        logging.info(f"Generating nodeslot programming.")
         
-        # Cull nodes to make mod 4 = 0
-        mod = len(self.nodeslot_programming['nodeslots']) % 4
-        if mod > 0:
-            self.nodeslot_programming['nodeslots'] = self.nodeslot_programming['nodeslots'][:-mod]
+        if (isinstance(self.model, GraphSAGE_Model)):
+            self.program_nodeslots_graphsage()
+        else:
+            dense_nodes = []
+            for node in self.trained_graph.nx_graph.nodes:
+                nb_cnt = self.trained_graph.nx_graph.nodes[node]["meta"]['neighbour_count']
+                if (ignore_isolated_nodes and nb_cnt == 0):
+                    continue
+                if (nb_cnt > 256):
+                    dense_nodes.append(node)
+                    continue
+                nodeslot = self.get_default_nodeslot(node)
+                self.nodeslot_programming['nodeslots'].append(nodeslot)
+            
+            logging.debug(f"Dense node count: {len(dense_nodes)}")
 
     def generate_nodeslots_mem(self):
         node_groups = np.array(self.nodeslot_programming["nodeslots"])
@@ -198,25 +251,3 @@ class InitManager:
     
     def reduce_graph(self):
         self.trained_graph.reduce()
-
-    # Graph info for debugging
-    # ===============================================
-
-    def debug_dump(self):
-        with open(self.debug_dump_file, 'w') as file:
-            for idx, node in enumerate(self.trained_graph.embeddings):
-                file.write(f"embeddings[{idx}] = ")
-                file.write("'{")
-                file.write(str(node.tolist())[1:-1])
-                file.write("};")
-                file.write("\n")
-
-            for idx, feature in enumerate(self.trained_graph.weights):
-                file.write(f"weights[{idx}] = ")
-                file.write("'{")
-                file.write(str(feature.tolist())[1:-1])
-                file.write("};")
-                file.write("\n")
-
-    # def dump_weights(self):
-    #     for idx, feature in enumerate(self.trained_graph.weights):

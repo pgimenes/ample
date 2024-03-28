@@ -112,8 +112,8 @@ def run_pass(
     logger.info(f"Running with model {model} and graph {graph}")
 
     model = model_map[model](
-        graph.dataset.x.shape[1], 
-        graph.dataset.x.shape[1],
+        graph.dataset.x.shape[1] if args.in_features is None else args.in_features,
+        graph.dataset.x.shape[1] if args.out_features is None else args.out_features,
         layer_count = args.layers,
         hidden_dimension = args.hidden_dimension
         )
@@ -139,11 +139,8 @@ def run_pass(
         init_manager.trained_graph.train_embeddings()
 
     if (payloads):
-        # Initialize Memory
         init_manager.memory_mapper.map()
-
-        # Dump
-        # init_manager.dump_memory()
+        init_manager.dump_memory()
         init_manager.dump_layer_config()
         init_manager.dump_nodeslot_programming()
     
@@ -236,8 +233,8 @@ def parse_arguments():
     default_base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
     parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $WORKAREA/hw/sim/layer_config)')
     
-    parser.add_argument('--in_features', type=int, default=64, help='Input feature count')
-    parser.add_argument('--out_features', type=int, default=64, help='Output feature count')
+    parser.add_argument('--in_features', type=int, default=None, help='Input feature count')
+    parser.add_argument('--out_features', type=int, default=None, help='Output feature count')
 
     # For random (erdos) graphs
     

@@ -161,6 +161,23 @@ assign down_flush_done = ~sys_module_down_out_valid;
 
 assign diagonal_flush_done = &forward_flush_done && &down_flush_done;
 
+// Debug
+// ------------------------------------------
+
+logic [31:0] debug_pulse_counter;
+
+always_ff @(posedge core_clk or negedge resetn) begin
+
+    if (!resetn) begin
+        debug_pulse_counter <= '0;
+    end else begin
+        if (pulse_systolic_module) begin
+            debug_pulse_counter <= debug_pulse_counter + 1'b1;
+        end
+
+    end
+end
+
 // ============================================================================================
 // Assertions
 // ============================================================================================

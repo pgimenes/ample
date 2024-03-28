@@ -76,14 +76,14 @@ async def graph_test_runner(dut):
 
     await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.global_config["node_count"])
 
-    for layer in test.layers:
+    for layer_idx, layer in enumerate(test.layers):
+        dut._log.info(f"Starting layer {layer_idx}")
         # Layer configuration
         await test.driver.program_layer_config(layer)
 
         # Weights fetch
         await test.driver.request_weights_fetch(precision=NodePrecision.FLOAT_32)
         dut._log.info("Weights fetch done.")
-        # await test.driver.request_weights_fetch(precision=NodePrecision.FIXED_8)
 
         # Program nodeslots
         # await drive_nodeslots(test)
@@ -92,6 +92,7 @@ async def graph_test_runner(dut):
         await test.driver.wait_done_ack(
             done_reg = test.driver.nsb_regs["ctrl_start_nodeslot_fetch_done"],
             ack_reg = test.driver.nsb_regs["ctrl_start_nodeslot_fetch_done_ack"],
+            tries = 10000
         )
         
         dut._log.info("Nodeslot fetching done, waiting for nodeslots to be flushed.")

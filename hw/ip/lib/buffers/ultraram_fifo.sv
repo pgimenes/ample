@@ -99,8 +99,15 @@ always_ff @(posedge core_clk or negedge resetn) begin
         pop1 <= pop;
         pop2 <= pop1;
 
-        if (wr_ptr == {AWIDTH{1'b1}} && push) wr_wrap <= !wr_wrap;
-        if (rd_ptr == {AWIDTH{1'b1}} && pop) rd_wrap <= !rd_wrap;
+        if (wr_ptr == {AWIDTH{1'b1}} && push) begin
+            wr_wrap <= !wr_wrap;
+        end
+
+        if (rd_ptr == {AWIDTH{1'b1}} && pop) begin
+            rd_wrap <= !rd_wrap;
+        end else if (reset_read_ptr) begin
+            rd_wrap <= !wr_wrap;
+        end
     end
 end
 

@@ -349,9 +349,9 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end else begin
         if (ctrl_start_nodeslot_fetch_done_ack_value) begin
             ctrl_start_nodeslot_fetch_done_value <= '0;
-        end else begin
+        end else if (fetched_beat_valid && |nodeslot_free_mask && (next_node_id == (graph_config_node_count_value - 1'b1))) begin
             // Programming the last nodeslot
-            ctrl_start_nodeslot_fetch_done_value = fetched_beat_valid && |nodeslot_free_mask && (next_node_id == (graph_config_node_count_value - 1'b1));
+            ctrl_start_nodeslot_fetch_done_value <= '1;
         end
     end
 end
