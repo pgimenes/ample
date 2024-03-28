@@ -9,8 +9,11 @@ from torch_geometric.loader import GraphSAINTRandomWalkSampler
 import random
 
 import logging
+
+from tqdm import tqdm
+
 class TrainedGraph:
-    def __init__(self, dataset, feature_count=64, embeddings=[], graph_precision="FLOAT_32", self_connection=False):
+    def __init__(self, dataset, embeddings=[], graph_precision="FLOAT_32", self_connection=False):
         self.dataset = dataset
         self.nx_graph = to_networkx(self.dataset)
         self.graph_precision = graph_precision
@@ -112,5 +115,30 @@ class TrainedGraph:
         nx.draw(self.nx_graph, pos, with_labels=True)
         plt.show()
         
+    def quantize_dq(self):
+        min_dg, max_dg = 1e10, 0
+        print(f"Estimate min/max... ")
+        for node in tqdm(self.nx_graph.nodes):
+            if self.nx_graph.nodes[node]["meta"]["neighbour_count"] < min_dg:
+                min_dg = self.nx_graph.nodes[node]["meta"]["neighbour_count"]
+            if self.nx_graph.nodes[node]["meta"]["neighbour_count"] > max_dg:
+                max_dg = self.nx_graph.nodes[node]["meta"]["neighbour_count"]
+
+        print(f"max degree {max_dg}, min degree {min_dg}")
+        protected_node_cnt = 0
+        print(f"Quantizing... ")
+        for node in tqdm(self.nx_graph.nodes):
+            prob = self.nx_graph.nodes[node]["meta"]["neighbour_count"] / max_dg
+            quant = np.random.binomial(n=1, p=prob, size=1)
+            if quant:
+                self.nx_graph.nodes[node]["meta"]["precision"] = "FIXED_8"
+                protected_node_cnt += 1
+
+        print(f"Protected node count: {protected_node_cnt} / {len(self.nx_graph.nodes)} nodes")
+        print(f"Ratio: {protected_node_cnt / len(self.nx_graph.nodes)}")
+
+    def train_embeddings(self):
+        pass
+
     def __str__(self) -> str:
         return "TrainedGraph"

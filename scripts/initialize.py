@@ -49,11 +49,11 @@ graph_map = {
     'matrix': MatrixGraph,
     'karate': KarateClubGraph,
     'erdos': RandomGraph,
-    'pubmed': partial(PlanetoidGraph, name="Pubmed"),
     'cora': partial(PlanetoidGraph, name="Cora"),
     'citeseer': partial(PlanetoidGraph, name="Citeseer"),
-    'reddit': RedditGraph,
+    'pubmed': partial(PlanetoidGraph, name="Pubmed"),
     'flickr': FlickrGraph,
+    'reddit': RedditGraph,
     'yelp': YelpGraph,
     'amazon': AmazonProductsGraph,
 }
@@ -74,7 +74,7 @@ def main(args):
             if arg == "erdos":
                 graph = RandomGraph(num_nodes=args.num_nodes, avg_degree=args.avg_degree, num_channels=args.in_features, graph_precision=args.precision)
             else:
-                graph = graph_cls(feature_count=args.in_features, graph_precision=args.precision)
+                graph = graph_cls(graph_precision=args.precision)
             
             graphs.append(graph)
 
@@ -108,6 +108,9 @@ def run_pass(
                 payloads=False, 
                 base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
             ):
+    
+    logger.info(f"Running with model {model} and graph {graph}")
+
     model = model_map[model](
         graph.dataset.x.shape[1], 
         graph.dataset.x.shape[1],
@@ -124,8 +127,8 @@ def run_pass(
         scale_factors = []
         for node in graph.nx_graph.nodes:
             nb_cnt = graph.nx_graph.nodes[node]["meta"]["neighbour_count"]
+            nb_cnt = 1 if nb_cnt == 0 else nb_cnt
             scale_factors.append([1 / nb_cnt] * nb_cnt)
-        breakpoint()
         graph.set_scale_factors(scale_factors)
 
     if (args.reduce):
@@ -147,6 +150,9 @@ def run_pass(
     metrics = {}
     if (args.cpu or args.gpu or args.sweep):
         metrics = bman.benchmark()
+
+    if (args.dq):
+        graph.quantize_dq()
 
     return metrics
 
@@ -204,6 +210,7 @@ def parse_arguments():
     # Actions
     parser.add_argument('--sweep', action='store_true', help='Run benchmarking for random graphs over a range of average node counts and average degrees')
     parser.add_argument('--payloads', action='store_true', help='Generate simulation initialization payloads')
+    parser.add_argument('--dq', action='store_true', help='Perform DegreeQuant quantization')
 
     # Graphs
     parser.add_argument('--matrix', action='store_true', help='Use Matrix graph')
@@ -247,6 +254,7 @@ def parse_arguments():
     # Tools
     parser.add_argument('--cpu', action='store_true', help='Run benchmarking steps on CPU')
     parser.add_argument('--gpu', action='store_true', help='Run benchmarking steps on GPU')
+    parser.add_argument('--device', type=int, default=0, help='Which GPU to use for benchmarking')
     
     parser.add_argument('--sim', action='store_true', help='Run benchmarking steps in Cocotb simulation')
     parser.add_argument('--preload', action='store_true', help='Pre-load GPU results and layer configs')

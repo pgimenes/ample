@@ -50,12 +50,14 @@ class BenchmarkingManager:
         self.gpu = args.gpu
         self.sim = args.sim
         self.args = args
+        self.device = args.device
 
     def gpu_run_inference(self):
-        self.model.model.to(torch.device("cuda:0"))
+        print(f"device {self.device}")
+        self.model.model.to(torch.device(f"cuda:{self.device}"))
         data = self.graph.dataset
-        data.x = data.x.to(torch.device("cuda:0"))
-        data.edge_index = data.edge_index.to(torch.device("cuda:0"))
+        data.x = data.x.to(torch.device(f"cuda:{self.device}"))
+        data.edge_index = data.edge_index.to(torch.device(f"cuda:{self.device}"))
         
         times = []
         for i in range(100):
@@ -82,7 +84,6 @@ class BenchmarkingManager:
                 time.sleep(0.1)
             except KeyboardInterrupt:
                 print(f"finishing")
-                break
     
     def cpu_benchmark(self):
         self.model.model.to(torch.device("cpu"))
