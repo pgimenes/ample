@@ -1,3 +1,5 @@
+
+
 # >>> handled by agile >>>
 
 # Initial setup
@@ -49,5 +51,16 @@ wa() {
         echo "Invalid argument. Please provide a number."
     fi
 }
+
+here() {
+    export WORKAREA=$(pwd)
+    update_path_aliases
+}
+
+# Aliases
+# --------------------------------------------------------------------
+
+alias open_tcl="vivado -mode tcl -source open_project build_project.xpr"
+alias open_gui="vivado -source open_project build_project.xpr"
 
 # >>> handled by agile <<<
