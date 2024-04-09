@@ -161,7 +161,7 @@ ifneq ($(VHDL_SOURCES),)
 	@echo "vcom -work $(RTL_LIBRARY) $(VCOM_ARGS) $(call to_tcl_path,$(VHDL_SOURCES)) -l compile_vhdl.log" >> $@
 endif
 ifneq ($(VERILOG_SOURCES),)
-	@echo "vlog -work $(RTL_LIBRARY) -L axi_vip_v1_1_6 -L xilinx_vip +define+SIMULATION -sv $(VLOG_ARGS) $(EXTRA_ARGS) $(call to_tcl_path,$(VERILOG_SOURCES)) -l compile_vlog.log" >> $@
+	@echo "vlog -work $(RTL_LIBRARY) -L axi_vip_v1_1_6 -L xilinx_vip -sv $(VLOG_ARGS) $(EXTRA_ARGS) $(call to_tcl_path,$(VERILOG_SOURCES)) -l compile_vlog.log" >> $@
 endif
 
 # Generate optimization script

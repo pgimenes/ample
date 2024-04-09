@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import subprocess
@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s]:%(levelname)s:: %(message)s')
 
 def download_regbank_files(regbank_id, script_file):
-    os.system("python " + script_file + " " + str(regbank_id) + " all")
+    os.system("python3 " + script_file + " " + str(regbank_id) + " all")
 
 def update_vivado_project(BASE_PATH, regbank_list):
     tcl_file = BASE_PATH + "/hw/update_regbanks.tcl"
@@ -54,7 +54,7 @@ def main(args):
     # Build register bank wrappers
     for regbank in regbanks["regbanks"]:
         logging.info(f"Building CDC wrapper for {regbank['name']}.")
-        os.system("python $WORKAREA/scripts/regbank_wrapper.py --regbank_name " + regbank["name"])
+        os.system("python3 $WORKAREA/scripts/regbank_wrapper.py --regbank_name " + regbank["name"])
 
     if (args.update_project):
         logging.info("Updating Vivado project with new regbanks.")

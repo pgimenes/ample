@@ -25,3 +25,5 @@ echo "======================================================="
 
 mkdir -p $WORKAREA/hw/build && cd $WORKAREA/hw/build || cd $WORKAREA/hw/build
 vivado -mode batch -source $WORKAREA/scripts/build_project.tcl
+
+cd $WORKAREA

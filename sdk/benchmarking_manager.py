@@ -45,6 +45,9 @@ class BenchmarkingManager:
     def __init__(self, model, graph, args):
         if (torch.cuda.is_available()):
             self.model = BenchmarkWrapper(model)
+        else:
+            self.model = model
+
         self.graph = graph
         self.cpu = args.cpu
         self.gpu = args.gpu
@@ -86,14 +89,14 @@ class BenchmarkingManager:
                 print(f"finishing")
     
     def cpu_benchmark(self):
-        self.model.model.to(torch.device("cpu"))
+        self.model.to(torch.device("cpu"))
         data = self.graph.dataset
         data.x = data.x.to(torch.device("cpu"))
         data.edge_index = data.edge_index.to(torch.device("cpu"))
         
         times = []
         for i in range(100):
-            time_taken = self.model.predict(batch=(data.x, data.edge_index))
+            time_taken = self.model(data.x, data.edge_index)
             times.append(time_taken)
 
         avg_time = np.mean(times)

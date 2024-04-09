@@ -1,0 +1,33 @@
+# Define a runner that will be used to run a job
+runners:
+  ample-runner:
+    image: deepwok/mase-docker-cuda:latest
+
+# Define a job to be performed during a workflow
+jobs:
+  choose-commit:
+    runner: ample-runner
+    steps:
+      - run:
+          name: Define diff commit
+          command: | 
+            DIFF_COMMIT_NAME="HEAD^"
+
+  ample-regression:
+    runner: ample-runner
+    resource_spec: large
+    node_selector:
+      kubernetes.io/hostname: ee-kraken
+    steps:
+      - run:
+          name: Run regression
+          command: |
+            echo "Building..."
+
+# Define a workflow to orchestrate a job
+workflows:
+  ample-workflow:
+    triggers:
+      - pull_request
+    jobs:
+      - ample-regression

@@ -1,4 +1,4 @@
-set_param board.repoPaths {/home/pg519/shared/board_files}
+set_param board.repoPaths {/root/board-files}
 
 # Create the build directory, ignoring any exception
 catch {exec mkdir $env(WORKAREA)/hw/build}
