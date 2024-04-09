@@ -18,7 +18,7 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a> -->
 
-  <h3 align="center">AGILE: Accelerated Graph Inference Logic Engine</h3>
+  <h3 align="center">AMPLE: Accelerated Message Passing Logic Engine</h3>
 
   <p align="center">
     An FPGA accelerator for Graph Neural Networks following the Message Passing Mechanism.
