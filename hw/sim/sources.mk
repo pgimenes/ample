@@ -11,8 +11,8 @@ VERILOG_INCLUDE_DIRS = \
 VERILOG_SOURCES = \
 	$(WORKAREA)/hw/sim/glbl.v \
 	$(WORKAREA)/hw/build/build_project.ip_user_files/ipstatic/simulation/blk_mem_gen_v8_4.v \
-	$(WORKAREA)/hw/build/build_project.gen/sources_1/ip/aggregation_buffer_sdp_bram/sim/aggregation_buffer_sdp_bram.v \
-	$(WORKAREA)/hw/build/build_project.gen/sources_1/ip/scale_factor_queue/sim/scale_factor_queue.v \
+	$(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/aggregation_buffer_sdp_bram/sim/aggregation_buffer_sdp_bram.v \
+	$(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/scale_factor_queue/sim/scale_factor_queue.v \
 	$(WORKAREA)/hw/build/ip/lib/buffers/ultraram.v \
 	$(WORKAREA)/hw/build/ip/include/arch_defines.v \
 	$(WORKAREA)/imports/verilog-axi/rtl/axi_ram.v \
