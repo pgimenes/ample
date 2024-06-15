@@ -15,12 +15,17 @@ class Driver():
         self.fte_regs = {}
 
     async def program_layer_config(self, layer):
+        
         self.dut._log.info("Ready to program layer configuration")
 
         self.dut._log.info("Layer: %s", layer)
 
         # Prefetcher register bank
         self.dut._log.info("Programming prefetcher register bank layer configuration.")
+        self.dut._log.info("test")
+
+        self.dut._log.info("age_regs: %s", self.age_regs)
+
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_in_features"], layer["in_feature_count"])
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_out_features"], layer["out_feature_count"])
         # Addresses
