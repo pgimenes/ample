@@ -350,9 +350,26 @@ always_ff @(posedge core_clk or negedge resetn) begin
     end
 end
 
+
+logic done_resp;
+
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        done_resp <= '0;
+    end
+    else if (reset_weights) begin 
+        done_resp<= '0;
+    end
+    else if (weight_bank_state == WEIGHT_BANK_FSM_DUMP_WEIGHTS) begin
+        done_resp <= weight_channel_resp.done;
+    end
+end
+
+
+
 always_comb begin
     // Issue weight channel response when new data is available on all row FIFOs following a pop
-    weight_channel_resp_valid = (weight_bank_state == WEIGHT_BANK_FSM_DUMP_WEIGHTS) && (&row_fifo_out_valid) && |row_pop_shift;
+    weight_channel_resp_valid = ((weight_bank_state == WEIGHT_BANK_FSM_DUMP_WEIGHTS) && (&row_fifo_out_valid) && |row_pop_shift)||done_resp ;
 
     weight_channel_resp.data       = row_fifo_out_data;
     weight_channel_resp.valid_mask = row_pop_shift & ~row_fifo_empty;
