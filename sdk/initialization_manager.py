@@ -12,6 +12,7 @@ import logging
 from tqdm import tqdm
 from copy import deepcopy
 
+from torch.nn import Linear
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 
 from .models.models import GraphSAGE_Model
@@ -64,6 +65,9 @@ class InitManager:
         elif isinstance(layer, SAGEConv):
             inc = layer.in_channels
             outc = layer.out_channels
+        elif isinstance(layer, Linear):
+            inc = layer.in_features
+            outc = layer.out_features
         else:
             raise RuntimeError(f"Unrecognized layer type {type(layer)}")        
         return inc, outc

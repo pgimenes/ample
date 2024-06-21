@@ -10,7 +10,7 @@ from sdk.graphs.random_graph import RandomGraph
 from sdk.graphs.planetoid_graph import PlanetoidGraph
 from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
 
-from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model
+from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
 
 from sdk.benchmarking_manager import BenchmarkingManager
 
@@ -65,7 +65,9 @@ model_map = {
   'gcn': GCN_Model,
   'gat': GAT_Model,
   'gin': GIN_Model,
-  'sage': GraphSAGE_Model
+  'sage': GraphSAGE_Model,
+  'gcn_mlp': GCN_MLP_Model,
+  'mlp': MLP_Model,
 }
 
 def main(args):
@@ -134,6 +136,10 @@ def run_pass(
             scale_factors.append([1 / nb_cnt] * nb_cnt)
         graph.set_scale_factors(scale_factors)
 
+
+    if isinstance(model, MLP_Model):
+        graph.remove_connections()
+
     if (args.reduce):
         init_manager.reduce_graph()
     if (args.random):
@@ -141,11 +147,13 @@ def run_pass(
     else:
         init_manager.trained_graph.train_embeddings()
 
+    
     if (payloads):
         init_manager.memory_mapper.map()
         init_manager.dump_memory()
         init_manager.dump_layer_config()
         init_manager.dump_nodeslot_programming()
+        # init_manager.embedding_expectation()
     
     metrics = {}
     if (args.cpu or args.gpu or args.sweep):
@@ -229,6 +237,8 @@ def parse_arguments():
     parser.add_argument('--gin', action='store_true', help='Use GIN Model')
     parser.add_argument('--gat', action='store_true', help='Use GAT Model')
     parser.add_argument('--sage', action='store_true', help='Use GraphSAGE Model')
+    parser.add_argument('--gcn_mlp', action='store_true', help='Use GCN MLP Model')
+    parser.add_argument('--mlp', action='store_true', help='Use MLP Model')
 
     parser.add_argument('--layers', type=int, default=2, help='Number of layers')
     parser.add_argument('--hidden-dimension', type=int, default=64, help='Hidden dimension size')

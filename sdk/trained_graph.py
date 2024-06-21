@@ -63,6 +63,14 @@ class TrainedGraph:
             self.nx_graph.nodes[node]["meta"]["neighbour_message_ptrs"] = [4*self.feature_count*nb_ptr for nb_ptr in self.nx_graph.nodes[node]["meta"]["neighbours"]]
             self.nx_graph.nodes[node]["meta"]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
 
+    def remove_connections(self):
+        for node in self.nx_graph.nodes:
+            neighbours = [node]
+            self.nx_graph.nodes[node]["meta"]["neighbours"] = neighbours
+            self.nx_graph.nodes[node]["meta"]["neighbour_count"] = len(neighbours)
+            self.nx_graph.nodes[node]["meta"]["neighbour_message_ptrs"] = [4*self.feature_count*nb_ptr for nb_ptr in self.nx_graph.nodes[node]["meta"]["neighbours"]]
+            self.nx_graph.nodes[node]["meta"]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
+
     def set_aggregation(self, aggregation):
         for node in self.nx_graph.nodes:
             self.nx_graph.nodes[node]["meta"]["aggregation_function"] = aggregation[node]

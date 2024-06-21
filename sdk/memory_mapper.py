@@ -4,7 +4,10 @@ import struct
 import logging
 import os
 from .utilities import int_list_to_byte_list, float_list_to_byte_list
+
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
+from torch.nn import Linear
+
 class Memory_Mapper:
 
     def __init__(self, graph, model, base_path="config_files", dump_file="memory.mem"):
@@ -56,6 +59,8 @@ class Memory_Mapper:
                 linear = layer.nn
             elif isinstance(layer, SAGEConv):
                 linear = layer.lin_l
+            elif isinstance(layer, Linear):
+                linear = layer
             else:
                 raise RuntimeError(f"Unrecognized layer {layer}")
             

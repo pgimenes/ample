@@ -1,6 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+from torch.nn import Linear
+from torch.nn import ReLU
 from torch_geometric.nn import GCNConv, GATConv, SAGEConv, GINConv
 import pytorch_lightning as pl
 
@@ -106,3 +109,61 @@ class GraphSAGE_Model(pl.LightningModule):
         for layer in self.layers:
             out = layer(x, edge_index)
         return out
+    
+
+
+
+
+
+class LinearReLU(nn.Module):
+    def __init__(self, in_features, out_features):
+        super(LinearReLU, self).__init__()
+        self.linear = nn.Linear(in_features, out_features)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.linear(x)
+        x = self.relu(x)
+        return x
+
+
+
+#Graphcast Test Models
+
+
+class GCN_MLP_Model(pl.LightningModule):
+    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=32):
+        super().__init__()
+        self.layers = nn.ModuleList()
+        self.layers.append(GCNConv(in_channels, hidden_dimension))
+        for _ in range(layer_count-2):
+            self.layers.append(Linear(hidden_dimension, hidden_dimension, bias=True))
+            # self.layers.append(ReLU())
+
+        self.layers.append(Linear(hidden_dimension, out_channels, bias=True))
+
+    def forward(self, x, edge_index):
+        for layer in self.layers:
+            out = layer(x, edge_index)
+        return out
+
+class MLP_Model(pl.LightningModule):
+    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=32):
+        super().__init__()
+        self.layers = nn.ModuleList()
+        if layer_count == 1:
+            self.layers.append(Linear(in_channels, out_channels, bias=True))
+        else:
+            self.layers.append(Linear(in_channels, hidden_dimension, bias=True))
+            for _ in range(layer_count-2):
+                self.layers.append(Linear(hidden_dimension, hidden_dimension, bias=True))
+                # self.layers.append(ReLU())
+                # self.layers.append(LinearReLU(hidden_dimension, hidden_dimension))
+
+            self.layers.append(Linear(hidden_dimension, out_channels, bias=True))
+
+    def forward(self, x, edge_index):
+        for layer in self.layers:
+            x = layer(x)
+        return x
+
