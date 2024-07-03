@@ -53,7 +53,7 @@ end
 
 if (PRECISION == top_pkg::FLOAT_32) begin
 
-`ifdef SIMULATION
+`ifdef SIMULATION_QUICK
     assign leaky_relu_activation_valid_comb = in_feature_valid;
     assign leaky_relu_activation_comb = in_feature;
     
@@ -68,6 +68,8 @@ if (PRECISION == top_pkg::FLOAT_32) begin
         // .m_axis_result_tvalid (leaky_relu_activation_valid_comb),
         .res  (leaky_relu_activation_comb)
         );
+    assign leaky_relu_activation_valid_comb = in_feature_valid;
+
 `endif
 
     end else begin

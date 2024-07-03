@@ -97,7 +97,7 @@ mac #(
 
 if (PRECISION == top_pkg::FLOAT_32) begin
 
-`ifdef SIMULATION
+`ifdef SIMULATION_QUICK
     assign bias_out_valid_comb = bias_valid;
     assign pe_acc_add_bias_comb = pe_acc;
 `else
@@ -112,6 +112,8 @@ if (PRECISION == top_pkg::FLOAT_32) begin
     // .m_axis_result_tvalid         (bias_out_valid_comb),
     .res          (pe_acc_add_bias_comb)
     );
+    assign bias_out_valid_comb = bias_valid;
+
 
 `endif
 
@@ -121,7 +123,7 @@ if (PRECISION == top_pkg::FLOAT_32) begin
             pe_acc_add_bias <= '0;
 
         end else begin
-            bias_out_valid <= bias_out_valid_comb;
+            bias_out_valid <= bias_valid;
             pe_acc_add_bias <= pe_acc_add_bias_comb;
         end
     end
@@ -140,6 +142,8 @@ end
 // -------------------------------------------------------------
 
 activation_core activation_core_i (
+    .core_clk,
+    .resetn,
     .sel_activation   (activation),
 
     .in_feature_valid (activation_valid),

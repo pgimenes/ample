@@ -6,13 +6,13 @@ VERILOG_INCLUDE_DIRS = \
 	$(WORKAREA)/hw/build/regbanks/node_scoreboard_regbank \
 	$(WORKAREA)/hw/build/regbanks/prefetcher_regbank \
 	/mnt/applications/Xilinx/19.2/Vivado/2019.2/data/xilinx_vip/include
-
+	
 # Xilinx IP
 VERILOG_SOURCES = \
 	$(WORKAREA)/hw/sim/glbl.v \
 	$(WORKAREA)/hw/build/build_project.ip_user_files/ipstatic/simulation/blk_mem_gen_v8_4.v \
-	$(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/aggregation_buffer_sdp_bram/sim/aggregation_buffer_sdp_bram.v \
-	$(WORKAREA)/hw/build/build_project.srcs/sources_1/ip/scale_factor_queue/sim/scale_factor_queue.v \
+	$(WORKAREA)/hw/build/build_project.gen/sources_1/ip/aggregation_buffer_sdp_bram/sim/aggregation_buffer_sdp_bram.v \
+	$(WORKAREA)/hw/build/build_project.gen/sources_1/ip/scale_factor_queue/sim/scale_factor_queue.v \
 	$(WORKAREA)/hw/build/ip/lib/buffers/ultraram.v \
 	$(WORKAREA)/hw/build/ip/include/arch_defines.v \
 	$(WORKAREA)/imports/verilog-axi/rtl/axi_ram.v \
@@ -21,6 +21,7 @@ VERILOG_SOURCES = \
 	$(WORKAREA)/imports/verilog-axi/rtl/axil_crossbar.v \
 	$(WORKAREA)/imports/verilog-axi/rtl/axil_interconnect.v \
 	$(WORKAREA)/imports/verilog-axi/rtl/axil_interconnect_wrap_1x4.v \
+
 
 # Imports
 VERILOG_SOURCES += \
@@ -79,6 +80,8 @@ VERILOG_SOURCES += \
 	$(WORKAREA)/hw/build/ip/lib/arithmetic/fixed_point_mac.sv \
 	$(WORKAREA)/hw/build/ip/lib/arithmetic/float_mac.sv \
 	$(WORKAREA)/hw/build/ip/lib/arithmetic/mac.sv \
+	$(WORKAREA)/hw/build/ip/lib/arithmetic/fp_add.sv \
+	$(WORKAREA)/hw/build/ip/lib/arithmetic/fp_mult.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/bram_fifo.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/hybrid_buffer/hybrid_buffer.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/hybrid_buffer/hybrid_buffer_driver.sv \

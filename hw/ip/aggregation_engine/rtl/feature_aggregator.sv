@@ -60,16 +60,28 @@ if (PRECISION == top_pkg::FLOAT_32) begin
     assign scaled_feature_valid_comb = in_feature_valid && in_feature_ready;
     assign scaled_feature_comb = in_feature;
 `else
+    // fp_mult scale_factor_mult ( //Incorrect ports?
+    //     .s_axis_a_tvalid      (in_feature_valid && in_feature_ready),
+    //     .s_axis_a_tdata       (scale_factor),
+        
+    //     .s_axis_b_tvalid      (in_feature_valid && in_feature_ready),
+    //     .s_axis_b_tdata       (in_feature),
+        
+    //     .m_axis_result_tvalid (scaled_feature_valid_comb),
+    //     .m_axis_result_tdata  (scaled_feature_comb) 
+    // );
     fp_mult scale_factor_mult (
-        .s_axis_a_tvalid      (in_feature_valid && in_feature_ready),
-        .s_axis_a_tdata       (scale_factor),
+        //   .s_axis_a_tvalid(in_valid && in_ready),
+        .in1(scale_factor),
+
+        //   .s_axis_b_tvalid(in_valid && in_ready),
+        .in2(in_feature),
         
-        .s_axis_b_tvalid      (in_feature_valid && in_feature_ready),
-        .s_axis_b_tdata       (in_feature),
-        
-        .m_axis_result_tvalid (scaled_feature_valid_comb),
-        .m_axis_result_tdata  (scaled_feature_comb) 
+        //   .m_axis_result_tvalid(fp_mult_result_valid_comb),
+        .res(scaled_feature_comb)
     );
+    assign scaled_feature_valid_comb = in_feature_valid && in_feature_ready;
+
 `endif
 
 end else begin

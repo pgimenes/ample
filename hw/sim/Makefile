@@ -25,6 +25,7 @@ endif
 
 ifeq ($(GUI),1)
     CMD += -gui
+		CMD += -debugDB
     VSIM_ARGS += -onfinish stop
 else
     CMD += -c
@@ -166,18 +167,43 @@ endif
 
 # Generate optimization script
 $(SIM_BUILD)/opt.do: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do | $(SIM_BUILD)
-	@echo "vopt +acc -l opt.log $(VSIM_LIB_OPTS) -work $(TOPLEVEL_LIBRARY) $(SIM_BUILD)/$(TOPLEVEL) $(SIM_BUILD)/$(TOPLEVEL_LIBRARY).glbl -o $(TOPLEVEL_LIBRARY)_opt" >> $@
+	@echo "vopt -debugdb +acc -l opt.log $(VSIM_LIB_OPTS) -work $(TOPLEVEL_LIBRARY) $(SIM_BUILD)/$(TOPLEVEL) $(SIM_BUILD)/$(TOPLEVEL_LIBRARY).glbl -o $(TOPLEVEL_LIBRARY)_opt" >> $@
 
 
 # Generate simulation script
 $(SIM_BUILD)/simulate.do: $(SIM_BUILD)/opt.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/libs.do | $(SIM_BUILD)
-	@echo "onbreak resume" >> $@
+	# @echo "onbreak resume" >> $@
+	# @echo "set NumericStdNoWarnings 1" >> $@
+	# @echo "set StdArithNoWarnings 1" >> $@
+	# # @echo "log -recursive /*" >> $@
+	# # @echo "add log -r *" >> $@
+	# @echo "do waves.do" >> $@
+	# @echo "run -all" >> $@
+	@echo "log -r *" >> $@
 	@echo "set NumericStdNoWarnings 1" >> $@
 	@echo "set StdArithNoWarnings 1" >> $@
-	# @echo "log -recursive /*" >> $@
-	# @echo "add log -r *" >> $@
 	@echo "do waves.do" >> $@
+	@echo "view wave1" >> $@
+	@echo "do nsb.do" >> $@
+	@echo "view wave2" >> $@
+	@echo "do pref.do" >> $@
+	@echo "view wave3" >> $@
+	@echo "do age.do" >> $@
+	@echo "view wave4" >> $@
+	@echo "do fte.do" >> $@
 	@echo "run -all" >> $@
+
+	@echo "view wave" >> $@
+	@echo "wave zoom full" >> $@
+	@echo "view wave1" >> $@
+	@echo "wave zoom full" >> $@
+	@echo "view wave2" >> $@
+	@echo "wave zoom full" >> $@
+	@echo "view wave3" >> $@
+	@echo "wave zoom full" >> $@
+	@echo "view wave4" >> $@
+	@echo "wave zoom full" >> $@
+
 
 build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
 	source $(WORKAREA)/scripts/add_hash.sh

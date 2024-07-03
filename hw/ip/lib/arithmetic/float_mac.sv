@@ -59,7 +59,7 @@ logic                   busy;
 // Instances
 // ==================================================================================================================================================
 
-`ifdef SIMULATION
+`ifdef SIMULATION_QUICK
 
 assign fp_mult_result_valid_comb = in_valid && in_ready;
 assign fp_mult_result_comb = a;
@@ -78,6 +78,7 @@ fp_mult multiplier_i (
 //   .m_axis_result_tvalid(fp_mult_result_valid_comb),
   .res(fp_mult_result_comb)
 );
+assign fp_mult_result_valid_comb = in_valid && in_ready;
 
 fp_add adder_i (
 //   .s_axis_a_tvalid              (busy && fp_mult_result_valid_q),
@@ -89,6 +90,7 @@ fp_add adder_i (
 //   .m_axis_result_tvalid         (fp_add_result_valid_comb),
   .res          (fp_add_result_comb)
 );
+assign fp_add_result_valid_comb = busy && fp_mult_result_valid_q;
 
 `endif
 
