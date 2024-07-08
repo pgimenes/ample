@@ -250,6 +250,24 @@ class InitManager:
             output = self.model(self.trained_graph.dataset.x, self.trained_graph.dataset.edge_index)
         np.savetxt(self.updated_embeddings_file, output.numpy(), delimiter=',')
 
+    #Save JIT model for testbench
+    def save_model(self):
+        self.model.eval()
+        scripted_model = torch.jit.script(self.model).to('cpu')
+        torch.jit.save(scripted_model, 'model.pt')
+        return scripted_model
+    
+        
+    #Save graph for testbench
+    def save_graph(self):
+        input_data = {
+            'x': self.trained_graph.dataset.x,  # your node features tensor
+            'edge_index': self.trained_graph.dataset.edge_index  # your edge index tensor
+        }
+
+        torch.save({
+            'input_data': input_data
+        }, 'graph.pth')
     # Sampling
     # ===============================================
     
