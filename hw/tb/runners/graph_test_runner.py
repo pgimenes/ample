@@ -6,7 +6,18 @@ from tb.utils.common import NodeState, NodePrecision
 from tb.utils.common import delay, allocate_lsb
 from tb.tests.base_test import BaseTest
 
-NODESLOT_COUNT = 256
+# from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
+# from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
+# from sdk.graphs.matrix_graph import MatrixGraph
+# from sdk.graphs.karate_club import KarateClubGraph
+# from sdk.graphs.random_graph import RandomGraph
+# from sdk.graphs.planetoid_graph import PlanetoidGraph
+# from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
+
+# import onnx
+import torch
+
+NODESLOT_COUNT = 64 #Load from initialisation
 
 async def drive_nodeslots(test):
     test.dut._log.info("Starting nodeslot programming.")
@@ -66,10 +77,35 @@ async def flush_nodeslots(test):
         
         await delay(test.dut.regbank_clk, 10)
 
+def load_jit_model(model_path = '/home/aw1223/ip/agile/model.pt'):
+    model = torch.jit.load("/home/aw1223/ip/agile/model.pt")
+    return model
+
+
+def load_graph(graph_path = '/home/aw1223/ip/agile/graph.pth'):
+    graph = torch.load('/home/aw1223/ip/agile/graph.pth')
+    # Access the saved inputs
+    input_data = graph['input_data']
+    x_loaded = input_data['x']
+    edge_index_loaded = input_data['edge_index']
+
+    return x_loaded,edge_index_loaded
+
 async def graph_test_runner(dut):
+
     dut._log.info("Starting Graph Test")
 
     test = BaseTest(dut)
+
+    model = load_jit_model()
+    x_loaded,edge_index_loaded = load_graph()
+
+    model.eval()
+    with torch.no_grad():
+        output = model(x_loaded, edge_index_loaded)
+      
+    dut._log.info(f"Output {output}")
+
 
     # Load nodeslot/register programming and start clocks/reset
     await test.initialize()
@@ -77,7 +113,12 @@ async def graph_test_runner(dut):
     await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.global_config["node_count"])
 
     for layer_idx, layer in enumerate(test.layers):
+       
         dut._log.info(f"Starting layer {layer_idx}")
+        outs = output[layer_idx]
+        dut._log.info(f"Layer Out Expected {outs}")
+
+        # Load monitor
         # Layer configuration
         await test.driver.program_layer_config(layer)
 
@@ -89,6 +130,7 @@ async def graph_test_runner(dut):
         # await drive_nodeslots(test)
         await test.driver.axil_driver.axil_write(test.driver.nsb_regs["ctrl_start_nodeslot_fetch"], 1)
         
+
         await test.driver.wait_done_ack(
             done_reg = test.driver.nsb_regs["ctrl_start_nodeslot_fetch_done"],
             ack_reg = test.driver.nsb_regs["ctrl_start_nodeslot_fetch_done_ack"],
