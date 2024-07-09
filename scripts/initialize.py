@@ -24,6 +24,8 @@ from tabulate import tabulate
 
 import numpy as np
 
+import torch
+
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s]:%(levelname)s:: %(message)s')
 
 # Create a logger with a specified level (e.g., INFO)
@@ -137,8 +139,6 @@ def run_pass(
         graph.set_scale_factors(scale_factors)
 
 
-    if isinstance(model, MLP_Model):
-        graph.remove_connections()
 
     if (args.reduce):
         init_manager.reduce_graph()
@@ -147,6 +147,9 @@ def run_pass(
     else:
         init_manager.trained_graph.train_embeddings()
 
+
+    if isinstance(model, MLP_Model):
+        graph.remove_connections()
     
     if (payloads):
         init_manager.memory_mapper.map()
@@ -154,6 +157,10 @@ def run_pass(
         init_manager.dump_layer_config()
         init_manager.dump_nodeslot_programming()
         # init_manager.embedding_expectation()
+        init_manager.save_model()
+        init_manager.save_graph()
+
+
     
     metrics = {}
     if (args.cpu or args.gpu or args.sweep):

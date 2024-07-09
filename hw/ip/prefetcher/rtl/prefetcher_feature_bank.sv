@@ -104,7 +104,7 @@ logic [FETCH_TAG_COUNT-1:0]                                        fetch_tag_res
 logic [$clog2(FETCH_TAG_COUNT)-1:0]                                fetch_tag_resp_arb_bin;
 
 // Adjacency Read Master request arbitration
-logic [HBM_BANKS - 1 : 0] [FETCH_TAG_COUNT-1:0]         chosen_fetch_tag_rm_req;
+logic [HBM_BANKS - 1 : 0] [FETCH_TAG_COUNT-1:0]         chosen_fetch_tag_rm_req; //FETCH_TAGS_PER_BANK could use this bitwidth and multiplex each HBM to its fetch tag
 logic [HBM_BANKS - 1 : 0] [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_rm_req_bin;
 logic [HBM_BANKS - 1 : 0] [$clog2(FETCH_TAG_COUNT)-1:0] chosen_fetch_tag_rm_req_bin_q;
 

@@ -25,7 +25,6 @@ endif
 
 ifeq ($(GUI),1)
     CMD += -gui
-		CMD += -debugDB
     VSIM_ARGS += -onfinish stop
 else
     CMD += -c
@@ -42,7 +41,7 @@ TOPLEVEL_LIBRARY ?= $(RTL_LIBRARY)
 TOPLEVEL := "$(TOPLEVEL_LIBRARY).$(TOPLEVEL)"
 
 ifndef VLOG_ARGS
-    VLOG_ARGS = +define+SIMULATION -timescale $(COCOTB_HDL_TIMEUNIT)/$(COCOTB_HDL_TIMEPRECISION) -mfcu
+    VLOG_ARGS = +define+SIMULATION +define+SIMULATION_QUICK -timescale $(COCOTB_HDL_TIMEUNIT)/$(COCOTB_HDL_TIMEPRECISION) -mfcu
 endif
 
 COMPILE_ARGS += +acc
@@ -167,7 +166,7 @@ endif
 
 # Generate optimization script
 $(SIM_BUILD)/opt.do: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do | $(SIM_BUILD)
-	@echo "vopt -debugdb +acc -l opt.log $(VSIM_LIB_OPTS) -work $(TOPLEVEL_LIBRARY) $(SIM_BUILD)/$(TOPLEVEL) $(SIM_BUILD)/$(TOPLEVEL_LIBRARY).glbl -o $(TOPLEVEL_LIBRARY)_opt" >> $@
+	@echo "vopt +acc -l opt.log $(VSIM_LIB_OPTS) -work $(TOPLEVEL_LIBRARY) $(SIM_BUILD)/$(TOPLEVEL) $(SIM_BUILD)/$(TOPLEVEL_LIBRARY).glbl -o $(TOPLEVEL_LIBRARY)_opt" >> $@
 
 
 # Generate simulation script
@@ -179,6 +178,9 @@ $(SIM_BUILD)/simulate.do: $(SIM_BUILD)/opt.do $(SIM_BUILD)/compile.do $(SIM_BUIL
 	# # @echo "add log -r *" >> $@
 	# @echo "do waves.do" >> $@
 	# @echo "run -all" >> $@
+
+	#@echo "vcd file wave.vcd" >> $@
+	#@echo "vcd add -r /*" >> $@
 	@echo "log -r *" >> $@
 	@echo "set NumericStdNoWarnings 1" >> $@
 	@echo "set StdArithNoWarnings 1" >> $@
@@ -203,6 +205,10 @@ $(SIM_BUILD)/simulate.do: $(SIM_BUILD)/opt.do $(SIM_BUILD)/compile.do $(SIM_BUIL
 	@echo "wave zoom full" >> $@
 	@echo "view wave4" >> $@
 	@echo "wave zoom full" >> $@
+	#@echo	"vcd flush" >> $@
+
+
+
 
 
 build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
@@ -210,11 +216,12 @@ build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
 	source $(SIM_BUILD)/libs.do
 	source $(SIM_BUILD)/compile.do
 	source $(SIM_BUILD)/opt.do
-
+	
+#-l $(SIM_BUILD)/modelsim.log
 run_sim: $(SIM_BUILD)/simulate.do
 	set -o pipefail; LIBPYTHON_LOC=$(shell cocotb-config --libpython) MODULE=$(TEST_RUNNER) TESTCASE=$(TESTCASE) TOPLEVEL=$(TOPLEVEL) \
 	GPI_EXTRA=$(GPI_EXTRA) TOPLEVEL_LANG=$(TOPLEVEL_LANG) \
-	$(SIM_CMD_PREFIX) $(CMD) $(VSIM_ARGS) \
+	$(SIM_CMD_PREFIX) $(CMD)  $(VSIM_ARGS) \
 	$(RUN_ARGS) \
 	$(TOPLEVEL_LIBRARY).$(TOPLEVEL_LIBRARY)_opt \
 	-do $(SIM_BUILD)/simulate.do \

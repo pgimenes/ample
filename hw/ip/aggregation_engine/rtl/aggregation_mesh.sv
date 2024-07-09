@@ -289,7 +289,7 @@ for (genvar agm = 0; agm < AGGREGATION_ROWS; agm = agm + 1) begin : agm_block
 
 
     always_comb begin
-        // First column of NOC mesh is taken by message channels
+        // First column of NOC mesh is taken by message channels - col or row?
         aggregation_manager_router_on    [agm]                     = node_router_on                   [0][agm][0];
         aggregation_manager_router_ready [agm]                     = node_router_ready                [0][agm][0];
         node_router_valid                [0][agm] = aggregation_manager_router_valid [agm];
