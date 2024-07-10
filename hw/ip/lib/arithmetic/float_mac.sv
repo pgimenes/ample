@@ -59,6 +59,7 @@ logic                   busy;
 // Instances
 // ==================================================================================================================================================
 
+
 `ifdef SIMULATION_QUICK
 
 assign fp_mult_result_valid_comb = in_valid && in_ready;
@@ -67,6 +68,18 @@ assign fp_add_result_valid_comb = busy && fp_mult_result_valid_q;
 assign fp_add_result_comb = acc_reg;
 
 `else
+logic [FLOAT_WIDTH-1:0] a_gated;
+logic [FLOAT_WIDTH-1:0] b_gated;
+
+logic [FLOAT_WIDTH-1:0] fp_mult_result_q_gated;
+logic [FLOAT_WIDTH-1:0] acc_reg_gated;
+
+
+
+assign a_gated = in_valid ? a : '0;
+assign b_gated = in_valid ? b : '0;
+
+assign fp_mult_result_q_gated = fp_mult_result_valid_q ? fp_mult_result_q : '0;
 
 fp_mult multiplier_i (
 //   .s_axis_a_tvalid(in_valid && in_ready),
@@ -82,7 +95,9 @@ assign fp_mult_result_valid_comb = in_valid && in_ready;
 
 fp_add adder_i (
 //   .s_axis_a_tvalid              (busy && fp_mult_result_valid_q),
-  .in1               (fp_mult_result_q),
+
+
+  .in1               (fp_mult_result_q_gated),
   
 //   .s_axis_b_tvalid              (busy && fp_mult_result_valid_q),
   .in2               (acc_reg),
