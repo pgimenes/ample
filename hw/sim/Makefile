@@ -25,10 +25,10 @@ endif
 
 ifeq ($(GUI),1)
     CMD += -gui
-    VSIM_ARGS += -onfinish stop
+    VSIM_ARGS += -onfinish stop -do $(SIM_BUILD)/../simulate_gui.do -quiet
 else
     CMD += -c
-    VSIM_ARGS += -onfinish exit
+    VSIM_ARGS += -onfinish exit -do $(SIM_BUILD)/../simulate_no_gui.do -quiet -suppress vsim-3015
 endif
 
 ifeq ($(PYTHON_ARCH),64bit)
@@ -41,7 +41,7 @@ TOPLEVEL_LIBRARY ?= $(RTL_LIBRARY)
 TOPLEVEL := "$(TOPLEVEL_LIBRARY).$(TOPLEVEL)"
 
 ifndef VLOG_ARGS
-    VLOG_ARGS = +define+SIMULATION +define+SIMULATION_QUICK -timescale $(COCOTB_HDL_TIMEUNIT)/$(COCOTB_HDL_TIMEPRECISION) -mfcu
+    VLOG_ARGS = +define+SIMULATION -timescale $(COCOTB_HDL_TIMEUNIT)/$(COCOTB_HDL_TIMEPRECISION) -mfcu
 endif
 
 COMPILE_ARGS += +acc
@@ -221,11 +221,15 @@ build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
 run_sim: $(SIM_BUILD)/simulate.do
 	set -o pipefail; LIBPYTHON_LOC=$(shell cocotb-config --libpython) MODULE=$(TEST_RUNNER) TESTCASE=$(TESTCASE) TOPLEVEL=$(TOPLEVEL) \
 	GPI_EXTRA=$(GPI_EXTRA) TOPLEVEL_LANG=$(TOPLEVEL_LANG) \
-	$(SIM_CMD_PREFIX) $(CMD)  $(VSIM_ARGS) \
+	$(SIM_CMD_PREFIX) $(CMD) -l $(SIM_BUILD)/modelsim.log $(VSIM_ARGS) \
 	$(RUN_ARGS) \
 	$(TOPLEVEL_LIBRARY).$(TOPLEVEL_LIBRARY)_opt \
 	-do $(SIM_BUILD)/simulate.do \
 	$(PLUSARGS) 2>&1 | tee $(SIM_BUILD)/simulate.log
+	cp $(SIM_BUILD)/modelsim.log $(SIM_BUILD)/run.log
+	find $(SIM_BUILD)/.. -maxdepth 1 -type f -name 'wlft*' -exec rm -f {} +
+
+
 
 libs: $(SIM_BUILD)/libs.do
 comp: $(SIM_BUILD)/compile.do
