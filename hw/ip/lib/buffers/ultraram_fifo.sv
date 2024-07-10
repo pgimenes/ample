@@ -103,11 +103,11 @@ always_ff @(posedge core_clk or negedge resetn) begin
             wr_wrap <= !wr_wrap;
         end
 
-        if (rd_ptr == {AWIDTH{1'b1}} && pop) begin
+        if (rd_ptr == {AWIDTH{1'b1}} && pop) //begin
             rd_wrap <= !rd_wrap;
-        end else if (reset_read_ptr) begin
-            rd_wrap <= !wr_wrap;
-        end
+        // end else if (reset_read_ptr) begin
+        //     rd_wrap <= !wr_wrap;
+        // end
     end
 end
 
