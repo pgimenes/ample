@@ -5,6 +5,8 @@ from cocotb.utils import get_sim_time
 from tb.utils.common import NodeState, NodePrecision
 from tb.utils.common import delay, allocate_lsb
 from tb.tests.base_test import BaseTest
+import pdb
+# from tb.monitors.mase_cocotb.stream_monitor import StreamMonitor
 
 # from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
 # from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
@@ -20,6 +22,7 @@ import torch
 NODESLOT_COUNT = 64 #Load from initialisation
 
 async def drive_nodeslots(test):
+
     test.dut._log.info("Starting nodeslot programming.")
     free_mask = "1" * NODESLOT_COUNT
 
@@ -97,15 +100,29 @@ async def graph_test_runner(dut):
 
     test = BaseTest(dut)
 
+
+    # data_out_0_monitor = StreamMonitor(
+    #         dut.sys_clk,
+    #         dut.top_i.transformation_engine_i.axi_write_master_data,
+    #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
+    #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
+    #         check=False,
+    #     )
+
     model = load_jit_model()
     x_loaded,edge_index_loaded = load_graph()
 
     model.eval()
     with torch.no_grad():
         output = model(x_loaded, edge_index_loaded)
-      
-    dut._log.info(f"Output {output}")
 
+
+    for layer in output:
+        for idx,feature in enumerate(layer):
+            print(f"Node {idx} : {feature}")
+    
+    dut._log.info(f"Output {output}")
+    del model
 
     # Load nodeslot/register programming and start clocks/reset
     await test.initialize()
@@ -113,12 +130,14 @@ async def graph_test_runner(dut):
     await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.global_config["node_count"])
 
     for layer_idx, layer in enumerate(test.layers):
-       
+        layer_features = output[layer_idx]
         dut._log.info(f"Starting layer {layer_idx}")
         outs = output[layer_idx]
         dut._log.info(f"Layer Out Expected {outs}")
 
         # Load monitor
+        test.load_layer_test(layer_features)
+
         # Layer configuration
         await test.driver.program_layer_config(layer)
 
@@ -138,15 +157,37 @@ async def graph_test_runner(dut):
         )
         
         dut._log.info("Nodeslot fetching done, waiting for nodeslots to be flushed.")
+        # test.fte_monitor.start = True
         await flush_nodeslots(test)
+        # test.fte_monitor.start = False
 
         test.dut._log.info("Layer finished.")
+        
         await delay(dut.regbank_clk, 10)
 
     stime = get_sim_time("ms")
+    # raise TestFailure("Finished")
+    # await test.stop_monitors()
     test.dut._log.info(f"Test finished. Simulation time: {stime}ms.")
+
+    # raise TestFailure("Finished")
 
     with open(f"sim_time.txt", "w") as f:
         f.write(str(stime))
+    # await test.end_test()
+    # a
+    # await delay(dut.regbank_clk, 10000)
+    # assert data_out_0_monitor.exp_queue.empty()
+    # a
 
-    await test.end_test()
+
+async def my_loop_test(dut):
+    dut._log.info("Starting loop test")
+
+    for _ in range(10):
+        await RisingEdge(dut.clk)
+        dut._log.info("Loop iteration")
+        # Perform operations per iteration
+        dut.input_signal <= ~dut.input_signal
+    
+    dut._log.info("Ending loop test")

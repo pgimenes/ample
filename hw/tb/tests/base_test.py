@@ -13,9 +13,12 @@ from tb.utils.common import NodePrecision
 
 from tb.variant import Variant
 # from tb.monitors.age_monitor import AGE_Monitor
-# from tb.monitors.nsb_monitor import NSB_Monitor
+from tb.monitors.nsb_monitor import NSB_Monitor
 from tb.monitors.prefetcher_monitor import Prefetcher_Monitor
 from tb.monitors.fte_monitor import FTE_Monitor
+# from tb.monitors.mase_cocotb.stream_monitor import StreamMonitor
+
+from tb.monitors.axi_write_master_monitor import AXIWriteMasterMonitor
 
 from tb.monitors.bm_monitor import BM_Monitor
 
@@ -30,7 +33,32 @@ class BaseTest:
         # self.age_monitor = AGE_Monitor(dut.top_i.aggregation_engine_i, self.variant)
         # self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
         # self.prefetcher_monitor = Prefetcher_Monitor(dut.top_i.prefetcher_i, self.variant)
+
         # self.fte_monitor = FTE_Monitor(dut.top_i.transformation_engine_i, self.variant)
+
+        # self.data_out_0_monitor = StreamMonitor(
+        #         dut.sys_clk,
+        #         dut.top_i.transformation_engine_i.axi_write_master_data,
+        #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
+        #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
+        #         check=False,
+        #     )
+
+        self.axi_monitor = AXIWriteMasterMonitor(
+            clk=dut.sys_clk,
+            req_valid=dut.top_i.transformation_engine_i.axi_write_master_req_valid,
+            req_ready=dut.top_i.transformation_engine_i.axi_write_master_req_ready,
+            start_address=dut.top_i.transformation_engine_i.axi_write_master_req_start_address,
+            req_len=dut.top_i.transformation_engine_i.axi_write_master_req_len,
+            data_valid=dut.top_i.transformation_engine_i.axi_write_master_data_valid,
+            data=dut.top_i.transformation_engine_i.axi_write_master_data,
+            pop=dut.top_i.transformation_engine_i.axi_write_master_pop,
+            resp_valid=dut.top_i.transformation_engine_i.axi_write_master_resp_valid,
+            resp_ready=dut.top_i.transformation_engine_i.axi_write_master_resp_ready
+        )
+        # self.axi_write_monitor = AXIWriteMasterMonitor(
+        #     dut.sys_clk,
+
 
         # Buffer Manager Monitors
         # self.float_bm_monitors = [None] * self.variant.aggregation_buffer_slots
@@ -41,7 +69,7 @@ class BaseTest:
         #         self.float_bm_monitors[id] = BM_Monitor(dut.top_i.aggregation_engine_i.precision_block[0].aggregation_mesh_i.bm_block[id].buffer_manager_i,
         #                                                         self.variant, NodePrecision.FLOAT_32.value, id)
 
-        self.scoreboard = sb.Scoreboard(nodeslot_count=256)
+        self.scoreboard = sb.Scoreboard(nodeslot_count=64)
         self.nodeslot_programming = {}
         self.global_config = {}
         self.layers = {}
@@ -68,6 +96,8 @@ class BaseTest:
         await self.driver.axil_driver.reset_axi_interface()
         await self.drive_reset()
 
+
+
         # Start monitors
         # self.nsb_monitor.start()
         # self.age_monitor.start()
@@ -78,10 +108,26 @@ class BaseTest:
         #     print(f"Binding monitor for BM {id}")
         #     self.float_bm_monitors[id].start()
 
+
+
+    def load_layer_test(self,layer_features):
+        self.dut._log.info("load_layer_test")
+        self.axi_monitor.load_layer_features(self.nodeslot_programming,layer_features)
+
+    async def start_monitors(self):
+        self.fte_monitor.start()
+        #pass
+    async def stop_monitors(self):
+        self.fte_monitor.stop()
+    
+
     async def end_test(self):
         # Stop monitors
         # self.nsb_monitor.stop()
         # self.age_monitor.stop()
+        # self.fte_monitor.stop()
+        # self.data_out_0_monitor.kill()
+        # self.axi_monitor.end()
         pass
 
     def load_regbank(self, regbank):
