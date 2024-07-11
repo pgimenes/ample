@@ -171,7 +171,7 @@ aggregation_engine_regbank_wrapper #(
 for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) begin : precision_block
 
     // Multiple mesh blocks to interleave columns of aggregation managers
-    for (genvar mesh = 0; mesh < MESH_MULTIPLPIER; mesh++) begin : mesh_block
+    for (genvar mesh = 0; mesh < MESH_MULTIPLIER; mesh++) begin : mesh_block
 
         aggregation_mesh #(
             .AGGREGATION_ROWS            (AGGREGATION_ROWS),
