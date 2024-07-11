@@ -5,7 +5,7 @@ import age_pkg::*;
 
 module aggregation_engine #(
     parameter AXI_ADDR_WIDTH = 32,
-    parameter MESH_MULTIPLPIER = top_pkg::MESH_MULTIPLIER
+    parameter MESH_MULTIPLIER = top_pkg::MESH_MULTIPLIER
 ) (
     input logic core_clk,
     input logic resetn,
