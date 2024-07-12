@@ -112,14 +112,20 @@ async def graph_test_runner(dut):
     model = load_jit_model()
     x_loaded,edge_index_loaded = load_graph()
 
+
+    ####Remove bias from the model TODO Add biases
+    state_dict = model.state_dict()
+    state_dict['layers.0.bias'] = torch.tensor([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+    print(state_dict['layers.0.bias'].size())
+    model.load_state_dict(state_dict)
+    ####
+
+
     model.eval()
     with torch.no_grad():
         output = model(x_loaded, edge_index_loaded)
 
 
-    for layer in output:
-        for idx,feature in enumerate(layer):
-            print(f"Node {idx} : {feature}")
     
     dut._log.info(f"Output {output}")
     del model
@@ -137,7 +143,7 @@ async def graph_test_runner(dut):
 
         # Load monitor
         test.load_layer_test(layer_features)
-
+        # test.start_monitors()
         # Layer configuration
         await test.driver.program_layer_config(layer)
 
@@ -160,9 +166,10 @@ async def graph_test_runner(dut):
         # test.fte_monitor.start = True
         await flush_nodeslots(test)
         # test.fte_monitor.start = False
-
+        # await test.end_test()
         test.dut._log.info("Layer finished.")
-        
+        # del test.axi_monitor
+
         await delay(dut.regbank_clk, 10)
 
     stime = get_sim_time("ms")
@@ -174,7 +181,7 @@ async def graph_test_runner(dut):
 
     with open(f"sim_time.txt", "w") as f:
         f.write(str(stime))
-    # await test.end_test()
+    # 
     # a
     # await delay(dut.regbank_clk, 10000)
     # assert data_out_0_monitor.exp_queue.empty()
