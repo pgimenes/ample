@@ -389,10 +389,11 @@ always_comb begin
     fetch_tag_msg_rm_resp_ready = (message_fetch_state == prefetcher_pkg::MSG_STORE) || scale_factor_read_master_resp_ready;
 
     push_message_queue   = (message_fetch_state == prefetcher_pkg::MSG_STORE) && accepting_msg_fetch_resp;
-    msg_queue_write_data = fetch_tag_msg_rm_resp_data;
+    msg_queue_write_data = reverse_float_order(fetch_tag_msg_rm_resp_data);
     
     pop_adj_queue = (message_fetch_state == prefetcher_pkg::MSG_FETCH) && accepting_message_fetch_req;
 end
+
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
