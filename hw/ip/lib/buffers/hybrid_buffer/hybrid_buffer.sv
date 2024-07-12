@@ -23,6 +23,8 @@ module hybrid_buffer #(
     input  logic [NUM_SLOTS-1:0]                           write_enable,
     input  logic [NUM_SLOTS-1:0] [$clog2(WRITE_DEPTH)-1:0] write_address,
     input  logic [NUM_SLOTS-1:0] [WRITE_WIDTH-1:0]         write_data,
+    input  logic [NUM_SLOTS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]   write_count,
+
     
     input  logic [NUM_SLOTS-1:0]                           pop,
     output logic [NUM_SLOTS-1:0]                           out_feature_valid,
@@ -46,6 +48,7 @@ for (genvar slot = 0; slot < NUM_SLOTS; slot++) begin
         .write_enable       (write_enable   [slot]),
         .write_address      (write_address  [slot]),
         .write_data         (write_data     [slot]),
+        .write_count        (write_count    [slot]),
 
         .pop                (pop               [slot]),
         .out_feature_valid  (out_feature_valid [slot]),

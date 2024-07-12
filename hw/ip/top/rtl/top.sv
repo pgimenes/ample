@@ -261,6 +261,8 @@ logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [NODE_ID_WID
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_write_enable;
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] aggregation_buffer_write_address;
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [AGGREGATION_BUFFER_WRITE_WIDTH-1:0]         aggregation_buffer_write_data;
+logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]     aggregation_buffer_write_count;
+
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_READ_DEPTH)-1:0]  aggregation_buffer_feature_count;
 
 // FTE -> Aggregation Buffer Interface
@@ -666,6 +668,7 @@ aggregation_engine aggregation_engine_i (
     .aggregation_buffer_slot_write_enable         (aggregation_buffer_write_enable),
     .aggregation_buffer_slot_write_address        (aggregation_buffer_write_address),
     .aggregation_buffer_slot_write_data           (aggregation_buffer_write_data),
+    .aggregation_buffer_slot_write_count          (aggregation_buffer_write_count),
 
     .aggregation_buffer_slot_feature_count        (aggregation_buffer_feature_count),
     .aggregation_buffer_slot_slot_free            (aggregation_buffer_slot_free),
@@ -698,6 +701,8 @@ for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT;
         .write_enable       (aggregation_buffer_write_enable    [precision]),
         .write_address      (aggregation_buffer_write_address   [precision]),
         .write_data         (aggregation_buffer_write_data      [precision]),
+        .write_count        (aggregation_buffer_write_count      [precision]),
+
         .feature_count      (aggregation_buffer_feature_count   [precision]),
 
         .pop                (aggregation_buffer_pop               [precision]),

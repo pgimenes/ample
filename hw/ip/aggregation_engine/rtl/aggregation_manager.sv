@@ -53,6 +53,7 @@ module aggregation_manager #(
     output logic [$clog2(MAX_AGC_PER_NODE)-1:0]                 agm_allocated_agcs_count,
     output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_COLS)-1:0] coords_buffer_x,
     output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_ROWS)-1:0] coords_buffer_y,
+    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_FEATURE_COUNT)-1:0] num_features_buffer,
 
     output logic                                                scale_factor_queue_pop,
     input  logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]            scale_factor_queue_out_data,
@@ -285,8 +286,8 @@ always_comb begin
                                             // Tail packet contains aggregation function and nodeslot
                                             agc_pkt_head_sent ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr],
                                                                         X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], // source node coordinates
-                                                                        {(PAYLOAD_DATA_WIDTH - $bits(AGGREGATION_FUNCTION_e) - $bits(agm_allocation.nodeslot)){1'b0}}, // 56 zeros
-                                                                        agm_allocation.aggregation_function, agm_allocation.nodeslot
+                                                                        {(PAYLOAD_DATA_WIDTH - $bits(AGGREGATION_FUNCTION_e) - $bits(agm_allocation.nodeslot)- $bits(num_features_buffer[coord_ptr])){1'b0}}, 
+                                                                        num_features_buffer[coord_ptr],agm_allocation.aggregation_function, agm_allocation.nodeslot
                                                                     }
                                             
                                             // Head packet contains packet type and last flag (always set to 1 for allocation packets)
@@ -355,6 +356,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         coords_buffer_x    <= '0;
         coords_buffer_y    <= '0;
         coord_ptr          <= '0;
+        // num_features       <= '0;
         
         agc_pkt_head_sent <= '0;
 
@@ -364,6 +366,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
         coords_buffer_y      <= age_aggregation_manager_req.coords_y;
         coord_ptr            <= '0;
         
+        num_features_buffer      <= age_aggregation_manager_req.num_features;
+
         agc_pkt_head_sent <= '0;
 
     // Sending final flit into network

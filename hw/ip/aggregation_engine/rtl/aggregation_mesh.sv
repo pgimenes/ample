@@ -47,7 +47,8 @@ module aggregation_mesh #(
     input  logic [AGGREGATION_ROWS-1:0]                                                       aggregation_buffer_slot_write_ready,
     output logic [AGGREGATION_ROWS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] aggregation_buffer_slot_write_address,
     output logic [AGGREGATION_ROWS-1:0] [noc_pkg::PAYLOAD_DATA_WIDTH-1:0]                     aggregation_buffer_slot_write_data,
-    
+    output logic [AGGREGATION_ROWS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]              aggregation_buffer_slot_write_count,
+
     input  logic [AGGREGATION_ROWS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0]  aggregation_buffer_slot_feature_count,
     input  logic [AGGREGATION_ROWS-1:0]                                                       aggregation_buffer_slot_slot_free,
 
@@ -399,6 +400,7 @@ for (genvar bm = 0; bm < AGGREGATION_ROWS; bm++) begin : bm_block
         .bm_buffer_slot_write_ready                    (aggregation_buffer_slot_write_ready  [bm]),
         .bm_buffer_slot_write_address                  (aggregation_buffer_slot_write_address [bm]),
         .bm_buffer_slot_write_data                     (aggregation_buffer_slot_write_data    [bm]),
+        .bm_buffer_slot_write_count                    (aggregation_buffer_slot_write_count   [bm]),
         
         .buffer_slot_bm_feature_count                  (aggregation_buffer_slot_feature_count [bm]),
         .buffer_slot_bm_slot_free                      (aggregation_buffer_slot_slot_free     [bm])

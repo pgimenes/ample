@@ -157,7 +157,7 @@ end
 always_comb begin
     // Write first feature into accumulator directly regardless of chosen aggregation function
     passthrough_aggregator_in_feature_valid = (feature_accumulation_count == '0) && scaled_feature_valid;
-    sum_aggregator_in_feature_valid = |feature_accumulation_count && scaled_feature_valid && (aggregation_function_sel == top_pkg::SUM);
+    sum_aggregator_in_feature_valid = |feature_accumulation_count && in_feature_valid && scaled_feature_valid && (aggregation_function_sel == top_pkg::SUM);
 
     // === ADD AGGREGATOR VALID DRIVER
 
@@ -182,7 +182,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
         accumulator                <= '0;
         
     end else if (feature_updated) begin
-        feature_accumulation_count <= feature_accumulation_count + 1'b1;
 
         if (feature_accumulation_count == '0) begin
             accumulator <= passthrough_aggregator_out_feature;
@@ -198,6 +197,9 @@ always_ff @(posedge core_clk or negedge resetn) begin
 
             endcase
         end
+
+        feature_accumulation_count <= feature_accumulation_count + 1'b1;
+
     end
 end
 
