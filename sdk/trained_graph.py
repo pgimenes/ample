@@ -1,7 +1,6 @@
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
-
 import torch
 from torch_geometric.utils import to_networkx
 from torch_geometric.loader import GraphSAINTRandomWalkSampler
@@ -11,6 +10,11 @@ import random
 import logging
 
 from tqdm import tqdm
+
+import math
+
+data_width = 64
+
 
 class TrainedGraph:
     def __init__(self, dataset, feature_count=None, embeddings=[], graph_precision="FLOAT_32", self_connection=False):
@@ -40,13 +44,22 @@ class TrainedGraph:
             neighbours = list(self.nx_graph.neighbors(node))
             if self_connection:
                 neighbours += [node]
+
+            #Features stored in blocks of 512
+            #Find number of 512bit/64 bytes blocks required to store features
+            # 4*self.feature_count - num bytes
+            # 64 - bytes per block
+
+            axi_addr = math.ceil(4*self.feature_count / 64)
+
             self.nx_graph.nodes[node]["meta"] = {
                 'neighbours' : neighbours,
                 'neighbour_count': len(neighbours),
                 'aggregation_function': "SUM",
                 
                 'adj_list_offset': int(self.node_offsets[node]),
-                'neighbour_message_ptrs': [4*self.feature_count*nb_ptr for nb_ptr in neighbours],
+            
+                'neighbour_message_ptrs': [self.calc_axi_addr(self.feature_count)*nb_ptr for nb_ptr in neighbours],
                 'adjacency_list_address_lsb': 0, # to be defined by init manager
                 
                 # Add a single scale factor to isolated nodes to occupy memory range
@@ -60,7 +73,7 @@ class TrainedGraph:
             neighbours = self.nx_graph.nodes[node]["meta"]["neighbours"] + [node]
             self.nx_graph.nodes[node]["meta"]["neighbours"] = neighbours
             self.nx_graph.nodes[node]["meta"]["neighbour_count"] = len(neighbours)
-            self.nx_graph.nodes[node]["meta"]["neighbour_message_ptrs"] = [4*self.feature_count*nb_ptr for nb_ptr in self.nx_graph.nodes[node]["meta"]["neighbours"]]
+            self.nx_graph.nodes[node]["meta"]["neighbour_message_ptrs"] = [self.calc_axi_addr(self.feature_count)*nb_ptr for nb_ptr in self.nx_graph.nodes[node]["meta"]["neighbours"]]
             self.nx_graph.nodes[node]["meta"]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
 
     def remove_connections(self):
@@ -68,7 +81,7 @@ class TrainedGraph:
             neighbours = [node]
             self.nx_graph.nodes[node]["meta"]["neighbours"] = neighbours
             self.nx_graph.nodes[node]["meta"]["neighbour_count"] = len(neighbours)
-            self.nx_graph.nodes[node]["meta"]["neighbour_message_ptrs"] = [4*self.feature_count*nb_ptr for nb_ptr in self.nx_graph.nodes[node]["meta"]["neighbours"]]
+            self.nx_graph.nodes[node]["meta"]["neighbour_message_ptrs"] = [self.calc_axi_addr(self.feature_count)*nb_ptr for nb_ptr in self.nx_graph.nodes[node]["meta"]["neighbours"]]
             self.nx_graph.nodes[node]["meta"]['scale_factors'] = [1] * len(neighbours) if len(neighbours) > 0 else [1]
 
     def set_aggregation(self, aggregation):
@@ -147,6 +160,10 @@ class TrainedGraph:
 
     def train_embeddings(self):
         pass
+
+    def calc_axi_addr(self,feature_count):
+        return math.ceil(4*feature_count / data_width) *data_width
+
 
     def __str__(self) -> str:
         return "TrainedGraph"

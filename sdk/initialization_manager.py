@@ -17,6 +17,9 @@ from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 
 from .models.models import GraphSAGE_Model
 
+import math
+
+data_width = 64
 class InitManager:
 
     def __init__(self, 
@@ -142,7 +145,7 @@ class InitManager:
                 'adjacency_list_address_msb': 0,
                 'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['scale_factors_address'],
                 'scale_factors_address_msb': 0,
-                'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.trained_graph.feature_count * 4,
+                'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.calc_axi_addr(self.trained_graph.feature_count),
                 'out_messages_address_msb': 0
             }
 
@@ -248,7 +251,7 @@ class InitManager:
         with torch.no_grad():
             embeddings = self.trained_graph.dataset.x
             output = self.model(self.trained_graph.dataset.x, self.trained_graph.dataset.edge_index)
-        np.savetxt(self.updated_embeddings_file, output.numpy(), delimiter=',')
+        np.savetxt(self.updated_embeddings_file, (output[-1]).numpy(), delimiter=',')
 
     #Save JIT model for testbench
     def save_model(self):
@@ -273,3 +276,7 @@ class InitManager:
     
     def reduce_graph(self):
         self.trained_graph.reduce()
+    
+    def calc_axi_addr(self,feature_count):
+        return math.ceil(4*feature_count / data_width) *data_width
+
