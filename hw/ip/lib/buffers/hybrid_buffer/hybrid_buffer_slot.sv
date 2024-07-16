@@ -76,6 +76,7 @@ always_ff @( posedge core_clk or negedge resetn ) begin
         feature_count     <= 0;
         out_feature_valid <= '1;
         pop_q             <= '0;
+        slot_free         <= '0;
 
     end else begin
         if (write_enable) begin
@@ -96,10 +97,13 @@ always_ff @( posedge core_clk or negedge resetn ) begin
                             : out_feature_valid;
 
         pop_q <= pop;
-
+        slot_free <= (feature_count == '0);
     end
 end
 
-assign slot_free = (feature_count == '0);
+
+
+
+
 
 endmodule

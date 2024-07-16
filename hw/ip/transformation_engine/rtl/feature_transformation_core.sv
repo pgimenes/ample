@@ -61,7 +61,7 @@ module feature_transformation_core #(
     input  logic [9:0]                                                                                layer_config_out_features_count,
     input  logic [1:0]                                                                                layer_config_out_features_address_msb_value,
     input  logic [31:0]                                                                               layer_config_out_features_address_lsb_value,
-    input  logic [31:0]                                                                               layer_config_bias_value,
+    input  logic [31:0]                                                                               layer_config_bias_value, //needs be paramterised to sytolic module count
     input  logic [1:0]                                                                                layer_config_activation_function_value,
     input  logic [31:0]                                                                               layer_config_leaky_relu_alpha_value,
     input  logic [0:0]                                                                                ctrl_buffering_enable_value,
@@ -81,6 +81,9 @@ typedef enum logic [3:0] {
 
 FTE_FSM_e fte_state, fte_state_n;
 logic last_weight_resp_received;
+
+logic [MATRIX_N:0] valid_row;
+
 
 // NSB requests
 logic [top_pkg::MAX_NODESLOT_COUNT-1:0]         nsb_req_nodeslots_q;
@@ -178,6 +181,7 @@ for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) be
         sys_module_pe_acc_row0 [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]  = sys_module_pe_acc [sys_module][0];
         // sys_module_down_in       [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = weight_channel_resp.data[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
         // sys_module_down_in_valid [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = {MATRIX_N{weight_channel_resp_valid}} & weight_channel_resp.valid_mask[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
+        shift_sys_module[sys_module] = (fte_state == FTE_FSM_SHIFT);
 
    end
     
@@ -220,6 +224,8 @@ for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) be
 
         .debug_update_counter                (debug_update_counter     [sys_module])
     );
+
+    
 
 
 
@@ -309,7 +315,7 @@ always_comb begin
         end
 
         FTE_FSM_WRITEBACK_REQ: begin
-            fte_state_n = axi_write_master_req_ready ? FTE_FSM_WRITEBACK_RESP : FTE_FSM_WRITEBACK_REQ;
+            fte_state_n = (!valid_row[0]) ?  FTE_FSM_SHIFT : axi_write_master_req_ready ? FTE_FSM_WRITEBACK_RESP : FTE_FSM_WRITEBACK_REQ;
         end
 
         FTE_FSM_WRITEBACK_RESP: begin
@@ -317,8 +323,8 @@ always_comb begin
                         // Sending last beat for last nodeslot
                         (nodeslots_to_writeback == 'd1) && (sent_writeback_beats == writeback_required_beats) && axi_write_master_resp_valid ? FTE_FSM_NSB_RESP
 
-                        // Sending last beat, more nodeslots to go
-                        : (sent_writeback_beats == writeback_required_beats) && axi_write_master_resp_valid ? FTE_FSM_SHIFT
+                        // Sending last beat, more nodeslots to go - or row not valid, shift in next row
+                        : ((sent_writeback_beats == writeback_required_beats | !valid_row[0]) && axi_write_master_resp_valid) ? FTE_FSM_SHIFT
                         : FTE_FSM_WRITEBACK_RESP;
         end
 
@@ -439,10 +445,9 @@ always_ff @(posedge core_clk or negedge resetn) begin
 end
     
 always_comb begin
-    // Bias and activation after multiplication finished
+//     // Bias and activation after multiplication finished
     bias_valid       = (fte_state == FTE_FSM_BIAS);
     activation_valid = (fte_state == FTE_FSM_ACTIVATION);
-    shift_sys_module = (fte_state == FTE_FSM_SHIFT);
 end
 
 // Buffering Logic
@@ -495,7 +500,7 @@ always_comb begin
     writeback_required_beats = (layer_config_out_features_count >> 4) + (layer_config_out_features_count[3:0] ? 1'b1 : 1'b0);
 
     // Request
-    axi_write_master_req_valid = (fte_state == FTE_FSM_WRITEBACK_REQ);
+    axi_write_master_req_valid = (fte_state == FTE_FSM_WRITEBACK_REQ && valid_row[0]); ;
     axi_write_master_req_start_address = {layer_config_out_features_address_msb_value, layer_config_out_features_address_lsb_value}
                                             + sys_module_node_id_snapshot[0] * out_features_required_bytes;
 
@@ -506,7 +511,7 @@ always_comb begin
     // sys_module = index
 
     // Data
-    axi_write_master_data_valid = (fte_state == FTE_FSM_WRITEBACK_RESP);
+    axi_write_master_data_valid = (fte_state == FTE_FSM_WRITEBACK_RESP) & valid_row[0];
     module_index = sent_writeback_beats*SYS_MODULES_PER_BEAT;
     
     // axi_write_master_data = sys_module_pe_acc_row0[SYS_MODULES_PER_BEAT*DATA_WIDTH*sent_writeback_beats + SYS_MODULES_PER_BEAT*DATA_WIDTH + 'd0: SYS_MODULES_PER_BEAT*DATA_WIDTH*sent_writeback_beats];
@@ -548,7 +553,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         sent_writeback_beats <= sent_writeback_beats + 1'b1;
 
     // Accepting write response
-    end else if (fte_state == FTE_FSM_WRITEBACK_RESP && axi_write_master_resp_valid && sent_writeback_beats == writeback_required_beats) begin
+    end else if (valid_row[0] && fte_state == FTE_FSM_WRITEBACK_RESP && axi_write_master_resp_valid && sent_writeback_beats == writeback_required_beats) begin
         nodeslots_to_writeback <= nodeslots_to_writeback - 1'b1;
     end
 end
@@ -590,5 +595,32 @@ always_ff @(posedge core_clk or negedge resetn) begin
         last_weight_resp_received <= '1;
     end
 end
+
+assign valid_row[MATRIX_N] = 0;
+
+for (genvar k = 0; k < MATRIX_N ; k++) begin
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if(!resetn) begin
+            valid_row[k] = 0;             //[0]th column, jth row
+
+        end
+        // else if (fte_state == FTE_FSM_IDLE) begin
+        //     valid_row[k] = 0;
+        // end
+
+        else if(fte_state == FTE_FSM_SHIFT)begin
+            valid_row[k] = valid_row[k+1];
+        end
+        // else if(transformation_core_aggregation_buffer_out_feature_valid)begin
+        //     valid_row[k] = 1;
+        // end
+        else if(fte_state_n == FTE_FSM_MULT_SLOW)begin
+            valid_row[k] = nsb_req_nodeslots_q[k];
+        end 
+
+    end
+end 
+
+
 
 endmodule
