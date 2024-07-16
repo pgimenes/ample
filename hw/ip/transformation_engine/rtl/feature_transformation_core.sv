@@ -615,7 +615,7 @@ for (genvar k = 0; k < MATRIX_N ; k++) begin
         //     valid_row[k] = 1;
         // end
         else if(fte_state_n == FTE_FSM_MULT_SLOW)begin
-            valid_row[k] = nsb_req_nodeslots_q[k];
+            valid_row[k] = nsb_req_nodeslots_q[sys_module_node_id_snapshot[k]];
         end 
 
     end
