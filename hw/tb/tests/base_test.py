@@ -15,7 +15,7 @@ from tb.variant import Variant
 # from tb.monitors.age_monitor import AGE_Monitor
 from tb.monitors.nsb_monitor import NSB_Monitor
 from tb.monitors.prefetcher_monitor import Prefetcher_Monitor
-from tb.monitors.fte_monitor import FTE_Monitor
+# from tb.monitors.fte_monitor import FTE_Monitor
 # from tb.monitors.mase_cocotb.stream_monitor import StreamMonitor
 
 from tb.monitors.axi_write_master_monitor import AXIWriteMasterMonitor
@@ -97,6 +97,7 @@ class BaseTest:
         await self.drive_reset()
 
 
+        # cocotb.fork(self.axi_monitor.monitor_write_transactions())
 
         # Start monitors
         # self.nsb_monitor.start()
@@ -115,13 +116,19 @@ class BaseTest:
         self.axi_monitor.load_layer_features(self.nodeslot_programming,layer_features)
 
     async def start_monitors(self):
-        self.fte_monitor.start()
-        #pass
+        # self.fte_monitor.start()
+        # cocotb.fork(self.axi_monitor._monitor_write_transactions())
+        pass
     async def stop_monitors(self):
-        self.fte_monitor.stop()
-    
+        # self.fte_monitor.stop()
+        # self.axi_monitor._monitor_write_transactions.kill()
+        pass
 
     async def end_test(self):
+        # self.dut._log.info("test is being destroyed")
+        # self.axi_monitor._thread.kill()
+        # self.dut._log.info("test is being kill")
+
         # Stop monitors
         # self.nsb_monitor.stop()
         # self.age_monitor.stop()
@@ -183,13 +190,13 @@ class BaseTest:
 
     async def drive_reset(self):
         self.dut._log.info("Driving reset")
-        self.dut.sys_rst = 1
-        self.dut.regbank_resetn = 0
+        self.dut.sys_rst.value = 1
+        self.dut.regbank_resetn.value = 0
         for _ in range(50):
             await RisingEdge(self.dut.regbank_clk)
         self.dut._log.info("Reset done")
-        self.dut.sys_rst = 0
-        self.dut.regbank_resetn = 1
+        self.dut.sys_rst.value = 0
+        self.dut.regbank_resetn.value = 1
 
         self.dut._log.info("Starting wait after reset")
         for _ in range(10):

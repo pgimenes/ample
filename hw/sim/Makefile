@@ -25,7 +25,7 @@ endif
 
 ifeq ($(GUI),1)
     CMD += -gui
-    VSIM_ARGS += -onfinish stop -do $(SIM_BUILD)/../simulate_gui.do -quiet
+    VSIM_ARGS += -onfinish stop -do $(SIM_BUILD)/../simulate_gui.do -quiet -suppress vsim-3015 -suppress vish-4014 
 else
     CMD += -c
     VSIM_ARGS += -onfinish exit -do $(SIM_BUILD)/../simulate_no_gui.do -quiet -suppress vsim-3015
@@ -219,15 +219,15 @@ build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
 	
 #-l $(SIM_BUILD)/modelsim.log
 run_sim: $(SIM_BUILD)/simulate.do
+	cp $(SIM_BUILD)/modelsim.log $(SIM_BUILD)/run.log
 	set -o pipefail; LIBPYTHON_LOC=$(shell cocotb-config --libpython) MODULE=$(TEST_RUNNER) TESTCASE=$(TESTCASE) TOPLEVEL=$(TOPLEVEL) \
 	GPI_EXTRA=$(GPI_EXTRA) TOPLEVEL_LANG=$(TOPLEVEL_LANG) \
 	$(SIM_CMD_PREFIX) $(CMD) -l $(SIM_BUILD)/modelsim.log $(VSIM_ARGS) \
 	$(RUN_ARGS) \
 	$(TOPLEVEL_LIBRARY).$(TOPLEVEL_LIBRARY)_opt \
-	-do $(SIM_BUILD)/simulate.do \
 	$(PLUSARGS) 2>&1 | tee $(SIM_BUILD)/simulate.log
-	cp $(SIM_BUILD)/modelsim.log $(SIM_BUILD)/run.log
 	find $(SIM_BUILD)/.. -maxdepth 1 -type f -name 'wlft*' -exec rm -f {} +
+	find $(SIM_BUILD)/.. -maxdepth 1 -type f -name '.nfs*' -exec rm -f {} +
 
 
 

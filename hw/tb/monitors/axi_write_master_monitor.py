@@ -76,7 +76,11 @@ class AXIWriteMasterMonitor:
                     expected_node = self.get_node_by_address(current_transaction['start_address'])
                     
                     if expected_node:
+                        self.log.info("--------------------")
+                        self.log.info("")
                         self.log.info(f"Node found: {expected_node['node_id']}, Address: {expected_node['address']}")
+                   
+
                         # Check if the data written matches the expected data
                         self.log.info(f"Data expected {expected_node['data']}")
                         current_transaction['data'] = tensor([item for sublist in current_transaction['data'] for item in sublist[::-1]])
@@ -91,9 +95,14 @@ class AXIWriteMasterMonitor:
 
                             if not torch.allclose(current_transaction['data'], expected_node['data'],atol=1e-3):
                                 self.log.error(f"Data mismatch for address {current_transaction['start_address']}")
+
+
+                        self.log.info(" ")
+                        self.log.info("--------------------")
                     else:
                         self.log.error(f"No node found with address {current_transaction['start_address']}")
                     
+                       
 
                 # Clean up transaction
                 del self.transactions[current_transaction['start_address']]
@@ -112,36 +121,40 @@ class AXIWriteMasterMonitor:
 
         # Initialize an empty dictionary for quick lookups by address
         self.expected_layer_features_by_address = {}
+        #or can just modify the node dict to be mapped by addresses
 
         # Process each node slot
         for nodslot in nodeslot_programming:
             node_id = nodslot['node_id']
             address = (nodslot['adjacency_list_address_msb'] << 32) | nodslot['adjacency_list_address_lsb']
             data = layer_features[node_id]
-
+            out_messages_address_lsb = nodslot['out_messages_address_lsb']
+            axi_write_master_address =int(out_messages_address_lsb-17408)
             # Create a dictionary entry for the current node
+            # Subract 17408 to get the address of the read master - monitor axi signals to get actual write address
             node_dict = {
                 'node_id': node_id,
-                'address': address,
+                'address': axi_write_master_address, 
                 'data': data
             }
-            
             # Append the node_dict to the list
             self.expected_layer_features.append(node_dict)
             
             # Add the node_dict to the dictionary for quick lookups by address
-            self.expected_layer_features_by_address[address] = node_dict
+            self.expected_layer_features_by_address[axi_write_master_address] = node_dict
 
         # Log the expected nodes
         for node in self.expected_layer_features:
             self.log.info(f"Expected Node: {node}")
-
+        print(self.expected_layer_features_by_address)
           # Log the loading process
         # self.log.info("done")
         # self.running = True
 
 
     def get_node_by_address(self,address):
+        # print('target',address)
+        # print(self.expected_layer_features_by_address)
         return self.expected_layer_features_by_address.get(address, None)
 
       
