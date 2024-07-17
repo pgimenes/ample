@@ -145,7 +145,7 @@ class InitManager:
                 'adjacency_list_address_msb': 0,
                 'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['scale_factors_address'],
                 'scale_factors_address_msb': 0,
-                'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.calc_axi_addr(self.trained_graph.feature_count),
+                'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.calc_axi_addr(max(self.get_feature_counts(self.model))),
                 'out_messages_address_msb': 0
             }
 
@@ -279,4 +279,14 @@ class InitManager:
     
     def calc_axi_addr(self,feature_count):
         return math.ceil(4*feature_count / data_width) *data_width
-
+    
+    # Function to get feature count of each layer
+    def get_feature_counts(self,model):
+        feature_counts = []
+        for layer in model.modules():
+            if isinstance(layer, torch.nn.Conv2d):
+                feature_counts.append(layer.out_channels)
+            elif isinstance(layer, torch.nn.Linear):
+                feature_counts.append(layer.out_features)
+        return feature_counts
+    
