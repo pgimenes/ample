@@ -39,12 +39,13 @@ parameter ALLOCATION_PKT_NUM_FEATURES_OFFSET = ALLOCATION_PKT_AGGR_FUNC_OFFSET +
 
 parameter EXPECTED_FLITS_PER_PACKET = 1;
 
-typedef enum logic [3:0] {
+typedef enum logic [4:0] {
     AGC_FSM_IDLE,
     AGC_FSM_NODESLOT_ALLOCATION,
     AGC_FSM_WAIT_FEATURE_HEAD,
     AGC_FSM_WAIT_FEATURE_BODY,
     AGC_FSM_UPDATE_ACCS,
+    AGC_FSM_WAIT_UPDATE_ACCS,
     AGC_FSM_WAIT_BUFFER_REQ,
     AGC_FSM_SEND_BUFF_MAN,
     AGC_FSM_WAIT_DRAIN
@@ -208,6 +209,12 @@ always_comb begin
     end
     
     AGC_FSM_UPDATE_ACCS: begin
+        agc_state_n = feature_aggregator_in_feature_ready ? AGC_FSM_WAIT_UPDATE_ACCS
+                    : AGC_FSM_UPDATE_ACCS;
+    end
+
+
+    AGC_FSM_WAIT_UPDATE_ACCS: begin
         agc_state_n = 
                     // Updating last feature accumulator and last packet flag has already been received
                     (received_flits == EXPECTED_FLITS_PER_PACKET[3:0]) && &feature_updated && aggregation_manager_packet_last_q ? AGC_FSM_WAIT_BUFFER_REQ // updating final features
@@ -215,8 +222,9 @@ always_comb begin
                     // Updating last feature accumulator but packets still pending
                     : (received_flits == EXPECTED_FLITS_PER_PACKET[3:0]) && &feature_updated ? AGC_FSM_WAIT_FEATURE_HEAD
 
-                    : AGC_FSM_UPDATE_ACCS;
+                    : AGC_FSM_WAIT_UPDATE_ACCS;
     end
+    
     
     AGC_FSM_WAIT_BUFFER_REQ: begin
         agc_state_n = router_aggregation_core_valid && aggregation_manager_pkt && received_buffer_req_head && tail_packet && correct_pkt_dest ? AGC_FSM_SEND_BUFF_MAN
