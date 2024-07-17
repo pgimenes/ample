@@ -179,10 +179,8 @@ for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) be
     // Driving from weight channel
     always_comb begin
         sys_module_pe_acc_row0 [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]  = sys_module_pe_acc [sys_module][0];
-        // sys_module_down_in       [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = weight_channel_resp.data[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
-        // sys_module_down_in_valid [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N] = {MATRIX_N{weight_channel_resp_valid}} & weight_channel_resp.valid_mask[sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N];
-        shift_sys_module[sys_module] = (fte_state == FTE_FSM_SHIFT);
-
+        shift_sys_module[sys_module] = (fte_state == FTE_FSM_SHIFT)||(fte_state_n == FTE_FSM_IDLE); //Shift out last row when next state is IDLE
+ 
    end
     
     systolic_module #(
@@ -598,6 +596,7 @@ end
 
 assign valid_row[MATRIX_N] = 0;
 
+//Integrate to snapshot logic
 for (genvar k = 0; k < MATRIX_N ; k++) begin
     always_ff @(posedge core_clk or negedge resetn) begin
         if(!resetn) begin
@@ -614,8 +613,8 @@ for (genvar k = 0; k < MATRIX_N ; k++) begin
         // else if(transformation_core_aggregation_buffer_out_feature_valid)begin
         //     valid_row[k] = 1;
         // end
-        else if(fte_state_n == FTE_FSM_MULT_SLOW)begin
-            valid_row[k] = nsb_req_nodeslots_q[sys_module_node_id_snapshot[k]];
+        else if(fte_state == FTE_FSM_REQ_WC)begin
+            valid_row[k] = /*nsb_req_nodeslots_q[sys_module_node_id_snapshot[k]] &*/ busy_aggregation_slots_snapshot[k];
         end 
 
     end
