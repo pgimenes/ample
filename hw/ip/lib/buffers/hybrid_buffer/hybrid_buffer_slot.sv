@@ -28,7 +28,7 @@ logic                          pop_q;
 
 // Pre-increment read address to account for read latency
 assign read_address = 
-                    pop && (rd_ptr == READ_DEPTH - 1) ? '0 // account for wraparound
+                    (pop && (rd_ptr == READ_DEPTH - 1)) ? '0 // account for wraparound
                     : pop ? rd_ptr + 1'b1 
                     : rd_ptr;
 
@@ -85,10 +85,14 @@ always_ff @( posedge core_clk or negedge resetn ) begin
         
         // Latch out_valid to 0 when pop or to 1, 3 cycles later
         // This accounts for RAM delay
-        if (pop) begin
+        if (slot_free) begin  //reset read addr when features have been read out
+            rd_ptr <= '0;
+        end
+        else if (pop) begin
             rd_ptr <= rd_ptr + 1;
             feature_count <= feature_count - 1'b1;
         end
+        else 
 
         // Latch out_valid to 0 when pop or to 1, 3 cycles later
         // This accounts for RAM delay
