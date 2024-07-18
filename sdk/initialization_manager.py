@@ -51,9 +51,11 @@ class InitManager:
 
         # Layer configuration
         self.layer_config = {'global_config': {}, 'layers': []}
-
+        self.model_layer_max_features = max(self.get_feature_counts(self.model))
         # Nodeslot programming
         self.nodeslot_programming = {'nodeslots':[]}
+        
+
 
     # Nodeslot programming and layer configuration
     # ===============================================
@@ -75,7 +77,7 @@ class InitManager:
             raise RuntimeError(f"Unrecognized layer type {type(layer)}")        
         return inc, outc
     
-    def get_default_layer_config(self, layer):
+    def get_default_layer_config(self, layer,idx):
         inc, outc = self.get_layer_feature_count(layer)
         return {
             'nodeslot_count': len(self.trained_graph.nx_graph.nodes),
@@ -87,7 +89,7 @@ class InitManager:
             'dequantization_parameter': self.trained_graph.dequantization_parameter,
             'adjacency_list_address': self.memory_mapper.offsets['adj_list'],
             'in_messages_address': self.memory_mapper.offsets['in_messages'],
-            'weights_address': self.memory_mapper.offsets['weights'],
+            'weights_address': self.memory_mapper.offsets['weights'][idx],
             'out_messages_address': self.memory_mapper.offsets['out_messages'],
             'aggregation_wait_count': 4,
             'transformation_wait_count': 4
@@ -124,8 +126,8 @@ class InitManager:
             self.set_layer_config_graphsage()
         else :
             # Default layer configuration
-            for layer in self.model.layers:
-                layer = self.get_default_layer_config(layer)
+            for idx,layer in enumerate(self.model.layers):
+                layer = self.get_default_layer_config(layer,idx)
                 self.layer_config['layers'].append(layer)
 
     def dump_layer_config (self):
@@ -145,9 +147,11 @@ class InitManager:
                 'adjacency_list_address_msb': 0,
                 'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['scale_factors_address'],
                 'scale_factors_address_msb': 0,
-                'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.calc_axi_addr(max(self.get_feature_counts(self.model))),
+                'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.calc_axi_addr(self.trained_graph.feature_count),
+
                 'out_messages_address_msb': 0
             }
+               # 'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.calc_axi_addr(self.model_layer_max_features),
 
     def program_nodeslots_graphsage(self):
         # Layer 1: W1 projection
@@ -289,4 +293,7 @@ class InitManager:
             elif isinstance(layer, torch.nn.Linear):
                 feature_counts.append(layer.out_features)
         return feature_counts
-    
+
+    def map(self):
+        # self.memory_mapper.map(self.calc_axi_addr(self.model_layer_max_features))
+        self.memory_mapper.map()

@@ -58,7 +58,8 @@ class TrainedGraph:
                 'aggregation_function': "SUM",
                 
                 'adj_list_offset': int(self.node_offsets[node]),
-            
+                #'neighbour_message_ptrs':[nb_ptr for nb_ptr in neighbours], # to be defined by init manager
+
                 'neighbour_message_ptrs': [self.calc_axi_addr(self.feature_count)*nb_ptr for nb_ptr in neighbours],
                 'adjacency_list_address_lsb': 0, # to be defined by init manager
                 

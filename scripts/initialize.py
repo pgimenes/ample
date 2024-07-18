@@ -152,11 +152,11 @@ def run_pass(
         graph.remove_connections()
     
     if (payloads):
-        init_manager.memory_mapper.map()
+        init_manager.map()
         init_manager.dump_memory()
         init_manager.dump_layer_config()
         init_manager.dump_nodeslot_programming()
-        # init_manager.embedding_expectation()
+        init_manager.embedding_expectation()
         init_manager.save_model()
         init_manager.save_graph()
 
@@ -248,7 +248,7 @@ def parse_arguments():
     parser.add_argument('--mlp', action='store_true', help='Use MLP Model')
 
     parser.add_argument('--layers', type=int, default=2, help='Number of layers')
-    parser.add_argument('--hidden-dimension', type=int, default=64, help='Hidden dimension size')
+    parser.add_argument('--hidden-dimension', type=int, default=34, help='Hidden dimension size')
 
     default_base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
     parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $WORKAREA/hw/sim/layer_config)')
