@@ -79,6 +79,10 @@ class InitManager:
     
     def get_default_layer_config(self, layer,idx):
         inc, outc = self.get_layer_feature_count(layer)
+        if idx >0: 
+            in_messages_address = self.memory_mapper.offsets['out_messages']#Can change this to have intermediate out messages (['out_messages'][idx-1])
+        else:
+            in_messages_address= self.memory_mapper.offsets['in_messages']
         return {
             'nodeslot_count': len(self.trained_graph.nx_graph.nodes),
             'in_feature_count': inc,
@@ -88,7 +92,7 @@ class InitManager:
             'transformation_bias': 0,
             'dequantization_parameter': self.trained_graph.dequantization_parameter,
             'adjacency_list_address': self.memory_mapper.offsets['adj_list'],
-            'in_messages_address': self.memory_mapper.offsets['in_messages'], #Change to out messages address of last layer
+            'in_messages_address': in_messages_address, #Change to out messages address of last layer
             'weights_address': self.memory_mapper.offsets['weights'][idx],
             'out_messages_address': self.memory_mapper.offsets['out_messages'],
             'aggregation_wait_count': 4,
