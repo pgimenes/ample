@@ -189,26 +189,26 @@ top top_i
     .host_axil_rdata                           (host_axil_rdata),
     .host_axil_rresp                           (host_axil_rresp),
 
-    .read_master_axi_awid                        (read_master_axi_awid),
-    .read_master_axi_awaddr                      (read_master_axi_awaddr),
-    .read_master_axi_awlen                       (read_master_axi_awlen),
-    .read_master_axi_awsize                      (read_master_axi_awsize),
-    .read_master_axi_awburst                     (read_master_axi_awburst),
-    .read_master_axi_awlock                      (read_master_axi_awlock),
-    .read_master_axi_awcache                     (read_master_axi_awcache),
-    .read_master_axi_awprot                      (read_master_axi_awprot),
-    .read_master_axi_awqos                       (read_master_axi_awqos),
-    .read_master_axi_awvalid                     (read_master_axi_awvalid),
-    .read_master_axi_awready                     (read_master_axi_awready),
-    .read_master_axi_wdata                       (read_master_axi_wdata),
-    .read_master_axi_wstrb                       (read_master_axi_wstrb),
-    .read_master_axi_wlast                       (read_master_axi_wlast),
-    .read_master_axi_wvalid                      (read_master_axi_wvalid),
-    .read_master_axi_wready                      (read_master_axi_wready),
-    .read_master_axi_bid                         (read_master_axi_bid),
-    .read_master_axi_bresp                       (read_master_axi_bresp),
-    .read_master_axi_bvalid                      (read_master_axi_bvalid),
-    .read_master_axi_bready                      (read_master_axi_bready),
+    // .read_master_axi_awid                        (read_master_axi_awid),
+    // .read_master_axi_awaddr                      (read_master_axi_awaddr),
+    // .read_master_axi_awlen                       (read_master_axi_awlen),
+    // .read_master_axi_awsize                      (read_master_axi_awsize),
+    // .read_master_axi_awburst                     (read_master_axi_awburst),
+    // .read_master_axi_awlock                      (read_master_axi_awlock),
+    // .read_master_axi_awcache                     (read_master_axi_awcache),
+    // .read_master_axi_awprot                      (read_master_axi_awprot),
+    // .read_master_axi_awqos                       (read_master_axi_awqos),
+    // .read_master_axi_awvalid                     (read_master_axi_awvalid),
+    // .read_master_axi_awready                     (read_master_axi_awready),
+    // .read_master_axi_wdata                       (read_master_axi_wdata),
+    // .read_master_axi_wstrb                       (read_master_axi_wstrb),
+    // .read_master_axi_wlast                       (read_master_axi_wlast),
+    // .read_master_axi_wvalid                      (read_master_axi_wvalid),
+    // .read_master_axi_wready                      (read_master_axi_wready),
+    // .read_master_axi_bid                         (read_master_axi_bid),
+    // .read_master_axi_bresp                       (read_master_axi_bresp),
+    // .read_master_axi_bvalid                      (read_master_axi_bvalid),
+    // .read_master_axi_bready                      (read_master_axi_bready),
     .read_master_axi_arid                        (read_master_axi_arid),
     .read_master_axi_araddr                      (read_master_axi_araddr),
     .read_master_axi_arlen                       (read_master_axi_arlen),
@@ -304,6 +304,16 @@ top top_i
     .nodeslot_fetch_axi_rready              (nodeslot_fetch_axi_rready)
 );
 
+
+  
+assign transformation_engine_axi_wready = &read_master_axi_wready;
+assign transformation_engine_axi_awready = &read_master_axi_awready;
+
+assign transformation_engine_axi_bvalid = &read_master_axi_bvalid;
+assign transformation_engine_axi_bid = read_master_axi_bid[0];
+assign transformation_engine_axi_bresp = read_master_axi_bresp[0];
+
+
 for (genvar bank=0; bank < HBM_BANKS; bank++) begin
     axi_ram #(
         .DATA_WIDTH(512),
@@ -313,25 +323,47 @@ for (genvar bank=0; bank < HBM_BANKS; bank++) begin
         .clk                    (sys_clk),
         .rst                    (sys_rst),
 
-        .s_axi_awid             (read_master_axi_awid    [bank]),
-        .s_axi_awaddr           (read_master_axi_awaddr  [bank]),
-        .s_axi_awlen            (read_master_axi_awlen   [bank]),
-        .s_axi_awsize           (read_master_axi_awsize  [bank]),
-        .s_axi_awburst          (read_master_axi_awburst [bank]),
-        .s_axi_awlock           (read_master_axi_awlock  [bank]),
-        .s_axi_awcache          (read_master_axi_awcache [bank]),
-        .s_axi_awprot           (read_master_axi_awprot  [bank]),
-        .s_axi_awvalid          (read_master_axi_awvalid [bank]),
-        .s_axi_awready          (read_master_axi_awready [bank]),
-        .s_axi_wdata            (read_master_axi_wdata   [bank]),
-        .s_axi_wstrb            (read_master_axi_wstrb   [bank]),
-        .s_axi_wlast            (read_master_axi_wlast   [bank]),
-        .s_axi_wvalid           (read_master_axi_wvalid  [bank]),
-        .s_axi_wready           (read_master_axi_wready  [bank]),
-        .s_axi_bid              (read_master_axi_bid     [bank]),
-        .s_axi_bresp            (read_master_axi_bresp   [bank]),
-        .s_axi_bvalid           (read_master_axi_bvalid  [bank]),
-        .s_axi_bready           (read_master_axi_bready  [bank]),
+        // .s_axi_awid             (read_master_axi_awid    [bank]),
+        // .s_axi_awaddr           (read_master_axi_awaddr  [bank]),
+        // .s_axi_awlen            (read_master_axi_awlen   [bank]),
+        // .s_axi_awsize           (read_master_axi_awsize  [bank]),
+        // .s_axi_awburst          (read_master_axi_awburst [bank]),
+        // .s_axi_awlock           (read_master_axi_awlock  [bank]),
+        // .s_axi_awcache          (read_master_axi_awcache [bank]),
+        // .s_axi_awprot           (read_master_axi_awprot  [bank]),
+        // .s_axi_awvalid          (read_master_axi_awvalid [bank]),
+        // .s_axi_awready          (read_master_axi_awready [bank]),
+        // .s_axi_wdata            (read_master_axi_wdata   [bank]),
+        // .s_axi_wstrb            (read_master_axi_wstrb   [bank]),
+        // .s_axi_wlast            (read_master_axi_wlast   [bank]),
+        // .s_axi_wvalid           (read_master_axi_wvalid  [bank]),
+        // .s_axi_wready           (read_master_axi_wready  [bank]),
+        // .s_axi_bid              (read_master_axi_bid     [bank]),
+        // .s_axi_bresp            (read_master_axi_bresp   [bank]),
+        // .s_axi_bvalid           (read_master_axi_bvalid  [bank]),
+        // .s_axi_bready           (read_master_axi_bready  [bank]),
+
+        .s_axi_awid             (transformation_engine_axi_awid    ),
+        .s_axi_awaddr           (transformation_engine_axi_awaddr  ),
+        .s_axi_awlen            (transformation_engine_axi_awlen   ),
+        .s_axi_awsize           (transformation_engine_axi_awsize  ),
+        .s_axi_awburst          (transformation_engine_axi_awburst ),
+        .s_axi_awlock           (transformation_engine_axi_awlock  ),
+        .s_axi_awcache          (transformation_engine_axi_awcache ),
+        .s_axi_awprot           (transformation_engine_axi_awprot  ),
+        .s_axi_awvalid          (transformation_engine_axi_awvalid ),
+        .s_axi_awready          (read_master_axi_awready [bank]    ),
+        .s_axi_wdata            (transformation_engine_axi_wdata   ),
+        .s_axi_wstrb            (transformation_engine_axi_wstrb   ),
+        .s_axi_wlast            (transformation_engine_axi_wlast   ),
+        .s_axi_wvalid           (transformation_engine_axi_wvalid  ),
+        .s_axi_wready           (read_master_axi_wready  [bank]    ),
+        .s_axi_bid              (read_master_axi_bid     [bank]    ),
+        .s_axi_bresp            (read_master_axi_bresp   [bank]    ),
+        .s_axi_bvalid           (read_master_axi_bvalid  [bank]    ),
+        .s_axi_bready           (transformation_engine_axi_bready  ),
+
+
         .s_axi_arid             (read_master_axi_arid    [bank]),
         .s_axi_araddr           (read_master_axi_araddr  [bank]),
         .s_axi_arlen            (read_master_axi_arlen   [bank]),
@@ -399,50 +431,55 @@ axi_ram #(
 );
 
 // DRAM model for FTE transactions
-axi_ram #(
-    .DATA_WIDTH(512),
-    .ADDR_WIDTH(34),
-    .ID_WIDTH(8)
-) dram_c1 (
-    .clk                    (sys_clk),
-    .rst                    (sys_rst),
 
-    .s_axi_awid             (transformation_engine_axi_awid    ),
-    .s_axi_awaddr           (transformation_engine_axi_awaddr  ),
-    .s_axi_awlen            (transformation_engine_axi_awlen   ),
-    .s_axi_awsize           (transformation_engine_axi_awsize  ),
-    .s_axi_awburst          (transformation_engine_axi_awburst ),
-    .s_axi_awlock           (transformation_engine_axi_awlock  ),
-    .s_axi_awcache          (transformation_engine_axi_awcache ),
-    .s_axi_awprot           (transformation_engine_axi_awprot  ),
-    .s_axi_awvalid          (transformation_engine_axi_awvalid ),
-    .s_axi_awready          (transformation_engine_axi_awready ),
-    .s_axi_wdata            (transformation_engine_axi_wdata   ),
-    .s_axi_wstrb            (transformation_engine_axi_wstrb   ),
-    .s_axi_wlast            (transformation_engine_axi_wlast   ),
-    .s_axi_wvalid           (transformation_engine_axi_wvalid  ),
-    .s_axi_wready           (transformation_engine_axi_wready  ),
-    .s_axi_bid              (transformation_engine_axi_bid     ),
-    .s_axi_bresp            (transformation_engine_axi_bresp   ),
-    .s_axi_bvalid           (transformation_engine_axi_bvalid  ),
-    .s_axi_bready           (transformation_engine_axi_bready  ),
-    .s_axi_arid             (transformation_engine_axi_arid    ),
-    .s_axi_araddr           (transformation_engine_axi_araddr  ),
-    .s_axi_arlen            (transformation_engine_axi_arlen   ),
-    .s_axi_arsize           (transformation_engine_axi_arsize  ),
-    .s_axi_arburst          (transformation_engine_axi_arburst ),
-    .s_axi_arlock           (transformation_engine_axi_arlock  ),
-    .s_axi_arcache          (transformation_engine_axi_arcache ),
-    .s_axi_arprot           (transformation_engine_axi_arprot  ),
-    .s_axi_arvalid          (transformation_engine_axi_arvalid ),
-    .s_axi_arready          (transformation_engine_axi_arready ),
-    .s_axi_rid              (transformation_engine_axi_rid     ),
-    .s_axi_rdata            (transformation_engine_axi_rdata   ),
-    .s_axi_rresp            (transformation_engine_axi_rresp   ),
-    .s_axi_rlast            (transformation_engine_axi_rlast   ),
-    .s_axi_rvalid           (transformation_engine_axi_rvalid  ),
-    .s_axi_rready           (transformation_engine_axi_rready  )
-);
+
+
+
+
+// axi_ram #(
+//     .DATA_WIDTH(512),
+//     .ADDR_WIDTH(34),
+//     .ID_WIDTH(8)
+// ) dram_c1 (
+//     .clk                    (sys_clk),
+//     .rst                    (sys_rst),
+
+//     .s_axi_awid             (transformation_engine_axi_awid    ),
+//     .s_axi_awaddr           (transformation_engine_axi_awaddr  ),
+//     .s_axi_awlen            (transformation_engine_axi_awlen   ),
+//     .s_axi_awsize           (transformation_engine_axi_awsize  ),
+//     .s_axi_awburst          (transformation_engine_axi_awburst ),
+//     .s_axi_awlock           (transformation_engine_axi_awlock  ),
+//     .s_axi_awcache          (transformation_engine_axi_awcache ),
+//     .s_axi_awprot           (transformation_engine_axi_awprot  ),
+//     .s_axi_awvalid          (transformation_engine_axi_awvalid ),
+//     .s_axi_awready          (transformation_engine_axi_awready ),
+//     .s_axi_wdata            (transformation_engine_axi_wdata   ),
+//     .s_axi_wstrb            (transformation_engine_axi_wstrb   ),
+//     .s_axi_wlast            (transformation_engine_axi_wlast   ),
+//     .s_axi_wvalid           (transformation_engine_axi_wvalid  ),
+//     .s_axi_wready           (transformation_engine_axi_wready  ),
+//     .s_axi_bid              (transformation_engine_axi_bid     ),
+//     .s_axi_bresp            (transformation_engine_axi_bresp   ),
+//     .s_axi_bvalid           (transformation_engine_axi_bvalid  ),
+//     .s_axi_bready           (transformation_engine_axi_bready  ),
+//     .s_axi_arid             (transformation_engine_axi_arid    ),
+//     .s_axi_araddr           (transformation_engine_axi_araddr  ),
+//     .s_axi_arlen            (transformation_engine_axi_arlen   ),
+//     .s_axi_arsize           (transformation_engine_axi_arsize  ),
+//     .s_axi_arburst          (transformation_engine_axi_arburst ),
+//     .s_axi_arlock           (transformation_engine_axi_arlock  ),
+//     .s_axi_arcache          (transformation_engine_axi_arcache ),
+//     .s_axi_arprot           (transformation_engine_axi_arprot  ),
+//     .s_axi_arvalid          (transformation_engine_axi_arvalid ),
+//     .s_axi_arready          (transformation_engine_axi_arready ),
+//     .s_axi_rid              (transformation_engine_axi_rid     ),
+//     .s_axi_rdata            (transformation_engine_axi_rdata   ),
+//     .s_axi_rresp            (transformation_engine_axi_rresp   ),
+//     .s_axi_rlast            (transformation_engine_axi_rlast   ),
+//     .s_axi_rvalid           (transformation_engine_axi_rvalid  ),
+//     .s_axi_rready           (transformation_engine_axi_rready  )
+// );
 
 
 
