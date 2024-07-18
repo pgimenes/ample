@@ -105,7 +105,10 @@ logic [FEATURE_COUNT-1:0]                      row_pop_shift;
 logic [$clog2(FEATURE_COUNT):0]                row_counter;
 
 logic reset_weights;
+logic empty_weights; //When next layer is ready to fetch weights, reset wr_ptr of all row FIFOs
 
+
+assign empty_weights = (weight_bank_state == WEIGHT_BANK_FSM_WEIGHTS_WAITING) && (weight_bank_state_n == WEIGHT_BANK_FSM_FETCH_REQ);
 // ==================================================================================================================================================
 // Instances
 // ==================================================================================================================================================
@@ -123,6 +126,7 @@ for (genvar row = 0; row < FEATURE_COUNT; row++) begin
         
         .pop            (row_fifo_pop       [row]),
         .reset_read_ptr (reset_weights),
+        .reset_write_ptr(empty_weights),
         .out_valid  (row_fifo_out_valid [row]),
         .out_data   (row_fifo_out_data  [row]),
         

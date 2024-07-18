@@ -30,8 +30,11 @@ class Driver():
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_out_features"], layer["out_feature_count"])
         # Addresses
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_adjacency_list_address_lsb"], layer["adjacency_list_address"])
-        await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_in_messages_address_lsb"], layer["in_messages_address"])
+        # await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_in_messages_address_lsb"], layer["in_messages_address"])
+
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_weights_address_lsb"], layer["weights_address"])
+        await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_in_messages_address_lsb"], layer["in_messages_address"])
+
         # TO DO: second precision weights
 
         # AGE register bank
@@ -40,9 +43,13 @@ class Driver():
         await self.axil_driver.axil_write(self.age_regs["layer_config_out_features"], layer["out_feature_count"])
 
         # FTE register bank
+
         self.dut._log.info("Programming FTE register bank layer configuration.")
         await self.axil_driver.axil_write(self.fte_regs["layer_config_in_features"], layer["in_feature_count"])
         await self.axil_driver.axil_write(self.fte_regs["layer_config_out_features"], layer["out_feature_count"])
+
+        #LSB and MSB bug potential TODO Split into MSB and LSB
+        await self.axil_driver.axil_write(self.fte_regs["layer_config_out_features_address_lsb"], layer["out_messages_address"])
 
         # NSB register bank
         self.dut._log.info("Programming NSB register bank layer configuration.")

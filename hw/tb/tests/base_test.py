@@ -32,7 +32,7 @@ class BaseTest:
 
         # self.age_monitor = AGE_Monitor(dut.top_i.aggregation_engine_i, self.variant)
         # self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
-        # self.prefetcher_monitor = Prefetcher_Monitor(dut.top_i.prefetcher_i, self.variant)
+        self.prefetcher_monitor = Prefetcher_Monitor(dut.top_i.prefetcher_i, self.variant)
 
         # self.fte_monitor = FTE_Monitor(dut.top_i.transformation_engine_i, self.variant)
 
@@ -51,7 +51,7 @@ class BaseTest:
             start_address=dut.top_i.transformation_engine_i.axi_write_master_req_start_address,
             req_len=dut.top_i.transformation_engine_i.axi_write_master_req_len,
             data_valid=dut.top_i.transformation_engine_i.axi_write_master_data_valid,
-            data=dut.top_i.transformation_engine_i.axi_write_master_data,
+            data=dut.top_i.transformation_engine_i.transformation_core_axi_write_master_data_unreversed,
             pop=dut.top_i.transformation_engine_i.axi_write_master_pop,
             resp_valid=dut.top_i.transformation_engine_i.axi_write_master_resp_valid,
             resp_ready=dut.top_i.transformation_engine_i.axi_write_master_resp_ready

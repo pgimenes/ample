@@ -1,6 +1,9 @@
 
 import top_pkg::*;
 
+//Temporary fix to reverse feature order in writeback
+//TODO Change feature writeback order to be in order of systolic modules - remove this import
+import prefetcher_pkg::*;
 module feature_transformation_core #(
     parameter PRECISION = top_pkg::FLOAT_32,
     parameter FLOAT_WIDTH = 32,
@@ -52,6 +55,7 @@ module feature_transformation_core #(
     input  logic                                                                                      axi_write_master_pop,
     output logic                                                                                      axi_write_master_data_valid,
     output logic [511:0]                                                                              axi_write_master_data,
+    output logic [511:0]                                                                               axi_write_master_data_unreversed, //Temp
 
     input  logic                                                                                      axi_write_master_resp_valid,
     output logic                                                                                      axi_write_master_resp_ready,
@@ -490,7 +494,7 @@ integer sys_module;
 
 
 logic [$clog2(MATRIX_N*SYSTOLIC_MODULE_COUNT)-1:0] module_index;
-
+//Temp
 always_comb begin
     out_features_required_bytes = layer_config_out_features_count * 4; // 4 bytes per feature
     out_features_required_bytes = {out_features_required_bytes[$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1 : 6], 6'd0} + (out_features_required_bytes[5:0] ? 'd64 : 1'b0); // nearest multiple of 64
@@ -516,9 +520,9 @@ always_comb begin
     
     //Vector bit-select and part-select addressing
 
-
-    
-    axi_write_master_data = sys_module_pe_acc_row0[sent_writeback_beats*SYS_MODULES_PER_BEAT +: SYS_MODULES_PER_BEAT];
+    //Temp
+    axi_write_master_data_unreversed = sys_module_pe_acc_row0[sent_writeback_beats*SYS_MODULES_PER_BEAT +: SYS_MODULES_PER_BEAT];
+    axi_write_master_data = reverse_float_order(sys_module_pe_acc_row0[sent_writeback_beats*SYS_MODULES_PER_BEAT +: SYS_MODULES_PER_BEAT]);
 
     
     // axi_write_master_data = {sys_module_pe_acc [SYS_MODULES_PER_BEAT*sent_writeback_beats + 'd3][0],

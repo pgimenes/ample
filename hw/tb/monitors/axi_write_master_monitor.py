@@ -8,6 +8,9 @@ import struct
 
 import torch
 
+from cocotb.binary import BinaryValue
+
+
 #Debugging
 from tb.utils.common import delay, allocate_lsb
 from cocotb.decorators import coroutine
@@ -32,6 +35,7 @@ class AXIWriteMasterMonitor:
         # self._thread = cocotb.scheduler.add(self.monitor_write_transactions())
 
         cocotb.start_soon(self.monitor_write_transactions())
+        self.expected_layer_features_by_address = {}
 
 
     async def monitor_write_transactions(self):
@@ -97,6 +101,7 @@ class AXIWriteMasterMonitor:
                                 self.log.error(f"Data mismatch for address {current_transaction['start_address']}")
 
 
+                        
                         self.log.info(" ")
                         self.log.info("--------------------")
                     else:
@@ -114,51 +119,47 @@ class AXIWriteMasterMonitor:
     #     await cocotb.triggers.Join(self._monitor_write_transactions())
 
     def load_layer_features(self, nodeslot_programming,layer_features):
-        #Need to convert pytorch tensor to a dict of hex values of features and their expeted memory locaitons
-        #Will also need to see the nodeslot programming and read in the address
-        self.expected_layer_features = []
+      
         self.log.info("load_layer_features")
 
-        # Initialize an empty dictionary for quick lookups by address
         self.expected_layer_features_by_address = {}
-        #or can just modify the node dict to be mapped by addresses
 
-        # Process each node slot
         for nodslot in nodeslot_programming:
+
             node_id = nodslot['node_id']
-            address = (nodslot['adjacency_list_address_msb'] << 32) | nodslot['adjacency_list_address_lsb']
+            # if node_id == 0:
+            #     offset = out_messages_address_lsb = nodslot['out_messages_address_lsb']
+
+            # address = (nodslot['adjacency_list_address_msb'] << 32) | nodslot['adjacency_list_address_lsb']
+
             data = layer_features[node_id]
             out_messages_address_lsb = nodslot['out_messages_address_lsb']
-            axi_write_master_address =int(out_messages_address_lsb-17408)
-            # Create a dictionary entry for the current node
-            # Subract 17408 to get the address of the read master - monitor axi signals to get actual write address
+            axi_write_master_address =int(out_messages_address_lsb)
+            
             node_dict = {
                 'node_id': node_id,
                 'address': axi_write_master_address, 
                 'data': data
             }
-            # Append the node_dict to the list
-            self.expected_layer_features.append(node_dict)
-            
-            # Add the node_dict to the dictionary for quick lookups by address
+
             self.expected_layer_features_by_address[axi_write_master_address] = node_dict
 
-        # Log the expected nodes
-        for node in self.expected_layer_features:
-            self.log.info(f"Expected Node: {node}")
-        print(self.expected_layer_features_by_address)
-          # Log the loading process
-        # self.log.info("done")
-        # self.running = True
+    
+        # print(self.expected_layer_features_by_address)
 
 
     def get_node_by_address(self,address):
-        # print('target',address)
-        # print(self.expected_layer_features_by_address)
-        return self.expected_layer_features_by_address.get(address, None)
+
+        return self.expected_layer_features_by_address.pop(address, None)
 
       
-        
+    def empty_expected_layer_features(self):
+        return (self.expected_layer_features_by_address == {})
+
+    def expected_layer_features(self):
+        return self.expected_layer_features_by_address
+    
+
 
     def hex_to_floats(self,hex_string):
         # Remove '0x' prefix if present
@@ -186,4 +187,25 @@ class AXIWriteMasterMonitor:
         floats = struct.unpack('>' + 'f' * num_floats, byte_data)
         
         return floats
+    
+    # #temp TODO reverse float order at input
+    # def reverse_bin_float_order(self,msg_queue_write_data):
+    #     # MESSAGE_QUEUE_WIDTH is the length of the binary string
+    #     MESSAGE_QUEUE_WIDTH = len(msg_queue_write_data)
+        
+    #     # Number of 32-bit floats in the input data
+    #     NUM_FLOATS = MESSAGE_QUEUE_WIDTH // 32
+    #     print(msg_queue_write_data)
+    #     # Split the input data into 32-bit chunks
+    #     # float_chunks = [msg_queue_write_data[i*32:(i+1)*32] for i in range(NUM_FLOATS-1)]
+    #     float_chunks = [str(msg_queue_write_data[i*32:(i+1)*32]) for i in range(NUM_FLOATS-1)]
+
+    #     # Reverse the order of the chunks
+    #     reversed_chunks = float_chunks[::-1]
+        
+    #     # Concatenate the reversed chunks back into a single binary string
+    #     reversed_data = ''.join(reversed_chunks)
+    #     reversed_data = BinaryValue(reversed_data)
+    #     return reversed_data
+
     

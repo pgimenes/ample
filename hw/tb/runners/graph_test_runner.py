@@ -113,11 +113,37 @@ async def graph_test_runner(dut):
     x_loaded,edge_index_loaded = load_graph()
 
 
+
+
+
+
     ####Remove bias from the model TODO Add biases
+    # for name, param in model.state_dict():
+    #     if 'bias' in name:
+    #         param.data = torch.tensor(0 * param.size()[0])
+
+
+    # state_dict = model.state_dict()
+
+    # # Loop through the layers to reset the biases
+    # for name, layer in model.named_children():
+    #     if isinstance(layer, torch.nn.Sequential):
+    #         for i, sub_layer in enumerate(layer):
+    #             bias_key = f'{name}.{i}.bias'
+    #             if bias_key in state_dict:
+    #                 state_dict[bias_key] = torch.zeros_like(state_dict[bias_key])
+
+    # # Load the modified state_dict back into the model
+    # model.load_state_dict(state_dict)
     state_dict = model.state_dict()
-    state_dict['layers.0.bias'] = torch.tensor([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+    state_dict['layers.0.bias'] = torch.tensor([0] * state_dict['layers.0.bias'].size()[0])
+    state_dict['layers.1.bias'] = torch.tensor([0] * state_dict['layers.1.bias'].size()[0])
+    # state_dict['layers.2.bias'] = torch.tensor([0] * state_dict['layers.2.bias'].size()[0])
+    # state_dict['layers.3.bias'] = torch.tensor([0] * state_dict['layers.3.bias'].size()[0])
+
     print(state_dict['layers.0.bias'].size())
     model.load_state_dict(state_dict)
+    
     ####
 
 
@@ -128,6 +154,14 @@ async def graph_test_runner(dut):
 
     
     dut._log.info(f"Output {output}")
+
+
+    dut._log.info(f"Input ")
+    for idx,item in enumerate(x_loaded):
+        dut._log.info(idx)
+        dut._log.info(item)
+
+        
     del model
 
     # Load nodeslot/register programming and start clocks/reset
@@ -167,6 +201,13 @@ async def graph_test_runner(dut):
         await flush_nodeslots(test)
         # test.fte_monitor.start = False
         # await test.end_test()
+        if test.axi_monitor.empty_expected_layer_features():
+            dut._log.info("All nodes written.")
+        else:
+            dut._log.info("Not all nodes not written.")
+            print(test.axi_monitor.expected_layer_features_by_address)
+
+
         test.dut._log.info("Layer finished.")
         # del test.axi_monitor
 

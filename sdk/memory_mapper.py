@@ -78,7 +78,6 @@ class Memory_Mapper:
                 raise RuntimeError(f"Unrecognized layer {layer}")
             
             out_feature_count = linear.weight.shape[0]
-
             for outf in range(out_feature_count):
                 self.memory_hex += float_list_to_byte_list(linear.weight[outf], align=True, alignment=64)
             if(idx < self.num_layers-1):

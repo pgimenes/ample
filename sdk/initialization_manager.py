@@ -88,7 +88,7 @@ class InitManager:
             'transformation_bias': 0,
             'dequantization_parameter': self.trained_graph.dequantization_parameter,
             'adjacency_list_address': self.memory_mapper.offsets['adj_list'],
-            'in_messages_address': self.memory_mapper.offsets['in_messages'],
+            'in_messages_address': self.memory_mapper.offsets['in_messages'], #Change to out messages address of last layer
             'weights_address': self.memory_mapper.offsets['weights'][idx],
             'out_messages_address': self.memory_mapper.offsets['out_messages'],
             'aggregation_wait_count': 4,
