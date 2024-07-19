@@ -682,7 +682,10 @@ aggregation_engine aggregation_engine_i (
 // Aggregation Buffer
 // ====================================================================================
 
-for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
+
+generate begin:AGGREGATION_BUFFER
+
+for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin: AGGREGATION_BUFFER_i
 
     hybrid_buffer #(
         .NUM_SLOTS   (top_pkg::AGGREGATION_BUFFER_SLOTS),
@@ -712,7 +715,8 @@ for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT;
 
     );
 end
-
+end
+endgenerate
 
 // ====================================================================================
 // Transformation Engine

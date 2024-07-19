@@ -87,6 +87,7 @@ VERILOG_SOURCES += \
 	$(WORKAREA)/hw/build/ip/lib/buffers/hybrid_buffer/hybrid_buffer_driver.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/hybrid_buffer/hybrid_buffer_slot.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/ultraram_fifo.sv \
+	$(WORKAREA)/hw/build/ip/lib/buffers/buffer_bram.sv \
 	$(WORKAREA)/hw/build/ip/lib/arithmetic/aggregators/passthrough_aggregator.sv \
 	$(WORKAREA)/hw/build/ip/lib/systolic_modules/activation_core.sv \
 	$(WORKAREA)/hw/build/ip/lib/systolic_modules/processing_element.sv \

@@ -216,6 +216,7 @@ build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
 	source $(SIM_BUILD)/libs.do
 	source $(SIM_BUILD)/compile.do
 	source $(SIM_BUILD)/opt.do
+	touch $(SIM_BUILD)/modelsim.log
 	
 #-l $(SIM_BUILD)/modelsim.log
 run_sim: $(SIM_BUILD)/simulate.do

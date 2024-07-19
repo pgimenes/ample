@@ -131,6 +131,10 @@ make build
 make sim GUI=1
 ```
 
+Note: Arg Simulation will simualte with Xillinx IP and Simulation_Quick will simulate without FP units, activaiton, bias or aggregation
+
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 

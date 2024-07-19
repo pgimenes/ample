@@ -35,9 +35,9 @@ assign read_address =
 // Instances
 // ------------------------------------------------------------
 
-if (BUFFER_TYPE == "AGGREGATION") begin
-    
-    aggregation_buffer_sdp_bram fifo (
+`ifdef SIMULATION
+
+    buffer_bram fifo (
         .clka     (core_clk),    // input wire clka
         .ena      ('1),      // input wire ena
         .wea      (write_enable),      // input wire [0 : 0] wea
@@ -50,22 +50,40 @@ if (BUFFER_TYPE == "AGGREGATION") begin
         .doutb    (out_feature)
     );
 
-end else if (BUFFER_TYPE == "TRANSFORMATION") begin
-    
-    transformation_buffer_sdp_bram fifo (
-        .clka           (core_clk),    // input wire clka
-        .ena            ('1),      // input wire ena
-        .wea            (write_enable),        // input wire [0 : 0] wea
-        .addra          (write_address),    // input wire [5 : 0] addra
-        .dina           (write_data),      // input wire [511 : 0] dina
-        
-        .clkb           (core_clk),      // input wire clkb
-        .enb            ('1),      // input wire enb
-        .addrb          (read_address),    // input wire [9 : 0] addrb
-        .doutb          (out_feature)    // output wire [31 : 0] doutb
-    );
+`else
 
-end
+    if (BUFFER_TYPE == "AGGREGATION") begin
+        
+        aggregation_buffer_sdp_bram  fifo (
+            .clka     (core_clk),    // input wire clka
+            .ena      ('1),      // input wire ena
+            .wea      (write_enable),      // input wire [0 : 0] wea
+            .addra    (write_address),  // input wire [8 : 0] addra
+            .dina     (write_data),    // input wire [63 : 0] dina
+            
+            .clkb     (core_clk),    // input wire clkb
+            .enb      ('1),      // input wire enb
+            .addrb    (read_address),  // input wire [9 : 0] addrb
+            .doutb    (out_feature)
+        );
+
+    end else if (BUFFER_TYPE == "TRANSFORMATION") begin
+        
+        transformation_buffer_sdp_bram fifo (
+            .clka           (core_clk),    // input wire clka
+            .ena            ('1),      // input wire ena
+            .wea            (write_enable),        // input wire [0 : 0] wea
+            .addra          (write_address),    // input wire [5 : 0] addra
+            .dina           (write_data),      // input wire [511 : 0] dina
+            
+            .clkb           (core_clk),      // input wire clkb
+            .enb            ('1),      // input wire enb
+            .addrb          (read_address),    // input wire [9 : 0] addrb
+            .doutb          (out_feature)    // output wire [31 : 0] doutb
+        );
+
+    end
+`endif
 
 // Logic
 // ------------------------------------------------------------
