@@ -21,7 +21,7 @@ jobs:
   verilog-lint:
     runs-on: ubuntu-latest
     container:
-      image: verilator/verilator-lint:latest  # Use your Docker image
+      image: verilator/verilator:latest  # Use your Docker image
 
     steps:
       - name: Checkout code
