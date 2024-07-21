@@ -30,7 +30,7 @@ jobs:
       - name: Run Verilator Linter
         run: |
           mkdir -p lint_reports
-          find . -name "*.sv" -or -name "*.v" | xargs -I {} sh -c 'verilator --lint-only --Werror {} > lint_reports/$(basename {}).lint || true'
+          find . -name "*.sv" -or -name "*.v" | xargs -I {} sh -c 'verilator --lint-only -Werror- {} > lint_reports/$(basename {}).lint || true'
 
       - name: Upload lint reports
         uses: actions/upload-artifact@v4
