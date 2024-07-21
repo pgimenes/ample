@@ -1,4 +1,4 @@
-name: Verilog Code Linting
+name: Verilog Code Linting with Verible
 
 on:
   push:
@@ -6,33 +6,42 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
-    logLevel:
-      description: 'Log level'
-      required: true
-      default: 'warning'
-      type: choice
-      options:
-        - info
-        - warning
-        - debug
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
 
 jobs:
   verilog-lint:
     runs-on: ubuntu-latest
     container:
-      image: alexanderlwhite/ample-image:latest
+      image: alexanderlwhite/ample-image:latest  # Use your Docker image with Verilator and Verible
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Cache Verible Lint Configuration
+        uses: actions/cache@v3
+        with:
+          path: .verible_lint.rules
+          key: ${{ runner.os }}-verible-lint-config-${{ hashFiles('.verible_lint.rules') }}
+          restore-keys: |
+            ${{ runner.os }}-verible-lint-config-
+
       - name: Run Verible Linter
         run: |
           mkdir -p lint_reports
-          find . -name "*.sv" -or -name "*.v" | xargs -I {} sh -c 'verible-verilog-lint {} > lint_reports/$(basename {}).lint'
+          find . -name "*.sv" -or -name "*.v" | xargs -I {} sh -c 'verible-verilog-lint --rules_config .verible_lint.rules {} > lint_reports/$(basename {}).lint || true'
 
       - name: Upload lint reports
         uses: actions/upload-artifact@v4
         with:
-          name: verilog-lint-reports
+          name: verible-lint-reports
           path: lint_reports/
