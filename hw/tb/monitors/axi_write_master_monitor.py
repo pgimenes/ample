@@ -16,6 +16,9 @@ from tb.utils.common import delay, allocate_lsb
 from cocotb.decorators import coroutine
 
 from torch import tensor
+
+
+
 class AXIWriteMasterMonitor:
     def __init__(self, clk, req_valid, req_ready, start_address, req_len, data_valid, data,pop, resp_valid, resp_ready):
         self.clk = clk
@@ -31,87 +34,92 @@ class AXIWriteMasterMonitor:
         self.transactions = {}  # Tracking ongoing transactions
         self.log = SimLog("cocotb.AXIWriteMasterMonitor")
         self.expected = {}  # Tracking ongoing transactions
+        self.running = False
+        self.expected_layer_features_by_address = {}
 
         # self._thread = cocotb.scheduler.add(self.monitor_write_transactions())
 
-        cocotb.start_soon(self.monitor_write_transactions())
-        self.expected_layer_features_by_address = {}
+        self._thread = cocotb.scheduler.add(self.monitor_write_transactions())
+
+    def kill(self):
+        self.log.debug("Killing monitor")
+        self._running = False
+        if self._thread:
+            self._thread.kill()
+            self._thread = None
+
+
+
 
 
     async def monitor_write_transactions(self):
-        current_transaction = None
         while True:
+            if self.running == False:
+                return
+            
             await RisingEdge(self.clk)
 
-            # Handle write request
-            if self.req_valid.value and self.req_ready.value:
+            # Write Request
+            if self.req_valid.value and self.req_ready.value: #Check not happening twice
                 start_addr = int(self.start_address.value)
-                # data = int(self.data.value)
                 length = int(self.req_len.value)
-
-                # data_chunk = hex(self.data.value)
-
                 current_transaction = {
                     'start_address': start_addr,
                     'data': [],
                     'expected_length': length+1
                 }
+                self.log.debug(f"Transaction {current_transaction}")
 
-                self.transactions[start_addr] = current_transaction
-                self.log.info(f"Transaction {current_transaction}")
-
-            # Handle data writing
+            # Data
             if self.data_valid.value and self.pop.value and current_transaction:
                 data_chunk = hex(self.data.value)
-                # print(data_chunk)
                 current_transaction['data'].append(self.hex_to_floats(data_chunk))
-                # self.log.info(f"Data {self.hex_to_floats(data_chunk)}")
-              
+            
 
-            # Handle response (transaction end)
-            if self.resp_valid.value and self.resp_ready.value:
-                if current_transaction and ((len(current_transaction['data']) != current_transaction['expected_length'])):
-                    self.log.error(f"Transaction data length mismatch at address {current_transaction['start_address']}")
-                    # raise TestFailure("Data length mismatch")
-                
+            # Response
+            if self.resp_valid.value and self.resp_ready.value and current_transaction: #Rmeove current_transaction and fix RTL to be high for single clock cycle - check if different clock e.g 100Mhz - 2 cycles at 200MHz
+                # if current_transaction and ((len(current_transaction['data']) != current_transaction['expected_length'])):
+                #     self.log.error(f"Transaction data length mismatch at address {current_transaction['start_address']}") 
+
+                assert len(current_transaction['data']) == current_transaction['expected_length'], f"Transaction data length mismatch at address {current_transaction['start_address']}"
+     
+             
+                self.log.debug("Getting node")
+                expected_node = self.get_node_by_address(current_transaction['start_address'])
+                if expected_node: #Change to assertion
+                    self.log.debug("--------------------")
+                    self.log.debug("")
+                    self.log.debug(f"Node found: {expected_node['node_id']}, Address: {expected_node['address']}")
+
+
+                    # Check
+                    self.log.debug(f"Data expected {expected_node['data']}")
+                    current_transaction['data'] = tensor([item for sublist in current_transaction['data'] for item in sublist[::-1]])
+
+                    self.log.debug(f"Data gotten {current_transaction['data']}")
+                    assert current_transaction['data'].shape == expected_node['data'].shape, f"Data size mismatch for address {current_transaction['start_address']}"
+
+                    
+                    assert torch.allclose(current_transaction['data'], expected_node['data'], atol=1e-3), \
+                        f"Data mismatch for address {current_transaction['start_address']}"
+                    
+                    self.log.info(f"Data and address correctly matched for {expected_node['node_id']}")
+
+
+
+                    
+
+                    self.log.debug(" ")
+                    self.log.debug("--------------------")
                 else:
-                    self.log.info("getting node")
-
-                    expected_node = self.get_node_by_address(current_transaction['start_address'])
+                    self.log.warning(f"No node found with address {current_transaction['start_address']}")
                     
-                    if expected_node:
-                        self.log.info("--------------------")
-                        self.log.info("")
-                        self.log.info(f"Node found: {expected_node['node_id']}, Address: {expected_node['address']}")
-                   
-
-                        # Check if the data written matches the expected data
-                        self.log.info(f"Data expected {expected_node['data']}")
-                        current_transaction['data'] = tensor([item for sublist in current_transaction['data'] for item in sublist[::-1]])
-                        print(current_transaction['data'].dtype)
-                        print(expected_node['data'].dtype)
-
-                        self.log.info(f"Data gotten {current_transaction['data']}")
-
-                        if current_transaction['data'].shape != expected_node['data'].shape:
-                            self.log.error(f"Data size mismatch for address {current_transaction['start_address']}")
-                        else:
-
-                            if not torch.allclose(current_transaction['data'], expected_node['data'],atol=1e-3):
-                                self.log.error(f"Data mismatch for address {current_transaction['start_address']}")
-
-
-                        
-                        self.log.info(" ")
-                        self.log.info("--------------------")
-                    else:
-                        self.log.error(f"No node found with address {current_transaction['start_address']}")
                     
-                       
+                if current_transaction:
+                    del current_transaction['start_address']
+                    current_transaction = None
 
-                # Clean up transaction
-                del self.transactions[current_transaction['start_address']]
-                current_transaction = None
+
 
 
     # async def end(self):
@@ -120,7 +128,7 @@ class AXIWriteMasterMonitor:
 
     def load_layer_features(self, nodeslot_programming,layer_features):
       
-        self.log.info("load_layer_features")
+        self.log.debug("Loading Layer Features")
 
         self.expected_layer_features_by_address = {}
 
@@ -144,8 +152,9 @@ class AXIWriteMasterMonitor:
 
             self.expected_layer_features_by_address[axi_write_master_address] = node_dict
 
-    
-        # print(self.expected_layer_features_by_address)
+        self.log.debug("Expected Data Indexed by Address:")
+
+        self.log.debug(self.expected_layer_features_by_address)
 
 
     def get_node_by_address(self,address):

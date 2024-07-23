@@ -12,7 +12,7 @@ from tb.driver import Driver
 from tb.utils.common import NodePrecision
 
 from tb.variant import Variant
-# from tb.monitors.age_monitor import AGE_Monitor
+from tb.monitors.age_monitor import AGE_Monitor
 from tb.monitors.nsb_monitor import NSB_Monitor
 from tb.monitors.prefetcher_monitor import Prefetcher_Monitor
 # from tb.monitors.fte_monitor import FTE_Monitor
@@ -29,10 +29,10 @@ class BaseTest:
         self.driver = Driver(dut)
 
         self.variant = Variant()
-
+# 
         # self.age_monitor = AGE_Monitor(dut.top_i.aggregation_engine_i, self.variant)
-        # self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
-        self.prefetcher_monitor = Prefetcher_Monitor(dut.top_i.prefetcher_i, self.variant)
+        self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
+        # self.prefetcher_monitor = Prefetcher_Monitor(dut.top_i.prefetcher_i, self.variant)
 
         # self.fte_monitor = FTE_Monitor(dut.top_i.transformation_engine_i, self.variant)
 
@@ -100,7 +100,14 @@ class BaseTest:
         # cocotb.fork(self.axi_monitor.monitor_write_transactions())
 
         # Start monitors
+        # self.nsb_monitor.running = True
         # self.nsb_monitor.start()
+
+        self.axi_monitor.running = True
+        cocotb.fork(self.axi_monitor.monitor_write_transactions())
+
+
+
         # self.age_monitor.start()
         # self.prefetcher_monitor.start()
         # self.fte_monitor.start()
@@ -116,9 +123,13 @@ class BaseTest:
         self.axi_monitor.load_layer_features(self.nodeslot_programming,layer_features)
 
     async def start_monitors(self):
+
+        self.axi_monitor.running = True
+        cocotb.fork(self.axi_monitor.monitor_write_transactions())
+
         # self.fte_monitor.start()
         # cocotb.fork(self.axi_monitor._monitor_write_transactions())
-        pass
+        
     async def stop_monitors(self):
         # self.fte_monitor.stop()
         # self.axi_monitor._monitor_write_transactions.kill()
@@ -130,12 +141,15 @@ class BaseTest:
         # self.dut._log.info("test is being kill")
 
         # Stop monitors
-        # self.nsb_monitor.stop()
+        # self.nsb_monitor.running = False
+        self.axi_monitor.running = False
+
+        # await self.nsb_monitor.stop()
         # self.age_monitor.stop()
         # self.fte_monitor.stop()
         # self.data_out_0_monitor.kill()
         # self.axi_monitor.end()
-        pass
+        # pass
 
     def load_regbank(self, regbank):
         json_path = os.path.join(self.regbank_path, regbank, regbank + "_regs.json")
@@ -182,11 +196,18 @@ class BaseTest:
     def program_layer_config (self, layer_id=0):
         self.driver.program_layer_config(self.layers[layer_id])
 
+    async def wait_end(self, timeout=1, timeout_unit="ms"):
+        while True:
+            await RisingEdge(self.clk)
+
+            break
+
     # CLOCK AND RESET
 
     async def start_clocks(self):
         cocotb.start_soon(Clock(self.dut.sys_clk, 5, units="ns").start())
         cocotb.start_soon(Clock(self.dut.regbank_clk, 5, units="ns").start())
+        
 
     async def drive_reset(self):
         self.dut._log.info("Driving reset")

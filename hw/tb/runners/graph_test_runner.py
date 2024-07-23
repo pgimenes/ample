@@ -1,5 +1,5 @@
 
-from cocotb.triggers import RisingEdge, Timer
+from cocotb.triggers import RisingEdge, Timer, Event
 from cocotb.utils import get_sim_time
 
 from tb.utils.common import NodeState, NodePrecision
@@ -40,7 +40,7 @@ async def drive_nodeslots(test):
                 for i in range(0, int(NODESLOT_COUNT/32)):
                     empty_mask = await test.driver.axil_driver.axil_read(test.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
                     free_mask = empty_mask.binstr + free_mask
-                test.dut._log.info("Free nodeslots: %s", free_mask)
+                test.dut._log.debug("Free nodeslots: %s", free_mask)
 
         # Check nodeslot range based on precision
         if (ns_programming["precision"] == "FLOAT_32"):
@@ -73,7 +73,7 @@ async def flush_nodeslots(test):
             empty_mask = await test.driver.axil_driver.axil_read(test.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
             free_mask = empty_mask.binstr + free_mask
         
-        test.dut._log.info("Free nodeslots: %s", free_mask)
+        test.dut._log.debug("Free nodeslots: %s", free_mask)
 
         if (free_mask == "1" * NODESLOT_COUNT):
             break
@@ -95,11 +95,20 @@ def load_graph(graph_path = '/home/aw1223/ip/agile/graph.pth'):
     return x_loaded,edge_index_loaded
 
 async def graph_test_runner(dut):
+    # global sim_running_event
 
+    # sim_running_event.set()
     dut._log.info("Starting Graph Test")
+    dut._log.info("*********************************************************")
+    dut._log.info("")
+    dut._log.info("*******************Starting Graph Test*******************")
+    dut._log.info("")
+    dut._log.info("*********************************************************")
 
     test = BaseTest(dut)
 
+    model = load_jit_model()
+    x_loaded,edge_index_loaded = load_graph()
 
     # data_out_0_monitor = StreamMonitor(
     #         dut.sys_clk,
@@ -109,8 +118,6 @@ async def graph_test_runner(dut):
     #         check=False,
     #     )
 
-    model = load_jit_model()
-    x_loaded,edge_index_loaded = load_graph()
 
 
 
@@ -141,7 +148,6 @@ async def graph_test_runner(dut):
     # state_dict['layers.2.bias'] = torch.tensor([0] * state_dict['layers.2.bias'].size()[0])
     # state_dict['layers.3.bias'] = torch.tensor([0] * state_dict['layers.3.bias'].size()[0])
 
-    print(state_dict['layers.0.bias'].size())
     model.load_state_dict(state_dict)
     
     ####
@@ -153,15 +159,14 @@ async def graph_test_runner(dut):
 
 
     
-    dut._log.info(f"Output {output}")
+    dut._log.debug(f"Output {output}")
 
 
-    dut._log.info(f"Input ")
+    dut._log.debug(f"Input ")
     for idx,item in enumerate(x_loaded):
-        dut._log.info(idx)
-        dut._log.info(item)
+        dut._log.debug(idx)
+        dut._log.debug(item)
 
-        
     del model
 
     # Load nodeslot/register programming and start clocks/reset
@@ -170,13 +175,19 @@ async def graph_test_runner(dut):
     await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.global_config["node_count"])
 
     for layer_idx, layer in enumerate(test.layers):
+        await test.start_monitors()
+
+        
         layer_features = output[layer_idx]
         dut._log.info(f"Starting layer {layer_idx}")
         outs = output[layer_idx]
-        dut._log.info(f"Layer Out Expected {outs}")
+        dut._log.debug(f"Layer Out Expected {outs}")
 
         # Load monitor
         test.load_layer_test(layer_features)
+        
+
+
         # test.start_monitors()
         # Layer configuration
         await test.driver.program_layer_config(layer)
@@ -200,18 +211,22 @@ async def graph_test_runner(dut):
         # test.fte_monitor.start = True
         await flush_nodeslots(test)
         # test.fte_monitor.start = False
-        # await test.end_test()
+        await test.end_test()
+
         if test.axi_monitor.empty_expected_layer_features():
             dut._log.info("All nodes written.")
         else:
             dut._log.info("Not all nodes not written.")
-            print(test.axi_monitor.expected_layer_features_by_address)
+
+            # print(test.axi_monitor.expected_layer_features_by_address)
 
 
         test.dut._log.info("Layer finished.")
         # del test.axi_monitor
 
         await delay(dut.regbank_clk, 10)
+    # test.axi_monitor.kill()
+    # sim_running_event.clear()
 
     stime = get_sim_time("ms")
     # raise TestFailure("Finished")

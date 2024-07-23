@@ -18,7 +18,7 @@ class Driver():
         
         self.dut._log.info("Ready to program layer configuration")
 
-        self.dut._log.info("Layer: %s", layer)
+        self.dut._log.debug("Layer: %s", layer)
 
         # Prefetcher register bank
         self.dut._log.info("Programming prefetcher register bank layer configuration.")
