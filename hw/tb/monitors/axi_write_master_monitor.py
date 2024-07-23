@@ -39,7 +39,7 @@ class AXIWriteMasterMonitor:
 
         # self._thread = cocotb.scheduler.add(self.monitor_write_transactions())
 
-        self._thread = cocotb.scheduler.add(self.monitor_write_transactions())
+        # self._thread = cocotb.scheduler.add(self.monitor_write_transactions())
 
     def kill(self):
         self.log.debug("Killing monitor")

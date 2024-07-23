@@ -22,9 +22,7 @@ class Driver():
 
         # Prefetcher register bank
         self.dut._log.info("Programming prefetcher register bank layer configuration.")
-        self.dut._log.info("test")
 
-        self.dut._log.info("age_regs: %s", self.age_regs)
 
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_in_features"], layer["in_feature_count"])
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_out_features"], layer["out_feature_count"])
@@ -84,7 +82,7 @@ class Driver():
             done = await self.axil_driver.axil_read(done_reg)
             if (done):
                 # Weights fetch done, write to ACK
-                self.dut._log.info(f"{done_reg} register is asserted")
+                self.dut._log.debug(f"{done_reg} register is asserted")
                 await self.axil_driver.axil_write(ack_reg, 1)
                 break
             await delay(self.dut.regbank_clk, 10)

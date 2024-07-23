@@ -94,6 +94,23 @@ def load_graph(graph_path = '/home/aw1223/ip/agile/graph.pth'):
 
     return x_loaded,edge_index_loaded
 
+
+def get_expected_outputs(model, x, edge_index):
+    ####Remove bias from the model TODO Add biases####
+    state_dict = model.state_dict()
+    for name, param in state_dict.items():
+        if 'bias' in name:
+            # Reset the bias tensor to all zeros
+            state_dict[name] = torch.zeros_like(param)
+
+    model.load_state_dict(state_dict)
+    ###################################################
+    model.eval()
+    with torch.no_grad():
+        output = model(x, edge_index)
+
+    return output
+
 async def graph_test_runner(dut):
     # global sim_running_event
 
@@ -109,65 +126,18 @@ async def graph_test_runner(dut):
 
     model = load_jit_model()
     x_loaded,edge_index_loaded = load_graph()
-
-    # data_out_0_monitor = StreamMonitor(
-    #         dut.sys_clk,
-    #         dut.top_i.transformation_engine_i.axi_write_master_data,
-    #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
-    #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
-    #         check=False,
-    #     )
-
-
-
-
-
-
-
-    ####Remove bias from the model TODO Add biases
-    # for name, param in model.state_dict():
-    #     if 'bias' in name:
-    #         param.data = torch.tensor(0 * param.size()[0])
-
-
-    # state_dict = model.state_dict()
-
-    # # Loop through the layers to reset the biases
-    # for name, layer in model.named_children():
-    #     if isinstance(layer, torch.nn.Sequential):
-    #         for i, sub_layer in enumerate(layer):
-    #             bias_key = f'{name}.{i}.bias'
-    #             if bias_key in state_dict:
-    #                 state_dict[bias_key] = torch.zeros_like(state_dict[bias_key])
-
-    # # Load the modified state_dict back into the model
-    # model.load_state_dict(state_dict)
-    state_dict = model.state_dict()
-    state_dict['layers.0.bias'] = torch.tensor([0] * state_dict['layers.0.bias'].size()[0])
-    state_dict['layers.1.bias'] = torch.tensor([0] * state_dict['layers.1.bias'].size()[0])
-    # state_dict['layers.2.bias'] = torch.tensor([0] * state_dict['layers.2.bias'].size()[0])
-    # state_dict['layers.3.bias'] = torch.tensor([0] * state_dict['layers.3.bias'].size()[0])
-
-    model.load_state_dict(state_dict)
+    output = get_expected_outputs(model, x_loaded, edge_index_loaded)
     
-    ####
-
-
-    model.eval()
-    with torch.no_grad():
-        output = model(x_loaded, edge_index_loaded)
-
-
-    
-    dut._log.debug(f"Output {output}")
-
-
     dut._log.debug(f"Input ")
     for idx,item in enumerate(x_loaded):
         dut._log.debug(idx)
         dut._log.debug(item)
 
+
+    dut._log.debug(f"Output {output}")
+
     del model
+
 
     # Load nodeslot/register programming and start clocks/reset
     await test.initialize()

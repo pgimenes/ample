@@ -196,7 +196,7 @@ class MLP_Model(torch.nn.Module):
             layer = nn.Linear(in_channels, hidden_dimension, bias=True)
             layer.name = 'input_layer'
             self.layers.append(layer)
-            for _ in range(layer_count-2):
+            for i in range(layer_count-2):
                 layer = nn.Linear(hidden_dimension, hidden_dimension, bias=True)
                 layer.name = f'hidden_layer_{i}'
                 self.layers.append(layer)

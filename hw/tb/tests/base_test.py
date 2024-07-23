@@ -69,6 +69,18 @@ class BaseTest:
         #         self.float_bm_monitors[id] = BM_Monitor(dut.top_i.aggregation_engine_i.precision_block[0].aggregation_mesh_i.bm_block[id].buffer_manager_i,
         #                                                         self.variant, NodePrecision.FLOAT_32.value, id)
 
+
+
+        # data_out_0_monitor = StreamMonitor(
+        #         dut.sys_clk,
+        #         dut.top_i.transformation_engine_i.axi_write_master_data,
+        #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
+        #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
+        #         check=False,
+        #     )
+
+
+
         self.scoreboard = sb.Scoreboard(nodeslot_count=64)
         self.nodeslot_programming = {}
         self.global_config = {}
@@ -103,8 +115,8 @@ class BaseTest:
         # self.nsb_monitor.running = True
         # self.nsb_monitor.start()
 
-        self.axi_monitor.running = True
-        cocotb.fork(self.axi_monitor.monitor_write_transactions())
+        # self.axi_monitor.running = True
+        # cocotb.start_soon(self.axi_monitor.monitor_write_transactions())
 
 
 
@@ -119,13 +131,13 @@ class BaseTest:
 
 
     def load_layer_test(self,layer_features):
-        self.dut._log.info("load_layer_test")
+        self.dut._log.info("Loading expected nodes into monitor")
         self.axi_monitor.load_layer_features(self.nodeslot_programming,layer_features)
 
     async def start_monitors(self):
 
         self.axi_monitor.running = True
-        cocotb.fork(self.axi_monitor.monitor_write_transactions())
+        cocotb.start_soon(self.axi_monitor.monitor_write_transactions())
 
         # self.fte_monitor.start()
         # cocotb.fork(self.axi_monitor._monitor_write_transactions())
@@ -153,7 +165,7 @@ class BaseTest:
 
     def load_regbank(self, regbank):
         json_path = os.path.join(self.regbank_path, regbank, regbank + "_regs.json")
-        self.dut._log.info("Loading %s from %s", regbank, json_path)
+        self.dut._log.debug("Loading %s from %s", regbank, json_path)
         with open(json_path) as f:
             data = json.load(f)
         return data
