@@ -216,7 +216,7 @@ build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
 	source $(SIM_BUILD)/libs.do
 	source $(SIM_BUILD)/compile.do
 	source $(SIM_BUILD)/opt.do
-	touch $(SIM_BUILD)modelsim.log
+	touch $(SIM_BUILD)/modelsim.log
 	
 #-l $(SIM_BUILD)/modelsim.log
 run_sim: $(SIM_BUILD)/simulate.do
@@ -228,7 +228,7 @@ run_sim: $(SIM_BUILD)/simulate.do
 	$(TOPLEVEL_LIBRARY).$(TOPLEVEL_LIBRARY)_opt \
 	$(PLUSARGS) 2>&1 | tee $(SIM_BUILD)/simulate.log
 	find $(SIM_BUILD)/.. -maxdepth 1 -type f -name 'wlft*' -exec rm -f {} +
-	find $(SIM_BUILD)/.. -maxdepth 1 -type f -name '.nfs*' -exec rm -f {} +
+	#find $(SIM_BUILD)/.. -maxdepth 1 -type f -name '.nfs*' -exec rm -f {} +
 
 
 

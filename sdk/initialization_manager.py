@@ -51,7 +51,7 @@ class InitManager:
 
         # Layer configuration
         self.layer_config = {'global_config': {}, 'layers': []}
-        self.model_layer_max_features = max(self.get_feature_counts(self.model))
+        self.model_layer_max_features = max([self.get_feature_counts(self.model)])
         # Nodeslot programming
         self.nodeslot_programming = {'nodeslots':[]}
         
@@ -79,6 +79,11 @@ class InitManager:
     
     def get_default_layer_config(self, layer,idx):
         inc, outc = self.get_layer_feature_count(layer)
+        if isinstance(layer, torch.nn.Linear):
+            aggregate_enable = 0
+        else:
+            aggregate_enable = 1
+            
         if idx >0: 
             in_messages_address = self.memory_mapper.offsets['out_messages']#Can change this to have intermediate out messages (['out_messages'][idx-1])
         else:
@@ -96,7 +101,8 @@ class InitManager:
             'weights_address': self.memory_mapper.offsets['weights'][idx],
             'out_messages_address': self.memory_mapper.offsets['out_messages'],
             'aggregation_wait_count': 4,
-            'transformation_wait_count': 4
+            'transformation_wait_count': 4,
+            'aggregate_enable' : aggregate_enable,
         }
 
     def set_layer_config_graphsage(self):
@@ -264,9 +270,17 @@ class InitManager:
     #Save JIT model for testbench
     def save_model(self):
         self.model.eval()
-        scripted_model = torch.jit.script(self.model).to('cpu')
-        torch.jit.save(scripted_model, 'model.pt')
-        return scripted_model
+        x = self.trained_graph.dataset.x  # Node features tensor
+        edge_index = self.trained_graph.dataset.edge_index  # Edge indices tensor
+
+     
+        jit_model = torch.jit.trace(self.model, (x, edge_index))
+        # jit_model = torch.jit.script(self.model).to('cpu')
+
+        torch.jit.save(jit_model, 'model.pt')
+
+        return jit_model
+
     
         
     #Save graph for testbench

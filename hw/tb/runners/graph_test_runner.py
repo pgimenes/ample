@@ -105,6 +105,14 @@ def get_expected_outputs(model, x, edge_index):
 
     model.load_state_dict(state_dict)
     ###################################################
+
+    # state_dict = model.state_dict()
+    # state_dict['layers.0.bias'] = torch.tensor([0] * state_dict['layers.0.bias'].size()[0])
+    # state_dict['layers.1.bias'] = torch.tensor([0] * state_dict['layers.1.bias'].size()[0])
+    # # state_dict['layers.2.bias'] = torch.tensor([0] * state_dict['layers.2.bias'].size()[0])
+    # # state_dict['layers.3.bias'] = torch.tensor([0] * state_dict['layers.3.bias'].size()[0])
+
+    # model.load_state_dict(state_dict)
     model.eval()
     with torch.no_grad():
         output = model(x, edge_index)
@@ -156,8 +164,6 @@ async def graph_test_runner(dut):
         # Load monitor
         test.load_layer_test(layer_features)
         
-
-
         # test.start_monitors()
         # Layer configuration
         await test.driver.program_layer_config(layer)
@@ -191,7 +197,7 @@ async def graph_test_runner(dut):
             # print(test.axi_monitor.expected_layer_features_by_address)
 
 
-        test.dut._log.info("Layer finished.")
+        test.dut._log.info(f"Layer {layer_idx}finished.")
         # del test.axi_monitor
 
         await delay(dut.regbank_clk, 10)

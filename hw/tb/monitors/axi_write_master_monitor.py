@@ -9,7 +9,7 @@ import struct
 import torch
 
 from cocotb.binary import BinaryValue
-
+import logging
 
 #Debugging
 from tb.utils.common import delay, allocate_lsb
@@ -20,7 +20,7 @@ from torch import tensor
 
 
 class AXIWriteMasterMonitor:
-    def __init__(self, clk, req_valid, req_ready, start_address, req_len, data_valid, data,pop, resp_valid, resp_ready):
+    def __init__(self, clk, req_valid, req_ready, start_address, req_len, data_valid, data, pop, resp_valid, resp_ready, tolerance = 1e-3, log_level=logging.INFO):
         self.clk = clk
         self.req_valid = req_valid
         self.req_ready = req_ready
@@ -33,9 +33,13 @@ class AXIWriteMasterMonitor:
         self.resp_ready = resp_ready
         self.transactions = {}  # Tracking ongoing transactions
         self.log = SimLog("cocotb.AXIWriteMasterMonitor")
+        self.log.setLevel(log_level)  # Set to the desired level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        self.tolerance = tolerance
         self.expected = {}  # Tracking ongoing transactions
         self.running = False
         self.expected_layer_features_by_address = {}
+        # self.log.basicConfig(level=logging.DEBUG)  # Set to the desired level
+
 
         # self._thread = cocotb.scheduler.add(self.monitor_write_transactions())
 
@@ -100,8 +104,8 @@ class AXIWriteMasterMonitor:
                     assert current_transaction['data'].shape == expected_node['data'].shape, f"Data size mismatch for address {current_transaction['start_address']}"
 
                     
-                    assert torch.allclose(current_transaction['data'], expected_node['data'], atol=1e-3), \
-                        f"Data mismatch for address {current_transaction['start_address']}"
+                    assert torch.allclose(current_transaction['data'], expected_node['data'], atol=self.tolerance), \
+                        f"Data mismatch for node {expected_node['node_id']} address {current_transaction['start_address']}"
                     
                     self.log.info(f"Data and address correctly matched for {expected_node['node_id']}")
 
@@ -153,8 +157,10 @@ class AXIWriteMasterMonitor:
             self.expected_layer_features_by_address[axi_write_master_address] = node_dict
 
         self.log.debug("Expected Data Indexed by Address:")
-
-        self.log.debug(self.expected_layer_features_by_address)
+        for address, node in self.expected_layer_features_by_address.items():
+            self.log.debug(f"Address: {address}, Node: {node['node_id']}")
+            self.log.debug(f"Data: {node['data']}")
+        # self.log.debug(self.expected_layer_features_by_address)
 
 
     def get_node_by_address(self,address):

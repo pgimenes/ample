@@ -118,6 +118,10 @@ def run_pass(
     
     logger.info(f"Running with model {model} and graph {graph}")
 
+
+
+    
+
     model = model_map[model](
         graph.dataset.x.shape[1] if args.in_features is None else args.in_features,
         graph.dataset.x.shape[1] if args.out_features is None else args.out_features,

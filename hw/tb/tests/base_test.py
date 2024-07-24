@@ -1,6 +1,7 @@
 
 import os
 import json
+import logging
 
 import cocotb
 from cocotb.clock import Clock
