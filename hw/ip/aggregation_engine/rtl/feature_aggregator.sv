@@ -160,7 +160,7 @@ end
 always_comb begin
     // Write first feature into accumulator directly regardless of chosen aggregation function
     passthrough_aggregator_in_feature_valid = (feature_accumulation_count == '0) && scaled_feature_valid;
-    sum_aggregator_in_feature_valid = |feature_accumulation_count && in_feature_valid && scaled_feature_valid && (aggregation_function_sel == top_pkg::SUM);
+    sum_aggregator_in_feature_valid = |feature_accumulation_count && scaled_feature_valid && (aggregation_function_sel == top_pkg::SUM);
 
     // === ADD AGGREGATOR VALID DRIVER
 
