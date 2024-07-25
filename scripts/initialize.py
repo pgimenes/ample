@@ -1,7 +1,12 @@
 import argparse
 import sys
-sys.path.append('/home/aw1223/ip/agile')
+import os
+workarea = os.environ.get('WORKAREA')
 
+if workarea is None:
+    raise EnvironmentError("WORKAREA environment variable is not set")
+
+sys.path.append(workarea)
 from sdk.initialization_manager import InitManager
 
 from sdk.graphs.matrix_graph import MatrixGraph

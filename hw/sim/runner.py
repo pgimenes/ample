@@ -1,6 +1,13 @@
 import cocotb
 import sys
-sys.path.append('/home/aw1223/ip/agile')
+import os
+workarea = os.environ.get('WORKAREA')
+
+if workarea is None:
+    raise EnvironmentError("WORKAREA environment variable is not set")
+
+sys.path.append(workarea)
+
 from tb.runners.graph_test_runner import graph_test_runner
 from cocotb.log import SimLog
 @cocotb.test()
