@@ -22,7 +22,7 @@ MarkupSafe
 matplotlib==3.8.3
 mkl-fft
 mkl-random
-mkl-service==2.4.0
+mkl-service==2.4.1
 mpmath
 multidict
 networkx
