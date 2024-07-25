@@ -34,7 +34,7 @@ class NSB_Monitor (Monitor):
                         "aggregation_function" : self.dut.nsb_age_req.aggregation_function
                     }
                     sampled_value = self._sample(data, self.age_reqs)
-                    self.dut._log.info("Observed NSB request to AGE for Nodeslot %d", data["nodeslot"].value)
+                    self.dut._log.debug("Observed NSB request to AGE for Nodeslot %d", data["nodeslot"].value)
                 
                 # FTE Requests
                 if (self.dut.nsb_fte_req_valid.value and self.dut.nsb_fte_req_ready.value):
@@ -43,7 +43,7 @@ class NSB_Monitor (Monitor):
                         "precision"              : self.dut.nsb_fte_req.precision
                     }
                     sampled_value = self._sample(data, self.fte_reqs)
-                    self.dut._log.info("Observed NSB request to FTE for Nodeslots %s", data["nodeslots"].value)
+                    self.dut._log.debug("Observed NSB request to FTE for Nodeslots %s", data["nodeslots"].value)
                 
                 # Prefetcher Requests
                 if (self.dut.nsb_prefetcher_req_valid.value and self.dut.nsb_prefetcher_req_ready.value):
@@ -57,4 +57,4 @@ class NSB_Monitor (Monitor):
                         "neighbour_count":    self.dut.nsb_prefetcher_req.neighbour_count
                     }
                     sampled_value = self._sample(data, self.prefetcher_reqs)
-                    self.dut._log.info("Observed Prefetcher request: %s for Nodeslot %d", data["req_opcode"].value, data["nodeslot"])
+                    self.dut._log.debug("Observed Prefetcher request: %s for Nodeslot %d", data["req_opcode"].value, data["nodeslot"])

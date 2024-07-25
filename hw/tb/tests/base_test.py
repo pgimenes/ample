@@ -3,6 +3,8 @@ import os
 import json
 import logging
 
+import torch
+
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
@@ -19,18 +21,23 @@ from tb.monitors.prefetcher_monitor import Prefetcher_Monitor
 # from tb.monitors.fte_monitor import FTE_Monitor
 # from tb.monitors.mase_cocotb.stream_monitor import StreamMonitor
 
+
+from tb.utils.common import NodeState, NodePrecision
+from tb.utils.common import delay, allocate_lsb
+
 from tb.monitors.axi_write_master_monitor import AXIWriteMasterMonitor
 
 from tb.monitors.bm_monitor import BM_Monitor
 
 class BaseTest:
-    def __init__(self, dut, base_path=None):
+    def __init__(self, dut, nodeslot_count,tolerance, base_path=None):
         self.dut = dut
 
         self.driver = Driver(dut)
-
+        self.nodeslot_count = nodeslot_count
         self.variant = Variant()
-# 
+        self.tolerance = tolerance
+        
         # self.age_monitor = AGE_Monitor(dut.top_i.aggregation_engine_i, self.variant)
         self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
         # self.prefetcher_monitor = Prefetcher_Monitor(dut.top_i.prefetcher_i, self.variant)
@@ -55,7 +62,8 @@ class BaseTest:
             data=dut.top_i.transformation_engine_i.transformation_core_axi_write_master_data_unreversed,
             pop=dut.top_i.transformation_engine_i.axi_write_master_pop,
             resp_valid=dut.top_i.transformation_engine_i.axi_write_master_resp_valid,
-            resp_ready=dut.top_i.transformation_engine_i.axi_write_master_resp_ready
+            resp_ready=dut.top_i.transformation_engine_i.axi_write_master_resp_ready,
+            tolerance = self.tolerance
         )
         # self.axi_write_monitor = AXIWriteMasterMonitor(
         #     dut.sys_clk,
@@ -132,7 +140,7 @@ class BaseTest:
 
 
     def load_layer_test(self,layer_features):
-        self.dut._log.info("Loading expected nodes into monitor")
+        self.dut._log.debug("Loading expected nodes into monitor")
         self.axi_monitor.load_layer_features(self.nodeslot_programming,layer_features)
 
     async def start_monitors(self):
@@ -172,7 +180,7 @@ class BaseTest:
         return data
 
     def load_regbanks(self):
-        self.dut._log.info("Loading register banks.")
+        self.dut._log.debug("Loading register banks.")
 
         nsb_regmap = self.load_regbank("node_scoreboard_regbank")["registerMap"]
         prefetcher_regmap = self.load_regbank("prefetcher_regbank")["registerMap"]
@@ -190,14 +198,14 @@ class BaseTest:
         self.driver.fte_regs = {register["name"]: fte_regmap["baseAddress"] + register["addressOffset"] for register in self.fte_regbank.values()}
 
     def load_nodeslot_programming(self):
-        self.dut._log.info("Loading nodeslot programming")
+        self.dut._log.debug("Loading nodeslot programming")
         with open(self.nodeslot_programming_file) as f:
             ns_programming = json.load(f)
         self.nodeslot_programming = ns_programming["nodeslots"]
         return ns_programming["nodeslots"]
 
     def load_layer_config(self):
-        self.dut._log.info("Loading layer configuration")
+        self.dut._log.debug("Loading layer configuration")
         with open(self.layer_config_file) as f:
             data = json.load(f)
         self.global_config = data["global_config"]
@@ -223,16 +231,139 @@ class BaseTest:
         
 
     async def drive_reset(self):
-        self.dut._log.info("Driving reset")
+        self.dut._log.debug("Driving reset")
         self.dut.sys_rst.value = 1
         self.dut.regbank_resetn.value = 0
         for _ in range(50):
             await RisingEdge(self.dut.regbank_clk)
-        self.dut._log.info("Reset done")
+        self.dut._log.debug("Reset done")
         self.dut.sys_rst.value = 0
         self.dut.regbank_resetn.value = 1
 
-        self.dut._log.info("Starting wait after reset")
+        self.dut._log.debug("Starting wait after reset")
         for _ in range(10):
             await RisingEdge(self.dut.regbank_clk)
-        self.dut._log.info("Done waiting after reset")
+        self.dut._log.debug("Done waiting after reset")
+
+
+
+    async def drive_nodeslots(self,test):
+
+        self.dut._log.debug("Starting nodeslot programming.")
+        free_mask = "1" * self.nodeslot_count
+
+        for ns_programming in test.nodeslot_programming:
+
+            # Skip nodeslots with no neighbours
+            if (ns_programming["neighbour_count"] == 0):
+                continue
+
+            # Read empty_mask if all previously free nodeslots have been programmed
+            if (free_mask == "0"*self.nodeslot_count):
+                self.dut._log.debug("Waiting for free nodeslot.")
+                while ("1" not in free_mask):
+                    free_mask = ''
+                    for i in range(0, int(self.nodeslot_count/32)):
+                        empty_mask = await self.driver.axil_driver.axil_read(self.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
+                        free_mask = empty_mask.binstr + free_mask
+                    self.dut._log.debug("Free nodeslots: %s", free_mask)
+
+            # Check nodeslot range based on precision
+            if (ns_programming["precision"] == "FLOAT_32"):
+                chosen_ns = allocate_lsb(free_mask, bit_range=range(0, self.nodeslot_count))
+            # elif (ns_programming["precision"] == "FIXED_8"):
+            #     chosen_ns = allocate_lsb(free_mask, bit_range=range(16, self.nodeslot_count))
+            else:
+                raise ValueError(f"Unknown precision: {ns_programming['precision']}")
+
+            if (chosen_ns is not None):
+                ml = list(free_mask)
+                ml[-(chosen_ns+1)] = '0'
+                free_mask = ''.join(ml)
+
+            self.dut._log.debug("Ready to program node ID %s into nodeslot %s.", ns_programming["node_id"], chosen_ns)
+
+            await test.driver.program_nodeslot(ns_programming, chosen_ns)
+            self.scoreboard.set_state(chosen_ns, NodeState["PROG_DONE"])
+            self.scoreboard.set_programming(chosen_ns, ns_programming)
+
+        self.dut._log.info("Nodeslot programming done.")
+
+
+
+    async def flush_nodeslots(self,test):
+        # Wait for work to finish
+        self.dut._log.debug("Waiting for nodeslots to be empty.")
+        while(True):
+            # Build free mask
+            free_mask = ''
+            for i in range(0, int(self.nodeslot_count/32)):
+                empty_mask = await self.driver.axil_driver.axil_read(self.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
+                free_mask = empty_mask.binstr + free_mask
+            
+            self.dut._log.debug("Free nodeslots: %s", free_mask)
+
+            if (free_mask == "1" * self.nodeslot_count):
+                break
+            
+            await delay(self.dut.regbank_clk, 10)
+
+    def load_jit_model(self,model_path = '/home/aw1223/ip/agile/model.pt'):
+        model = torch.jit.load(model_path)
+        return model
+
+
+    def load_graph(self,graph_path = '/home/aw1223/ip/agile/graph.pth'):
+        graph = torch.load(graph_path)
+        input_data = graph['input_data']
+        x_loaded = input_data['x']
+        edge_index_loaded = input_data['edge_index']
+        return x_loaded,edge_index_loaded
+
+
+    def get_expected_outputs(self,model, x, edge_index):
+        ####Remove bias from the model TODO Add biases####
+        state_dict = model.state_dict()
+        for name, param in state_dict.items():
+            if 'bias' in name:
+                # Reset the bias tensor to all zeros
+                state_dict[name] = torch.zeros_like(param)
+
+        model.load_state_dict(state_dict)
+        ###################################################
+
+        # state_dict = model.state_dict()
+        # state_dict['layers.0.bias'] = torch.tensor([0] * state_dict['layers.0.bias'].size()[0])
+        # state_dict['layers.1.bias'] = torch.tensor([0] * state_dict['layers.1.bias'].size()[0])
+        # # state_dict['layers.2.bias'] = torch.tensor([0] * state_dict['layers.2.bias'].size()[0])
+        # # state_dict['layers.3.bias'] = torch.tensor([0] * state_dict['layers.3.bias'].size()[0])
+
+        # model.load_state_dict(state_dict)
+        model.eval()
+        with torch.no_grad():
+            output = model(x, edge_index)
+        del model
+
+        return output
+    
+    def log_info(self,dut, message, border_char='*', width=60):
+        border = border_char * width
+        empty_line = border_char + ' ' * (width - 2) + border_char
+        formatted_message = f"{border}\n{empty_line}\n"
+        formatted_message += f"{border_char} {message.center(width - 4)} {border_char}\n"
+        formatted_message += f"{empty_line}\n{border}"
+        
+        self.dut._log.info(formatted_message)
+
+    def log_model_input(self,dut,x):
+        dut._log.debug(f"Input")
+        for idx,x_input in enumerate(x):
+            dut._log.debug(f"Input {idx}:")
+            dut._log.debug(x_input)
+            dut._log.debug("\n")
+
+
+
+
+
+

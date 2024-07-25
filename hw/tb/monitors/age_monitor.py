@@ -30,7 +30,7 @@ class AGE_Monitor (Monitor):
                         "nodeslot": self.dut.nsb_age_resp.nodeslot
                     }
                     sampled_value = self._sample(data, self.nsb_responses)
-                    self.dut._log.info("Observed AGE response to NSB for Nodeslot: %d", data["nodeslot"].value)
+                    self.dut._log.debug("Observed AGE response to NSB for Nodeslot: %d", data["nodeslot"].value)
 
                 # Message Channel requests
                 for mc in range(self.message_channel_count):
@@ -40,7 +40,7 @@ class AGE_Monitor (Monitor):
                             "fetch_tag": self.dut.message_channel_req[mc].fetch_tag
                         }
                         _ = self._sample(data, self.message_channel_reqs[mc])
-                        self.dut._log.info("Observed Message Channel request for Nodeslot: %d, Fetch Tag: %d", data["nodeslot"].value, data["fetch_tag"].value)
+                        self.dut._log.debug("Observed Message Channel request for Nodeslot: %d, Fetch Tag: %d", data["nodeslot"].value, data["fetch_tag"].value)
 
                     # Scale Factor Queue
                     if (self.dut.scale_factor_queue_pop[mc].value):

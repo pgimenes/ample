@@ -1,11 +1,14 @@
+import os
+import pdb
 
 from cocotb.triggers import RisingEdge, Timer, Event, ClockCycles
 from cocotb.utils import get_sim_time
 
-from tb.utils.common import NodeState, NodePrecision
-from tb.utils.common import delay, allocate_lsb
+from tb.utils.common import NodePrecision
+from tb.utils.common import delay
 from tb.tests.base_test import BaseTest
-import pdb
+import logging
+
 # from tb.monitors.mase_cocotb.stream_monitor import StreamMonitor
 
 # from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
@@ -16,136 +19,45 @@ import pdb
 # from sdk.graphs.planetoid_graph import PlanetoidGraph
 # from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
 
-# import onnx
-import torch
 
-NODESLOT_COUNT = 64 #Load from initialisation
+def get_log_level():
+    log_level = os.environ.get('AMPLE_GRAPH_TB_LOG_LEVEL', 'INFO')
+    if log_level == 'DEBUG':
+        return logging.DEBUG
+    elif log_level == 'INFO':
+        return logging.INFO
+    elif log_level == 'WARNING':
+        return logging.WARNING
+    elif log_level == 'ERROR':
+        return logging.ERROR
+    elif log_level == 'CRITICAL':
+        return logging.CRITICAL
+    else:
+        return logging.INFO
 
-async def drive_nodeslots(test):
-
-    test.dut._log.info("Starting nodeslot programming.")
-    free_mask = "1" * NODESLOT_COUNT
-
-    for ns_programming in test.nodeslot_programming:
-
-        # Skip nodeslots with no neighbours
-        if (ns_programming["neighbour_count"] == 0):
-            continue
-
-        # Read empty_mask if all previously free nodeslots have been programmed
-        if (free_mask == "0"*NODESLOT_COUNT):
-            test.dut._log.info("Waiting for free nodeslot.")
-            while ("1" not in free_mask):
-                free_mask = ''
-                for i in range(0, int(NODESLOT_COUNT/32)):
-                    empty_mask = await test.driver.axil_driver.axil_read(test.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
-                    free_mask = empty_mask.binstr + free_mask
-                test.dut._log.debug("Free nodeslots: %s", free_mask)
-
-        # Check nodeslot range based on precision
-        if (ns_programming["precision"] == "FLOAT_32"):
-            chosen_ns = allocate_lsb(free_mask, bit_range=range(0, NODESLOT_COUNT))
-        # elif (ns_programming["precision"] == "FIXED_8"):
-        #     chosen_ns = allocate_lsb(free_mask, bit_range=range(16, NODESLOT_COUNT))
-        else:
-            raise ValueError(f"Unknown precision: {ns_programming['precision']}")
-
-        if (chosen_ns is not None):
-            ml = list(free_mask)
-            ml[-(chosen_ns+1)] = '0'
-            free_mask = ''.join(ml)
-
-        test.dut._log.info("Ready to program node ID %s into nodeslot %s.", ns_programming["node_id"], chosen_ns)
-
-        await test.driver.program_nodeslot(ns_programming, chosen_ns)
-        test.scoreboard.set_state(chosen_ns, NodeState["PROG_DONE"])
-        test.scoreboard.set_programming(chosen_ns, ns_programming)
-
-    test.dut._log.info("Nodeslot programming done.")
-
-async def flush_nodeslots(test):
-    # Wait for work to finish
-    test.dut._log.info("Waiting for nodeslots to be empty.")
-    while(True):
-        # Build free mask
-        free_mask = ''
-        for i in range(0, int(NODESLOT_COUNT/32)):
-            empty_mask = await test.driver.axil_driver.axil_read(test.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
-            free_mask = empty_mask.binstr + free_mask
-        
-        test.dut._log.debug("Free nodeslots: %s", free_mask)
-
-        if (free_mask == "1" * NODESLOT_COUNT):
-            break
-        
-        await delay(test.dut.regbank_clk, 10)
-
-def load_jit_model(model_path = '/home/aw1223/ip/agile/model.pt'):
-    model = torch.jit.load("/home/aw1223/ip/agile/model.pt")
-    return model
-
-
-def load_graph(graph_path = '/home/aw1223/ip/agile/graph.pth'):
-    graph = torch.load('/home/aw1223/ip/agile/graph.pth')
-    # Access the saved inputs
-    input_data = graph['input_data']
-    x_loaded = input_data['x']
-    edge_index_loaded = input_data['edge_index']
-
-    return x_loaded,edge_index_loaded
-
-
-def get_expected_outputs(model, x, edge_index):
-    ####Remove bias from the model TODO Add biases####
-    state_dict = model.state_dict()
-    for name, param in state_dict.items():
-        if 'bias' in name:
-            # Reset the bias tensor to all zeros
-            state_dict[name] = torch.zeros_like(param)
-
-    model.load_state_dict(state_dict)
-    ###################################################
-
-    # state_dict = model.state_dict()
-    # state_dict['layers.0.bias'] = torch.tensor([0] * state_dict['layers.0.bias'].size()[0])
-    # state_dict['layers.1.bias'] = torch.tensor([0] * state_dict['layers.1.bias'].size()[0])
-    # # state_dict['layers.2.bias'] = torch.tensor([0] * state_dict['layers.2.bias'].size()[0])
-    # # state_dict['layers.3.bias'] = torch.tensor([0] * state_dict['layers.3.bias'].size()[0])
-
-    # model.load_state_dict(state_dict)
-    model.eval()
-    with torch.no_grad():
-        output = model(x, edge_index)
-
-    return output
 
 async def graph_test_runner(dut):
-    # global sim_running_event
 
-    # sim_running_event.set()
-    dut._log.info("Starting Graph Test")
-    dut._log.info("*********************************************************")
-    dut._log.info("")
-    dut._log.info("*******************Starting Graph Test*******************")
-    dut._log.info("")
-    dut._log.info("*********************************************************")
 
-    test = BaseTest(dut)
 
-    model = load_jit_model()
-    x_loaded,edge_index_loaded = load_graph()
-    output = get_expected_outputs(model, x_loaded, edge_index_loaded)
+    # log_level = logging.INFO #Possible values: DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+    tolerance = float(os.environ.get('AMPLE_GRAPH_TB_TOLERANCE', 1))
+    log_level = get_log_level()
+    dut._log.setLevel(log_level)  # Set to the desired level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+
+    nodeslot_count = int(os.environ.get('AMPLE_GRAPH_TB_NODESLOT_COUNT', 64))
     
-    dut._log.debug(f"Input ")
-    for idx,item in enumerate(x_loaded):
-        dut._log.debug(idx)
-        dut._log.debug(item)
 
 
-    dut._log.debug(f"Output {output}")
+    test = BaseTest(dut,nodeslot_count, tolerance)
+    test.log_info(dut, "Starting Graph Test")
 
-    del model
-
+    model = test.load_jit_model()
+    x_loaded,edge_index_loaded = test.load_graph()
+    output = test.get_expected_outputs(model, x_loaded, edge_index_loaded)
+    test.log_model_input(dut,x_loaded)
+    
 
     # Load nodeslot/register programming and start clocks/reset
     await test.initialize()
@@ -157,7 +69,7 @@ async def graph_test_runner(dut):
 
         
         layer_features = output[layer_idx]
-        dut._log.info(f"Starting layer {layer_idx}")
+        dut._log.info(f"Starting layer {layer_idx+1}")
         outs = output[layer_idx]
         dut._log.debug(f"Layer Out Expected {outs}")
 
@@ -170,7 +82,7 @@ async def graph_test_runner(dut):
 
         # Weights fetch
         await test.driver.request_weights_fetch(precision=NodePrecision.FLOAT_32)
-        dut._log.info("Weights fetch done.")
+        dut._log.debug("Weights fetch done.")
 
         # Program nodeslots
         # await drive_nodeslots(test)
@@ -185,9 +97,9 @@ async def graph_test_runner(dut):
         )
 
         
-        dut._log.info("Nodeslot fetching done, waiting for nodeslots to be flushed.")
+        dut._log.debug("Nodeslot fetching done, waiting for nodeslots to be flushed.")
         # test.fte_monitor.start = True
-        await flush_nodeslots(test)
+        await test.flush_nodeslots(test)
         final_cycle = get_sim_time(units='step')
         layer_cycle_count.append(final_cycle - initial_cycle)
 
@@ -197,13 +109,12 @@ async def graph_test_runner(dut):
         if test.axi_monitor.empty_expected_layer_features():
             dut._log.info("All nodes written.")
         else:
-            dut._log.info("Not all nodes not written.")
+            dut._log.error("Not all nodes not written.")
 
             # print(test.axi_monitor.expected_layer_features_by_address)
 
 
-        test.dut._log.info(f"Layer {layer_idx}finished.")
-        # del test.axi_monitor
+        test.dut._log.info(f"Layer {layer_idx+1} finished.")
 
         await delay(dut.regbank_clk, 10)
     # test.axi_monitor.kill()
@@ -222,27 +133,10 @@ async def graph_test_runner(dut):
 
     with open(f"sim_cycles.txt", "w") as f:
         for idx,item in enumerate(layer_cycle_count):
-            dut._log.info(f"Layer {idx} cycles: {item}")
+            dut._log.info(f"Layer {idx} cycle count: {item}")
             f.write(f"Layer {idx} cycles: {item}")
             f.write("\n")
 
 
     
 
-    # 
-    # a
-    # await delay(dut.regbank_clk, 10000)
-    # assert data_out_0_monitor.exp_queue.empty()
-    # a
-
-
-async def my_loop_test(dut):
-    dut._log.info("Starting loop test")
-
-    for _ in range(10):
-        await RisingEdge(dut.clk)
-        dut._log.info("Loop iteration")
-        # Perform operations per iteration
-        dut.input_signal <= ~dut.input_signal
-    
-    dut._log.info("Ending loop test")

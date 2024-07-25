@@ -33,6 +33,7 @@ class BenchmarkWrapper():
     def predict(self, batch):
         x, edge_index = batch[0], batch[1]
         torch.cuda.empty_cache()
+        torch.cuda._sleep(1_000_000)
         self.starter.record()
         _ = self.forward(x, edge_index)
         torch.cuda.synchronize()
@@ -46,6 +47,8 @@ class BenchmarkWrapper():
         for _ in range(steps):
             out = self.forward(x, edge_index)
         return out
+    
+
 
 class CPUBenchmarkWrapper():
     def __init__(self, model):
@@ -91,7 +94,7 @@ class BenchmarkingManager:
         data.edge_index = data.edge_index.to(torch.device(f"cuda:{self.device}"))
         
         times = []
-        for i in range(100):
+        for i in range(100): #Do Loop in predict function?
             time_taken = self.bman.predict(batch=(data.x, data.edge_index))
             times.append(time_taken)
 
@@ -184,6 +187,9 @@ class BenchmarkingManager:
             print(f"==== Running {cm}")
             subprocess.run(cm, shell=True, capture_output=False, text=True)
 
+        os.environ['AMPLE_GRAPH_TB_TOLERANCE'] = str(self.args.tb_tolerance)
+        os.environ['AMPLE_GRAPH_TB_LOG_LEVEL'] = str(self.args.tb_log_level)
+        os.environ['AMPLE_GRAPH_TB_NODESLOT_COUNT'] = '64'
 
         # * Run simulation (assume )
         path = os.environ.get("WORKAREA") + "/hw/sim"

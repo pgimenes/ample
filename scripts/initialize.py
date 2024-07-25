@@ -6,7 +6,11 @@ workarea = os.environ.get('WORKAREA')
 if workarea is None:
     raise EnvironmentError("WORKAREA environment variable is not set")
 
+
+os.chdir(workarea)
+
 sys.path.append(workarea)
+
 from sdk.initialization_manager import InitManager
 
 from sdk.graphs.matrix_graph import MatrixGraph
@@ -92,6 +96,9 @@ def main(args):
 
     # Load Models
     models = []
+
+
+
     for arg, _ in model_map.items():
         if getattr(args, arg):
             models.append(arg)
@@ -113,6 +120,20 @@ def apply_graph_options(graph, options):
     for key, value in options.items():
         setattr(graph, key, value)
 
+def get_dtype(args):
+    if args.precision == 'FLOAT_32':
+        dtype = torch.float32
+    elif args.precision == 'FIXED_16':
+        dtype = torch.float16
+    elif args.precision == 'FIXED_8':
+        dtype = torch.uint8
+    elif args.precision == 'FIXED_4':
+        dtype = torch.uint8  # PyTorch does not support uint4, using uint8 as a placeholder
+    else:
+        dtype = torch.float32
+
+    return dtype
+
 def run_pass(
                 graph, 
                 model, 
@@ -124,14 +145,15 @@ def run_pass(
     logger.info(f"Running with model {model} and graph {graph}")
 
 
-
     
+    dtype = get_dtype(args)
 
     model = model_map[model](
         graph.dataset.x.shape[1] if args.in_features is None else args.in_features,
         graph.dataset.x.shape[1] if args.out_features is None else args.out_features,
         layer_count = args.layers,
-        hidden_dimension = args.hidden_dimension
+        hidden_dimension = args.hidden_dimension,
+        precision = dtype
         )
     init_manager = InitManager(graph, model, base_path=base_path)
     bman = BenchmarkingManager(graph=graph, model=model, args=args)
@@ -181,7 +203,7 @@ def run_pass(
 
     if (args.dq):
         graph.quantize_dq()
-    logger.info(f"==== Pass metrics: {metrics}")
+    # logger.info(f"==== Pass metrics: {metrics}")
 
     return metrics
 
@@ -290,6 +312,11 @@ def parse_arguments():
     parser.add_argument('--sim', action='store_true', help='Run benchmarking steps in Cocotb simulation')
     parser.add_argument('--preload', action='store_true', help='Pre-load GPU results and layer configs')
     
+    parser.add_argument('--tb_tolerance',  type=float, default=0.1, help='Set tolerance for tb-model mismatch for Cocotb testbench')
+    parser.add_argument('--tb_log_level', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default='INFO',
+                            help='Set log level for Cocotb testbench')
+
+
     default_preload_path = "/home/pg519/shared/agile_results"
     parser.add_argument('--preload_path', default=default_preload_path, help='Base path (default: /home/pg519/shared/agile_results)')
 
