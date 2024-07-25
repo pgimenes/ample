@@ -1,5 +1,5 @@
 
-from cocotb.triggers import RisingEdge, Timer, Event
+from cocotb.triggers import RisingEdge, Timer, Event, ClockCycles
 from cocotb.utils import get_sim_time
 
 from tb.utils.common import NodeState, NodePrecision
@@ -151,7 +151,7 @@ async def graph_test_runner(dut):
     await test.initialize()
 
     await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.global_config["node_count"])
-
+    layer_cycle_count = []
     for layer_idx, layer in enumerate(test.layers):
         await test.start_monitors()
 
@@ -175,17 +175,22 @@ async def graph_test_runner(dut):
         # Program nodeslots
         # await drive_nodeslots(test)
         await test.driver.axil_driver.axil_write(test.driver.nsb_regs["ctrl_start_nodeslot_fetch"], 1)
-        
+        initial_cycle = get_sim_time(units='step')
+
 
         await test.driver.wait_done_ack(
             done_reg = test.driver.nsb_regs["ctrl_start_nodeslot_fetch_done"],
             ack_reg = test.driver.nsb_regs["ctrl_start_nodeslot_fetch_done_ack"],
             tries = 10000
         )
+
         
         dut._log.info("Nodeslot fetching done, waiting for nodeslots to be flushed.")
         # test.fte_monitor.start = True
         await flush_nodeslots(test)
+        final_cycle = get_sim_time(units='step')
+        layer_cycle_count.append(final_cycle - initial_cycle)
+
         # test.fte_monitor.start = False
         await test.end_test()
 
@@ -208,11 +213,22 @@ async def graph_test_runner(dut):
     # raise TestFailure("Finished")
     # await test.stop_monitors()
     test.dut._log.info(f"Test finished. Simulation time: {stime}ms.")
-
+   
     # raise TestFailure("Finished")
 
     with open(f"sim_time.txt", "w") as f:
         f.write(str(stime))
+
+
+    with open(f"sim_cycles.txt", "w") as f:
+        for idx,item in enumerate(layer_cycle_count):
+            dut._log.info(f"Layer {idx} cycles: {item}")
+            f.write(f"Layer {idx} cycles: {item}")
+            f.write("\n")
+
+
+    
+
     # 
     # a
     # await delay(dut.regbank_clk, 10000)

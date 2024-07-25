@@ -20,7 +20,7 @@ from torch import tensor
 
 
 class AXIWriteMasterMonitor:
-    def __init__(self, clk, req_valid, req_ready, start_address, req_len, data_valid, data, pop, resp_valid, resp_ready, tolerance = 1e-3, log_level=logging.INFO):
+    def __init__(self, clk, req_valid, req_ready, start_address, req_len, data_valid, data, pop, resp_valid, resp_ready, tolerance = 1e-3, log_level=logging.DEBUG):
         self.clk = clk
         self.req_valid = req_valid
         self.req_ready = req_ready

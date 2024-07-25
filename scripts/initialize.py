@@ -154,6 +154,10 @@ def run_pass(
 
     if isinstance(model, MLP_Model):
         graph.remove_connections()
+
+    
+    # if isinstance(model, GCN_Model):
+    #     graph.apply_self_connection()
     
     if (payloads):
         init_manager.map()
@@ -167,11 +171,12 @@ def run_pass(
 
     
     metrics = {}
-    if (args.cpu or args.gpu or args.sweep):
+    if (args.cpu or args.gpu or args.sweep or args.sim):
         metrics = bman.benchmark()
 
     if (args.dq):
         graph.quantize_dq()
+    logger.info(f"==== Pass metrics: {metrics}")
 
     return metrics
 
@@ -189,7 +194,6 @@ def run_sweep(args, models):
         command = f"cd {path}; make clean; make build"
         logger.info(f"==== Running command: {command}")
         process = subprocess.run(command, shell=True, capture_output=False, text=True)
-
     for degree in avg_degree_range:
         for node_count in node_count_range:
             logger.info(f"Running graph with degree {degree} and node_count {node_count}")
@@ -276,7 +280,8 @@ def parse_arguments():
     parser.add_argument('--cpu', action='store_true', help='Run benchmarking steps on CPU')
     parser.add_argument('--gpu', action='store_true', help='Run benchmarking steps on GPU')
     parser.add_argument('--device', type=int, default=0, help='Which GPU to use for benchmarking')
-    
+    parser.add_argument('--fpga_clk_freq', type=int, default=200e6, help='Clock Period of FPGA to measure sim time for benchmarking')
+
     parser.add_argument('--sim', action='store_true', help='Run benchmarking steps in Cocotb simulation')
     parser.add_argument('--preload', action='store_true', help='Pre-load GPU results and layer configs')
     
