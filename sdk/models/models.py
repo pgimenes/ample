@@ -15,8 +15,9 @@ Graph Convolutional Network
 '''
 
 class GCN_Model(torch.nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, layer_count=1, hidden_dimension=64):
+    def __init__(self, in_channels: int, out_channels: int, layer_count=1, hidden_dimension=64, precision = torch.float32):
         super().__init__()
+        self.precision = precision
         self.layers = nn.ModuleList()
         if layer_count == 1:
             self.layers.append(GCNConv(in_channels, out_channels,normalize =False))
@@ -31,8 +32,13 @@ class GCN_Model(torch.nn.Module):
             layer = GCNConv(hidden_dimension, out_channels,normalize =False)
             layer.name = f'gcn_layer_{layer_count-1}'
             self.layers.append(layer)
+
+
+        for layer in self.layers:
+            layer.to(self.precision)
             
     def forward(self, x, edge_index):
+        x = x.to(self.precision)  
         outputs = []
         for layer in self.layers:
             x = layer(x, edge_index)
@@ -213,8 +219,9 @@ def capture_outputs(module, input, output):
 
 
 class MLP_Model(torch.nn.Module):
-    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=32):
+    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=32, precision = torch.float32):
         super().__init__()
+        self.precision = precision
         self.layers = nn.ModuleList()
         if layer_count == 1:
             layer = nn.Linear(in_channels, out_channels, bias=True)
@@ -239,11 +246,15 @@ class MLP_Model(torch.nn.Module):
             layer.name = 'output_layer'
             self.layers.append(layer)
 
+
+        for layer in self.layers:
+            layer.to(torch.float32)
         #  # Register the hook
         # for layer in self.layers:
         #     layer.register_forward_hook(capture_outputs)
 
     def forward(self, x, edge_index,):
+        x = x.to(self.precision)  
         outputs = []
         for layer in self.layers:
             x = layer(x)

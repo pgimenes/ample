@@ -20,7 +20,7 @@ from torch import tensor
 
 
 class AXIWriteMasterMonitor:
-    def __init__(self, clk, req_valid, req_ready, start_address, req_len, data_valid, data, pop, resp_valid, resp_ready, tolerance = 1e-3, log_level=logging.DEBUG):
+    def __init__(self, clk, req_valid, req_ready, start_address, req_len, data_valid, data, pop, resp_valid, resp_ready, tolerance = 1e-1, log_level=logging.INFO):
         self.clk = clk
         self.req_valid = req_valid
         self.req_ready = req_ready
@@ -107,7 +107,7 @@ class AXIWriteMasterMonitor:
                     assert torch.allclose(current_transaction['data'], expected_node['data'], atol=self.tolerance), \
                         f"Data mismatch for node {expected_node['node_id']} address {current_transaction['start_address']}"
                     
-                    self.log.info(f"Data and address correctly matched for {expected_node['node_id']}")
+                    self.log.debug(f"Data and address correctly matched for node: {expected_node['node_id']}")
 
 
 

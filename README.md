@@ -131,6 +131,14 @@ make build
 make sim GUI=1
 ```
 
+
+8. Benchmark AMPLE against a CPU
+```bash
+python3 $WORKAREA/scripts/initialize.py --karate --mlp --payloads --random --layers 10 --sim --cpu
+```
+
+
+
 Note: Arg Simulation will simualte with Xillinx IP and Simulation_Quick will simulate without FP units, activaiton, bias or aggregation
 
 
