@@ -207,7 +207,7 @@ class BenchmarkingManager:
         sim_cycle_time = sum(cycles_dict.values()) * (1/self.fpga_clk_freq)
         throughput = self.graph.dataset.y.shape[0] / float(stime)
         return {
-            "fpga_latency": stime,
+            # "fpga_latency": stime,
             "fpga_sim_cycle_time": sim_cycle_time,
             "fpga_mean_power": 30,
             "fpga_nodes_per_ms": throughput,

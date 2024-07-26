@@ -56,7 +56,7 @@ async def graph_test_runner(dut):
     model = test.load_jit_model()
     x_loaded,edge_index_loaded = test.load_graph()
     output = test.get_expected_outputs(model, x_loaded, edge_index_loaded)
-    test.log_model_input(dut,x_loaded)
+    test.log_model_input(x_loaded)
     
 
     # Load nodeslot/register programming and start clocks/reset
@@ -87,7 +87,7 @@ async def graph_test_runner(dut):
         # Program nodeslots
         # await drive_nodeslots(test)
         await test.driver.axil_driver.axil_write(test.driver.nsb_regs["ctrl_start_nodeslot_fetch"], 1)
-        initial_cycle = get_sim_time(units='step')
+
 
 
         await test.driver.wait_done_ack(
@@ -98,10 +98,12 @@ async def graph_test_runner(dut):
 
         
         dut._log.debug("Nodeslot fetching done, waiting for nodeslots to be flushed.")
+        initial_cycle = test.get_cycle_count()
+
         # test.fte_monitor.start = True
         await test.flush_nodeslots(test)
-        final_cycle = get_sim_time(units='step')
-        layer_cycle_count.append(final_cycle - initial_cycle)
+        final_cycle = test.get_cycle_count()
+        layer_cycle_count.append(int(final_cycle - initial_cycle))
 
         # test.fte_monitor.start = False
         await test.end_test()

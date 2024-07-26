@@ -203,8 +203,10 @@ def run_pass(
 
     if (args.dq):
         graph.quantize_dq()
-    # logger.info(f"==== Pass metrics: {metrics}")
 
+    logger.info(f"==== Pass metrics=======:\n {metrics}")
+    # for metric in metrics:
+    #     logger.info(f"{metric}: {metrics[metric]}")
     return metrics
 
 def run_sweep(args, models):

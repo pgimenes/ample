@@ -8,6 +8,7 @@ import torch
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
+from cocotb.utils import get_sim_time
 
 import tb.scoreboard as sb
 from tb.driver import Driver
@@ -37,6 +38,9 @@ class BaseTest:
         self.nodeslot_count = nodeslot_count
         self.variant = Variant()
         self.tolerance = tolerance
+
+
+        self.clk_period = 5
         
         # self.age_monitor = AGE_Monitor(dut.top_i.aggregation_engine_i, self.variant)
         self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
@@ -226,8 +230,9 @@ class BaseTest:
     # CLOCK AND RESET
 
     async def start_clocks(self):
-        cocotb.start_soon(Clock(self.dut.sys_clk, 5, units="ns").start())
-        cocotb.start_soon(Clock(self.dut.regbank_clk, 5, units="ns").start())
+        
+        cocotb.start_soon(Clock(self.dut.sys_clk, self.clk_period, units="ns").start())
+        cocotb.start_soon(Clock(self.dut.regbank_clk, self.clk_period, units="ns").start())
         
 
     async def drive_reset(self):
@@ -355,12 +360,17 @@ class BaseTest:
         
         self.dut._log.info(formatted_message)
 
-    def log_model_input(self,dut,x):
-        dut._log.debug(f"Input")
+    def log_model_input(self,x):
+        self.dut._log.debug(f"Input")
         for idx,x_input in enumerate(x):
-            dut._log.debug(f"Input {idx}:")
-            dut._log.debug(x_input)
-            dut._log.debug("\n")
+            self.dut._log.debug(f"Input {idx}:")
+            self.dut._log.debug(x_input)
+            self.dut._log.debug("\n")
+
+    def get_cycle_count(self,):
+        current_time_ns = get_sim_time(units='ns')
+        cycle_count = current_time_ns // self.clk_period 
+        return cycle_count
 
 
 
