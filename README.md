@@ -134,6 +134,7 @@ make sim GUI=1
 
 8. Benchmark AMPLE against a CPU
 ```bash
+make build 
 python3 $WORKAREA/scripts/initialize.py --karate --mlp --payloads --random --layers 10 --sim --cpu --tb_log_level INFO
 ```
 

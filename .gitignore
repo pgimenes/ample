@@ -76,3 +76,11 @@ opt.do
 .vscode/
 
 
+hw/sim/-debugDB
+hw/sim/sim_cycles.txt
+hw/sim/vsim.dbg
+hw/sim/sim_time.txt
+imports/verilog-axi
+imports/nocrouter
+imports/
+
