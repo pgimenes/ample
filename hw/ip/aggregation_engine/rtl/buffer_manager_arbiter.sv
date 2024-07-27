@@ -16,19 +16,19 @@ module buffer_manager_arbiter #(
     output logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       input_bm_write_ready,
     input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] input_bm_write_address,
     input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [noc_pkg::PAYLOAD_DATA_WIDTH-1:0]                     input_bm_write_data,
-    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]   input_bm_write_count,
+    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]              input_bm_write_count,
 
     // AGGREGATION BUFFER SLOTS == AGGREGATION ROWS
     // Valid-only interface to buffer slots
-    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       slot_set_node_id_valid,
-    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [NODE_ID_WIDTH-1:0]                                   slot_set_node_id,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                                                      slot_set_node_id_valid,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [NODE_ID_WIDTH-1:0]                                                                  slot_set_node_id,
 
-    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       slot_write_enable,
-    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] slot_write_address,
-    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [noc_pkg::PAYLOAD_DATA_WIDTH-1:0]                     slot_write_data,
-    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]                    slot_write_count,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                                                      slot_write_enable,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0]                                slot_write_address,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [noc_pkg::PAYLOAD_DATA_WIDTH-1:0]                                                    slot_write_data,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]                                             slot_write_count,
 
-    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] buffer_manager_done
+    input  logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       buffer_manager_done
 );
 
 // ==================================================================================================================================================
@@ -108,7 +108,7 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
             slot_write_enable [precision][slot]  = input_bm_write_enable  [precision] [granted_bm_bin_q [precision] [slot]] [slot];
             slot_write_address [precision][slot] = input_bm_write_address [precision] [granted_bm_bin_q [precision] [slot]] [slot];
             slot_write_data [precision][slot]    = input_bm_write_data    [precision] [granted_bm_bin_q [precision] [slot]] [slot];
-            slot_write_count [precision][slot]    = input_bm_write_count    [precision] [granted_bm_bin_q [precision] [slot]] [slot];
+            slot_write_count [precision][slot]   = input_bm_write_count   [precision] [granted_bm_bin_q [precision] [slot]] [slot];
 
         end
     end : slot_block_logic

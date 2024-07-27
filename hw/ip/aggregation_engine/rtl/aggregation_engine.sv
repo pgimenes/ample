@@ -213,15 +213,15 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
             .scale_factor_queue_out_valid                                  (scale_factor_queue_out_valid              [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
             
             // AGE -> Aggregation Buffer
-            .aggregation_buffer_slot_set_node_id_valid                     (bm_set_node_id_valid [precision][mesh]),
-            .aggregation_buffer_slot_set_node_id_ready                     (bm_set_node_id_ready [precision][mesh]),
-            .aggregation_buffer_slot_set_node_id                           (bm_set_node_id       [precision][mesh]),
+            .aggregation_buffer_slot_set_node_id_valid                     (bm_set_node_id_valid                      [precision][mesh]),
+            .aggregation_buffer_slot_set_node_id_ready                     (bm_set_node_id_ready                      [precision][mesh]),
+            .aggregation_buffer_slot_set_node_id                           (bm_set_node_id                            [precision][mesh]),
             
-            .aggregation_buffer_slot_write_enable                          (bm_write_enable      [precision][mesh]),
-            .aggregation_buffer_slot_write_ready                           (bm_write_ready       [precision][mesh]),
-            .aggregation_buffer_slot_write_address                         (bm_write_address     [precision][mesh]),
-            .aggregation_buffer_slot_write_data                            (bm_write_data        [precision][mesh]),
-            .aggregation_buffer_slot_write_count                                (bm_write_count        [precision][mesh]),
+            .aggregation_buffer_slot_write_enable                          (bm_write_enable                           [precision][mesh]),
+            .aggregation_buffer_slot_write_ready                           (bm_write_ready                            [precision][mesh]),
+            .aggregation_buffer_slot_write_address                         (bm_write_address                          [precision][mesh]),
+            .aggregation_buffer_slot_write_data                            (bm_write_data                             [precision][mesh]),
+            .aggregation_buffer_slot_write_count                           (bm_write_count                            [precision][mesh]),
 
             .aggregation_buffer_slot_feature_count                         (aggregation_buffer_slot_feature_count     [precision]),
             .aggregation_buffer_slot_slot_free                             (aggregation_buffer_slot_slot_free         [precision]),
@@ -276,14 +276,14 @@ buffer_manager_arbiter bm_arb_i (
     .input_bm_write_count        (bm_write_count),
 
     // Valid-only interface to buffer slots
-    .slot_set_node_id_valid (aggregation_buffer_slot_set_node_id_valid),
-    .slot_set_node_id       (aggregation_buffer_slot_set_node_id),
+    .slot_set_node_id_valid      (aggregation_buffer_slot_set_node_id_valid),
+    .slot_set_node_id            (aggregation_buffer_slot_set_node_id),
     
-    .slot_write_enable      (aggregation_buffer_slot_write_enable),
-    .slot_write_address     (aggregation_buffer_slot_write_address),
-    .slot_write_data        (aggregation_buffer_slot_write_data),
-    .slot_write_count       (aggregation_buffer_slot_write_count),
-    .buffer_manager_done    (buffer_manager_done)
+    .slot_write_enable           (aggregation_buffer_slot_write_enable),
+    .slot_write_address          (aggregation_buffer_slot_write_address),
+    .slot_write_data             (aggregation_buffer_slot_write_data),
+    .slot_write_count            (aggregation_buffer_slot_write_count),
+    .buffer_manager_done         (buffer_manager_done)
 );
 
 // ==================================================================================================================================================

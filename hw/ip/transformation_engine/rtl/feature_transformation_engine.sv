@@ -284,8 +284,8 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
         .axi_write_master_pop                                       (transformation_core_axi_write_master_pop               [precision]),
         .axi_write_master_data_valid                                (transformation_core_axi_write_master_data_valid        [precision]),
         .axi_write_master_data                                      (transformation_core_axi_write_master_data              [precision]),
-        // .axi_write_master_data_unreversed
-        .axi_write_master_data_unreversed                                      (transformation_core_axi_write_master_data_unreversed              [precision]), //Temp
+        
+        .axi_write_master_data_unreversed                           (transformation_core_axi_write_master_data_unreversed   [precision]), //Temp
 
         .axi_write_master_resp_valid                                (transformation_core_axi_write_master_resp_valid        [precision]),
         .axi_write_master_resp_ready                                (transformation_core_axi_write_master_resp_ready        [precision]),

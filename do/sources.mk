@@ -6,6 +6,7 @@ VERILOG_INCLUDE_DIRS = \
 	$(WORKAREA)/hw/build/regbanks/node_scoreboard_regbank \
 	$(WORKAREA)/hw/build/regbanks/prefetcher_regbank \
 	/mnt/applications/Xilinx/19.2/Vivado/2019.2/data/xilinx_vip/include
+	
 # Xilinx IP
 VERILOG_SOURCES = \
 	$(WORKAREA)/hw/sim/glbl.v \
@@ -20,6 +21,7 @@ VERILOG_SOURCES = \
 	$(WORKAREA)/imports/verilog-axi/rtl/axil_crossbar.v \
 	$(WORKAREA)/imports/verilog-axi/rtl/axil_interconnect.v \
 	$(WORKAREA)/imports/verilog-axi/rtl/axil_interconnect_wrap_1x4.v \
+
 
 # Imports
 VERILOG_SOURCES += \
@@ -85,7 +87,6 @@ VERILOG_SOURCES += \
 	$(WORKAREA)/hw/build/ip/lib/buffers/hybrid_buffer/hybrid_buffer_driver.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/hybrid_buffer/hybrid_buffer_slot.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/ultraram_fifo.sv \
-	$(WORKAREA)/hw/build/ip/lib/buffers/buffer_bram.sv \
 	$(WORKAREA)/hw/build/ip/lib/arithmetic/aggregators/passthrough_aggregator.sv \
 	$(WORKAREA)/hw/build/ip/lib/systolic_modules/activation_core.sv \
 	$(WORKAREA)/hw/build/ip/lib/systolic_modules/processing_element.sv \

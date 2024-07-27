@@ -112,25 +112,12 @@ logic [MAX_FEATURE_COUNT-1:0] [DATA_WIDTH-1:0]                                  
 logic [SYSTOLIC_MODULE_COUNT-1:0]                                               sys_module_flush_done;
 
 logic [SYSTOLIC_MODULE_COUNT-1:0] [MATRIX_N:0] [MATRIX_N-1:0] [DATA_WIDTH-1:0]  sys_module_pe_acc;
-
-
-
-// logic  [MATRIX_N*2:0] [MATRIX_N-1:0] [DATA_WIDTH-1:0]  wide;
-
-// assign wide = {sys_module_pe_acc[0],sys_module_pe_acc[1]};
-
+logic  [MATRIX_N*SYSTOLIC_MODULE_COUNT-1:0] [DATA_WIDTH-1:0]                    sys_module_pe_acc_row0;
 
 logic [SYSTOLIC_MODULE_COUNT-1:0]                                               shift_sys_module;
 logic                                                                           bias_valid;
 logic                                                                           activation_valid;
 
-// genvar j;
-// generate
-//     for (j = 0; j < SYSTOLIC_MODULE_COUNT; j++) begin
-//         assign sys_module_pe_acc_row0 [MATRIX_N*j + (MATRIX_N-1) : MATRIX_N*j]  = sys_module_pe_acc [j][0] 
-//     end
-   
-// endgenerate
 
 // Driving systolic modules
 // -------------------------------------------------------------------------------------
@@ -167,10 +154,6 @@ logic bias_applied, activation_applied;
 // --------------------------------------------------------------------------------
 
 //Concat top row so that axi_write_data can interate over it and not worry about meshes
-logic  [MATRIX_N*SYSTOLIC_MODULE_COUNT-1:0] [DATA_WIDTH-1:0]  sys_module_pe_acc_row0;
-
-// int index_loop
-
 for (genvar j = 0; j < SYSTOLIC_MODULE_COUNT*MATRIX_N ; j++) begin
     always_comb begin
         sys_module_down_in_valid[j] = weight_channel_resp_valid & weight_channel_resp.valid_mask[j];
@@ -185,7 +168,7 @@ for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) be
         sys_module_pe_acc_row0 [sys_module*MATRIX_N + (MATRIX_N-1) : sys_module*MATRIX_N]  = sys_module_pe_acc [sys_module][0];
         shift_sys_module[sys_module] = (fte_state == FTE_FSM_SHIFT)||(fte_state_n == FTE_FSM_IDLE); //Shift out last row when next state is IDLE
  
-   end
+    end
     
     systolic_module #(
         .PRECISION (PRECISION),
@@ -226,10 +209,6 @@ for (genvar sys_module = 0; sys_module < SYSTOLIC_MODULE_COUNT; sys_module++) be
 
         .debug_update_counter                (debug_update_counter     [sys_module])
     );
-
-    
-
-
 
 end : sys_modules
 
@@ -447,7 +426,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
 end
     
 always_comb begin
-//     // Bias and activation after multiplication finished
+    // Bias and activation after multiplication finished
     bias_valid       = (fte_state == FTE_FSM_BIAS);
     activation_valid = (fte_state == FTE_FSM_ACTIVATION);
 end
@@ -487,14 +466,6 @@ count_ones #(
 // Writeback Logic
 // -------------------------------------------------------------------------------------
 
-integer index;
-integer sys_mods;
-
-integer sys_module;
-
-
-logic [$clog2(MATRIX_N*SYSTOLIC_MODULE_COUNT)-1:0] module_index;
-//Temp
 always_comb begin
     out_features_required_bytes = layer_config_out_features_count * 4; // 4 bytes per feature
     out_features_required_bytes = {out_features_required_bytes[$clog2(top_pkg::MAX_FEATURE_COUNT * 4) - 1 : 6], 6'd0} + (out_features_required_bytes[5:0] ? 'd64 : 1'b0); // nearest multiple of 64
@@ -508,28 +479,13 @@ always_comb begin
 
     axi_write_master_req_len = writeback_required_beats - 1'b1;
 
-    sys_mods = SYS_MODULES_PER_BEAT;
-    index = sent_writeback_beats*512;
-    // sys_module = index
 
     // Data
     axi_write_master_data_valid = (fte_state == FTE_FSM_WRITEBACK_RESP) & valid_row[0];
-    module_index = sent_writeback_beats*SYS_MODULES_PER_BEAT;
     
-    // axi_write_master_data = sys_module_pe_acc_row0[SYS_MODULES_PER_BEAT*DATA_WIDTH*sent_writeback_beats + SYS_MODULES_PER_BEAT*DATA_WIDTH + 'd0: SYS_MODULES_PER_BEAT*DATA_WIDTH*sent_writeback_beats];
-    
-    //Vector bit-select and part-select addressing
-
-    //Temp
+    //Temp - fix order of features in prefetcher 
     axi_write_master_data_unreversed = sys_module_pe_acc_row0[sent_writeback_beats*SYS_MODULES_PER_BEAT +: SYS_MODULES_PER_BEAT];
     axi_write_master_data = reverse_float_order(sys_module_pe_acc_row0[sent_writeback_beats*SYS_MODULES_PER_BEAT +: SYS_MODULES_PER_BEAT]);
-
-    
-    // axi_write_master_data = {sys_module_pe_acc [SYS_MODULES_PER_BEAT*sent_writeback_beats + 'd3][0],
-    //                         sys_module_pe_acc  [SYS_MODULES_PER_BEAT*sent_writeback_beats + 'd2][0],
-    //                         sys_module_pe_acc  [SYS_MODULES_PER_BEAT*sent_writeback_beats + 'd1][0],
-    //                         sys_module_pe_acc  [module_index + 'd0][0]
-    //                     };
 
     // Response
     axi_write_master_resp_ready = (fte_state == FTE_FSM_WRITEBACK_RESP);
@@ -605,20 +561,12 @@ for (genvar k = 0; k < MATRIX_N ; k++) begin
     always_ff @(posedge core_clk or negedge resetn) begin
         if(!resetn) begin
             valid_row[k] = 0;             //[0]th column, jth row
-
         end
-        // else if (fte_state == FTE_FSM_IDLE) begin
-        //     valid_row[k] = 0;
-        // end
-
         else if(fte_state == FTE_FSM_SHIFT)begin
             valid_row[k] = valid_row[k+1];
         end
-        // else if(transformation_core_aggregation_buffer_out_feature_valid)begin
-        //     valid_row[k] = 1;
-        // end
         else if(fte_state == FTE_FSM_REQ_WC)begin
-            valid_row[k] = /*nsb_req_nodeslots_q[sys_module_node_id_snapshot[k]] &*/ busy_aggregation_slots_snapshot[k];
+            valid_row[k] = busy_aggregation_slots_snapshot[k];
         end 
 
     end

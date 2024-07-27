@@ -12,26 +12,26 @@ module hybrid_buffer #(
     parameter BUFFER_TYPE = "AGGREGATION",
     parameter SLOT_ID_WIDTH = 20
 ) (
-    input  logic                                           core_clk,
-    input  logic                                           resetn,
+    input  logic                                                            core_clk,
+    input  logic                                                            resetn,
 
-    input  logic [NUM_SLOTS-1:0]                           set_node_id_valid,
-    input  logic [NUM_SLOTS-1:0] [SLOT_ID_WIDTH-1:0]       set_node_id,
+    input  logic [NUM_SLOTS-1:0]                                            set_node_id_valid,
+    input  logic [NUM_SLOTS-1:0] [SLOT_ID_WIDTH-1:0]                        set_node_id,
 
-    output logic [NUM_SLOTS-1:0] [SLOT_ID_WIDTH-1:0]       slot_node_id,
+    output logic [NUM_SLOTS-1:0] [SLOT_ID_WIDTH-1:0]                        slot_node_id,
 
-    input  logic [NUM_SLOTS-1:0]                           write_enable,
-    input  logic [NUM_SLOTS-1:0] [$clog2(WRITE_DEPTH)-1:0] write_address,
-    input  logic [NUM_SLOTS-1:0] [WRITE_WIDTH-1:0]         write_data,
+    input  logic [NUM_SLOTS-1:0]                                            write_enable,
+    input  logic [NUM_SLOTS-1:0] [$clog2(WRITE_DEPTH)-1:0]                  write_address,
+    input  logic [NUM_SLOTS-1:0] [WRITE_WIDTH-1:0]                          write_data,
     input  logic [NUM_SLOTS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]   write_count,
 
     
-    input  logic [NUM_SLOTS-1:0]                           pop,
-    output logic [NUM_SLOTS-1:0]                           out_feature_valid,
-    output logic [NUM_SLOTS-1:0] [READ_WIDTH-1:0]          out_feature,
+    input  logic [NUM_SLOTS-1:0]                                            pop,
+    output logic [NUM_SLOTS-1:0]                                            out_feature_valid,
+    output logic [NUM_SLOTS-1:0] [READ_WIDTH-1:0]                           out_feature,
     
-    output logic [NUM_SLOTS-1:0] [$clog2(READ_DEPTH)-1:0]  feature_count,
-    output logic [NUM_SLOTS-1:0]                           slot_free
+    output logic [NUM_SLOTS-1:0] [$clog2(READ_DEPTH)-1:0]                   feature_count,
+    output logic [NUM_SLOTS-1:0]                                             slot_free
 );
 
 for (genvar slot = 0; slot < NUM_SLOTS; slot++) begin

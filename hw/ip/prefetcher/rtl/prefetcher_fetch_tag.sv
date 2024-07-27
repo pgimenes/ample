@@ -393,7 +393,7 @@ always_comb begin
     fetch_tag_msg_rm_resp_ready = (message_fetch_state == prefetcher_pkg::MSG_STORE) || scale_factor_read_master_resp_ready;
 
     push_message_queue   = (message_fetch_state == prefetcher_pkg::MSG_STORE) && accepting_msg_fetch_resp;
-    msg_queue_write_data = reverse_float_order(fetch_tag_msg_rm_resp_data);
+    msg_queue_write_data = reverse_float_order(fetch_tag_msg_rm_resp_data); //Temporary - fix order in SDK memory mapper
     
     pop_adj_queue = (message_fetch_state == prefetcher_pkg::MSG_FETCH) && accepting_message_fetch_req;
 end

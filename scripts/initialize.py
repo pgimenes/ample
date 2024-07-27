@@ -6,7 +6,6 @@ workarea = os.environ.get('WORKAREA')
 if workarea is None:
     raise EnvironmentError("WORKAREA environment variable is not set")
 
-
 os.chdir(workarea)
 
 sys.path.append(workarea)
@@ -96,9 +95,6 @@ def main(args):
 
     # Load Models
     models = []
-
-
-
     for arg, _ in model_map.items():
         if getattr(args, arg):
             models.append(arg)
@@ -144,8 +140,6 @@ def run_pass(
     
     logger.info(f"Running with model {model} and graph {graph}")
 
-
-    
     dtype = get_dtype(args)
 
     model = model_map[model](
@@ -169,8 +163,6 @@ def run_pass(
             scale_factors.append([1 / nb_cnt] * nb_cnt)
         graph.set_scale_factors(scale_factors)
 
-
-
     if (args.reduce):
         init_manager.reduce_graph()
     if (args.random):
@@ -182,7 +174,7 @@ def run_pass(
     if isinstance(model, MLP_Model):
         graph.remove_connections()
 
-    
+    # Not working
     # if isinstance(model, GCN_Model):
     #     graph.apply_self_connection()
     
@@ -194,8 +186,6 @@ def run_pass(
         init_manager.embedding_expectation()
         init_manager.save_model()
         init_manager.save_graph()
-
-
     
     metrics = {}
     if (args.cpu or args.gpu or args.sweep or args.sim):
@@ -205,8 +195,7 @@ def run_pass(
         graph.quantize_dq()
 
     logger.info(f"==== Pass metrics=======:\n {metrics}")
-    # for metric in metrics:
-    #     logger.info(f"{metric}: {metrics[metric]}")
+
     return metrics
 
 def run_sweep(args, models):
@@ -223,6 +212,7 @@ def run_sweep(args, models):
         command = f"cd {path}; make clean; make build"
         logger.info(f"==== Running command: {command}")
         process = subprocess.run(command, shell=True, capture_output=False, text=True)
+
     for degree in avg_degree_range:
         for node_count in node_count_range:
             logger.info(f"Running graph with degree {degree} and node_count {node_count}")

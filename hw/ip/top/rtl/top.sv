@@ -685,36 +685,36 @@ aggregation_engine aggregation_engine_i (
 
 generate begin:AGGREGATION_BUFFER
 
-for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin: AGGREGATION_BUFFER_i
+    for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin: AGGREGATION_BUFFER_i
 
-    hybrid_buffer #(
-        .NUM_SLOTS   (top_pkg::AGGREGATION_BUFFER_SLOTS),
-        .WRITE_WIDTH (top_pkg::AGGREGATION_BUFFER_WRITE_WIDTH),
-        .WRITE_DEPTH (top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH),
-        .READ_WIDTH  (top_pkg::AGGREGATION_BUFFER_READ_WIDTH),
-        .READ_DEPTH  (top_pkg::AGGREGATION_BUFFER_READ_DEPTH)
-    ) aggregation_buffer_i (
-        .core_clk           (sys_clk),
-        .resetn             (!sys_rst),
+        hybrid_buffer #(
+            .NUM_SLOTS   (top_pkg::AGGREGATION_BUFFER_SLOTS),
+            .WRITE_WIDTH (top_pkg::AGGREGATION_BUFFER_WRITE_WIDTH),
+            .WRITE_DEPTH (top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH),
+            .READ_WIDTH  (top_pkg::AGGREGATION_BUFFER_READ_WIDTH),
+            .READ_DEPTH  (top_pkg::AGGREGATION_BUFFER_READ_DEPTH)
+        ) aggregation_buffer_i (
+            .core_clk           (sys_clk),
+            .resetn             (!sys_rst),
 
-        .set_node_id_valid  (aggregation_buffer_set_node_id_valid [precision]),
-        .set_node_id        (aggregation_buffer_set_node_id       [precision]),
-        .slot_node_id       (aggregation_buffer_node_id           [precision]),
+            .set_node_id_valid  (aggregation_buffer_set_node_id_valid [precision]),
+            .set_node_id        (aggregation_buffer_set_node_id       [precision]),
+            .slot_node_id       (aggregation_buffer_node_id           [precision]),
 
-        .write_enable       (aggregation_buffer_write_enable    [precision]),
-        .write_address      (aggregation_buffer_write_address   [precision]),
-        .write_data         (aggregation_buffer_write_data      [precision]),
-        .write_count        (aggregation_buffer_write_count      [precision]),
+            .write_enable       (aggregation_buffer_write_enable    [precision]),
+            .write_address      (aggregation_buffer_write_address   [precision]),
+            .write_data         (aggregation_buffer_write_data      [precision]),
+            .write_count        (aggregation_buffer_write_count      [precision]),
 
-        .feature_count      (aggregation_buffer_feature_count   [precision]),
+            .feature_count      (aggregation_buffer_feature_count   [precision]),
 
-        .pop                (aggregation_buffer_pop               [precision]),
-        .out_feature        (aggregation_buffer_out_feature       [precision]),
-        .out_feature_valid  (aggregation_buffer_out_feature_valid [precision]),
-        .slot_free          (aggregation_buffer_slot_free         [precision])
+            .pop                (aggregation_buffer_pop               [precision]),
+            .out_feature        (aggregation_buffer_out_feature       [precision]),
+            .out_feature_valid  (aggregation_buffer_out_feature_valid [precision]),
+            .slot_free          (aggregation_buffer_slot_free         [precision])
 
-    );
-end
+        );
+    end
 end
 endgenerate
 
