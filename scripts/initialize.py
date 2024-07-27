@@ -18,7 +18,7 @@ from sdk.graphs.random_graph import RandomGraph
 from sdk.graphs.planetoid_graph import PlanetoidGraph
 from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
 
-from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
+from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model
 
 from sdk.benchmarking_manager import BenchmarkingManager
 
@@ -75,9 +75,7 @@ model_map = {
   'gcn': GCN_Model,
   'gat': GAT_Model,
   'gin': GIN_Model,
-  'sage': GraphSAGE_Model,
-  'gcn_mlp': GCN_MLP_Model,
-  'mlp': MLP_Model,
+  'sage': GraphSAGE_Model
 }
 
 def main(args):
@@ -169,10 +167,6 @@ def run_pass(
         init_manager.trained_graph.random_embeddings()
     else:
         init_manager.trained_graph.train_embeddings()
-
-
-    if isinstance(model, MLP_Model):
-        graph.remove_connections()
 
     # Not working
     # if isinstance(model, GCN_Model):
@@ -271,8 +265,6 @@ def parse_arguments():
     parser.add_argument('--gin', action='store_true', help='Use GIN Model')
     parser.add_argument('--gat', action='store_true', help='Use GAT Model')
     parser.add_argument('--sage', action='store_true', help='Use GraphSAGE Model')
-    parser.add_argument('--gcn_mlp', action='store_true', help='Use GCN MLP Model')
-    parser.add_argument('--mlp', action='store_true', help='Use MLP Model')
 
     parser.add_argument('--layers', type=int, default=2, help='Number of layers')
     parser.add_argument('--hidden-dimension', type=int, default=34, help='Hidden dimension size')
