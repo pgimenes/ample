@@ -158,8 +158,6 @@ ultraram_fifo #(
     .in_data        (adj_queue_write_data),
     .pop            (pop_adj_queue),
     .reset_read_ptr ('0),
-    .reset_write_ptr ('0),
-
     .out_valid      (adj_queue_head_valid),
     .out_data       (adj_queue_head),
     .count          (adj_queue_count),
@@ -225,8 +223,6 @@ ultraram_fifo #(
     
     .pop            (pop_message_queue),
     .reset_read_ptr ('0),
-    .reset_write_ptr ('0),
-
     .out_valid      (message_queue_head_valid),
     .out_data       (message_queue_head),
     
@@ -393,11 +389,10 @@ always_comb begin
     fetch_tag_msg_rm_resp_ready = (message_fetch_state == prefetcher_pkg::MSG_STORE) || scale_factor_read_master_resp_ready;
 
     push_message_queue   = (message_fetch_state == prefetcher_pkg::MSG_STORE) && accepting_msg_fetch_resp;
-    msg_queue_write_data = reverse_float_order(fetch_tag_msg_rm_resp_data); //Temporary - fix order in SDK memory mapper
+    msg_queue_write_data = fetch_tag_msg_rm_resp_data;
     
     pop_adj_queue = (message_fetch_state == prefetcher_pkg::MSG_FETCH) && accepting_message_fetch_req;
 end
-
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
@@ -485,8 +480,7 @@ always_comb begin
     // message_channel_resp.last = (message_queue_count == {{($clog2(MESSAGE_QUEUE_DEPTH)-1){1'b0}}, 1'b1});
     
     // When message queue count reaches feature count / 16 (rounded up), sending last neighbour's features
-    //
-    message_channel_resp.last_neighbour = message_queue_count <=  ({4'd0,allocated_feature_count[$clog2(MAX_FEATURE_COUNT)-1:4]} + (|allocated_feature_count[3:0] ? 1'b1 : 1'b0));
+    message_channel_resp.last_neighbour = message_queue_count <= ({allocated_feature_count[$clog2(MAX_FEATURE_COUNT)-1:4], 4'd0} + (|allocated_feature_count[3:0] ? 1'b1 : 1'b0));
 
     // Sending last feature when message queue count == 1
     message_channel_resp.last_feature = (message_queue_count[$clog2(MESSAGE_QUEUE_DEPTH)-1:1] == '0) && message_queue_count[0];
@@ -518,8 +512,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
         // allocation payloads remain written
     end
 end
-
-
 
 
 endmodule

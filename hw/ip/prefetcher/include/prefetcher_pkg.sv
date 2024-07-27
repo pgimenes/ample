@@ -36,17 +36,4 @@ typedef enum logic [2:0] {
     MSG_DONE = 4
 } FETCH_TAG_MESSAGE_FETCH_FSM_e;
 
-function logic [MESSAGE_QUEUE_WIDTH-1:0] reverse_float_order(input logic [MESSAGE_QUEUE_WIDTH-1:0] msg_queue_write_data);
-    localparam int NUM_FLOATS = MESSAGE_QUEUE_WIDTH / 32;
-
-    logic [MESSAGE_QUEUE_WIDTH-1:0] reversed_data;
-
-    // Loop to reverse the order of 32-bit floats
-    for (int i = 0; i < NUM_FLOATS; i++) begin
-        reversed_data[(NUM_FLOATS-i-1)*32 +: 32] = msg_queue_write_data[i*32 +: 32];
-    end
-
-    return reversed_data;
-endfunction
-
 endpackage

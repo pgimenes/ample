@@ -47,8 +47,7 @@ module aggregation_mesh #(
     input  logic [AGGREGATION_ROWS-1:0]                                                       aggregation_buffer_slot_write_ready,
     output logic [AGGREGATION_ROWS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] aggregation_buffer_slot_write_address,
     output logic [AGGREGATION_ROWS-1:0] [noc_pkg::PAYLOAD_DATA_WIDTH-1:0]                     aggregation_buffer_slot_write_data,
-    output logic [AGGREGATION_ROWS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]              aggregation_buffer_slot_write_count,
-
+    
     input  logic [AGGREGATION_ROWS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0]  aggregation_buffer_slot_feature_count,
     input  logic [AGGREGATION_ROWS-1:0]                                                       aggregation_buffer_slot_slot_free,
 
@@ -290,16 +289,16 @@ for (genvar agm = 0; agm < AGGREGATION_ROWS; agm = agm + 1) begin : agm_block
 
 
     always_comb begin
-        // First column of NOC mesh is taken by message channels - col or row?
+        // First column of NOC mesh is taken by message channels
         aggregation_manager_router_on    [agm]                     = node_router_on                   [0][agm][0];
         aggregation_manager_router_ready [agm]                     = node_router_ready                [0][agm][0];
-        node_router_valid                [0][agm]                  = aggregation_manager_router_valid [agm];
-        node_router_data                 [0][agm]                  = aggregation_manager_router_data  [agm];
+        node_router_valid                [0][agm] = aggregation_manager_router_valid [agm];
+        node_router_data                 [0][agm] = aggregation_manager_router_data  [agm];
 
-        router_aggregation_manager_valid [agm]                     = router_node_valid                [0][agm];
-        router_aggregation_manager_data  [agm]                     = router_node_data                 [0][agm];
-        router_node_on                   [0][agm][0]               = router_aggregation_manager_on    [agm];
-        router_node_ready                [0][agm][0]               = router_aggregation_manager_ready [agm];
+        router_aggregation_manager_valid [agm]                 = router_node_valid                [0][agm];
+        router_aggregation_manager_data  [agm]                 = router_node_data                 [0][agm];
+        router_node_on                   [0][agm][0] = router_aggregation_manager_on    [agm];
+        router_node_ready                [0][agm][0] = router_aggregation_manager_ready [agm];
     end
 
     assign aggregation_manager_done_nodeslot [agm] = agm_allocation[agm].nodeslot;
@@ -400,7 +399,6 @@ for (genvar bm = 0; bm < AGGREGATION_ROWS; bm++) begin : bm_block
         .bm_buffer_slot_write_ready                    (aggregation_buffer_slot_write_ready  [bm]),
         .bm_buffer_slot_write_address                  (aggregation_buffer_slot_write_address [bm]),
         .bm_buffer_slot_write_data                     (aggregation_buffer_slot_write_data    [bm]),
-        .bm_buffer_slot_write_count                    (aggregation_buffer_slot_write_count   [bm]),
         
         .buffer_slot_bm_feature_count                  (aggregation_buffer_slot_feature_count [bm]),
         .buffer_slot_bm_slot_free                      (aggregation_buffer_slot_slot_free     [bm])

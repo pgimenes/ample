@@ -1,12 +1,12 @@
 
 import numpy as np
+import struct
 import logging
 import os
 from .utilities import int_list_to_byte_list, float_list_to_byte_list
-
-import torch
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 from torch.nn import Linear
+import torch
 
 class Memory_Mapper:
 
@@ -15,10 +15,8 @@ class Memory_Mapper:
         self.model = model
         self.memory_hex = []
         self.num_layers = self.count_layers(self.model)
-
         weights_list = [0]*self.num_layers
         self.offsets = {'adj_list': 0, 'scale_factors': 0, 'in_messages':0, 'weights':weights_list, 'out_messages':0}
-        
         self.dump_file = os.path.join(base_path, dump_file)
 
     def map (self):
@@ -63,8 +61,6 @@ class Memory_Mapper:
                 linear = layer.nn
             elif isinstance(layer, SAGEConv):
                 linear = layer.lin_l
-            elif isinstance(layer, Linear):
-                linear = layer
             else:
                 raise RuntimeError(f"Unrecognized layer {layer}")
             

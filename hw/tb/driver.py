@@ -58,7 +58,7 @@ class Driver():
         # Wait counts
         await self.axil_driver.axil_write(self.nsb_regs["NSB_CONFIG_AGGREGATION_WAIT_COUNT"], layer["aggregation_wait_count"])
         #Aggregate Enable
-        await self.axil_driver.axil_write(self.nsb_regs["layer_config_aggregate_enable"], layer["aggregate_enable"])
+        # await self.axil_driver.axil_write(self.nsb_regs["layer_config_aggregate_enable"], layer["aggregate_enable"])
 
         # Set config valid
         await self.axil_driver.axil_write(self.nsb_regs["layer_config_valid"], 1)

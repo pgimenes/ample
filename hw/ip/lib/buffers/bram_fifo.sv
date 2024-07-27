@@ -54,8 +54,9 @@ logic wr_wrap, rd_wrap;
 // Logic
 // ==================================================================================================================================================
 
-`ifdef SIMULATION
-    buffer_bram scale_factor_queue_i (
+if (BRAM_TYPE == 0) begin
+
+    scale_factor_queue scale_factor_queue_i (
         .clka         (core_clk),
         .ena          (1'b1),
         .wea          (push),
@@ -67,26 +68,10 @@ logic wr_wrap, rd_wrap;
         .addrb        (read_address),
         .doutb        (out_data)
     );
-`else
-    if (BRAM_TYPE == 0) begin
 
-        scale_factor_queue scale_factor_queue_i (
-            .clka         (core_clk),
-            .ena          (1'b1),
-            .wea          (push),
-            .addra        (wr_ptr),
-            .dina         (in_data),
-            
-            .clkb         (core_clk),
-            .enb          (1'b1),
-            .addrb        (read_address),
-            .doutb        (out_data)
-        );
-
-    end else begin
-        assign out_data = '0;
-    end
-`endif
+end else begin
+    assign out_data = '0;
+end
 
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin

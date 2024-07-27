@@ -26,7 +26,7 @@ from tb.monitors.prefetcher_monitor import Prefetcher_Monitor
 from tb.utils.common import NodeState, NodePrecision
 from tb.utils.common import delay, allocate_lsb
 
-from tb.monitors.axi_write_master_monitor import AXIWriteMasterMonitor
+from tb.monitors.axi_write_monitor import AXIWriteMasterMonitor
 
 from tb.monitors.bm_monitor import BM_Monitor
 
@@ -59,7 +59,7 @@ class BaseTest:
             start_address=dut.top_i.transformation_engine_i.axi_write_master_req_start_address,
             req_len=dut.top_i.transformation_engine_i.axi_write_master_req_len,
             data_valid=dut.top_i.transformation_engine_i.axi_write_master_data_valid,
-            data=dut.top_i.transformation_engine_i.transformation_core_axi_write_master_data_unreversed,
+            data=dut.top_i.transformation_engine_i.transformation_core_axi_write_master_data,
             pop=dut.top_i.transformation_engine_i.axi_write_master_pop,
             resp_valid=dut.top_i.transformation_engine_i.axi_write_master_resp_valid,
             resp_ready=dut.top_i.transformation_engine_i.axi_write_master_resp_ready,

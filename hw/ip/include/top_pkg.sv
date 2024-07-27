@@ -166,7 +166,6 @@ typedef struct packed {
     logic [$clog2(MAX_NODESLOT_COUNT)-1:0] nodeslot;
     NODE_PRECISION_e                       nodeslot_precision;
     logic [$clog2(MAX_NEIGHBOURS)-1:0]     neighbour_count;
-    logic                                  aggregate;
 } NSB_PREF_REQ_t;
 
 typedef struct packed {

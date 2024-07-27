@@ -623,15 +623,14 @@ always_comb begin : nsb_prefetcher_req_logic
                                         : top_pkg::FETCH_RESERVED;
 
     nsb_prefetcher_req.nodeslot      = prefetcher_arbiter_grant_bin;
-    nsb_prefetcher_req.start_address = nsb_prefetcher_req.req_opcode == top_pkg::WEIGHTS ? {layer_config_weights_address_msb_msb /*[ctrl_fetch_layer_weights_precision_value[1]]*/, layer_config_weights_address_lsb_lsb [ctrl_fetch_layer_weights_precision_value]}
-                                    : nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST ? {layer_config_adjacency_list_address_msb_msb/*[prefetcher_arbiter_grant_bin]*/, layer_config_adjacency_list_address_lsb_lsb + nsb_nodeslot_node_id_id[prefetcher_arbiter_grant_bin] * 64}
-                                    : nsb_prefetcher_req.req_opcode == top_pkg::SCALE_FACTOR ? {layer_config_scale_factors_address_msb_value/*[prefetcher_arbiter_grant_bin]*/, layer_config_scale_factors_address_lsb_value[prefetcher_arbiter_grant_bin] + nsb_nodeslot_node_id_id[prefetcher_arbiter_grant_bin] * 64}
+    
+    nsb_prefetcher_req.start_address = nsb_prefetcher_req.req_opcode == top_pkg::WEIGHTS ? {layer_config_weights_address_msb_msb [ctrl_fetch_layer_weights_precision_value], layer_config_weights_address_lsb_lsb [ctrl_fetch_layer_weights_precision_value]}
+                                    : nsb_prefetcher_req.req_opcode == top_pkg::ADJACENCY_LIST ? {layer_config_adjacency_list_address_msb_msb[prefetcher_arbiter_grant_bin], layer_config_adjacency_list_address_lsb_lsb + nsb_nodeslot_node_id_id[prefetcher_arbiter_grant_bin] * 64}
+                                    : nsb_prefetcher_req.req_opcode == top_pkg::SCALE_FACTOR ? {layer_config_scale_factors_address_msb_value[prefetcher_arbiter_grant_bin], layer_config_scale_factors_address_lsb_value[prefetcher_arbiter_grant_bin] + nsb_nodeslot_node_id_id[prefetcher_arbiter_grant_bin] * 64}
                                     : '0;
     
-    //Enable/Disable aggregation
-    nsb_prefetcher_req.neighbour_count = (layer_config_aggregate_enable_value) ? nsb_nodeslot_neighbour_count_count[prefetcher_arbiter_grant_bin] : 1;
-    
-    nsb_prefetcher_req.aggregate = layer_config_aggregate_enable_value;
+
+    nsb_prefetcher_req.neighbour_count = nsb_nodeslot_neighbour_count_count[prefetcher_arbiter_grant_bin];
 
     nsb_prefetcher_req.nodeslot_precision = nsb_prefetcher_req.req_opcode == WEIGHTS ? top_pkg::NODE_PRECISION_e'(ctrl_fetch_layer_weights_precision_value)
                                         : top_pkg::NODE_PRECISION_e'(nsb_nodeslot_precision_precision[prefetcher_arbiter_grant_bin]);

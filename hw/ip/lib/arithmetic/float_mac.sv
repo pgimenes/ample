@@ -59,41 +59,36 @@ logic                   busy;
 // Instances
 // ==================================================================================================================================================
 
+`ifdef SIMULATION
 
-`ifdef SIMULATION_QUICK
-
-assign fp_mult_result_valid_comb = in_valid; //&& in_ready;
+assign fp_mult_result_valid_comb = in_valid && in_ready;
 assign fp_mult_result_comb = a;
-assign fp_add_result_valid_comb = fp_mult_result_valid_q;
+assign fp_add_result_valid_comb = busy && fp_mult_result_valid_q;
 assign fp_add_result_comb = acc_reg;
 
 `else
-logic [FLOAT_WIDTH-1:0] a_gated;
-logic [FLOAT_WIDTH-1:0] b_gated;
-
-
-assign a_gated = in_valid ? a : '0;
-assign b_gated = in_valid ? b : '0;
-
 
 fp_mult multiplier_i (
-  .in1(a_gated),
+//   .s_axis_a_tvalid(in_valid && in_ready),
+  .in1(a),
 
-  .in2(b_gated),
+//   .s_axis_b_tvalid(in_valid && in_ready),
+  .in2(b),
   
+//   .m_axis_result_tvalid(fp_mult_result_valid_comb),
   .res(fp_mult_result_comb)
 );
-assign fp_mult_result_valid_comb = in_valid; //&& in_ready;
 
 fp_add adder_i (
-
+//   .s_axis_a_tvalid              (busy && fp_mult_result_valid_q),
   .in1               (fp_mult_result_q),
   
+//   .s_axis_b_tvalid              (busy && fp_mult_result_valid_q),
   .in2               (acc_reg),
 
+//   .m_axis_result_tvalid         (fp_add_result_valid_comb),
   .res          (fp_add_result_comb)
 );
-assign fp_add_result_valid_comb =  fp_mult_result_valid_q;
 
 `endif
 
@@ -112,11 +107,13 @@ always_ff @(posedge core_clk or negedge resetn) begin
         fp_mult_result_q       <= '0;
 
         fp_add_result_valid <= '0;
+        fp_add_result <= '0;
     end else begin
         fp_mult_result_valid_q <= fp_mult_result_valid_comb;
         fp_mult_result_q       <= fp_mult_result_comb;
 
         fp_add_result_valid <= fp_add_result_valid_comb;
+        fp_add_result <= fp_add_result_comb;
     end
 end
 
@@ -128,31 +125,31 @@ always_ff @(posedge core_clk or negedge resetn) begin
         acc_reg <= '0;
     end else begin
         acc_reg <= overwrite ? overwrite_data
-                    : fp_add_result_valid_comb ? fp_add_result_comb
+                    : busy && fp_add_result_valid ? fp_add_result 
                     : acc_reg;
     end
 end
 
 assign accumulator = acc_reg;
 
-// // Handle backpressure
-// // -----------------------------------
+// Handle backpressure
+// -----------------------------------
 
-// always_ff @(posedge core_clk or negedge resetn) begin
-//     if (!resetn) begin
-//         busy <= '0;
+always_ff @(posedge core_clk or negedge resetn) begin
+    if (!resetn) begin
+        busy <= '0;
 
-//     end else begin
-//         busy <= 
-//                 // Accepting new update request
-//                 in_valid && in_ready ? 1'b1
+    end else begin
+        busy <= 
+                // Accepting new update request
+                in_valid && in_ready ? 1'b1
                 
-//                 // Done with update request
-//                 : busy && fp_add_result_valid ? 1'b0
+                // Done with update request
+                : busy && fp_add_result_valid ? 1'b0
 
-//                 : busy;
-//     end
-// end
+                : busy;
+    end
+end
 
 assign in_ready = !busy;
 

@@ -12,7 +12,6 @@ import logging
 from tqdm import tqdm
 from copy import deepcopy
 
-from torch.nn import Linear
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 
 from .models.models import GraphSAGE_Model
@@ -52,7 +51,7 @@ class InitManager:
 
         # Layer configuration
         self.layer_config = {'global_config': {}, 'layers': []}
-        self.model_layer_max_features = max([self.get_feature_counts(self.model)])
+
         # Nodeslot programming
         self.nodeslot_programming = {'nodeslots':[]}
 
@@ -69,24 +68,15 @@ class InitManager:
         elif isinstance(layer, SAGEConv):
             inc = layer.in_channels
             outc = layer.out_channels
-        elif isinstance(layer, Linear):
-            inc = layer.in_features
-            outc = layer.out_features
         else:
             raise RuntimeError(f"Unrecognized layer type {type(layer)}")        
         return inc, outc
     
     def get_default_layer_config(self, layer,idx):
         inc, outc = self.get_layer_feature_count(layer)
-        if isinstance(layer, torch.nn.Linear):
-            aggregate_enable = 0
-        else:
-            aggregate_enable = 1
-        #Multi-layer support - out messages become in messages for next layer
-        if idx >0: 
-            in_messages_address = self.memory_mapper.offsets['out_messages']#Can change this to have intermediate out messages (['out_messages'][idx-1])
-        else:
-            in_messages_address= self.memory_mapper.offsets['in_messages']
+  
+
+        in_messages_address= self.memory_mapper.offsets['in_messages']
         return {
             'nodeslot_count': len(self.trained_graph.nx_graph.nodes),
             'in_feature_count': inc,
@@ -101,7 +91,7 @@ class InitManager:
             'out_messages_address': self.memory_mapper.offsets['out_messages'],
             'aggregation_wait_count': 4,
             'transformation_wait_count': 4,
-            'aggregate_enable' : aggregate_enable,
+            'aggregate_enable' : 1,
         }
 
     def set_layer_config_graphsage(self):

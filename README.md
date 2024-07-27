@@ -131,18 +131,6 @@ make build
 make sim GUI=1
 ```
 
-
-8. Benchmark AMPLE against a CPU
-```bash
-python3 $WORKAREA/scripts/initialize.py --karate --mlp --payloads --random --layers 10 --sim --cpu --tb_log_level INFO
-```
-
-
-
-Note: Defining ```SIMULATION``` in the Modelsim makefile  will simualte without Xillinx IP and ```SIMULATION_QUICK``` will simulate without FP units, activaiton, bias or aggregation
-
-
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
