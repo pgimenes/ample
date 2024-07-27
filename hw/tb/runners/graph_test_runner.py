@@ -8,16 +8,6 @@ from tb.utils.common import delay
 from tb.tests.base_test import BaseTest
 import logging
 
-# from tb.monitors.mase_cocotb.stream_monitor import StreamMonitor
-
-# from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
-# from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
-# from sdk.graphs.matrix_graph import MatrixGraph
-# from sdk.graphs.karate_club import KarateClubGraph
-# from sdk.graphs.random_graph import RandomGraph
-# from sdk.graphs.planetoid_graph import PlanetoidGraph
-# from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
-
 
 def get_log_level():
     log_level = os.environ.get('AMPLE_GRAPH_TB_LOG_LEVEL', 'INFO')
