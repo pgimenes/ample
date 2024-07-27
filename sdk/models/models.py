@@ -161,44 +161,5 @@ class GCN_MLP_Model(nn.Module):
             outputs.append(x)
         return outputs
 
-'''
-MLP
-'''
-
-class MLP_Model(torch.nn.Module):
-    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=32, precision = torch.float32):
-        super().__init__()
-        self.precision = precision
-        self.layers = nn.ModuleList()
-        if layer_count == 1:
-            layer = nn.Linear(in_channels, out_channels, bias=True)
-            layer.name = 'output_layer'  # Assign name directly
-            self.layers.append(layer)
-
-        else:
-            layer = nn.Linear(in_channels, hidden_dimension, bias=True)
-            layer.name = 'input_layer'
-            self.layers.append(layer)
-            for i in range(layer_count-2):
-                layer = nn.Linear(hidden_dimension, hidden_dimension, bias=True)
-                layer.name = f'hidden_layer_{i}'
-                self.layers.append(layer)
-                
-            layer = nn.Linear(hidden_dimension, out_channels, bias=True)
-            layer.name = 'output_layer'
-            self.layers.append(layer)
-
-        for layer in self.layers:
-            layer.to(torch.float32)
-
-    def forward(self, x, edge_index,):
-        x = x.to(self.precision)  
-        outputs = []
-        for layer in self.layers:
-            x = layer(x)
-            outputs.append(x)
-
-        return outputs
-
 
 
