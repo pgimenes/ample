@@ -33,15 +33,11 @@ from tb.monitors.bm_monitor import BM_Monitor
 class BaseTest:
     def __init__(self, dut, nodeslot_count,tolerance, base_path=None):
         self.dut = dut
-
         self.driver = Driver(dut)
         self.nodeslot_count = nodeslot_count
         self.variant = Variant()
         self.tolerance = tolerance
-
-
         self.clk_period = 5
-        
         # self.age_monitor = AGE_Monitor(dut.top_i.aggregation_engine_i, self.variant)
         self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
         # self.prefetcher_monitor = Prefetcher_Monitor(dut.top_i.prefetcher_i, self.variant)
@@ -69,8 +65,6 @@ class BaseTest:
             resp_ready=dut.top_i.transformation_engine_i.axi_write_master_resp_ready,
             tolerance = self.tolerance
         )
-        # self.axi_write_monitor = AXIWriteMasterMonitor(
-        #     dut.sys_clk,
 
 
         # Buffer Manager Monitors
@@ -81,16 +75,6 @@ class BaseTest:
         #         self.dut._log.info(f"Creating monitor for BM {id}")
         #         self.float_bm_monitors[id] = BM_Monitor(dut.top_i.aggregation_engine_i.precision_block[0].aggregation_mesh_i.bm_block[id].buffer_manager_i,
         #                                                         self.variant, NodePrecision.FLOAT_32.value, id)
-
-
-
-        # data_out_0_monitor = StreamMonitor(
-        #         dut.sys_clk,
-        #         dut.top_i.transformation_engine_i.axi_write_master_data,
-        #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
-        #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
-        #         check=False,
-        #     )
 
 
 
@@ -122,17 +106,10 @@ class BaseTest:
         await self.drive_reset()
 
 
-        # cocotb.fork(self.axi_monitor.monitor_write_transactions())
 
         # Start monitors
         # self.nsb_monitor.running = True
         # self.nsb_monitor.start()
-
-        # self.axi_monitor.running = True
-        # cocotb.start_soon(self.axi_monitor.monitor_write_transactions())
-
-
-
         # self.age_monitor.start()
         # self.prefetcher_monitor.start()
         # self.fte_monitor.start()
@@ -140,7 +117,6 @@ class BaseTest:
         # for id in range(self.variant.aggregation_buffer_slots):
         #     print(f"Binding monitor for BM {id}")
         #     self.float_bm_monitors[id].start()
-
 
 
     def load_layer_test(self,layer_features):
@@ -161,10 +137,6 @@ class BaseTest:
         pass
 
     async def end_test(self):
-        # self.dut._log.info("test is being destroyed")
-        # self.axi_monitor._thread.kill()
-        # self.dut._log.info("test is being kill")
-
         # Stop monitors
         # self.nsb_monitor.running = False
         self.axi_monitor.running = False
@@ -224,16 +196,13 @@ class BaseTest:
     async def wait_end(self, timeout=1, timeout_unit="ms"):
         while True:
             await RisingEdge(self.clk)
-
             break
 
     # CLOCK AND RESET
 
     async def start_clocks(self):
-        
         cocotb.start_soon(Clock(self.dut.sys_clk, self.clk_period, units="ns").start())
         cocotb.start_soon(Clock(self.dut.regbank_clk, self.clk_period, units="ns").start())
-        
 
     async def drive_reset(self):
         self.dut._log.debug("Driving reset")
@@ -249,7 +218,6 @@ class BaseTest:
         for _ in range(10):
             await RisingEdge(self.dut.regbank_clk)
         self.dut._log.debug("Done waiting after reset")
-
 
 
     async def drive_nodeslots(self,test):

@@ -1,7 +1,6 @@
 import os
 import pdb
 
-from cocotb.triggers import RisingEdge, Timer, Event, ClockCycles
 from cocotb.utils import get_sim_time
 
 from tb.utils.common import NodePrecision
@@ -37,19 +36,11 @@ def get_log_level():
 
 
 async def graph_test_runner(dut):
-
-
-
-    # log_level = logging.INFO #Possible values: DEBUG, INFO, WARNING, ERROR, CRITICAL
-
     tolerance = float(os.environ.get('AMPLE_GRAPH_TB_TOLERANCE', 1))
     log_level = get_log_level()
     dut._log.setLevel(log_level)  # Set to the desired level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 
     nodeslot_count = int(os.environ.get('AMPLE_GRAPH_TB_NODESLOT_COUNT', 64))
-    
-
-
     test = BaseTest(dut,nodeslot_count, tolerance)
     test.log_info(dut, "Starting Graph Test")
 
@@ -66,8 +57,6 @@ async def graph_test_runner(dut):
     layer_cycle_count = []
     for layer_idx, layer in enumerate(test.layers):
         await test.start_monitors()
-
-        
         layer_features = output[layer_idx]
         dut._log.info(f"Starting layer {layer_idx+1}")
         outs = output[layer_idx]
@@ -88,24 +77,19 @@ async def graph_test_runner(dut):
         # await drive_nodeslots(test)
         await test.driver.axil_driver.axil_write(test.driver.nsb_regs["ctrl_start_nodeslot_fetch"], 1)
 
-
-
         await test.driver.wait_done_ack(
             done_reg = test.driver.nsb_regs["ctrl_start_nodeslot_fetch_done"],
             ack_reg = test.driver.nsb_regs["ctrl_start_nodeslot_fetch_done_ack"],
             tries = 10000
         )
 
-        
         dut._log.debug("Nodeslot fetching done, waiting for nodeslots to be flushed.")
         initial_cycle = test.get_cycle_count()
 
-        # test.fte_monitor.start = True
         await test.flush_nodeslots(test)
         final_cycle = test.get_cycle_count()
         layer_cycle_count.append(int(final_cycle - initial_cycle))
 
-        # test.fte_monitor.start = False
         await test.end_test()
 
         if test.axi_monitor.empty_expected_layer_features():
@@ -113,32 +97,22 @@ async def graph_test_runner(dut):
         else:
             dut._log.error("Not all nodes not written.")
 
-            # print(test.axi_monitor.expected_layer_features_by_address)
-
-
+  
         test.dut._log.info(f"Layer {layer_idx+1} finished.")
 
         await delay(dut.regbank_clk, 10)
-    # test.axi_monitor.kill()
-    # sim_running_event.clear()
 
     stime = get_sim_time("ms")
-    # raise TestFailure("Finished")
+  
     # await test.stop_monitors()
     test.dut._log.info(f"Test finished. Simulation time: {stime}ms.")
    
-    # raise TestFailure("Finished")
 
     with open(f"sim_time.txt", "w") as f:
         f.write(str(stime))
-
 
     with open(f"sim_cycles.txt", "w") as f:
         for idx,item in enumerate(layer_cycle_count):
             dut._log.info(f"Layer {idx} cycle count: {item}")
             f.write(f"Layer {idx} cycles: {item}")
             f.write("\n")
-
-
-    
-

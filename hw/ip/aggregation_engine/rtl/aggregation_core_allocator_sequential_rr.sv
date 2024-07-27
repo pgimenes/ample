@@ -1,7 +1,6 @@
 import age_pkg::*;
 import noc_pkg::*;
 
-//TODO correct name
 module aggregation_core_allocator_sequential_rr #(
     parameter NUM_CORES            = top_pkg::TRANSFORMATION_CHANNELS * top_pkg::AGGREGATION_CHANNELS,
     parameter NUM_MANAGERS         = top_pkg::TRANSFORMATION_CHANNELS,
@@ -103,7 +102,6 @@ for (genvar allocation_slot = 0; allocation_slot < age_pkg::MAX_AGC_PER_NODE; al
             agm_req.coords_x [allocation_slot] <= '0;
             agm_req.coords_y [allocation_slot] <= '0;
             agm_req.num_features [allocation_slot] <= 0;
-
         end else if (busy && !done && (agc_counter == allocation_slot)) begin
             agm_req.coords_x [allocation_slot] <= 1'b1 + (allocated_core_bin % AGGREGATION_COLUMNS); // TO DO: replace with AGGREGATION_COLS when merging with generalized aggregation mesh
             agm_req.coords_y [allocation_slot] <= allocated_core_bin / AGGREGATION_COLUMNS;

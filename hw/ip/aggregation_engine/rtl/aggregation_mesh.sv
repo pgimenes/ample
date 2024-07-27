@@ -293,13 +293,13 @@ for (genvar agm = 0; agm < AGGREGATION_ROWS; agm = agm + 1) begin : agm_block
         // First column of NOC mesh is taken by message channels - col or row?
         aggregation_manager_router_on    [agm]                     = node_router_on                   [0][agm][0];
         aggregation_manager_router_ready [agm]                     = node_router_ready                [0][agm][0];
-        node_router_valid                [0][agm] = aggregation_manager_router_valid [agm];
-        node_router_data                 [0][agm] = aggregation_manager_router_data  [agm];
+        node_router_valid                [0][agm]                  = aggregation_manager_router_valid [agm];
+        node_router_data                 [0][agm]                  = aggregation_manager_router_data  [agm];
 
-        router_aggregation_manager_valid [agm]                 = router_node_valid                [0][agm];
-        router_aggregation_manager_data  [agm]                 = router_node_data                 [0][agm];
-        router_node_on                   [0][agm][0] = router_aggregation_manager_on    [agm];
-        router_node_ready                [0][agm][0] = router_aggregation_manager_ready [agm];
+        router_aggregation_manager_valid [agm]                     = router_node_valid                [0][agm];
+        router_aggregation_manager_data  [agm]                     = router_node_data                 [0][agm];
+        router_node_on                   [0][agm][0]               = router_aggregation_manager_on    [agm];
+        router_node_ready                [0][agm][0]               = router_aggregation_manager_ready [agm];
     end
 
     assign aggregation_manager_done_nodeslot [agm] = agm_allocation[agm].nodeslot;

@@ -106,6 +106,7 @@ logic [$clog2(FEATURE_COUNT):0]                row_counter;
 
 logic reset_weights;
 logic empty_weights; //When next layer is ready to fetch weights, reset wr_ptr of all row FIFOs
+logic done_resp;
 
 
 assign empty_weights = (weight_bank_state == WEIGHT_BANK_FSM_WEIGHTS_WAITING) && (weight_bank_state_n == WEIGHT_BANK_FSM_FETCH_REQ);
@@ -121,18 +122,18 @@ for (genvar row = 0; row < FEATURE_COUNT; row++) begin
         .core_clk,
         .resetn,
         
-        .push       (row_fifo_push      [row]),
-        .in_data    (row_fifo_in_data),
+        .push                   (row_fifo_push      [row]),
+        .in_data                (row_fifo_in_data),
         
-        .pop            (row_fifo_pop       [row]),
-        .reset_read_ptr (reset_weights),
-        .reset_write_ptr(empty_weights),
-        .out_valid  (row_fifo_out_valid [row]),
-        .out_data   (row_fifo_out_data  [row]),
+        .pop                    (row_fifo_pop       [row]),
+        .reset_read_ptr         (reset_weights),
+        .reset_write_ptr        (empty_weights),
+        .out_valid              (row_fifo_out_valid [row]),
+        .out_data               (row_fifo_out_data  [row]),
         
-        .count      (row_fifo_count     [row]),
-        .empty      (row_fifo_empty     [row]),
-        .full       (row_fifo_full      [row])
+        .count                  (row_fifo_count     [row]),
+        .empty                  (row_fifo_empty     [row]),
+        .full                   (row_fifo_full      [row])
     );
 
     assign row_fifo_push      [row] = (weight_bank_state == WEIGHT_BANK_FSM_WRITE) & (row == (rows_fetched - 1));
@@ -355,8 +356,6 @@ always_ff @(posedge core_clk or negedge resetn) begin
 end
 
 
-logic done_resp;
-
 always_ff @(posedge core_clk or negedge resetn) begin
     if (!resetn) begin
         done_resp <= '0;
@@ -373,14 +372,14 @@ end
 
 always_comb begin
     // Issue weight channel response when new data is available on all row FIFOs following a pop
-    weight_channel_resp_valid = ((weight_bank_state == WEIGHT_BANK_FSM_DUMP_WEIGHTS) && (&row_fifo_out_valid) && |row_pop_shift)||done_resp ;
+    weight_channel_resp_valid      = ((weight_bank_state == WEIGHT_BANK_FSM_DUMP_WEIGHTS) && (&row_fifo_out_valid) && |row_pop_shift)||done_resp ;
 
     weight_channel_resp.data       = row_fifo_out_data;
     weight_channel_resp.valid_mask = row_pop_shift & ~row_fifo_empty;
     
     weight_channel_resp.done       = (weight_channel_resp.valid_mask == '0);
     
-    accepting_weight_channel_resp = (weight_channel_resp_valid && weight_channel_resp_ready);
+    accepting_weight_channel_resp  = (weight_channel_resp_valid && weight_channel_resp_ready);
 end
 
 // When finished dumping weights, reset read pointer so the same weights can be used for the next FTE pass

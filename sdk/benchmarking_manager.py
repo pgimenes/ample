@@ -77,7 +77,7 @@ class BenchmarkingManager:
         if (torch.cuda.is_available()):
             self.bman = BenchmarkWrapper(model)
         else:
-            self.bman = CPUBenchmarkWrapper(model)
+            self.bman = CPUBenchmarkWrapper(model) #Temp
         self.graph = graph
         self.cpu = args.cpu
         self.gpu = args.gpu
@@ -94,7 +94,7 @@ class BenchmarkingManager:
         data.edge_index = data.edge_index.to(torch.device(f"cuda:{self.device}"))
         
         times = []
-        for i in range(100): #Do Loop in predict function?
+        for i in range(100):
             time_taken = self.bman.predict(batch=(data.x, data.edge_index))
             times.append(time_taken)
 
@@ -207,7 +207,7 @@ class BenchmarkingManager:
         sim_cycle_time = sum(cycles_dict.values()) * (1/self.fpga_clk_freq)
         throughput = self.graph.dataset.y.shape[0] / float(stime)
         return {
-            # "fpga_latency": stime,
+            "fpga_latency": stime,
             "fpga_sim_cycle_time": sim_cycle_time,
             "fpga_mean_power": 30,
             "fpga_nodes_per_ms": throughput,

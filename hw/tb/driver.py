@@ -23,7 +23,6 @@ class Driver():
         # Prefetcher register bank
         self.dut._log.debug("Programming prefetcher register bank layer configuration.")
 
-
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_in_features"], layer["in_feature_count"])
         await self.axil_driver.axil_write(self.prefetcher_regs["layer_config_out_features"], layer["out_feature_count"])
         # Addresses

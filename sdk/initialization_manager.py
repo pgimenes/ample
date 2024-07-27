@@ -20,6 +20,7 @@ from .models.models import GraphSAGE_Model
 import math
 
 data_width = 64
+
 class InitManager:
 
     def __init__(self, 
@@ -54,8 +55,6 @@ class InitManager:
         self.model_layer_max_features = max([self.get_feature_counts(self.model)])
         # Nodeslot programming
         self.nodeslot_programming = {'nodeslots':[]}
-        
-
 
     # Nodeslot programming and layer configuration
     # ===============================================
@@ -83,7 +82,7 @@ class InitManager:
             aggregate_enable = 0
         else:
             aggregate_enable = 1
-            
+        #Multi-layer support - out messages become in messages for next layer
         if idx >0: 
             in_messages_address = self.memory_mapper.offsets['out_messages']#Can change this to have intermediate out messages (['out_messages'][idx-1])
         else:
@@ -97,7 +96,7 @@ class InitManager:
             'transformation_bias': 0,
             'dequantization_parameter': self.trained_graph.dequantization_parameter,
             'adjacency_list_address': self.memory_mapper.offsets['adj_list'],
-            'in_messages_address': in_messages_address, #Change to out messages address of last layer
+            'in_messages_address': in_messages_address, 
             'weights_address': self.memory_mapper.offsets['weights'][idx],
             'out_messages_address': self.memory_mapper.offsets['out_messages'],
             'aggregation_wait_count': 4,
@@ -158,10 +157,8 @@ class InitManager:
                 'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['scale_factors_address'],
                 'scale_factors_address_msb': 0,
                 'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.calc_axi_addr(self.trained_graph.feature_count),
-
                 'out_messages_address_msb': 0
             }
-               # 'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.calc_axi_addr(self.model_layer_max_features),
 
     def program_nodeslots_graphsage(self):
         # Layer 1: W1 projection
@@ -273,34 +270,28 @@ class InitManager:
         x = self.trained_graph.dataset.x  # Node features tensor
         edge_index = self.trained_graph.dataset.edge_index  # Edge indices tensor
 
-     
+        #Traced Model - allow TB to be compatible with GCNConv
         jit_model = torch.jit.trace(self.model, (x, edge_index))
+        #Non-traced model
         # jit_model = torch.jit.script(self.model).to('cpu')
-
         torch.jit.save(jit_model, 'model.pt')
 
         return jit_model
 
     
-        
     #Save graph for testbench
     def save_graph(self):
         input_data = {
-            'x': self.trained_graph.dataset.x,  # your node features tensor
-            'edge_index': self.trained_graph.dataset.edge_index  # your edge index tensor
+            'x': self.trained_graph.dataset.x,  
+            'edge_index': self.trained_graph.dataset.edge_index  
         }
 
         torch.save({
             'input_data': input_data
         }, 'graph.pth')
-    # Sampling
-    # ===============================================
-    
-    def reduce_graph(self):
-        self.trained_graph.reduce()
-    
+
     def calc_axi_addr(self,feature_count):
-        return math.ceil(4*feature_count / data_width) *data_width
+        return math.ceil(4*feature_count / data_width) * data_width
     
     # Function to get feature count of each layer
     def get_feature_counts(self,model):
@@ -312,6 +303,11 @@ class InitManager:
                 feature_counts.append(layer.out_features)
         return feature_counts
 
+    # Sampling
+    # ===============================================
+    
+    def reduce_graph(self):
+        self.trained_graph.reduce()
+    
     def map(self):
-        # self.memory_mapper.map(self.calc_axi_addr(self.model_layer_max_features))
         self.memory_mapper.map()

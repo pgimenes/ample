@@ -106,14 +106,9 @@ if (PRECISION == top_pkg::FLOAT_32) begin
     assign bias_gated = bias_valid ? bias : '0;
 
     fp_add bias_adder (
-    // .s_axis_a_tvalid              (1'b1),
-    .in1               (pe_acc),
-
-    // .s_axis_b_tvalid              (bias_valid),
-    .in2               (bias_gated),
-
-    // .m_axis_result_tvalid         (bias_out_valid_comb),
-    .res          (pe_acc_add_bias_comb)
+        .in1               (pe_acc),
+        .in2               (bias_gated),
+        .res          (pe_acc_add_bias_comb)
     );
     assign bias_out_valid_comb = bias_valid;
 

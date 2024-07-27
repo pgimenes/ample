@@ -232,9 +232,6 @@ assign buffer_manager_done = (bm_state == BM_FSM_WAIT_TRANSFORMATION) && (bm_sta
 // -------------------------------------------------------------------------------------
 
 always_comb begin
-    //redunant
-    // {received_packet_source_col, received_packet_source_row} = noc_pkg::decode_packet_source(received_flit);
-
     // Decode packets arriving during handshake
     {incoming_packet_source_col, incoming_packet_source_row} = noc_pkg::decode_packet_source(router_buffer_manager_data);
 end
@@ -275,8 +272,7 @@ for (genvar agc_source = 0; agc_source < MAX_AGC_PER_NODE; agc_source++) begin
     assign agc_source_oh[agc_source] = (valid_agc_head && router_buffer_manager_on && router_buffer_manager_valid && router_buffer_manager_ready) ? (allocated_agcs_x_coords_q[agc_source] == incoming_packet_source_col)
                                          && (allocated_agcs_y_coords_q[agc_source] == incoming_packet_source_row) && allocated_agcs[agc_source] : agc_source_oh_q[agc_source];
     
-    // assign agc_source_oh_early[agc_source] = (allocated_agcs_x_coords_q[agc_source] == incoming_packet_source_col)
-                                        // && (allocated_agcs_y_coords_q[agc_source] == incoming_packet_source_row);
+
     
     always_ff @(posedge core_clk or negedge resetn) begin
         if (!resetn) begin

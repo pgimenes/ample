@@ -43,32 +43,10 @@ class GCN_Model(torch.nn.Module):
         for layer in self.layers:
             x = layer(x, edge_index)
             outputs.append(x)
-        # outputs_array = np.stack(outputs)  # Stack all outputs into a single NumPy array
 
         return outputs
 
 
-    # def forward(self, x: Tensor, edge_index: Tensor):
-    #     if isinstance(edge_index, SparseTensor):
-    #         edge_index = edge_index.to_torch_sparse_coo_tensor()  # Ensure edge_index is a Tensor
-    #     outputs = []
-    #     for layer in self.layers:
-    #         x = layer(x, edge_index)
-    #         outputs.append(x)
-    #     return outputs
-
-
-#           outputs = []
-#         # output_all_layers=False
-#         for layer in self.layers:
-#             x = layer(x, edge_index)
-#             # if output_all_layers:
-#             #     outputs.append(x)
-        
-#         # if output_all_layers:
-#         #     return outputs
-#         # else:
-#         return x
 
 
 
@@ -156,25 +134,9 @@ class GraphSAGE_Model(pl.LightningModule):
         return out
     
 
-
-
-
-
-class LinearReLU(nn.Module):
-    def __init__(self, in_features, out_features):
-        super(LinearReLU, self).__init__()
-        self.linear = nn.Linear(in_features, out_features)
-        self.relu = nn.ReLU()
-
-    def forward(self, x):
-        x = self.linear(x)
-        x = self.relu(x)
-        return x
-
-
-
-#Graphcast Test Models
-
+'''
+Graph Convolutional Network with attatched linear layers
+'''
 
 class GCN_MLP_Model(nn.Module):
     def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=32):
@@ -199,24 +161,9 @@ class GCN_MLP_Model(nn.Module):
             outputs.append(x)
         return outputs
 
-
-    
-
-
-layer_outputs = {}
-
-def capture_outputs(module, input, output):
-    # Explicitly ensuring the input is a tuple, as expected by TorchScript
-    if not isinstance(input, tuple):
-        input = (input,)
-    layer_name = module.name
-    output_detached = output.detach()
-
-    if layer_name in layer_outputs:
-        layer_outputs[layer_name].append(output_detached)
-    else:
-        layer_outputs[layer_name] = [output_detached]
-
+'''
+MLP
+'''
 
 class MLP_Model(torch.nn.Module):
     def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=32, precision = torch.float32):
@@ -229,7 +176,6 @@ class MLP_Model(torch.nn.Module):
             self.layers.append(layer)
 
         else:
-             # Input layer
             layer = nn.Linear(in_channels, hidden_dimension, bias=True)
             layer.name = 'input_layer'
             self.layers.append(layer)
@@ -237,21 +183,13 @@ class MLP_Model(torch.nn.Module):
                 layer = nn.Linear(hidden_dimension, hidden_dimension, bias=True)
                 layer.name = f'hidden_layer_{i}'
                 self.layers.append(layer)
-                # self.layers.append(Linear(hidden_dimension, hidden_dimension, bias=True))
-                # self.layers.append(ReLU())
-                # self.layers.append(LinearReLU(hidden_dimension, hidden_dimension))
-
-             # Output layer
+                
             layer = nn.Linear(hidden_dimension, out_channels, bias=True)
             layer.name = 'output_layer'
             self.layers.append(layer)
 
-
         for layer in self.layers:
             layer.to(torch.float32)
-        #  # Register the hook
-        # for layer in self.layers:
-        #     layer.register_forward_hook(capture_outputs)
 
     def forward(self, x, edge_index,):
         x = x.to(self.precision)  
@@ -259,16 +197,8 @@ class MLP_Model(torch.nn.Module):
         for layer in self.layers:
             x = layer(x)
             outputs.append(x)
-        # outputs_array = np.stack(outputs)  # Stack all outputs into a single NumPy array
 
         return outputs
-    
-      #     if output_all_layers:
-        #         outputs.append(x)
-        
-        # if output_all_layers:
-        #     return outputs
-        # else:
 
 
 

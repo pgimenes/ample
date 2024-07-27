@@ -11,12 +11,7 @@ import torch
 from cocotb.binary import BinaryValue
 import logging
 
-#Debugging
-from tb.utils.common import delay, allocate_lsb
-from cocotb.decorators import coroutine
-
 from torch import tensor
-
 
 
 class AXIWriteMasterMonitor:
@@ -38,12 +33,6 @@ class AXIWriteMasterMonitor:
         self.expected = {}  # Tracking ongoing transactions
         self.running = False
         self.expected_layer_features_by_address = {}
-        # self.log.basicConfig(level=logging.DEBUG)  # Set to the desired level
-
-
-        # self._thread = cocotb.scheduler.add(self.monitor_write_transactions())
-
-        # self._thread = cocotb.scheduler.add(self.monitor_write_transactions())
 
     def kill(self):
         self.log.debug("Killing monitor")
@@ -82,9 +71,6 @@ class AXIWriteMasterMonitor:
 
             # Response
             if self.resp_valid.value and self.resp_ready.value and current_transaction: #Rmeove current_transaction and fix RTL to be high for single clock cycle - check if different clock e.g 100Mhz - 2 cycles at 200MHz
-                # if current_transaction and ((len(current_transaction['data']) != current_transaction['expected_length'])):
-                #     self.log.error(f"Transaction data length mismatch at address {current_transaction['start_address']}") 
-
                 assert len(current_transaction['data']) == current_transaction['expected_length'], f"Transaction data length mismatch at address {current_transaction['start_address']}"
      
              
@@ -108,11 +94,6 @@ class AXIWriteMasterMonitor:
                         f"Data mismatch for node {expected_node['node_id']} address {current_transaction['start_address']}"
                     
                     self.log.debug(f"Data and address correctly matched for node: {expected_node['node_id']}")
-
-
-
-                    
-
                     self.log.debug(" ")
                     self.log.debug("--------------------")
                 else:
@@ -124,12 +105,6 @@ class AXIWriteMasterMonitor:
                     current_transaction = None
 
 
-
-
-    # async def end(self):
-    #     self.running = False  # Set to False to stop the loop
-    #     await cocotb.triggers.Join(self._monitor_write_transactions())
-
     def load_layer_features(self, nodeslot_programming,layer_features):
       
         self.log.debug("Loading Layer Features")
@@ -139,10 +114,6 @@ class AXIWriteMasterMonitor:
         for nodslot in nodeslot_programming:
 
             node_id = nodslot['node_id']
-            # if node_id == 0:
-            #     offset = out_messages_address_lsb = nodslot['out_messages_address_lsb']
-
-            # address = (nodslot['adjacency_list_address_msb'] << 32) | nodslot['adjacency_list_address_lsb']
 
             data = layer_features[node_id]
             out_messages_address_lsb = nodslot['out_messages_address_lsb']
@@ -160,11 +131,9 @@ class AXIWriteMasterMonitor:
         for address, node in self.expected_layer_features_by_address.items():
             self.log.debug(f"Address: {address}, Node: {node['node_id']}")
             self.log.debug(f"Data: {node['data']}")
-        # self.log.debug(self.expected_layer_features_by_address)
 
 
     def get_node_by_address(self,address):
-
         return self.expected_layer_features_by_address.pop(address, None)
 
       
@@ -177,13 +146,11 @@ class AXIWriteMasterMonitor:
 
 
     def hex_to_floats(self,hex_string):
-        # Remove '0x' prefix if present
         if hex_string.startswith('0x'):
             hex_string = hex_string[2:]
         
         hex_string = hex_string.replace(' ', '').replace('\n', '')
         
-        # Check for invalid characters in the hex string
         if any(c not in '0123456789abcdefABCDEF' for c in hex_string):
             raise ValueError("Non-hexadecimal character found in input string")
         
@@ -193,34 +160,14 @@ class AXIWriteMasterMonitor:
         if len(hex_string) % 8 != 0:
             hex_string = hex_string.ljust((len(hex_string) + 7) // 8 * 8, '0')
         
-        # Convert the hex string to bytes
         byte_data = bytes.fromhex(hex_string)
         
         num_floats = len(byte_data) // 4
         
-        # Unpack the byte data into 32-bit floats
         floats = struct.unpack('>' + 'f' * num_floats, byte_data)
         
         return floats
     
-    # #temp TODO reverse float order at input
-    # def reverse_bin_float_order(self,msg_queue_write_data):
-    #     # MESSAGE_QUEUE_WIDTH is the length of the binary string
-    #     MESSAGE_QUEUE_WIDTH = len(msg_queue_write_data)
-        
-    #     # Number of 32-bit floats in the input data
-    #     NUM_FLOATS = MESSAGE_QUEUE_WIDTH // 32
-    #     print(msg_queue_write_data)
-    #     # Split the input data into 32-bit chunks
-    #     # float_chunks = [msg_queue_write_data[i*32:(i+1)*32] for i in range(NUM_FLOATS-1)]
-    #     float_chunks = [str(msg_queue_write_data[i*32:(i+1)*32]) for i in range(NUM_FLOATS-1)]
 
-    #     # Reverse the order of the chunks
-    #     reversed_chunks = float_chunks[::-1]
-        
-    #     # Concatenate the reversed chunks back into a single binary string
-    #     reversed_data = ''.join(reversed_chunks)
-    #     reversed_data = BinaryValue(reversed_data)
-    #     return reversed_data
 
     
