@@ -21,11 +21,6 @@ typedef struct packed {
     
     logic [MAX_AGC_PER_NODE-1:0] [$clog2(noc_pkg::MAX_MESH_COLS)-1:0] coords_x;
     logic [MAX_AGC_PER_NODE-1:0] [$clog2(noc_pkg::MAX_MESH_ROWS)-1:0] coords_y;
-
-    logic [MAX_AGC_PER_NODE-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0] num_features;
-
-
-
 } AGE_AGM_REQ_t;
 
 typedef struct packed {

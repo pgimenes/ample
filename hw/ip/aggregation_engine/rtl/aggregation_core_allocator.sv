@@ -74,6 +74,9 @@ if (ALLOCATION_MODE == age_pkg::AGC_ALLOCATION_MODE_STATIC) begin
         agm_req.nsb_req = allocation_req;
         agm_req.required_agcs = layer_config_in_features_count[9:4] + (|layer_config_in_features_count[3:0] ? 1'b1 : '0);
 
+        // Mask of allocated cores, size NUM_CORES = (AGGREGATION_ROWS * AGGREGATION_COLUMNS)
+        // Used later for deallocating AGCs when AGM is finished so they become available for next AGM
+        // Not needed here since allocation is static
         agm_req.allocated_cores = '0;
     end
 
@@ -81,17 +84,8 @@ if (ALLOCATION_MODE == age_pkg::AGC_ALLOCATION_MODE_STATIC) begin
         always_comb begin
             agm_req.coords_x [allocation_slot] = 1'b1 + allocation_slot;
             agm_req.coords_y [allocation_slot] = (allocation_req.nodeslot % NUM_MANAGERS);
-
-            //Final AGC may take less than 16 features
-            if (allocation_slot == (agm_req.required_agcs-1) && |layer_config_in_features_count[3:0]) begin
-                agm_req.num_features [allocation_slot] <= layer_config_in_features_count[3:0];
-            end
-            else begin
-                agm_req.num_features [allocation_slot] <= 16;
-            end
         end
     end
-    
 
 end
 
