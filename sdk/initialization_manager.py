@@ -77,6 +77,8 @@ class InitManager:
         return inc, outc
     
     def get_default_layer_config(self, layer,idx):
+        print('layer setup idx', idx)
+        print('adj offsets', self.memory_mapper.offsets['adj_list'])
         inc, outc = self.get_layer_feature_count(layer)
         if isinstance(layer, torch.nn.Linear):
             aggregate_enable = 0
@@ -95,7 +97,7 @@ class InitManager:
             'leaky_relu_alpha': 0,
             'transformation_bias': 0,
             'dequantization_parameter': self.trained_graph.dequantization_parameter,
-            'adjacency_list_address': self.memory_mapper.offsets['adj_list'],
+            'adjacency_list_address': self.memory_mapper.offsets['adj_list'][idx],
             'in_messages_address': in_messages_address, 
             'weights_address': self.memory_mapper.offsets['weights'][idx],
             'out_messages_address': self.memory_mapper.offsets['out_messages'],
@@ -103,6 +105,7 @@ class InitManager:
             'transformation_wait_count': 4,
             'aggregate_enable' : aggregate_enable,
         }
+        print(idx)
 
     def set_layer_config_graphsage(self):
         # 4 layers per actual SAGEConv layer

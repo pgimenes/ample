@@ -171,8 +171,8 @@ def run_pass(
         init_manager.trained_graph.train_embeddings()
 
 
-    if isinstance(model, MLP_Model):
-        graph.remove_connections()
+    # if isinstance(model, MLP_Model):
+    #     graph.remove_connections()
 
     # Not working
     # if isinstance(model, GCN_Model):
