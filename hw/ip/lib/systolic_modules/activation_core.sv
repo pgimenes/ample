@@ -28,6 +28,7 @@ logic [DATA_WIDTH-1:0] leaky_relu_activation_comb;
 assign activated_feature_valid_comb = (sel_activation == top_pkg::NONE) ? in_feature_valid
                                : (sel_activation == top_pkg::RELU) ? in_feature_valid
                                : (sel_activation == top_pkg::LEAKY_RELU) ? leaky_relu_activation_valid_comb
+                            //    : (sel_activation == top_pkg::SILU) ? silu_activation_valid_comb
                                : '0;
 
 always_comb begin
@@ -45,6 +46,10 @@ always_comb begin
         activated_feature_comb = in_feature[FLOAT_WIDTH-1] ? leaky_relu_activation_comb : in_feature;
     end
 
+    // top_pkg::SILU: begin
+    //     activated_feature_comb = silu_activation_comb;
+    // end
+
     endcase
 end
 
@@ -58,18 +63,37 @@ if (PRECISION == top_pkg::FLOAT_32) begin
     assign leaky_relu_activation_comb = in_feature;
     
 `else
-
     logic [DATA_WIDTH-1:0] in_feature_gated;
     assign in_feature_gated = in_feature_valid ? in_feature : '0;
 
-    fp_mult activation_mult (
-        .in1       (in_feature_gated),
+    // if (ACTIVATION_FUNCTION_e == SILU) begin
+    //     fp32_SiLU fp32_silu_i(
+    //         .clk(core_clk),
+    //         .resetn(resetn),
 
-        .in2       (layer_config_leaky_relu_alpha_value),
+    //         .x_data(in_feature), 
+    //         .x_valid(in_feature_valid), 
+    //         .x_ready(), 
 
-        .res  (leaky_relu_activation_comb)
-        );
-    assign leaky_relu_activation_valid_comb = in_feature_valid;
+    //         .result_data(silu_activation_comb),
+    //         .result_tvalid(silu_activation_valid_comb),
+    //         .result_tready()
+    //     )
+    // end
+
+    if (ACTIVATION_FUNCTION_e == LEAKY_RELU) begin
+        fp_mult activation_mult (
+            .in1       (in_feature_gated),
+
+            .in2       (layer_config_leaky_relu_alpha_value),
+
+            .res  (leaky_relu_activation_comb)
+            );
+        assign leaky_relu_activation_valid_comb = in_feature_valid;
+
+    end
+
+
 
 `endif
 

@@ -206,3 +206,31 @@ class MLP_Model(torch.nn.Module):
         return outputs
 
 
+
+
+
+# #Neural LAM 
+# def make_mlp(blueprint, layer_norm=True):
+#     """
+#     Create MLP from list blueprint, with
+#     input dimensionality: blueprint[0]
+#     output dimensionality: blueprint[-1] and
+#     hidden layers of dimensions: blueprint[1], ..., blueprint[-2]
+
+#     if layer_norm is True, includes a LayerNorm layer at
+#     the output (as used in GraphCast)
+#     """
+#     hidden_layers = len(blueprint) - 2
+#     assert hidden_layers >= 0, "Invalid MLP blueprint"
+
+#     layers = []
+#     for layer_i, (dim1, dim2) in enumerate(zip(blueprint[:-1], blueprint[1:])):
+#         layers.append(nn.Linear(dim1, dim2))
+#         if layer_i != hidden_layers:
+#             layers.append(nn.SiLU())  # Swish activation
+
+#     # Optionally add layer norm to output
+#     if layer_norm:
+#         layers.append(nn.LayerNorm(blueprint[-1]))
+
+#     return nn.Sequential(*layers)

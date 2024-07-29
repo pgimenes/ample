@@ -391,9 +391,18 @@ for (genvar row = 0; row < MATRIX_N; row++) begin : per_row_logic
             sys_module_node_id_snapshot [row]          <= sys_module_node_id_snapshot [row+1];
         end
     end
+
+    always_ff @(posedge core_clk or negedge resetn) begin
+        if (!resetn) begin
+            sys_module_node_id_snapshot [MATRIX_N] <= '0;
+        end else begin
+            sys_module_node_id_snapshot [MATRIX_N] <= '0;
+        end
+    end
+
 end : per_row_logic
 
-assign sys_module_node_id_snapshot [MATRIX_N] = '0;
+// assign sys_module_node_id_snapshot [MATRIX_N] = '0;
 
 // Driving systolic module
 // -------------------------------------------------------------------------------------

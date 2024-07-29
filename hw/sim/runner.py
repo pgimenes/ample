@@ -14,3 +14,4 @@ from cocotb.log import SimLog
 async def graph_test(dut):
     log = SimLog("cocotb.runner")
     await graph_test_runner(dut)
+

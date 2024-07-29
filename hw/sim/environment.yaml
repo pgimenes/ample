@@ -76,7 +76,7 @@ dependencies:
   - traitlets=5.14.3=py311h06a4308_0
   - typing_extensions=4.11.0=py311h06a4308_0
   - verible=0.0.836_0000_g1b1294c=20201231_075710
-  - verilator=5.026=h67d1207_0
+  - verilator
   - wcwidth=0.2.5=pyhd3eb1b0_0
   - wheel=0.43.0=py311h06a4308_0
   - xz=5.4.6=h5eee18b_1

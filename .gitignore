@@ -84,3 +84,5 @@ imports/verilog-axi
 imports/nocrouter
 imports/
 
+hw/tb/module_tests/lib/test/*
+

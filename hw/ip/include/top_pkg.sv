@@ -101,7 +101,7 @@ typedef enum logic [1:0] {
 } AGGREGATION_FUNCTION_e;
 
 typedef enum logic [1:0] {
-    NONE, RELU, LEAKY_RELU, RESERVED_ACTIVATION
+    NONE, RELU, LEAKY_RELU, SILU
 } ACTIVATION_FUNCTION_e;
 
 // Utilities
