@@ -307,6 +307,8 @@ def parse_arguments():
     parser.add_argument('--tb_tolerance',  type=float, default=0.1, help='Set tolerance for tb-model mismatch for Cocotb testbench')
     parser.add_argument('--tb_log_level', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default='INFO',
                             help='Set log level for Cocotb testbench')
+    parser.add_argument('--gui', action='store_true', help='Run sim with GUI')
+
 
 
     default_preload_path = "/home/pg519/shared/agile_results"

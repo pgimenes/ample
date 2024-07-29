@@ -228,7 +228,7 @@ mesh #(
 
 // Aggregation Managers
 // ----------------------------------------------------
-
+//Change to aggreagation columns?
 for (genvar agm = 0; agm < AGGREGATION_ROWS; agm = agm + 1) begin : agm_block
     
     aggregation_manager #(

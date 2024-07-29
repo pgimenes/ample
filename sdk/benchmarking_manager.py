@@ -194,7 +194,12 @@ class BenchmarkingManager:
         # * Run simulation (assume )
         path = os.environ.get("WORKAREA") + "/hw/sim"
         print(f"cd {path}")
-        command = f"cd {path}; make run_sim GUI=0"
+
+        if (self.args.gui):
+            command = f"cd {path}; make run_simgui"
+
+        else:
+            command = f"cd {path}; make run_sim"
 
         print(f"==== Running command: {command}")
         process = subprocess.run(command, shell=True, capture_output=False, text=True)
