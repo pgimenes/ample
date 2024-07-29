@@ -31,7 +31,7 @@ module prefetcher_streaming_manager #(
     input  logic                                        fetch_resp_ready,
     output logic                                        fetch_resp_partial,
 
-    input  logic [AXI_ADDRESS_WIDTH-1:0]                fetch_memory_range_start_address,
+    // input  logic [AXI_ADDRESS_WIDTH-1:0]                fetch_memory_range_start_address,
 
     // Read Master request interface
     output logic                                        read_master_req_valid,
@@ -221,7 +221,7 @@ always_comb begin
     fetch_req_bytes            = `min(fetch_obj_remaining, queue_slots_available) * 4;
 
     read_master_req_valid      = (fetch_state == FETCH_RM_REQ);
-    read_master_start_address  = fetch_memory_range_start_address + fetch_req_address_offset;
+    read_master_start_address  = fetch_req_address_offset;
     read_master_byte_count     = fetch_req_bytes;
 
     // Response

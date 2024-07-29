@@ -53,7 +53,7 @@ module aggregation_manager #(
     output logic [$clog2(MAX_AGC_PER_NODE)-1:0]                         agm_allocated_agcs_count,
     output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_COLS)-1:0]     coords_buffer_x,
     output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_ROWS)-1:0]     coords_buffer_y,
-    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_FEATURE_COUNT)-1:0] num_features_buffer,
+    // output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_FEATURE_COUNT)-1:0] num_features_buffer,
 
     output logic                                                        scale_factor_queue_pop,
     input  logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]                    scale_factor_queue_out_data,

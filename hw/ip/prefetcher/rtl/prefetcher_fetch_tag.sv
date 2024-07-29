@@ -190,8 +190,6 @@ prefetcher_streaming_manager #(
     .fetch_resp_ready                 (nsb_prefetcher_resp_ready),
     .fetch_resp_partial               (adj_queue_fetch_resp_partial),
 
-    .fetch_memory_range_start_address ({2'd0, layer_config_adjacency_list_address_lsb_value}),
-
     .read_master_req_valid            (fetch_tag_adj_rm_req_valid),
     .read_master_req_ready            (fetch_tag_adj_rm_req_ready),
     .read_master_start_address        (fetch_tag_adj_rm_start_address),
@@ -283,7 +281,8 @@ prefetcher_streaming_manager #(
     .fetch_resp_ready                 (nsb_prefetcher_resp_ready),
     .fetch_resp_partial               (scale_factor_fetch_resp_partial),
 
-    .fetch_memory_range_start_address ({layer_config_scale_factors_address_msb_value, layer_config_scale_factors_address_lsb_value}),
+    //Test this - have not tested for scale factors
+    // .fetch_memory_range_start_address ({layer_config_scale_factors_address_msb_value, layer_config_scale_factors_address_lsb_value}),
 
     .read_master_req_valid            (scale_factor_read_master_req_valid),
     .read_master_req_ready            (fetch_tag_msg_rm_req_ready),
