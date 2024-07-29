@@ -15,10 +15,9 @@ class Memory_Mapper:
         self.model = model
         self.memory_hex = []
         self.num_layers = self.count_layers()
-        print('num layers',self.num_layers)
         weights_list = [0]*self.num_layers
         #Used to change adj list between layers
-        adj_list = [0]*self.num_layers
+        adj_list = [0]*self.num_layers # Change name perhaps to layer offset adj
         self.offsets = {'adj_list': adj_list, 'scale_factors': 0, 'in_messages':0, 'weights':weights_list, 'out_messages':0}
         
         self.dump_file = os.path.join(base_path, dump_file)
@@ -35,23 +34,19 @@ class Memory_Mapper:
         #Dynamically change adj list between layers
         for idx,layer in enumerate(self.model.layers):
             # If there is a linear layer, add another adjacency list to point to the address of the features of a nodes own embedding
-            print('adj setup idx', idx)
 
             if isinstance(layer, Linear):
-                print('mem_len', len(self.memory_hex))
-                print('linear')
                 for node in self.graph.nodes:
                     if (idx ==0):
+                        #Setting address without layer offset
                         self.graph.nodes[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
                 
                     self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['self_ptr'], align=True, alignment=64, pad_side="right")
             else:
-                print('mem_len', len(self.memory_hex))
                 for node in self.graph.nodes:
                     if (idx ==0):
                         self.graph.nodes[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
-                    # print('node', node)
-                    # print('node', int_list_to_byte_list(self.graph.nodes[node]["meta"]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right"))
+                 
                     self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
             
             if(idx < self.num_layers-1):
@@ -99,6 +94,16 @@ class Memory_Mapper:
 
         # Set offset for next memory range
         self.offsets['out_messages'] = len(self.memory_hex)
+
+
+
+    # def map_out_messages(self):
+    #     #    Set offset for next memory range
+    #     self.offsets['out_messages'][0] = len(self.memory_hex)
+    #     #Assuming constant feature width
+    #     size_messages = self.offsets['weights'][0]  -self.offsets['in_messages'] 
+
+    #     self.offsets['out_messages'] = len(self.memory_hex)
 
     # Dump
     # ===============================================

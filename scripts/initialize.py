@@ -194,7 +194,6 @@ def run_pass(
     if (args.dq):
         graph.quantize_dq()
 
-    logger.info(f"==== Pass metrics=======:\n {metrics}")
 
     return metrics
 
@@ -275,18 +274,18 @@ def parse_arguments():
     parser.add_argument('--mlp', action='store_true', help='Use MLP Model')
 
     parser.add_argument('--layers', type=int, default=2, help='Number of layers')
-    parser.add_argument('--hidden-dimension', type=int, default=34, help='Hidden dimension size')
+    parser.add_argument('--hidden_dimension', type=int, default=34, help='Hidden dimension size')
 
     default_base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
     parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $WORKAREA/hw/sim/layer_config)')
     
-    parser.add_argument('--in_features', type=int, default=None, help='Input feature count')
-    parser.add_argument('--out_features', type=int, default=None, help='Output feature count')
+    parser.add_argument('--in_features', type=int, default=34, help='Input feature count')
+    parser.add_argument('--out_features', type=int, default=34, help='Output feature count')
 
     # For random (erdos) graphs
     
     parser.add_argument('--avg_degree', type=float, default=1, help='Average number of neighbours per node')
-    parser.add_argument('--num_nodes', type=int, default=10000, help='Approximate number of nodes in the graph')
+    parser.add_argument('--num_nodes', type=int, default=10, help='Approximate number of nodes in the graph')
     
     parser.add_argument('--random', action='store_true', help='Initialize graph with random embedding.')
     

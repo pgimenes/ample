@@ -77,8 +77,7 @@ class InitManager:
         return inc, outc
     
     def get_default_layer_config(self, layer,idx):
-        print('layer setup idx', idx)
-        print('adj offsets', self.memory_mapper.offsets['adj_list'])
+
         inc, outc = self.get_layer_feature_count(layer)
         if isinstance(layer, torch.nn.Linear):
             aggregate_enable = 0
@@ -101,11 +100,10 @@ class InitManager:
             'in_messages_address': in_messages_address, 
             'weights_address': self.memory_mapper.offsets['weights'][idx],
             'out_messages_address': self.memory_mapper.offsets['out_messages'],
-            'aggregation_wait_count': 4,
-            'transformation_wait_count': 4,
+            'aggregation_wait_count': 16,
+            'transformation_wait_count': 16,
             'aggregate_enable' : aggregate_enable,
         }
-        print(idx)
 
     def set_layer_config_graphsage(self):
         # 4 layers per actual SAGEConv layer
@@ -220,7 +218,6 @@ class InitManager:
         nodeslot_mem_hex = []
 
         for group in tqdm(node_groups):
-            # print(f"group {group_idx}/{len(node_groups)}")
             assert(len(group) == 8)
             str_lst = []
             for nodeslot in group:
