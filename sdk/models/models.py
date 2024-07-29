@@ -139,8 +139,9 @@ Graph Convolutional Network with attatched linear layers
 '''
 
 class GCN_MLP_Model(nn.Module):
-    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=32):
+    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=32,precision = torch.float32):
         super().__init__()
+        self.precision = precision
         self.layers = nn.ModuleList()
         self.layers.append(GCNConv(in_channels, out_channels, normalize =False))
         for _ in range(layer_count-2):
@@ -149,7 +150,12 @@ class GCN_MLP_Model(nn.Module):
 
         self.layers.append(Linear(hidden_dimension, out_channels, bias=True))
 
+
+        for layer in self.layers:
+            layer.to(self.precision)
+
     def forward(self, x: Tensor, edge_index: Tensor):
+        x = x.to(self.precision)  
         if isinstance(edge_index, SparseTensor):
             edge_index = edge_index.to_torch_sparse_coo_tensor()  # Ensure edge_index is a Tensor
         outputs = []
@@ -189,7 +195,7 @@ class MLP_Model(torch.nn.Module):
             self.layers.append(layer)
 
         for layer in self.layers:
-            layer.to(torch.float32)
+            layer.to(self.precision)
 
     def forward(self, x, edge_index,):
         x = x.to(self.precision)  
