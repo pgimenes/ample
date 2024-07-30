@@ -53,7 +53,7 @@ async def graph_test_runner(dut):
         dut._log.debug(f"Layer Out Expected {outs}")
 
         # Load monitor
-        test.load_layer_test(layer_features)
+        test.load_layer_test(layer_features,layer_idx)
         
         # test.start_monitors()
         # Layer configuration
@@ -103,6 +103,6 @@ async def graph_test_runner(dut):
 
     with open(f"sim_cycles.txt", "w") as f:
         for idx,item in enumerate(layer_cycle_count):
-            dut._log.info(f"Layer {idx} cycle count: {item}")
+            dut._log.info(f"Layer {idx} cycles taken: {item}")
             f.write(f"Layer {idx} cycles: {item}")
             f.write("\n")

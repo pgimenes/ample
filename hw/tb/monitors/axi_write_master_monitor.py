@@ -105,18 +105,19 @@ class AXIWriteMasterMonitor:
                     current_transaction = None
 
 
-    def load_layer_features(self, nodeslot_programming,layer_features):
+    def load_layer_features(self, nodeslot_programming,layer_features,layer_config):
       
         self.log.debug("Loading Layer Features")
 
         self.expected_layer_features_by_address = {}
-
+        layer_out_message_offset = layer_config['out_messages_address']
         for nodslot in nodeslot_programming:
 
             node_id = nodslot['node_id']
 
             data = layer_features[node_id]
-            out_messages_address_lsb = nodslot['out_messages_address_lsb']
+            #check this matches
+            out_messages_address_lsb = nodslot['out_messages_address_lsb'] + layer_out_message_offset
             axi_write_master_address =int(out_messages_address_lsb)
             
             node_dict = {

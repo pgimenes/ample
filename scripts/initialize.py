@@ -18,7 +18,7 @@ from sdk.graphs.random_graph import RandomGraph
 from sdk.graphs.planetoid_graph import PlanetoidGraph
 from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
 
-from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
+from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model, Edge_ConcatEmbedding__Model
 
 from sdk.benchmarking_manager import BenchmarkingManager
 
@@ -78,6 +78,7 @@ model_map = {
   'sage': GraphSAGE_Model,
   'gcn_mlp': GCN_MLP_Model,
   'mlp': MLP_Model,
+  'edge': Edge_ConcatEmbedding__Model
 }
 
 def main(args):
@@ -179,7 +180,7 @@ def run_pass(
     #     graph.apply_self_connection()
     
     if (payloads):
-        init_manager.map()
+        init_manager.map() #Has to be done first
         init_manager.dump_memory()
         init_manager.dump_layer_config()
         init_manager.dump_nodeslot_programming()
@@ -272,6 +273,7 @@ def parse_arguments():
     parser.add_argument('--sage', action='store_true', help='Use GraphSAGE Model')
     parser.add_argument('--gcn_mlp', action='store_true', help='Use GCN MLP Model')
     parser.add_argument('--mlp', action='store_true', help='Use MLP Model')
+    parser.add_argument('--edge', action='store_true', help='Use MLP Model')
 
     parser.add_argument('--layers', type=int, default=2, help='Number of layers')
     parser.add_argument('--hidden-dimension', type=int, default=32, help='Hidden dimension size')

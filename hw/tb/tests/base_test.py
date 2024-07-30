@@ -119,9 +119,9 @@ class BaseTest:
         #     self.float_bm_monitors[id].start()
 
 
-    def load_layer_test(self,layer_features):
+    def load_layer_test(self,layer_features,layer_idx):
         self.dut._log.debug("Loading expected nodes into monitor")
-        self.axi_monitor.load_layer_features(self.nodeslot_programming,layer_features)
+        self.axi_monitor.load_layer_features(self.nodeslot_programming,layer_features,self.layers[layer_idx])
 
     async def start_monitors(self):
 

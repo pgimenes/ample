@@ -55,6 +55,21 @@ class InitManager:
         self.model_layer_max_features = max([self.get_feature_counts(self.model)])
         # Nodeslot programming
         self.nodeslot_programming = {'nodeslots':[]}
+    #     self.model_hiearchy = self.get_model_hierarchy()
+        
+
+
+
+    # def get_model_hierarchy(self):
+    #     model_hierarchy = []
+    #     if hasattr(self.model, 'named_children') and len(list(self.model.children()))>1:
+    #         for name, module in self.model.named_children():
+    #             print(f'{name}: {module.__class__.__name__}')
+    #             model_hierarchy.append(self.get_feature_counts(module))
+    #     else:
+    #         model_hierarchy.append(self.get_feature_counts(self.model))
+    #         print('Simple hierarchy')
+    #     return model_hierarchy
 
     # Nodeslot programming and layer configuration
     # ===============================================
@@ -83,11 +98,22 @@ class InitManager:
             aggregate_enable = 0
         else:
             aggregate_enable = 1
+
         #Multi-layer support - out messages become in messages for next layer
-        if idx >0: 
-            in_messages_address = self.memory_mapper.offsets['out_messages']#Can change this to have intermediate out messages (['out_messages'][idx-1])
+        if 'input' in layer.name:
+            in_messages_address = self.memory_mapper.offsets['in_messages']
         else:
-            in_messages_address= self.memory_mapper.offsets['in_messages']
+            in_messages_address = self.memory_mapper.out_messages_ptr
+
+
+        if 'hidden' or 'input' in layer.name:
+            out_messages_address = self.memory_mapper.out_messages_ptr#Can change this to have intermediate out messages (['out_messages'][idx-1])
+        else:
+            out_messages_address= self.memory_mapper.out_messages_ptr
+            self.memory_mapper.offsets['out_messages'][idx] = out_messages_address
+            #Will need to modify if writing back edge embeddings as there is likely to be more edges than nodes
+            #New out messages pointer = [data_needed_to_store(number of features in [this layer])] * number of nodes in graph
+            self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.get_feature_counts(self.model))[idx]) * len(self.trained_graph.nx_graph.nodes[node_id])
         return {
             'nodeslot_count': len(self.trained_graph.nx_graph.nodes),
             'in_feature_count': inc,
@@ -99,7 +125,7 @@ class InitManager:
             'adjacency_list_address': self.memory_mapper.offsets['adj_list'][idx],
             'in_messages_address': in_messages_address, 
             'weights_address': self.memory_mapper.offsets['weights'][idx],
-            'out_messages_address': self.memory_mapper.offsets['out_messages'],
+            'out_messages_address': out_messages_address,
             'aggregation_wait_count': 16,
             'transformation_wait_count': 16,
             'aggregate_enable' : aggregate_enable,
@@ -135,10 +161,19 @@ class InitManager:
         if (isinstance(self.model, GraphSAGE_Model)):
             self.set_layer_config_graphsage()
         else :
+            # print(self.model.named_children() and isinstance(self.model.named_children(),list))
+            # if hasattr(self.model, 'named_children') and isinstance(self.model.named_children(),list):
+            #     print('complex model')
+            #     for name, module in self.model.named_children():
+            #         print(f'{name}: {module.__class__.__name__}')
+            #         for idx,layer in enumerate(module):
+            #             layer_config_i = self.get_default_layer_config(layer,idx)
+            #             self.layer_config['layers'].append(layer_config_i)
+            # else:
             # Default layer configuration
             for idx,layer in enumerate(self.model.layers):
-                layer = self.get_default_layer_config(layer,idx)
-                self.layer_config['layers'].append(layer)
+                layer_config_i = self.get_default_layer_config(layer,idx)
+                self.layer_config['layers'].append(layer_config_i)
 
     def dump_layer_config (self):
         self.layer_config = {'global_config': {}, 'layers': []}
@@ -157,7 +192,7 @@ class InitManager:
                 'adjacency_list_address_msb': 0,
                 'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['scale_factors_address'],
                 'scale_factors_address_msb': 0,
-                'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.calc_axi_addr(self.trained_graph.feature_count),
+                'out_messages_address_lsb': node_id * self.calc_axi_addr(self.trained_graph.feature_count), # /*self.memory_mapper.offsets['out_messages'] + */#
                 'out_messages_address_msb': 0
             }
 
@@ -291,10 +326,13 @@ class InitManager:
         }, 'graph.pth')
 
     def calc_axi_addr(self,feature_count):
+        #ceil(num_bytes/num_bytes_in_data_slot)*num_bytes_in_data_slot
         return math.ceil(4*feature_count / data_width) * data_width
     
     # Function to get feature count of each layer
     def get_feature_counts(self,model):
+        ##Add function to include in features size
+        #Change to self.model
         feature_counts = []
         for layer in model.modules():
             if isinstance(layer, torch.nn.Conv2d):

@@ -16,9 +16,11 @@ class Memory_Mapper:
         self.memory_hex = []
         self.num_layers = self.count_layers()
         weights_list = [0]*self.num_layers
+        out_messages_list = [0]*self.num_layers
         #Used to change adj list between layers
         adj_list = [0]*self.num_layers # Change name perhaps to layer offset adj
-        self.offsets = {'adj_list': adj_list, 'scale_factors': 0, 'in_messages':0, 'weights':weights_list, 'out_messages':0}
+        self.offsets = {'adj_list': adj_list, 'scale_factors': 0, 'in_messages':0, 'weights':weights_list, 'out_messages': out_messages_list}
+        self.out_messages_ptr = 0
         
         self.dump_file = os.path.join(base_path, dump_file)
 
@@ -93,8 +95,8 @@ class Memory_Mapper:
                 self.offsets['weights'][idx+1] = len(self.memory_hex)
 
         # Set offset for next memory range
-        self.offsets['out_messages'] = len(self.memory_hex)
-
+        # self.offsets['out_messages'] = len(self.memory_hex)
+        self.out_messages_ptr = len(self.memory_hex)
 
 
     # def map_out_messages(self):

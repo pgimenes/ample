@@ -211,7 +211,7 @@ class BenchmarkingManager:
         cycles_dict = self.read_cycles_file(f"{path}/sim_cycles.txt")
         sim_cycle_time = sum(cycles_dict.values()) * (1/self.fpga_clk_freq)
         throughput = self.graph.dataset.y.shape[0] / float(stime)
-        return {
+        metrics  = {
             "fpga_latency": stime,
             "fpga_sim_cycle_time": sim_cycle_time,
             "fpga_mean_power": 30,
@@ -219,6 +219,8 @@ class BenchmarkingManager:
             "fpga_throughput_per_watt": throughput/30
         }
 
+        print(f"Metrics: {metrics}")
+        return metrics
 
     def read_cycles_file(self,file_path):
         cycles_dict = {}
