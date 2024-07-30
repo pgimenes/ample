@@ -38,6 +38,7 @@ EXTRA_ARGS += -DSIMULATION_QUICK
 
 EXTRA_ARGS += --threads $(shell nproc)
 EXTRA_ARGS += --threads $(shell nproc)
+EXTRA_ARGS += -O3  
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 # source $(WORKAREA)/scripts/add_hash.sh
