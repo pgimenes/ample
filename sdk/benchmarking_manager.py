@@ -94,8 +94,8 @@ class BenchmarkingManager:
         data.edge_index = data.edge_index.to(torch.device(f"cuda:{self.device}"))
         
         times = []
-        for i in range(100):
-            time_taken = self.bman.predict(batch=(data.x, data.edge_index))
+        for i in range(10000):
+            time_taken = (self.bman.predict(batch=(data.x, data.edge_index))/1000) # Returns value in ms
             times.append(time_taken)
 
         avg_time = np.mean(times)
