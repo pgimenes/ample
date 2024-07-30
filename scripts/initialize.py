@@ -171,8 +171,8 @@ def run_pass(
         init_manager.trained_graph.train_embeddings()
 
 
-    if isinstance(model, MLP_Model):
-        graph.remove_connections()
+    # if isinstance(model, MLP_Model):
+    #     graph.remove_connections()
 
     # Not working
     # if isinstance(model, GCN_Model):
@@ -194,7 +194,6 @@ def run_pass(
     if (args.dq):
         graph.quantize_dq()
 
-    logger.info(f"==== Pass metrics=======:\n {metrics}")
 
     return metrics
 
@@ -286,7 +285,7 @@ def parse_arguments():
     # For random (erdos) graphs
     
     parser.add_argument('--avg_degree', type=float, default=1, help='Average number of neighbours per node')
-    parser.add_argument('--num_nodes', type=int, default=10000, help='Approximate number of nodes in the graph')
+    parser.add_argument('--num_nodes', type=int, default=10, help='Approximate number of nodes in the graph')
     
     parser.add_argument('--random', action='store_true', help='Initialize graph with random embedding.')
     
@@ -307,6 +306,8 @@ def parse_arguments():
     parser.add_argument('--tb_tolerance',  type=float, default=0.1, help='Set tolerance for tb-model mismatch for Cocotb testbench')
     parser.add_argument('--tb_log_level', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default='INFO',
                             help='Set log level for Cocotb testbench')
+    parser.add_argument('--gui', action='store_true', help='Run sim with GUI')
+
 
 
     default_preload_path = "/home/pg519/shared/agile_results"

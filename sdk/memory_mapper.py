@@ -14,10 +14,11 @@ class Memory_Mapper:
         self.graph = graph
         self.model = model
         self.memory_hex = []
-        self.num_layers = self.count_layers(self.model)
-
+        self.num_layers = self.count_layers()
         weights_list = [0]*self.num_layers
-        self.offsets = {'adj_list': 0, 'scale_factors': 0, 'in_messages':0, 'weights':weights_list, 'out_messages':0}
+        #Used to change adj list between layers
+        adj_list = [0]*self.num_layers # Change name perhaps to layer offset adj
+        self.offsets = {'adj_list': adj_list, 'scale_factors': 0, 'in_messages':0, 'weights':weights_list, 'out_messages':0}
         
         self.dump_file = os.path.join(base_path, dump_file)
 
@@ -30,9 +31,26 @@ class Memory_Mapper:
         self.map_weights()
 
     def map_adj_list(self):
-        for node in self.graph.nodes:
-            self.graph.nodes[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
-            self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+        #Dynamically change adj list between layers
+        for idx,layer in enumerate(self.model.layers):
+            # If there is a linear layer, add another adjacency list to point to the address of the features of a nodes own embedding
+
+            if isinstance(layer, Linear):
+                for node in self.graph.nodes:
+                    if (idx ==0):
+                        #Setting address without layer offset
+                        self.graph.nodes[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
+                
+                    self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['self_ptr'], align=True, alignment=64, pad_side="right")
+            else:
+                for node in self.graph.nodes:
+                    if (idx ==0):
+                        self.graph.nodes[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
+                 
+                    self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+            
+            if(idx < self.num_layers-1):
+                self.offsets['adj_list'][idx+1] = len(self.memory_hex)
 
         # Set offset for next memory range
         self.offsets['scale_factors'] = len(self.memory_hex)
@@ -77,6 +95,16 @@ class Memory_Mapper:
         # Set offset for next memory range
         self.offsets['out_messages'] = len(self.memory_hex)
 
+
+
+    # def map_out_messages(self):
+    #     #    Set offset for next memory range
+    #     self.offsets['out_messages'][0] = len(self.memory_hex)
+    #     #Assuming constant feature width
+    #     size_messages = self.offsets['weights'][0]  -self.offsets['in_messages'] 
+
+    #     self.offsets['out_messages'] = len(self.memory_hex)
+
     # Dump
     # ===============================================
 
@@ -96,9 +124,18 @@ class Memory_Mapper:
         return input_list
     
 
-    def count_layers(self,model):
+    def count_layers(self):
         count = 0
-        for module in model.modules():
+        for module in self.model.modules():
             if isinstance(module, (torch.nn.Conv2d, torch.nn.Linear,GCNConv,GINConv,SAGEConv)):
                 count += 1
         return count
+    
+
+    def contains_linear_layer(self):
+        for layer in self.model.modules():
+            if isinstance(layer, torch.nn.Linear):
+                return True
+        return False
+
+        

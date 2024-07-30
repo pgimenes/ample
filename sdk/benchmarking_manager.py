@@ -39,8 +39,8 @@ class BenchmarkWrapper():
         torch.cuda.synchronize()
         self.ender.record()
         torch.cuda.synchronize()
-        inference_time = self.starter.elapsed_time(self.ender)
-        return inference_time
+        inference_time = self.starter.elapsed_time(self.ender) /1000.0
+        return inference_time 
 
     def warm_up(self, batch, steps=10):
         x, edge_index = batch[0], batch[1]
@@ -94,7 +94,7 @@ class BenchmarkingManager:
         data.edge_index = data.edge_index.to(torch.device(f"cuda:{self.device}"))
         
         times = []
-        for i in range(100):
+        for i in range(1000):
             time_taken = self.bman.predict(batch=(data.x, data.edge_index))
             times.append(time_taken)
 
@@ -194,7 +194,12 @@ class BenchmarkingManager:
         # * Run simulation (assume )
         path = os.environ.get("WORKAREA") + "/hw/sim"
         print(f"cd {path}")
-        command = f"cd {path}; make run_sim GUI=0"
+
+        if (self.args.gui):
+            command = f"cd {path}; make run_simgui"
+
+        else:
+            command = f"cd {path}; make run_sim"
 
         print(f"==== Running command: {command}")
         process = subprocess.run(command, shell=True, capture_output=False, text=True)
