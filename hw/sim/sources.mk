@@ -6,7 +6,6 @@ VERILOG_INCLUDE_DIRS = \
 	$(WORKAREA)/hw/build/regbanks/node_scoreboard_regbank \
 	$(WORKAREA)/hw/build/regbanks/prefetcher_regbank \
 	/mnt/applications/Xilinx/19.2/Vivado/2019.2/data/xilinx_vip/include
-
 # Xilinx IP
 VERILOG_SOURCES = \
 	$(WORKAREA)/hw/sim/glbl.v \
@@ -79,11 +78,14 @@ VERILOG_SOURCES += \
 	$(WORKAREA)/hw/build/ip/lib/arithmetic/fixed_point_mac.sv \
 	$(WORKAREA)/hw/build/ip/lib/arithmetic/float_mac.sv \
 	$(WORKAREA)/hw/build/ip/lib/arithmetic/mac.sv \
+	$(WORKAREA)/hw/build/ip/lib/arithmetic/fp_add.sv \
+	$(WORKAREA)/hw/build/ip/lib/arithmetic/fp_mult.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/bram_fifo.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/hybrid_buffer/hybrid_buffer.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/hybrid_buffer/hybrid_buffer_driver.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/hybrid_buffer/hybrid_buffer_slot.sv \
 	$(WORKAREA)/hw/build/ip/lib/buffers/ultraram_fifo.sv \
+	$(WORKAREA)/hw/build/ip/lib/buffers/buffer_bram.sv \
 	$(WORKAREA)/hw/build/ip/lib/arithmetic/aggregators/passthrough_aggregator.sv \
 	$(WORKAREA)/hw/build/ip/lib/systolic_modules/activation_core.sv \
 	$(WORKAREA)/hw/build/ip/lib/systolic_modules/processing_element.sv \

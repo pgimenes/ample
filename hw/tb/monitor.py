@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 import cocotb
 from cocotb.handle import SimHandleBase
+from cocotb.triggers import Join
 
 class Monitor:
     def __init__(self, dut, variant):
@@ -20,10 +21,12 @@ class Monitor:
             raise RuntimeError("Monitor already started")
         self._coro = cocotb.start_soon(self._run())
 
-    def stop(self) -> None:
+    async def stop(self) -> None:
         """Stop monitor"""
         if self._coro is None:
             raise RuntimeError("AGE Monitor never started")
+        await Join(self._coro)  # Wait for the coroutine to complete
+
         self._coro.kill()
         self._coro = None
 

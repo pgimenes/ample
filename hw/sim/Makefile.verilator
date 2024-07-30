@@ -1,0 +1,44 @@
+# Makefile
+include sources.mk
+
+# defaults
+SIM ?= verilator
+
+SIM_BUILD = verilator_build
+
+TOPLEVEL_LANG ?=verilog
+TEST_RUNNER   ?=runner
+MODULE        ?=runner
+TOPLEVEL      ?=top_wrapper_tb
+INCLUDE_DIR = $(WORKAREA)/hw/build/ip/include/
+# VERILATOR_FLAGS += $(addprefix -I, $(VERILOG_INCLUDE_DIRS)) -I$(INCLUDE_DIR)
+# VERILATOR_FLAGS += -I$(INCLUDE_DIR)
+EXTRA_ARGS +=  -I$(INCLUDE_DIR)
+
+
+
+
+#Warnings
+EXTRA_ARGS += -Wno-WIDTHEXPAND
+EXTRA_ARGS += -Wno-WIDTHTRUNC
+EXTRA_ARGS += -Wno-ASCRANGE
+EXTRA_ARGS += -Wno-WIDTHCONCAT
+EXTRA_ARGS += -Wno-PINMISSING
+EXTRA_ARGS += -Wno-IMPLICITSTATIC
+EXTRA_ARGS += -Wno-SIDEEFFECT
+EXTRA_ARGS += -Wno-SELRANGE
+EXTRA_ARGS += -Wno-CASEINCOMPLETE
+EXTRA_ARGS += -Wno-LATCH
+EXTRA_ARGS += -Wno-UNOPTFLAT
+EXTRA_ARGS += -Wno-ALWCOMBORDER
+EXTRA_ARGS += -Wno-COMBDLY
+EXTRA_ARGS += -DSIMULATION
+EXTRA_ARGS += -DSIMULATION_QUICK
+
+
+EXTRA_ARGS += --threads $(shell nproc)
+EXTRA_ARGS += --threads $(shell nproc)
+EXTRA_ARGS += -O3  
+
+include $(shell cocotb-config --makefiles)/Makefile.sim
+# source $(WORKAREA)/scripts/add_hash.sh

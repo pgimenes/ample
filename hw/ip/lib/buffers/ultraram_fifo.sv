@@ -20,6 +20,8 @@ module ultraram_fifo #(
     
     input  logic                      pop,
     input  logic                      reset_read_ptr,
+    input  logic                      reset_write_ptr,
+
     output logic                      out_valid,
     output logic [WIDTH-1:0]          out_data,
     
@@ -79,7 +81,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
 
         count     <= '0;
     end else begin
-        wr_ptr <= push ? wr_ptr + 1'b1
+        wr_ptr <= reset_write_ptr ? '0
+                :push ? wr_ptr + 1'b1
                 : wr_ptr;
 
         rd_ptr <= reset_read_ptr ? '0
@@ -103,11 +106,9 @@ always_ff @(posedge core_clk or negedge resetn) begin
             wr_wrap <= !wr_wrap;
         end
 
-        if (rd_ptr == {AWIDTH{1'b1}} && pop) begin
+        if (rd_ptr == {AWIDTH{1'b1}} && pop)
             rd_wrap <= !rd_wrap;
-        end else if (reset_read_ptr) begin
-            rd_wrap <= !wr_wrap;
-        end
+     
     end
 end
 

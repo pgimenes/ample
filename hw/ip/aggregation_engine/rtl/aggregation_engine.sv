@@ -5,7 +5,7 @@ import age_pkg::*;
 
 module aggregation_engine #(
     parameter AXI_ADDR_WIDTH = 32,
-    parameter MESH_MULTIPLPIER = top_pkg::MESH_MULTIPLIER
+    parameter MESH_MULTIPLIER = top_pkg::MESH_MULTIPLIER
 ) (
     input logic core_clk,
     input logic resetn,
@@ -59,6 +59,8 @@ module aggregation_engine #(
     output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_write_enable,
     output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] aggregation_buffer_slot_write_address,
     output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [noc_pkg::PAYLOAD_DATA_WIDTH-1:0]                     aggregation_buffer_slot_write_data,
+    output logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]              aggregation_buffer_slot_write_count,
+
     
     input  logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_READ_DEPTH)-1:0]  aggregation_buffer_slot_feature_count,
     input  logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       aggregation_buffer_slot_slot_free,
@@ -121,6 +123,8 @@ logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION
 logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                                       bm_write_ready;
 logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] bm_write_address;
 logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [noc_pkg::PAYLOAD_DATA_WIDTH-1:0]                     bm_write_data;
+logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]              bm_write_count;
+
 
 logic [top_pkg::PRECISION_COUNT-1:0] [top_pkg::MESH_MULTIPLIER-1:0] [AGGREGATION_ROWS-1:0] buffer_manager_done;
 
@@ -171,7 +175,7 @@ aggregation_engine_regbank_wrapper #(
 for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) begin : precision_block
 
     // Multiple mesh blocks to interleave columns of aggregation managers
-    for (genvar mesh = 0; mesh < MESH_MULTIPLPIER; mesh++) begin : mesh_block
+    for (genvar mesh = 0; mesh < MESH_MULTIPLIER; mesh++) begin : mesh_block
 
         aggregation_mesh #(
             .AGGREGATION_ROWS            (AGGREGATION_ROWS),
@@ -209,15 +213,16 @@ for (genvar precision = 0; precision < top_pkg::PRECISION_COUNT; precision++) be
             .scale_factor_queue_out_valid                                  (scale_factor_queue_out_valid              [(precision * AGGREGATION_MANAGERS_PER_PRECISION) + (mesh + 1) * AGGREGATION_ROWS - 1 : (precision * AGGREGATION_MANAGERS_PER_PRECISION) + mesh * AGGREGATION_ROWS]),
             
             // AGE -> Aggregation Buffer
-            .aggregation_buffer_slot_set_node_id_valid                     (bm_set_node_id_valid [precision][mesh]),
-            .aggregation_buffer_slot_set_node_id_ready                     (bm_set_node_id_ready [precision][mesh]),
-            .aggregation_buffer_slot_set_node_id                           (bm_set_node_id       [precision][mesh]),
+            .aggregation_buffer_slot_set_node_id_valid                     (bm_set_node_id_valid                      [precision][mesh]),
+            .aggregation_buffer_slot_set_node_id_ready                     (bm_set_node_id_ready                      [precision][mesh]),
+            .aggregation_buffer_slot_set_node_id                           (bm_set_node_id                            [precision][mesh]),
             
-            .aggregation_buffer_slot_write_enable                          (bm_write_enable      [precision][mesh]),
-            .aggregation_buffer_slot_write_ready                           (bm_write_ready       [precision][mesh]),
-            .aggregation_buffer_slot_write_address                         (bm_write_address     [precision][mesh]),
-            .aggregation_buffer_slot_write_data                            (bm_write_data        [precision][mesh]),
-            
+            .aggregation_buffer_slot_write_enable                          (bm_write_enable                           [precision][mesh]),
+            .aggregation_buffer_slot_write_ready                           (bm_write_ready                            [precision][mesh]),
+            .aggregation_buffer_slot_write_address                         (bm_write_address                          [precision][mesh]),
+            .aggregation_buffer_slot_write_data                            (bm_write_data                             [precision][mesh]),
+            .aggregation_buffer_slot_write_count                           (bm_write_count                            [precision][mesh]),
+
             .aggregation_buffer_slot_feature_count                         (aggregation_buffer_slot_feature_count     [precision]),
             .aggregation_buffer_slot_slot_free                             (aggregation_buffer_slot_slot_free         [precision]),
             
@@ -268,16 +273,17 @@ buffer_manager_arbiter bm_arb_i (
     .input_bm_write_ready        (bm_write_ready),
     .input_bm_write_address      (bm_write_address),
     .input_bm_write_data         (bm_write_data),
+    .input_bm_write_count        (bm_write_count),
 
     // Valid-only interface to buffer slots
-    .slot_set_node_id_valid (aggregation_buffer_slot_set_node_id_valid),
-    .slot_set_node_id       (aggregation_buffer_slot_set_node_id),
+    .slot_set_node_id_valid      (aggregation_buffer_slot_set_node_id_valid),
+    .slot_set_node_id            (aggregation_buffer_slot_set_node_id),
     
-    .slot_write_enable      (aggregation_buffer_slot_write_enable),
-    .slot_write_address     (aggregation_buffer_slot_write_address),
-    .slot_write_data        (aggregation_buffer_slot_write_data),
-    
-    .buffer_manager_done    (buffer_manager_done)
+    .slot_write_enable           (aggregation_buffer_slot_write_enable),
+    .slot_write_address          (aggregation_buffer_slot_write_address),
+    .slot_write_data             (aggregation_buffer_slot_write_data),
+    .slot_write_count            (aggregation_buffer_slot_write_count),
+    .buffer_manager_done         (buffer_manager_done)
 );
 
 // ==================================================================================================================================================

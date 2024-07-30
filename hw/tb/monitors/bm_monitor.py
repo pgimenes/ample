@@ -30,6 +30,6 @@ class BM_Monitor (Monitor):
                     "node_id"             : self.dut.age_buffer_manager_nodeslot_allocation.node_id
                 }
                 sampled_value = self._sample(data, self.buffer_reqs)
-                self.dut._log.info("Buffer Manager %d received allocation to Nodeslot: %d, node ID: %d", self.id, data["nodeslot"].value, data["node_id"].value)
+                self.dut._log.debug("Buffer Manager %d received allocation to Nodeslot: %d, node ID: %d", self.id, data["nodeslot"].value, data["node_id"].value)
             
            

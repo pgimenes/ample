@@ -26,7 +26,7 @@ class Prefetcher_Monitor (Monitor):
                     "partial": self.dut.nsb_prefetcher_resp.partial
                 }
                 _ = self._sample(data, self.nsb_responses)
-                self.dut._log.info("Observed %s response to NSB for Nodeslot: %s", data["response_type"].value, data["nodeslot"].value)
+                self.dut._log.debug("Observed %s response to NSB for Nodeslot: %s", data["response_type"].value, data["nodeslot"].value)
 
             # Message Channel Response
             for mc in self.message_channel_count:
@@ -37,7 +37,7 @@ class Prefetcher_Monitor (Monitor):
                         "done": self.dut.message_channel_resp[mc].done
                     }
                     self._sample(data, self.message_channel_responses[mc])
-                    self.dut._log.info("Observed Message Channel response through MC %d. Done: %s", self.dut.message_channel_resp_valid.value, data["done"].value)
+                    self.dut._log.debug("Observed Message Channel response through MC %d. Done: %s", self.dut.message_channel_resp_valid.value, data["done"].value)
 
             # Weight Channel Response
             for wc in self.weight_channel_count:
@@ -48,4 +48,4 @@ class Prefetcher_Monitor (Monitor):
                         "done":       self.dut.weight_channel_resp[wc].done
                     }
                     self._sample(data, self.weight_channel_responses[wc])
-                    self.dut._log.info("Observed Weight Channel response through WC %d. Done: %s", self.dut.weight_channel_resp_valid, data["done"].value)
+                    self.dut._log.debug("Observed Weight Channel response through WC %d. Done: %s", self.dut.weight_channel_resp_valid, data["done"].value)

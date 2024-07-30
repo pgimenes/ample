@@ -288,7 +288,7 @@ for (genvar nodeslot = 0; nodeslot < top_pkg::MAX_NODESLOT_COUNT; nodeslot++) be
         nsb_nodeslot_node_id_id_hw_n              [nodeslot] = nsb_nodeslot_node_id_id_hw                [nodeslot];
         nsb_nodeslot_neighbour_count_count_hw_n   [nodeslot] = nsb_nodeslot_neighbour_count_count_hw     [nodeslot];
         nsb_nodeslot_precision_precision_hw_n     [nodeslot] = nsb_nodeslot_precision_precision_hw       [nodeslot];
-        nsb_nodeslot_config_make_valid_value_hw_n [nodeslot] = nsb_nodeslot_config_make_valid_value_hw_n [nodeslot];
+        nsb_nodeslot_config_make_valid_value_hw_n [nodeslot] = nsb_nodeslot_config_make_valid_value_hw_n [nodeslot]; //Is this a bug .._n = .._n
         
         // Auto clear make valid register
         if (nsb_nodeslot_config_make_valid_value_hw[nodeslot]) begin

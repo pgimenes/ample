@@ -1,4 +1,15 @@
 import argparse
+import sys
+import os
+workarea = os.environ.get('WORKAREA')
+
+if workarea is None:
+    raise EnvironmentError("WORKAREA environment variable is not set")
+
+os.chdir(workarea)
+
+sys.path.append(workarea)
+
 from sdk.initialization_manager import InitManager
 
 from sdk.graphs.matrix_graph import MatrixGraph
@@ -7,7 +18,7 @@ from sdk.graphs.random_graph import RandomGraph
 from sdk.graphs.planetoid_graph import PlanetoidGraph
 from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
 
-from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model
+from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model
 
 from sdk.benchmarking_manager import BenchmarkingManager
 
@@ -20,6 +31,8 @@ import pandas as pd
 from tabulate import tabulate
 
 import numpy as np
+
+import torch
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s]:%(levelname)s:: %(message)s')
 
@@ -62,7 +75,9 @@ model_map = {
   'gcn': GCN_Model,
   'gat': GAT_Model,
   'gin': GIN_Model,
-  'sage': GraphSAGE_Model
+  'sage': GraphSAGE_Model,
+  'gcn_mlp': GCN_MLP_Model,
+  'mlp': MLP_Model,
 }
 
 def main(args):
@@ -101,6 +116,20 @@ def apply_graph_options(graph, options):
     for key, value in options.items():
         setattr(graph, key, value)
 
+def get_dtype(args):
+    if args.precision == 'FLOAT_32':
+        dtype = torch.float32
+    elif args.precision == 'FIXED_16':
+        dtype = torch.float16
+    elif args.precision == 'FIXED_8':
+        dtype = torch.uint8
+    elif args.precision == 'FIXED_4':
+        dtype = torch.uint8  # PyTorch does not support uint4, using uint8 as a placeholder
+    else:
+        dtype = torch.float32
+
+    return dtype
+
 def run_pass(
                 graph, 
                 model, 
@@ -111,11 +140,14 @@ def run_pass(
     
     logger.info(f"Running with model {model} and graph {graph}")
 
+    dtype = get_dtype(args)
+
     model = model_map[model](
         graph.dataset.x.shape[1] if args.in_features is None else args.in_features,
         graph.dataset.x.shape[1] if args.out_features is None else args.out_features,
         layer_count = args.layers,
-        hidden_dimension = args.hidden_dimension
+        hidden_dimension = args.hidden_dimension,
+        precision = dtype
         )
     init_manager = InitManager(graph, model, base_path=base_path)
     bman = BenchmarkingManager(graph=graph, model=model, args=args)
@@ -138,18 +170,30 @@ def run_pass(
     else:
         init_manager.trained_graph.train_embeddings()
 
+
+    # if isinstance(model, MLP_Model):
+    #     graph.remove_connections()
+
+    # Not working
+    # if isinstance(model, GCN_Model):
+    #     graph.apply_self_connection()
+    
     if (payloads):
-        init_manager.memory_mapper.map()
+        init_manager.map()
         init_manager.dump_memory()
         init_manager.dump_layer_config()
         init_manager.dump_nodeslot_programming()
+        init_manager.embedding_expectation()
+        init_manager.save_model()
+        init_manager.save_graph()
     
     metrics = {}
-    if (args.cpu or args.gpu or args.sweep):
+    if (args.cpu or args.gpu or args.sweep or args.sim):
         metrics = bman.benchmark()
 
     if (args.dq):
         graph.quantize_dq()
+
 
     return metrics
 
@@ -226,20 +270,22 @@ def parse_arguments():
     parser.add_argument('--gin', action='store_true', help='Use GIN Model')
     parser.add_argument('--gat', action='store_true', help='Use GAT Model')
     parser.add_argument('--sage', action='store_true', help='Use GraphSAGE Model')
+    parser.add_argument('--gcn_mlp', action='store_true', help='Use GCN MLP Model')
+    parser.add_argument('--mlp', action='store_true', help='Use MLP Model')
 
     parser.add_argument('--layers', type=int, default=2, help='Number of layers')
-    parser.add_argument('--hidden-dimension', type=int, default=64, help='Hidden dimension size')
+    parser.add_argument('--hidden-dimension', type=int, default=32, help='Hidden dimension size')
 
     default_base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
     parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $WORKAREA/hw/sim/layer_config)')
     
-    parser.add_argument('--in_features', type=int, default=None, help='Input feature count')
-    parser.add_argument('--out_features', type=int, default=None, help='Output feature count')
+    parser.add_argument('--in_features', type=int, default=32, help='Input feature count')
+    parser.add_argument('--out_features', type=int, default=32, help='Output feature count')
 
     # For random (erdos) graphs
     
     parser.add_argument('--avg_degree', type=float, default=1, help='Average number of neighbours per node')
-    parser.add_argument('--num_nodes', type=int, default=10000, help='Approximate number of nodes in the graph')
+    parser.add_argument('--num_nodes', type=int, default=10, help='Approximate number of nodes in the graph')
     
     parser.add_argument('--random', action='store_true', help='Initialize graph with random embedding.')
     
@@ -252,10 +298,18 @@ def parse_arguments():
     parser.add_argument('--cpu', action='store_true', help='Run benchmarking steps on CPU')
     parser.add_argument('--gpu', action='store_true', help='Run benchmarking steps on GPU')
     parser.add_argument('--device', type=int, default=0, help='Which GPU to use for benchmarking')
-    
+    parser.add_argument('--fpga_clk_freq', type=int, default=200e6, help='Clock Period of FPGA to measure sim time for benchmarking')
+
     parser.add_argument('--sim', action='store_true', help='Run benchmarking steps in Cocotb simulation')
     parser.add_argument('--preload', action='store_true', help='Pre-load GPU results and layer configs')
     
+    parser.add_argument('--tb_tolerance',  type=float, default=0.1, help='Set tolerance for tb-model mismatch for Cocotb testbench')
+    parser.add_argument('--tb_log_level', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default='INFO',
+                            help='Set log level for Cocotb testbench')
+    parser.add_argument('--gui', action='store_true', help='Run sim with GUI')
+
+
+
     default_preload_path = "/home/pg519/shared/agile_results"
     parser.add_argument('--preload_path', default=default_preload_path, help='Base path (default: /home/pg519/shared/agile_results)')
 

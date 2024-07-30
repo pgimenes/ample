@@ -25,7 +25,7 @@ class FTE_Monitor (Monitor):
                     "precision": self.dut.nsb_age_resp.precision
                 }
                 self._sample(data, self.nsb_responses)
-                self.dut._log.info("Observed response to NSB for nodeslots: %s, precision: %s", data["nodeslots"].value, data["precision"].value)
+                self.dut._log.debug("Observed response to NSB for nodeslots: %s, precision: %s", data["nodeslots"].value, data["precision"].value)
 
             # Weight Channel requests
             for wc in range(self.message_channel_count):
@@ -35,4 +35,4 @@ class FTE_Monitor (Monitor):
                         "out_features": self.dut.weight_channel_req[wc].out_features
                     }
                     _ = self._sample(data, self.weight_channel_reqs[wc])
-                    self.dut._log.info("Observed Weight Channel request for Nodeslot: %s, Fetch Tag: ", data["nodeslot"].value, data["fetch_tag"].value)
+                    self.dut._log.debug("Observed Weight Channel request for Nodeslot: %s, Fetch Tag: ", data["nodeslot"].value, data["fetch_tag"].value)

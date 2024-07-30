@@ -53,21 +53,24 @@ end
 
 if (PRECISION == top_pkg::FLOAT_32) begin
 
-`ifdef SIMULATION
+`ifdef SIMULATION_QUICK
     assign leaky_relu_activation_valid_comb = in_feature_valid;
     assign leaky_relu_activation_comb = in_feature;
     
 `else
-    fp_mult activation_mult (
-        // .s_axis_a_tvalid      (in_feature_valid),
-        .in1       (in_feature),
 
-        // .s_axis_b_tvalid      (1'b1),
+    logic [DATA_WIDTH-1:0] in_feature_gated;
+    assign in_feature_gated = in_feature_valid ? in_feature : '0;
+
+    fp_mult activation_mult (
+        .in1       (in_feature_gated),
+
         .in2       (layer_config_leaky_relu_alpha_value),
 
-        // .m_axis_result_tvalid (leaky_relu_activation_valid_comb),
         .res  (leaky_relu_activation_comb)
         );
+    assign leaky_relu_activation_valid_comb = in_feature_valid;
+
 `endif
 
     end else begin
