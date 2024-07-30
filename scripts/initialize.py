@@ -275,13 +275,13 @@ def parse_arguments():
     parser.add_argument('--mlp', action='store_true', help='Use MLP Model')
 
     parser.add_argument('--layers', type=int, default=2, help='Number of layers')
-    parser.add_argument('--hidden-dimension', type=int, default=34, help='Hidden dimension size')
+    parser.add_argument('--hidden-dimension', type=int, default=32, help='Hidden dimension size')
 
     default_base_path = os.environ.get("WORKAREA") + "/hw/sim/layer_config"
     parser.add_argument('--base_path', default=default_base_path, help='Base path (default: $WORKAREA/hw/sim/layer_config)')
     
-    parser.add_argument('--in_features', type=int, default=None, help='Input feature count')
-    parser.add_argument('--out_features', type=int, default=None, help='Output feature count')
+    parser.add_argument('--in_features', type=int, default=32, help='Input feature count')
+    parser.add_argument('--out_features', type=int, default=32, help='Output feature count')
 
     # For random (erdos) graphs
     
