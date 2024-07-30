@@ -15,6 +15,7 @@ run_simgui:
 
 
 verilator:
+	$(WORKAREA)/scripts/add_hash.sh
 	$(MAKE) -f Makefile.verilator
 
 clean:
