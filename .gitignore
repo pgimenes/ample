@@ -86,3 +86,5 @@ imports/
 
 hw/tb/module_tests/lib/test/*
 
+sdk/models/model_architecture
+sdk/models/model_architecture.png

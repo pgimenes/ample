@@ -15,7 +15,7 @@ from copy import deepcopy
 from torch.nn import Linear
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 
-from .models.models import GraphSAGE_Model
+from .models.models import GraphSAGE_Model, Edge_ConcatEmbedding_Model
 
 import math
 
@@ -54,7 +54,9 @@ class InitManager:
         self.layer_config = {'global_config': {}, 'layers': []}
         self.model_layer_max_features = max([self.get_feature_counts(self.model)])
         # Nodeslot programming
-        self.nodeslot_programming = {'nodeslots':[]}
+        self.nodeslot_programming = {'nodeslots':[],'edges':[]}
+        # self.edge_programming = {}
+
     #     self.model_hiearchy = self.get_model_hierarchy()
         
 
@@ -92,13 +94,14 @@ class InitManager:
         return inc, outc
     
     def get_default_layer_config(self, layer,idx):
-
+        
         inc, outc = self.get_layer_feature_count(layer)
         if isinstance(layer, torch.nn.Linear):
             aggregate_enable = 0
         else:
             aggregate_enable = 1
 
+        edge_node = 'edge' in layer.name
         #Multi-layer support - out messages become in messages for next layer
         if 'input' in layer.name:
             in_messages_address = self.memory_mapper.offsets['in_messages']
@@ -129,6 +132,7 @@ class InitManager:
             'aggregation_wait_count': 16,
             'transformation_wait_count': 16,
             'aggregate_enable' : aggregate_enable,
+            'edge_node': edge_node
         }
 
     def set_layer_config_graphsage(self):
@@ -188,13 +192,31 @@ class InitManager:
                 'neighbour_count': self.trained_graph.nx_graph.nodes[node_id]["meta"]['neighbour_count'],
                 'precision': self.trained_graph.nx_graph.nodes[node_id]["meta"]['precision'],
                 'aggregation_function': self.trained_graph.nx_graph.nodes[node_id]["meta"]['aggregation_function'],
-                'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['adjacency_list_address'],
+                # 'adjacency_list_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['adjacency_list_address'],
                 'adjacency_list_address_msb': 0,
                 'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['scale_factors_address'],
                 'scale_factors_address_msb': 0,
                 'out_messages_address_lsb': node_id * self.calc_axi_addr(self.trained_graph.feature_count), # /*self.memory_mapper.offsets['out_messages'] + */#
                 'out_messages_address_msb': 0
             }
+
+
+
+    def get_default_edge(self, edge):
+        edge_meta = edge[2]['meta']
+        print('edge_meta',edge_meta)
+        return {
+            'node_id' : edge_meta['edge_id'],  #Refactor name
+            'neighbour_count':3, #Self, rx, src
+            'precision':edge_meta['precision'],
+            'aggregation_function': edge_meta['aggregation_function'], #SUM or CONCAT
+            # 'adjacency_list_address_lsb': edge_meta['adjacency_list_address'],
+            'adjacency_list_address_msb': 0,
+            'scale_factors_address_lsb': edge_meta['scale_factors_address'],
+            'scale_factors_address_msb': 0,
+            'out_messages_address_lsb': edge_meta['edge_id'] * self.calc_axi_addr(self.trained_graph.edge_feature_count), #Change to edge feature count # /*self.memory_mapper.offsets['out_messages'] + */#
+            'out_messages_address_msb': 0
+        }
 
     def program_nodeslots_graphsage(self):
         # Layer 1: W1 projection
@@ -221,24 +243,48 @@ class InitManager:
             nodeslot["aggregation_function"] = "SUM"
             self.nodeslot_programming['nodeslots'].append(nodeslot)
 
+
+
+    def load_nodeslot_programming_from_graph(self):
+        dense_nodes = []
+        for node in self.trained_graph.nx_graph.nodes:
+            nb_cnt = self.trained_graph.nx_graph.nodes[node]["meta"]['neighbour_count']
+            if (self.ignore_isolated_nodes and nb_cnt == 0):
+                continue
+            if (nb_cnt > 256):
+                dense_nodes.append(node)
+                continue
+            nodeslot = self.get_default_nodeslot(node)
+            self.nodeslot_programming['nodeslots'].append(nodeslot)
+        
+        logging.debug(f"Dense node count: {len(dense_nodes)}")
+
+
+    def load_edges_programming_from_graph(self):
+        for edge in self.trained_graph.nx_graph.edges(data=True):
+            edge = self.get_default_edge(edge)     
+            self.nodeslot_programming['edges'].append(edge)
+            # Print all the features (attributes) of the edge
+ 
+
+
+
+            
+
     def program_nodeslots(self, ignore_isolated_nodes=True):
+        self.ignore_isolated_nodes = ignore_isolated_nodes
         logging.info(f"Generating nodeslot programming.")
         
         if (isinstance(self.model, GraphSAGE_Model)):
             self.program_nodeslots_graphsage()
+        elif(isinstance(self.model, Edge_ConcatEmbedding_Model)):
+            self.load_nodeslot_programming_from_graph()
+            self.load_edges_programming_from_graph()
         else:
-            dense_nodes = []
-            for node in self.trained_graph.nx_graph.nodes:
-                nb_cnt = self.trained_graph.nx_graph.nodes[node]["meta"]['neighbour_count']
-                if (ignore_isolated_nodes and nb_cnt == 0):
-                    continue
-                if (nb_cnt > 256):
-                    dense_nodes.append(node)
-                    continue
-                nodeslot = self.get_default_nodeslot(node)
-                self.nodeslot_programming['nodeslots'].append(nodeslot)
+            self.load_nodeslot_programming_from_graph()
             
-            logging.debug(f"Dense node count: {len(dense_nodes)}")
+
+
 
     def generate_nodeslots_mem(self):
         node_groups = np.array(self.nodeslot_programming["nodeslots"])
@@ -275,7 +321,7 @@ class InitManager:
         return nmh
 
     def dump_nodeslot_programming(self):
-        self.nodeslot_programming = {'nodeslots':[]}
+        # self.nodeslot_programming = {'nodeslots':[]}
         self.program_nodeslots()
 
         with open(self.nodeslot_json_dump_file, 'w') as file:

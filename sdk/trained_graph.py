@@ -25,17 +25,24 @@ class TrainedGraph:
 
         # Node offsets in adjacency list
         node_ids, node_offsets = np.unique(dataset.edge_index[0], return_index=True)
+
         self.node_offsets = [0] * len(self.nx_graph.nodes)
         for idx, i in enumerate(node_ids):
             self.node_offsets[i] = node_offsets[idx]
-
+        
         # Feature count initialization may change when embeddings are trained
         self.feature_count = dataset.x.shape[1] if feature_count is None else feature_count
 
+
         self.init_nx_graph(self_connection=self_connection)
+        #if edges:
+        edge = list(self.nx_graph.edges(data=True))[0]
+        _,_, attributes = edge
+        self.edge_feature_count = len(attributes)
+
 
         # Local copy of embeddings stored in node objects
-        self.embeddings = embeddings
+        self.embeddings = embeddings #node embeddings
 
         # TO DO: read dequantization parameter from QAT
         self.dequantization_parameter = 1
@@ -52,7 +59,7 @@ class TrainedGraph:
                 
                 'adj_list_offset': int(self.node_offsets[node]),
                 'neighbour_message_ptrs': [self.calc_axi_addr(self.feature_count)*nb_ptr for nb_ptr in neighbours],
-                'adjacency_list_address_lsb': 0, # to be defined by init manager
+                # 'adjacency_list_address_lsb': 0, # to be defined by init manager
                 'self_ptr' : [self.calc_axi_addr(self.feature_count)*node],
 
                 # Add a single scale factor to isolated nodes to occupy memory range
@@ -60,6 +67,34 @@ class TrainedGraph:
 
                 'precision': random.choice(["FLOAT_32", "FIXED_8"]) if self.graph_precision == 'mixed' else self.graph_precision
             }
+
+        print(self.nx_graph.edges())
+        for index, (u, v) in enumerate(self.nx_graph.edges()):
+            print('edges_nx')
+            # Access or compute necessary features for the edge
+            edge_id = index + len(self.nx_graph.nodes)
+            print('selft_ptr',[self.calc_axi_addr(self.feature_count)*edge_id])
+
+            print(u,v)
+            edge_features = {
+                'edge_id': edge_id, #+num nodes - need to seperate in memory
+                'precision': "FLOAT_32", #random.choice(["FLOAT_32", "FIXED_8"]) if self.graph_precision == 'mixed' else self.graph_precision,
+                'aggregation_function': "SUM",
+                # 'adjacency_list_address_lsb' : int(self.edge_offsets[index]), #
+                'self_ptr' : [self.calc_axi_addr(self.feature_count)*edge_id], #Check memory mapping
+ 
+                'scale_factors_address' : 0,
+                'adj_list_offset': 0, #int(self.edge_offsets[(u, v)]),
+                'neighbour_message_ptrs': [
+                    #Memory UUUUUU | EEEEEE | VVVVVV
+                    self.calc_axi_addr(self.feature_count) * u, 
+                    self.calc_axi_addr(self.feature_count) * (index + len(self.nx_graph.nodes)), #Change to self feature count
+                    self.calc_axi_addr(self.feature_count) * (u) # change to offset for rx embeddings - keep for now + len(self.nx_graph.nodes) + len(self.nx_graph.edges))  #add offset to access rx embedded
+                ]
+            }
+
+            # Assign the edge features to the edge's metadata
+            self.nx_graph[u][v]['meta'] = edge_features
 
     def remove_self_connection(self):
         for node in self.nx_graph.nodes:

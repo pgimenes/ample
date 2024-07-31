@@ -32,30 +32,113 @@ class Memory_Mapper:
         self.map_in_messages()
         self.map_weights()
 
+
     def map_adj_list(self):
         #Dynamically change adj list between layers
         for idx,layer in enumerate(self.model.layers):
             # If there is a linear layer, add another adjacency list to point to the address of the features of a nodes own embedding
 
-            if isinstance(layer, Linear):
-                for node in self.graph.nodes:
-                    if (idx ==0):
-                        #Setting address without layer offset
-                        self.graph.nodes[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
-                
-                    self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['self_ptr'], align=True, alignment=64, pad_side="right")
+            if 'edge' in layer.name:
+                graph_nodes = self.graph.edges()
             else:
-                for node in self.graph.nodes:
-                    if (idx ==0):
-                        self.graph.nodes[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
-                 
-                    self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+                graph_nodes = self.graph.nodes
+
+            for node in graph_nodes:
+                if 'edge' in layer.name:
+                    u,v = node
+                    node_metadata = self.graph[u][v]['meta']
+                else:
+                    node_metadata = self.graph.nodes[node]['meta']
+
+                if isinstance(layer, Linear):
+                    self.memory_hex += int_list_to_byte_list(node_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
+                else:
+                    self.memory_hex += int_list_to_byte_list(node_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
             
+
+
             if(idx < self.num_layers-1):
                 self.offsets['adj_list'][idx+1] = len(self.memory_hex)
 
         # Set offset for next memory range
         self.offsets['scale_factors'] = len(self.memory_hex)
+    # def map_adj_list(self):
+    #     #Dynamically change adj list between layers
+    #     for idx,layer in enumerate(self.model.layers):
+    #         # If there is a linear layer, add another adjacency list to point to the address of the features of a nodes own embedding
+    #         #Need to find first edge layer to set adjacency list address
+
+
+
+    #         #go thorugh each node in programming
+
+
+
+    #         #Just need to map indexs of node inputs - offsets are provided in layer config
+    #         #TODO: Make this simpler - adj list per layer? Make same for edge and node - or go over nodeslot programming dict
+    #         if 'edge' in layer.name:
+    #             #Make more concise
+    #             if isinstance(layer, Linear):
+    #                 for index, (u, v) in enumerate(self.graph.edges()):
+    #                     print(f"Node: {self.graph[u][v]['meta']}")
+    #                     if 'input' in layer.name:
+    #                         self.graph[u][v]['meta']['adjacency_list_address'] = len(self.memory_hex)
+    #                     self.memory_hex += int_list_to_byte_list(self.graph[u][v]['meta']['self_ptr'], align=True, alignment=64, pad_side="right")
+
+    #             else:
+    #                 for index, (u, v) in enumerate(self.graph.edges()):
+    #                     if 'input' in layer.name:
+    #                         self.graph[u][v]['meta']['adjacency_list_address'] = len(self.memory_hex)
+    #                     self.memory_hex += int_list_to_byte_list(self.graph[u][v]['meta']['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+
+    #         else:
+    #             if 'input' in layer.name:
+    #                 for node in self.graph.nodes:
+    #                     self.graph.nodes[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
+
+
+
+    #                     self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['self_ptr'], align=True, alignment=64, pad_side="right")
+
+
+
+                        
+    #                         if idx==0:
+    #                 else:
+    #                     aj_ptr = 0
+    #                     for node in self.graph.nodes:
+    #                             self.graph.nodes[node]["meta"]['adjacency_list_address'] = aj_ptr
+    #                             #Change this
+    #                             if isinstance(layer, Linear):
+
+    #                             aj_ptr += len(int_list_to_byte_list(self.graph.nodes[node]["meta"]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right"))
+    #                             self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+
+    #         if(idx < self.num_layers-1):
+    #             self.offsets['adj_list'][idx+1] = len(self.memory_hex)
+
+
+    #         # if isinstance(layer, Linear):
+    #         #     #if edge layer,
+    #         #     for node in programming:
+                        
+    #         #         if (idx ==0):
+    #         #             #Setting address without layer offset
+                        
+    #         #             programming[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
+                
+    #         #         self.memory_hex += int_list_to_byte_list(programming[node]["meta"]['self_ptr'], align=True, alignment=64, pad_side="right")
+    #         # else:
+    #         #     for node in programming:
+    #         #         if (idx ==0):
+    #         #             programming[node]["meta"]['adjacency_list_address'] = len(self.memory_hex)
+                 
+    #         #         self.memory_hex += int_list_to_byte_list(programming[node]["meta"]['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+            
+           
+
+    #     # Set offset for next memory range
+    #     self.offsets['scale_factors'] = len(self.memory_hex)
 
     def map_scale_factors(self):
         for node in self.graph.nodes:

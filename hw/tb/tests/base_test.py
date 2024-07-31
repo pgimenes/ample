@@ -80,6 +80,8 @@ class BaseTest:
 
         self.scoreboard = sb.Scoreboard(nodeslot_count=64)
         self.nodeslot_programming = {}
+        self.edge_programming = {}
+
         self.global_config = {}
         self.layers = {}
 
@@ -97,6 +99,8 @@ class BaseTest:
     async def initialize(self):
         # Load nodeslot programming and layer config
         self.load_nodeslot_programming()
+        print(self.load_edge_programming())
+
         self.load_layer_config()
         self.load_regbanks()
 
@@ -180,6 +184,14 @@ class BaseTest:
         self.nodeslot_programming = ns_programming["nodeslots"]
         return ns_programming["nodeslots"]
 
+
+    def load_edge_programming(self):
+        self.dut._log.debug("Loading edge programming")
+        with open(self.nodeslot_programming_file) as f:
+            ns_programming = json.load(f)
+        self.nodeslot_programming = ns_programming["edges"]
+        return ns_programming["edges"]
+
     def load_layer_config(self):
         self.dut._log.debug("Loading layer configuration")
         with open(self.layer_config_file) as f:
@@ -225,7 +237,7 @@ class BaseTest:
         self.dut._log.debug("Starting nodeslot programming.")
         free_mask = "1" * self.nodeslot_count
 
-        for ns_programming in test.nodeslot_programming:
+        for ns_programming in self.nodeslot_programming:
 
             # Skip nodeslots with no neighbours
             if (ns_programming["neighbour_count"] == 0):
