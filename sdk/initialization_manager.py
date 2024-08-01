@@ -107,7 +107,10 @@ class InitManager:
         inc, outc = self.get_layer_feature_count(layer)
         if isinstance(layer, torch.nn.Linear):
             aggregate_enable = 0
+            adj_list_addr= self.memory_mapper.offsets['adj_list']['nodes']['self_ptr']
+
         else:
+            adj_list_addr= self.memory_mapper.offsets['adj_list']['nodes']['nbrs']
             aggregate_enable = 1
 
         edge_node = 'edge' in layer.name
@@ -134,7 +137,7 @@ class InitManager:
             'leaky_relu_alpha': 0,
             'transformation_bias': 0,
             'dequantization_parameter': self.trained_graph.dequantization_parameter,
-            'adjacency_list_address': self.memory_mapper.offsets['adj_list'][idx],
+            'adjacency_list_address': adj_list_addr,
             'in_messages_address': in_messages_address, 
             'weights_address': self.memory_mapper.offsets['weights'][idx],
             'out_messages_address': out_messages_address,
@@ -145,17 +148,31 @@ class InitManager:
         }
         
 
-    def get_layer_config(self, layer,in_messages_address,idx,edge=0,aggregate_enable=0):
+    def get_layer_config(self, layer,in_messages_address,idx,edge=0,linear=0):
         inc, outc = self.get_layer_feature_count(layer)
+        if edge:
+            adj_list_data = self.memory_mapper.offsets['adj_list']['edges']
+            nodeslot_count = len(self.trained_graph.nx_graph.edges())
+        else:
+            nodeslot_count = len(self.trained_graph.nx_graph.nodes)
+            adj_list_data = self.memory_mapper.offsets['adj_list']['nodes']
+
+        if linear:
+            adjacency_list_address =adj_list_data['self_ptr']
+            aggregate_enable = 0
+        else:
+            adjacency_list_address =adj_list_data['nbrs']
+            aggregate_enable = 1
+
         return {
-            'nodeslot_count': len(self.trained_graph.nx_graph.nodes),
+            'nodeslot_count': nodeslot_count,
             'in_feature_count': inc,
             'out_feature_count': outc,
             'transformation_activation': 0,
             'leaky_relu_alpha': 0,
             'transformation_bias': 0,
             'dequantization_parameter': self.trained_graph.dequantization_parameter,
-            'adjacency_list_address': self.memory_mapper.offsets['adj_list'][idx],
+            'adjacency_list_address': adjacency_list_address,
             'in_messages_address': in_messages_address, 
             'weights_address': self.memory_mapper.offsets['weights'][idx],
             'out_messages_address': self.memory_mapper.out_messages_ptr,

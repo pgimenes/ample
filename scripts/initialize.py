@@ -20,7 +20,7 @@ from sdk.graphs.random_graph import RandomGraph
 from sdk.graphs.planetoid_graph import PlanetoidGraph
 from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
 
-from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model, Edge_ConcatEmbedding_Model
+from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model, Edge_Embedding_Model
 
 from sdk.benchmarking_manager import BenchmarkingManager
 
@@ -80,7 +80,7 @@ model_map = {
   'sage': GraphSAGE_Model,
   'gcn_mlp': GCN_MLP_Model,
   'mlp': MLP_Model,
-  'edge': Edge_ConcatEmbedding_Model
+  'edge': Edge_Embedding_Model
 }
 
 def main(args):
@@ -182,7 +182,7 @@ def run_pass(
     #     graph.apply_self_connection()
     
     if (payloads):
-        init_manager.map() #Has to be done first
+        init_manager.map_memory() #Has to be done first
         init_manager.dump_memory()
         init_manager.dump_layer_config()
         init_manager.dump_nodeslot_programming()

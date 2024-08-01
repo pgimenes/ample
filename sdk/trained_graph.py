@@ -57,7 +57,7 @@ class TrainedGraph:
                 'neighbour_count': len(neighbours),
                 'aggregation_function': "SUM",
                 
-                'adj_list_offset': int(self.node_offsets[node]),
+                # 'adj_list_offset': int(self.node_offsets[node]),
                 'neighbour_message_ptrs': [self.calc_axi_addr(self.feature_count)*nb_ptr for nb_ptr in neighbours],
                 # 'adjacency_list_address_lsb': 0, # to be defined by init manager
                 'self_ptr' : [self.calc_axi_addr(self.feature_count)*node],
@@ -72,24 +72,24 @@ class TrainedGraph:
         for index, (u, v) in enumerate(self.nx_graph.edges()):
             print('edges_nx')
             # Access or compute necessary features for the edge
-            edge_id = index + len(self.nx_graph.nodes)
-            print('selft_ptr',[self.calc_axi_addr(self.feature_count)*edge_id])
+            edge_id = index + 2* len(self.nx_graph.nodes)
+            # print('selft_ptr',[self.calc_axi_addr(self.feature_count)*edge_id])
 
-            print(u,v)
+            # print(u,v)
             edge_features = {
                 'edge_id': edge_id, #+num nodes - need to seperate in memory
                 'precision': "FLOAT_32", #random.choice(["FLOAT_32", "FIXED_8"]) if self.graph_precision == 'mixed' else self.graph_precision,
                 'aggregation_function': "SUM",
                 # 'adjacency_list_address_lsb' : int(self.edge_offsets[index]), #
-                'self_ptr' : [self.calc_axi_addr(self.feature_count)*edge_id], #Check memory mapping
- 
+                'self_ptr' : [self.calc_axi_addr(self.feature_count)*index], 
                 'scale_factors_address' : 0,
-                'adj_list_offset': 0, #int(self.edge_offsets[(u, v)]),
+                # 'adj_list_offset': 0, #int(self.edge_offsets[(u, v)]),
                 'neighbour_message_ptrs': [
-                    #Memory UUUUUU | EEEEEE | VVVVVV
-                    self.calc_axi_addr(self.feature_count) * u, 
-                    self.calc_axi_addr(self.feature_count) * (index + len(self.nx_graph.nodes)), #Change to self feature count
-                    self.calc_axi_addr(self.feature_count) * (u) # change to offset for rx embeddings - keep for now + len(self.nx_graph.nodes) + len(self.nx_graph.edges))  #add offset to access rx embedded
+                    #Memory UUUUUU | VVVVVV | EEEEEE 
+                    self.calc_axi_addr(self.feature_count) * u,  #SRC
+                    self.calc_axi_addr(self.feature_count) * (u + len(self.nx_graph.nodes)), #RX
+                    self.calc_axi_addr(self.feature_count) * (index), #Change to self feature count
+                     # change to offset for rx embeddings - keep for now + len(self.nx_graph.nodes) + len(self.nx_graph.edges))  #add offset to access rx embedded
                 ]
             }
 

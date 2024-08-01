@@ -8,6 +8,8 @@ import torch
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 from torch.nn import Linear
 
+from .models.models import GraphSAGE_Model, Edge_Embedding_Model, EdgeGCNLayer
+
 class Memory_Mapper:
 
     def __init__(self, graph, model, base_path="config_files", dump_file="memory.mem"):
@@ -16,9 +18,9 @@ class Memory_Mapper:
         self.memory_hex = []
         self.num_layers = self.count_layers()
         weights_list = [0]*self.num_layers
-        out_messages_list = [0]*self.num_layers
+        out_messages_list = [0]*self.num_layers #Can remove - using ptr
         #Used to change adj list between layers
-        adj_list = [0]*self.num_layers # Change name perhaps to layer offset adj
+        adj_list = {'nodes': {'nbrs': 0, 'self_ptr': 0 },'edges': {'gcn': 0, 'self_ptr': 0 }} # Change name perhaps to layer offset adj
         self.offsets = {'adj_list': adj_list, 'scale_factors': 0, 'in_messages':0, 'weights':weights_list, 'out_messages': out_messages_list}
         self.out_messages_ptr = 0
         
@@ -34,27 +36,55 @@ class Memory_Mapper:
 
 
     def map_adj_list(self):
-        #Dynamically change adj list between layers
+        self.offsets['adj_list']['nodes']['nbrs'] = len(self.memory_hex)
+        for node in self.graph.nodes:
+            node_metadata = self.graph.nodes[node]['meta']
+            self.memory_hex += int_list_to_byte_list(node_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+        
+        #if linear layers
+        self.offsets['adj_list']['nodes']['self_ptr'] = len(self.memory_hex)
+        for node in self.graph.nodes:
+            node_metadata = self.graph.nodes[node]['meta']
+            self.memory_hex += int_list_to_byte_list(node_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
+            
+
+        self.offsets['adj_list']['edges']['self_ptr'] = len(self.memory_hex)
+        for (u,v) in self.graph.edges():
+            edge_metadata = self.graph[u][v]['meta']
+            self.memory_hex += int_list_to_byte_list(edge_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
+
+        #fi
+
+
+        self.offsets['adj_list']['edges']['nbrs'] = len(self.memory_hex)
+        for (u,v) in self.graph.edges():
+            edge_metadata = self.graph[u][v]['meta']
+            self.memory_hex += int_list_to_byte_list(edge_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+
+
+        #Can change this when models get larger
+            #Dynamically change adj list between layers
         for idx,layer in enumerate(self.model.layers):
             # If there is a linear layer, add another adjacency list to point to the address of the features of a nodes own embedding
+            if 'input' in layer.name:
 
-            if 'edge' in layer.name:
-                graph_nodes = self.graph.edges()
-            else:
-                graph_nodes = self.graph.nodes
-
-            for node in graph_nodes:
                 if 'edge' in layer.name:
-                    u,v = node
-                    node_metadata = self.graph[u][v]['meta']
+                    graph_nodes = self.graph.edges()
                 else:
-                    node_metadata = self.graph.nodes[node]['meta']
+                    graph_nodes = self.graph.nodes
 
-                if isinstance(layer, Linear):
-                    self.memory_hex += int_list_to_byte_list(node_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
-                else:
-                    self.memory_hex += int_list_to_byte_list(node_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
-            
+                for node in graph_nodes:
+                    if 'edge' in layer.name:
+                        u,v = node
+                        node_metadata = self.graph[u][v]['meta']
+                    else:
+                        node_metadata = self.graph.nodes[node]['meta']
+
+                    if isinstance(layer, Linear):
+                        self.memory_hex += int_list_to_byte_list(node_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
+                    else:
+                        self.memory_hex += int_list_to_byte_list(node_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+                
 
 
             if(idx < self.num_layers-1):
@@ -62,7 +92,94 @@ class Memory_Mapper:
 
         # Set offset for next memory range
         self.offsets['scale_factors'] = len(self.memory_hex)
-    # def map_adj_list(self):
+   
+
+    def map_scale_factors(self):
+        for node in self.graph.nodes:
+            self.graph.nodes[node]["meta"]['scale_factors_address'] = len(self.memory_hex)
+            if (self.graph.nodes[node]["meta"]['precision'] == 'FLOAT_32'):
+                self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]["meta"]['scale_factors'], align=True, alignment=64, pad_side='left')
+            else:
+                self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['scale_factors'], align=True, alignment=64, pad_side='left')
+        
+        # Set offset for next memory range
+        self.offsets['in_messages'] = len(self.memory_hex)
+
+    def map_in_messages(self):
+        for node in self.graph.nodes:
+            
+            self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]["meta"]['embedding'], align=True, alignment=64)
+        # Set offset for next memory range
+        self.offsets['weights'][0] = len(self.memory_hex)
+
+    def map_weights(self):
+        for idx,layer in enumerate(self.model.layers):
+            if isinstance(layer, GCNConv):
+                linear = layer.lin
+            elif isinstance(layer, GINConv):
+                linear = layer.nn
+            elif isinstance(layer, SAGEConv):
+                linear = layer.lin_l
+            elif isinstance(layer, Linear):
+                linear = layer
+            elif isinstance(layer, EdgeGCNLayer):
+                linear = layer.update_mlp
+            else:
+                raise RuntimeError(f"Unrecognized layer {layer}")
+            
+            out_feature_count = linear.weight.shape[0]
+            for outf in range(out_feature_count):
+                self.memory_hex += float_list_to_byte_list(linear.weight[outf], align=True, alignment=64)
+            if(idx < self.num_layers-1):
+                self.offsets['weights'][idx+1] = len(self.memory_hex)
+
+        # Set offset for next memory range
+        self.offsets['out_messages'][0] = len(self.memory_hex)
+        self.out_messages_ptr = len(self.memory_hex)
+
+
+    # def map_out_messages(self):
+    #     #    Set offset for next memory range
+    #     self.offsets['out_messages'][0] = len(self.memory_hex)
+    #     #Assuming constant feature width
+    #     size_messages = self.offsets['weights'][0]  -self.offsets['in_messages'] 
+
+    #     self.offsets['out_messages'] = len(self.memory_hex)
+
+    # Dump
+    # ===============================================
+
+    def dump_memory(self):
+        with open(self.dump_file, 'w') as file:
+            for i in range(len(self.memory_hex)//64):
+                file.write(''.join(self.memory_hex[i*64:(i+1)*64]))
+                file.write('\n')
+            file.write(''.join(self.memory_hex[64*(len(self.memory_hex)//64):]))
+            file.write('\n')
+
+    def pad_list(self,input_list,target_length):
+        current_length = len(input_list)
+        if current_length < target_length:
+            padding_length = target_length - current_length
+            input_list.extend([0] * padding_length)
+        return input_list
+    
+
+    def count_layers(self):
+        count = 0
+        for module in self.model.modules():
+            if isinstance(module, (torch.nn.Conv2d, torch.nn.Linear,GCNConv,GINConv,SAGEConv)):
+                count += 1
+        return count
+    
+
+    def contains_linear_layer(self):
+        for layer in self.model.modules():
+            if isinstance(layer, torch.nn.Linear):
+                return True
+        return False
+
+         # def map_adj_list(self):
     #     #Dynamically change adj list between layers
     #     for idx,layer in enumerate(self.model.layers):
     #         # If there is a linear layer, add another adjacency list to point to the address of the features of a nodes own embedding
@@ -139,88 +256,3 @@ class Memory_Mapper:
 
     #     # Set offset for next memory range
     #     self.offsets['scale_factors'] = len(self.memory_hex)
-
-    def map_scale_factors(self):
-        for node in self.graph.nodes:
-            self.graph.nodes[node]["meta"]['scale_factors_address'] = len(self.memory_hex)
-            if (self.graph.nodes[node]["meta"]['precision'] == 'FLOAT_32'):
-                self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]["meta"]['scale_factors'], align=True, alignment=64, pad_side='left')
-            else:
-                self.memory_hex += int_list_to_byte_list(self.graph.nodes[node]["meta"]['scale_factors'], align=True, alignment=64, pad_side='left')
-        
-        # Set offset for next memory range
-        self.offsets['in_messages'] = len(self.memory_hex)
-
-    def map_in_messages(self):
-        for node in self.graph.nodes:
-         
-            self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]["meta"]['embedding'], align=True, alignment=64)
-        # Set offset for next memory range
-        self.offsets['weights'][0] = len(self.memory_hex)
-
-    def map_weights(self):
-        for idx,layer in enumerate(self.model.layers):
-            if isinstance(layer, GCNConv):
-                linear = layer.lin
-            elif isinstance(layer, GINConv):
-                linear = layer.nn
-            elif isinstance(layer, SAGEConv):
-                linear = layer.lin_l
-            elif isinstance(layer, Linear):
-                linear = layer
-            else:
-                raise RuntimeError(f"Unrecognized layer {layer}")
-            
-            out_feature_count = linear.weight.shape[0]
-            for outf in range(out_feature_count):
-                self.memory_hex += float_list_to_byte_list(linear.weight[outf], align=True, alignment=64)
-            if(idx < self.num_layers-1):
-                self.offsets['weights'][idx+1] = len(self.memory_hex)
-
-        # Set offset for next memory range
-        # self.offsets['out_messages'] = len(self.memory_hex)
-        self.out_messages_ptr = len(self.memory_hex)
-
-
-    # def map_out_messages(self):
-    #     #    Set offset for next memory range
-    #     self.offsets['out_messages'][0] = len(self.memory_hex)
-    #     #Assuming constant feature width
-    #     size_messages = self.offsets['weights'][0]  -self.offsets['in_messages'] 
-
-    #     self.offsets['out_messages'] = len(self.memory_hex)
-
-    # Dump
-    # ===============================================
-
-    def dump_memory(self):
-        with open(self.dump_file, 'w') as file:
-            for i in range(len(self.memory_hex)//64):
-                file.write(''.join(self.memory_hex[i*64:(i+1)*64]))
-                file.write('\n')
-            file.write(''.join(self.memory_hex[64*(len(self.memory_hex)//64):]))
-            file.write('\n')
-
-    def pad_list(self,input_list,target_length):
-        current_length = len(input_list)
-        if current_length < target_length:
-            padding_length = target_length - current_length
-            input_list.extend([0] * padding_length)
-        return input_list
-    
-
-    def count_layers(self):
-        count = 0
-        for module in self.model.modules():
-            if isinstance(module, (torch.nn.Conv2d, torch.nn.Linear,GCNConv,GINConv,SAGEConv)):
-                count += 1
-        return count
-    
-
-    def contains_linear_layer(self):
-        for layer in self.model.modules():
-            if isinstance(layer, torch.nn.Linear):
-                return True
-        return False
-
-        
