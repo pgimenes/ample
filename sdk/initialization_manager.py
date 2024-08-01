@@ -6,6 +6,7 @@ import torch
 from .utilities import dump_byte_list, binary_to_hex
 
 from sdk.memory_mapper import Memory_Mapper
+from sdk.graph_tracer import GraphTracer
 
 import logging
 
@@ -15,7 +16,7 @@ from copy import deepcopy
 from torch.nn import Linear
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 
-from .models.models import GraphSAGE_Model, Edge_ConcatEmbedding_Model
+from .models.models import GraphSAGE_Model, Edge_Embedding_Model, EdgeGCNLayer
 
 import math
 
@@ -52,15 +53,16 @@ class InitManager:
 
         # Layer configuration
         self.layer_config = {'global_config': {}, 'layers': []}
-        self.model_layer_max_features = max([self.get_feature_counts(self.model)])
+        # self.model_layer_max_features = max([self.get_feature_counts(self.model)])
         # Nodeslot programming
         self.nodeslot_programming = {'nodeslots':[],'edges':[]}
-        # self.edge_programming = {}
 
-    #     self.model_hiearchy = self.get_model_hierarchy()
-        
+        # self.traced_model = GraphTracer(model)
 
+        # # Print the input and output layers
+        # self.traced_model.print_input_output_layers()
 
+    
 
     # def get_model_hierarchy(self):
     #     model_hierarchy = []
@@ -72,6 +74,9 @@ class InitManager:
     #         model_hierarchy.append(self.get_feature_counts(self.model))
     #         print('Simple hierarchy')
     #     return model_hierarchy
+
+
+
 
     # Nodeslot programming and layer configuration
     # ===============================================
@@ -89,10 +94,14 @@ class InitManager:
         elif isinstance(layer, Linear):
             inc = layer.in_features
             outc = layer.out_features
+        elif isinstance(layer, EdgeGCNLayer):
+            inc = layer.in_channels
+            outc = layer.out_channels
         else:
             raise RuntimeError(f"Unrecognized layer type {type(layer)}")        
         return inc, outc
-    
+
+
     def get_default_layer_config(self, layer,idx):
         
         inc, outc = self.get_layer_feature_count(layer)
@@ -134,6 +143,129 @@ class InitManager:
             'aggregate_enable' : aggregate_enable,
             'edge_node': edge_node
         }
+        
+
+    def get_layer_config(self, layer,in_messages_address,idx,edge=0,aggregate_enable=0):
+        inc, outc = self.get_layer_feature_count(layer)
+        return {
+            'nodeslot_count': len(self.trained_graph.nx_graph.nodes),
+            'in_feature_count': inc,
+            'out_feature_count': outc,
+            'transformation_activation': 0,
+            'leaky_relu_alpha': 0,
+            'transformation_bias': 0,
+            'dequantization_parameter': self.trained_graph.dequantization_parameter,
+            'adjacency_list_address': self.memory_mapper.offsets['adj_list'][idx],
+            'in_messages_address': in_messages_address, 
+            'weights_address': self.memory_mapper.offsets['weights'][idx],
+            'out_messages_address': self.memory_mapper.out_messages_ptr,
+            'aggregation_wait_count': 16,
+            'transformation_wait_count': 16,
+            'aggregate_enable' : aggregate_enable,
+            'edge_node': edge
+        }
+
+
+
+
+
+    def edge_embedder_layer(self, in_messages, out_messages, aggregate_enable, edge_node,adjacency_list_address):
+
+        edge_node = 'edge' in layer.name
+        #Multi-layer support - out messages become in messages for next layer
+        if 'input' in layer.name:
+            in_messages_address = self.memory_mapper.offsets['in_messages']
+        else:
+            in_messages_address = self.memory_mapper.out_messages_ptr
+
+
+        if 'hidden' or 'input' in layer.name:
+            out_messages_address = self.memory_mapper.out_messages_ptr#Can change this to have intermediate out messages (['out_messages'][idx-1])
+        else:
+            out_messages_address= self.memory_mapper.out_messages_ptr
+            self.memory_mapper.offsets['out_messages'][idx] = out_messages_address
+            #Will need to modify if writing back edge embeddings as there is likely to be more edges than nodes
+            #New out messages pointer = [data_needed_to_store(number of features in [this layer])] * number of nodes in graph
+            #This needs to be modfied as there are more edges than nodes
+            self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.get_feature_counts(self.model))[idx]) * len(self.trained_graph.nx_graph.nodes[node_id])
+        inc, outc = self.get_layer_feature_count(layer)
+
+        if 'hidden' or 'input' in layer.name:
+            out_messages_address = self.memory_mapper.out_messages_ptr#Can change this to have intermediate out messages (['out_messages'][idx-1])
+        else:
+            out_messages_address= self.memory_mapper.out_messages_ptr
+            self.memory_mapper.offsets['out_messages'][idx] = out_messages_address
+
+            self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.get_feature_counts(self.model))[idx]) * len(self.trained_graph.nx_graph.nodes[node_id])
+        return {
+            'nodeslot_count': len(self.trained_graph.nx_graph.nodes)+len(self.trained_graph.nx_graph.edges),
+            'in_feature_count': inc,
+            'out_feature_count': outc,
+            'transformation_activation': 0,
+            'leaky_relu_alpha': 0,
+            'transformation_bias': 0,
+            'dequantization_parameter': self.trained_graph.dequantization_parameter,
+            'adjacency_list_address': self.memory_mapper.offsets['adj_list'][idx],
+            'in_messages_address': in_messages_address, 
+            'weights_address': self.memory_mapper.offsets['weights'][idx],
+            'out_messages_address': out_messages_address,
+            'aggregation_wait_count': 16,
+            'transformation_wait_count': 16,
+            'aggregate_enable' : aggregate_enable,
+            'edge_node': edge_node
+        }
+
+
+    def set_layer_config_edge_embedder(self):
+        # 4 layers per actual SAGEConv layer
+        self.layer_config["global_config"]["layer_count"] =  4
+
+        #|IIIIIEEEEEEEEEE |SSSSS      | EEEEEEEEEEEEE | RRRRR
+        #|in_msg          |out_msg[0] |+#nodes        | +#nodes +#edges
+
+        ######Source Embedder######
+        in_messages_address = self.memory_mapper.offsets['in_messages']
+        
+        #Read from in messages, write to out_msg[0] 
+        l1 = self.get_layer_config(self.model.src_embedder,in_messages_address = in_messages_address ,idx=0,edge=0,aggregate_enable=0)
+        self.layer_config['layers'].append(l1)
+
+        print('node num:')
+        print(len(self.trained_graph.nx_graph.nodes))
+        
+        #Edge already indexed to start after nodes
+        # self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.model.src_embedder.out_features) * len(self.trained_graph.nx_graph.nodes))
+
+
+
+        ######Edge Embedder###### - do second so that index starts at end of last nodeslot
+        #Read from in messages (indexed), write to out_msg[0] + #nodes (included in index)
+
+        l2 = self.get_layer_config(self.model.edge_embedder,in_messages_address = in_messages_address,idx=2,edge=1,aggregate_enable=0)
+        self.layer_config['layers'].append(l2)
+
+        print('edge num:')
+        print(len(self.trained_graph.nx_graph.edges))
+        
+        self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.model.edge_embedder.out_features) * len(self.trained_graph.nx_graph.edges))
+        edge_embed_start_addr = self.memory_mapper.out_messages_ptr
+
+        #Receive Embedder
+        #Read from in messages, write to out_msg[0] +#nodes +#edges (not included in index)
+
+        l3 = self.get_layer_config(self.model.rx_embedder,in_messages_address = in_messages_address,idx=1,edge=0,aggregate_enable=0)
+        self.layer_config['layers'].append(l3)
+        out_message_end = self.memory_mapper.out_messages_ptr
+
+        #Edge update
+        #Read from out_msg[0], write to out_msg[0] +#nodes(included in index) - wrinting to edges
+        embeddings_start_address = self.memory_mapper['offsets']['out_messages'][0]
+        self.memory_mapper.out_messages_ptr = self.memory_mapper['offsets']['out_messages'][0] 
+        l4 = self.get_layer_config(self.model.edge_update,in_messages_address = embeddings_start_address,idx=3,edge=1,aggregate_enable=1)
+        self.layer_config['layers'].append(l4)
+
+        self.memory_mapper.out_messages_ptr = out_message_end 
+
 
     def set_layer_config_graphsage(self):
         # 4 layers per actual SAGEConv layer
@@ -164,6 +296,9 @@ class InitManager:
 
         if (isinstance(self.model, GraphSAGE_Model)):
             self.set_layer_config_graphsage()
+        elif (isinstance(self.model, Edge_Embedding_Model)):
+            self.set_layer_config_edge_embedder()
+
         else :
             # print(self.model.named_children() and isinstance(self.model.named_children(),list))
             # if hasattr(self.model, 'named_children') and isinstance(self.model.named_children(),list):
@@ -266,9 +401,6 @@ class InitManager:
             self.nodeslot_programming['edges'].append(edge)
             # Print all the features (attributes) of the edge
  
-
-
-
             
 
     def program_nodeslots(self, ignore_isolated_nodes=True):
@@ -277,7 +409,7 @@ class InitManager:
         
         if (isinstance(self.model, GraphSAGE_Model)):
             self.program_nodeslots_graphsage()
-        elif(isinstance(self.model, Edge_ConcatEmbedding_Model)):
+        elif(isinstance(self.model, Edge_Embedding_Model)):
             self.load_nodeslot_programming_from_graph()
             self.load_edges_programming_from_graph()
         else:
@@ -393,5 +525,6 @@ class InitManager:
     def reduce_graph(self):
         self.trained_graph.reduce()
     
-    def map(self):
+    def map_memory(self):
+        print('here')
         self.memory_mapper.map()
