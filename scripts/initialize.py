@@ -90,7 +90,7 @@ def main(args):
         if getattr(args, arg):
             # To do: temporary
             if arg == "erdos":
-                graph = RandomGraph(num_nodes=args.num_nodes, avg_degree=args.avg_degree, num_channels=args.in_features, graph_precision=args.precision,edge_dim=args.edge_dim)
+                graph = RandomGraph(num_nodes=args.num_nodes, avg_degree=args.avg_degree, num_channels=args.in_features, graph_precision=args.precision,edge_dim=args.edge_dim,edges = args.edge)
             else:
                 graph = graph_cls(graph_precision=args.precision)
             
@@ -144,7 +144,6 @@ def run_pass(
     logger.info(f"Running with model {model} and graph {graph}")
 
     dtype = get_dtype(args)
-
     model = model_map[model](
         graph.dataset.x.shape[1] if args.in_features is None else args.in_features,
         graph.dataset.x.shape[1] if args.out_features is None else args.out_features,
@@ -186,7 +185,7 @@ def run_pass(
         init_manager.dump_memory()
         init_manager.dump_layer_config()
         init_manager.dump_nodeslot_programming()
-        init_manager.embedding_expectation()
+        # init_manager.embedding_expectation()
         init_manager.save_model()
         init_manager.save_graph()
     

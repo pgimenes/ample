@@ -16,7 +16,7 @@ from copy import deepcopy
 from torch.nn import Linear
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 
-from .models.models import GraphSAGE_Model, Edge_Embedding_Model, EdgeGCNLayer
+from .models.models import GraphSAGE_Model, Edge_Embedding_Model, EdgeGCNLayer, AGG_MLP_Model #AGG_MLP_Model - temp
 
 import math
 
@@ -97,6 +97,9 @@ class InitManager:
         elif isinstance(layer, EdgeGCNLayer):
             inc = layer.in_channels
             outc = layer.out_channels
+        elif isinstance(layer, AGG_MLP_Model):
+            inc = layer.in_features
+            outc = layer.out_features
         else:
             raise RuntimeError(f"Unrecognized layer type {type(layer)}")        
         return inc, outc
@@ -158,10 +161,11 @@ class InitManager:
             adj_list_data = self.memory_mapper.offsets['adj_list']['nodes']
 
         if linear:
-            adjacency_list_address =adj_list_data['self_ptr']
+            adjacency_list_address = adj_list_data['self_ptr']
             aggregate_enable = 0
         else:
-            adjacency_list_address =adj_list_data['nbrs']
+
+            adjacency_list_address = adj_list_data['nbrs']
             aggregate_enable = 1
 
         return {
@@ -236,15 +240,20 @@ class InitManager:
     def set_layer_config_edge_embedder(self):
         # 4 layers per actual SAGEConv layer
         self.layer_config["global_config"]["layer_count"] =  4
+        
 
         #|IIIIIEEEEEEEEEE |SSSSS      | EEEEEEEEEEEEE | RRRRR
         #|in_msg          |out_msg[0] |+#nodes        | +#nodes +#edges
+
+
+
+        #TODO take offsets from trained graph so that only need declare once
 
         ######Source Embedder######
         in_messages_address = self.memory_mapper.offsets['in_messages']
         
         #Read from in messages, write to out_msg[0] 
-        l1 = self.get_layer_config(self.model.src_embedder,in_messages_address = in_messages_address ,idx=0,edge=0,aggregate_enable=0)
+        l1 = self.get_layer_config(self.model.src_embedder,in_messages_address = in_messages_address,idx=0,edge=0,linear=1)
         self.layer_config['layers'].append(l1)
 
         print('node num:')
@@ -253,12 +262,10 @@ class InitManager:
         #Edge already indexed to start after nodes
         # self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.model.src_embedder.out_features) * len(self.trained_graph.nx_graph.nodes))
 
-
-
         ######Edge Embedder###### - do second so that index starts at end of last nodeslot
         #Read from in messages (indexed), write to out_msg[0] + #nodes (included in index)
 
-        l2 = self.get_layer_config(self.model.edge_embedder,in_messages_address = in_messages_address,idx=2,edge=1,aggregate_enable=0)
+        l2 = self.get_layer_config(self.model.edge_embedder,in_messages_address = in_messages_address,idx=1,edge=1,linear=1)
         self.layer_config['layers'].append(l2)
 
         print('edge num:')
@@ -270,15 +277,16 @@ class InitManager:
         #Receive Embedder
         #Read from in messages, write to out_msg[0] +#nodes +#edges (not included in index)
 
-        l3 = self.get_layer_config(self.model.rx_embedder,in_messages_address = in_messages_address,idx=1,edge=0,aggregate_enable=0)
+        l3 = self.get_layer_config(self.model.rx_embedder,in_messages_address = in_messages_address,idx=2,edge=0,linear=1)
         self.layer_config['layers'].append(l3)
         out_message_end = self.memory_mapper.out_messages_ptr
 
         #Edge update
         #Read from out_msg[0], write to out_msg[0] +#nodes(included in index) - wrinting to edges
-        embeddings_start_address = self.memory_mapper['offsets']['out_messages'][0]
-        self.memory_mapper.out_messages_ptr = self.memory_mapper['offsets']['out_messages'][0] 
-        l4 = self.get_layer_config(self.model.edge_update,in_messages_address = embeddings_start_address,idx=3,edge=1,aggregate_enable=1)
+        print(self.memory_mapper.offsets)
+        embeddings_start_address = self.memory_mapper.offsets['out_messages'][0]
+        self.memory_mapper.out_messages_ptr = self.memory_mapper.offsets['out_messages'][0] 
+        l4 = self.get_layer_config(self.model.edge_update,in_messages_address = embeddings_start_address,idx=3,edge=1,linear=0)
         self.layer_config['layers'].append(l4)
 
         self.memory_mapper.out_messages_ptr = out_message_end 
@@ -308,7 +316,8 @@ class InitManager:
 
         self.layer_config['global_config'] = {
             "layer_count": len(self.model.layers),
-            "node_count": self.trained_graph.dataset.x.shape[0]
+            "node_count": self.trained_graph.dataset.x.shape[0],
+            "edge_count": self.trained_graph.dataset.edge_index.shape[1],
         }
 
         if (isinstance(self.model, GraphSAGE_Model)):
@@ -491,17 +500,36 @@ class InitManager:
         self.model.eval()
         with torch.no_grad():
             embeddings = self.trained_graph.dataset.x
-            output = self.model(self.trained_graph.dataset.x, self.trained_graph.dataset.edge_index)
+            if (isinstance(self.model, Edge_Embedding_Model)): #Temp
+                output = self.model(self.trained_graph.dataset.x,self.trained_graph.dataset.edge_attr, self.trained_graph.dataset.edge_index)
+            else:
+                output = self.model(self.trained_graph.dataset.x, self.trained_graph.dataset.edge_index)
         np.savetxt(self.updated_embeddings_file, (output[-1]).numpy(), delimiter=',')
 
     #Save JIT model for testbench
     def save_model(self):
         self.model.eval()
+
         x = self.trained_graph.dataset.x  # Node features tensor
         edge_index = self.trained_graph.dataset.edge_index  # Edge indices tensor
+        # edge_attr = self.trained_graph.dataset.edge_attr  # Edge attributes tensor
 
+
+
+        # edge_attr = self.trained_graph.dataset.edge_attr if 'edge_attr' in self.dataset else None  # Edge attributes tensor (optional)
+        # data = (x, edge_index, edge_attr) if edge_attr is not None else (x, edge_index)
+
+
+        # data = (x, edge_attr,edge_index)
         #Traced Model - allow TB to be compatible with GCNConv
-        jit_model = torch.jit.trace(self.model, (x, edge_index))
+        if (isinstance(self.model, Edge_Embedding_Model)):
+            edge_attr = self.trained_graph.dataset.edge_attr  # Edge attributes tensor
+            data = (x,edge_index,edge_attr) 
+            # edge_attr = self.trained_graph.dataset
+            jit_model = torch.jit.trace(self.model, data)
+        else:
+        
+            jit_model = torch.jit.trace(self.model, (x, edge_index))
         #Non-traced model
         # jit_model = torch.jit.script(self.model).to('cpu')
         torch.jit.save(jit_model, 'model.pt')
@@ -513,7 +541,8 @@ class InitManager:
     def save_graph(self):
         input_data = {
             'x': self.trained_graph.dataset.x,  
-            'edge_index': self.trained_graph.dataset.edge_index  
+            'edge_index': self.trained_graph.dataset.edge_index,
+            'edge_attr': self.trained_graph.dataset.edge_attr
         }
 
         torch.save({
@@ -543,5 +572,4 @@ class InitManager:
         self.trained_graph.reduce()
     
     def map_memory(self):
-        print('here')
-        self.memory_mapper.map()
+        self.memory_mapper.map_memory()

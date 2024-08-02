@@ -1,5 +1,7 @@
 import os
 import pdb
+# from tqdm import tqdm
+from tqdm.asyncio import tqdm as tqdm_asyncio
 
 from cocotb.utils import get_sim_time
 
@@ -35,18 +37,23 @@ async def graph_test_runner(dut):
     test.log_info(dut, "Starting Graph Test")
 
     model = test.load_jit_model()
-    x_loaded,edge_index_loaded = test.load_graph()
-    output = test.get_expected_outputs(model, x_loaded, edge_index_loaded)
-    test.log_model_input(x_loaded)
+    inputs = test.load_graph()
+    output = test.get_expected_outputs(model,inputs)
+    test.log_model_input(inputs)
     
 
     # Load nodeslot/register programming and start clocks/reset
     await test.initialize()
 
     await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.global_config["node_count"])
+
+
     layer_cycle_count = []
-    for layer_idx, layer in enumerate(test.layers):
+    print(output)
+    for layer_idx, layer in tqdm_asyncio(enumerate(test.layers), total=len(test.layers)):
         await test.start_monitors()
+        print('layer features')
+       
         layer_features = output[layer_idx]
         dut._log.info(f"Starting layer {layer_idx+1}")
         outs = output[layer_idx]

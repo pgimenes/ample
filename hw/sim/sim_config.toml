@@ -48,7 +48,7 @@ gpu = false
 
 payloads = true
 gui = false
-tb_log_level = "INFO"
+tb_log_level = "DEBUG"
 sim = false
 
 

@@ -8,7 +8,7 @@ import torch
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 from torch.nn import Linear
 
-from .models.models import GraphSAGE_Model, Edge_Embedding_Model, EdgeGCNLayer
+from .models.models import GraphSAGE_Model, Edge_Embedding_Model, AGG_MLP_Model
 
 class Memory_Mapper:
 
@@ -26,7 +26,7 @@ class Memory_Mapper:
         
         self.dump_file = os.path.join(base_path, dump_file)
 
-    def map (self):
+    def map_memory(self):
         logging.debug(f"Mapping memory contents.")
         self.memory_hex = []
         self.map_adj_list()
@@ -46,14 +46,12 @@ class Memory_Mapper:
         for node in self.graph.nodes:
             node_metadata = self.graph.nodes[node]['meta']
             self.memory_hex += int_list_to_byte_list(node_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
-            
+
 
         self.offsets['adj_list']['edges']['self_ptr'] = len(self.memory_hex)
         for (u,v) in self.graph.edges():
             edge_metadata = self.graph[u][v]['meta']
             self.memory_hex += int_list_to_byte_list(edge_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
-
-        #fi
 
 
         self.offsets['adj_list']['edges']['nbrs'] = len(self.memory_hex)
@@ -62,33 +60,33 @@ class Memory_Mapper:
             self.memory_hex += int_list_to_byte_list(edge_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
 
 
-        #Can change this when models get larger
-            #Dynamically change adj list between layers
-        for idx,layer in enumerate(self.model.layers):
-            # If there is a linear layer, add another adjacency list to point to the address of the features of a nodes own embedding
-            if 'input' in layer.name:
+        # #Can change this when models get larger
+        #     #Dynamically change adj list between layers
+        # for idx,layer in enumerate(self.model.layers):
+        #     # If there is a linear layer, add another adjacency list to point to the address of the features of a nodes own embedding
+        #     if 'input' in layer.name:
 
-                if 'edge' in layer.name:
-                    graph_nodes = self.graph.edges()
-                else:
-                    graph_nodes = self.graph.nodes
+        #         if 'edge' in layer.name:
+        #             graph_nodes = self.graph.edges()
+        #         else:
+        #             graph_nodes = self.graph.nodes
 
-                for node in graph_nodes:
-                    if 'edge' in layer.name:
-                        u,v = node
-                        node_metadata = self.graph[u][v]['meta']
-                    else:
-                        node_metadata = self.graph.nodes[node]['meta']
+        #         for node in graph_nodes:
+        #             if 'edge' in layer.name:
+        #                 u,v = node
+        #                 node_metadata = self.graph[u][v]['meta']
+        #             else:
+        #                 node_metadata = self.graph.nodes[node]['meta']
 
-                    if isinstance(layer, Linear):
-                        self.memory_hex += int_list_to_byte_list(node_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
-                    else:
-                        self.memory_hex += int_list_to_byte_list(node_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+        #             if isinstance(layer, Linear):
+        #                 self.memory_hex += int_list_to_byte_list(node_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
+        #             else:
+        #                 self.memory_hex += int_list_to_byte_list(node_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
                 
 
 
-            if(idx < self.num_layers-1):
-                self.offsets['adj_list'][idx+1] = len(self.memory_hex)
+        #     if(idx < self.num_layers-1):
+        #         self.offsets['adj_list'][idx+1] = len(self.memory_hex)
 
         # Set offset for next memory range
         self.offsets['scale_factors'] = len(self.memory_hex)
@@ -107,13 +105,23 @@ class Memory_Mapper:
 
     def map_in_messages(self):
         for node in self.graph.nodes:
-            
             self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]["meta"]['embedding'], align=True, alignment=64)
+
+        #TODO:include edge attributes
+       # Process edge attributes
+
+        for edge in self.graph.edges:
+            # Access the edge metadata correctly
+            edge_data = self.graph.edges[edge]["meta"]
+            if 'embedding' in edge_data:
+                self.memory_hex += float_list_to_byte_list(self.graph.edges[edge]["meta"]['embedding'], align=True, alignment=64)
+
         # Set offset for next memory range
         self.offsets['weights'][0] = len(self.memory_hex)
 
     def map_weights(self):
         for idx,layer in enumerate(self.model.layers):
+            print('-----layer---j',idx,layer.name)
             if isinstance(layer, GCNConv):
                 linear = layer.lin
             elif isinstance(layer, GINConv):
@@ -122,17 +130,16 @@ class Memory_Mapper:
                 linear = layer.lin_l
             elif isinstance(layer, Linear):
                 linear = layer
-            elif isinstance(layer, EdgeGCNLayer):
-                linear = layer.update_mlp
+            elif isinstance(layer, AGG_MLP_Model):
+                linear = layer.lin
             else:
                 raise RuntimeError(f"Unrecognized layer {layer}")
-            
+
             out_feature_count = linear.weight.shape[0]
             for outf in range(out_feature_count):
                 self.memory_hex += float_list_to_byte_list(linear.weight[outf], align=True, alignment=64)
             if(idx < self.num_layers-1):
                 self.offsets['weights'][idx+1] = len(self.memory_hex)
-
         # Set offset for next memory range
         self.offsets['out_messages'][0] = len(self.memory_hex)
         self.out_messages_ptr = len(self.memory_hex)

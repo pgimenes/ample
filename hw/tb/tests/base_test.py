@@ -63,7 +63,8 @@ class BaseTest:
             pop=dut.top_i.transformation_engine_i.axi_write_master_pop,
             resp_valid=dut.top_i.transformation_engine_i.axi_write_master_resp_valid,
             resp_ready=dut.top_i.transformation_engine_i.axi_write_master_resp_ready,
-            tolerance = self.tolerance
+            tolerance = self.tolerance 
+            # log_level = #connect logging level from main test
         )
 
 
@@ -99,7 +100,8 @@ class BaseTest:
     async def initialize(self):
         # Load nodeslot programming and layer config
         self.load_nodeslot_programming()
-        print(self.load_edge_programming())
+        # print(self.load_edge_programming())
+        
 
         self.load_layer_config()
         self.load_regbanks()
@@ -125,7 +127,7 @@ class BaseTest:
 
     def load_layer_test(self,layer_features,layer_idx):
         self.dut._log.debug("Loading expected nodes into monitor")
-        self.axi_monitor.load_layer_features(self.nodeslot_programming,layer_features,self.layers[layer_idx])
+        self.axi_monitor.load_layer_features(self.nodeslot_programming,layer_features,self.layers[layer_idx],self.global_config)
 
     async def start_monitors(self):
 
@@ -181,16 +183,16 @@ class BaseTest:
         self.dut._log.debug("Loading nodeslot programming")
         with open(self.nodeslot_programming_file) as f:
             ns_programming = json.load(f)
-        self.nodeslot_programming = ns_programming["nodeslots"]
-        return ns_programming["nodeslots"]
+        self.nodeslot_programming = ns_programming
+        # return ns_programming
 
 
-    def load_edge_programming(self):
-        self.dut._log.debug("Loading edge programming")
-        with open(self.nodeslot_programming_file) as f:
-            ns_programming = json.load(f)
-        self.nodeslot_programming = ns_programming["edges"]
-        return ns_programming["edges"]
+    # def load_edge_programming(self):
+    #     self.dut._log.debug("Loading edge programming")
+    #     with open(self.nodeslot_programming_file) as f:
+    #         ns_programming = json.load(f)
+    #     self.nodeslot_programming = ns_programming["edges"]
+    #     return ns_programming["edges"]
 
     def load_layer_config(self):
         self.dut._log.debug("Loading layer configuration")
@@ -303,10 +305,14 @@ class BaseTest:
         input_data = graph['input_data']
         x_loaded = input_data['x']
         edge_index_loaded = input_data['edge_index']
-        return x_loaded,edge_index_loaded
 
+        # Check if edge attributes are present and load them if they are
+        edge_attr_loaded = input_data.get('edge_attr', None)
+        
+        return (x_loaded, edge_index_loaded, edge_attr_loaded)
+        
 
-    def get_expected_outputs(self,model, x, edge_index):
+    def get_expected_outputs(self,model,data):
         ####Remove bias from the model TODO Add biases####
         state_dict = model.state_dict()
         for name, param in state_dict.items():
@@ -324,9 +330,14 @@ class BaseTest:
         # # state_dict['layers.3.bias'] = torch.tensor([0] * state_dict['layers.3.bias'].size()[0])
 
         # model.load_state_dict(state_dict)
+        x, edge_index, edge_attr = data
         model.eval()
         with torch.no_grad():
-            output = model(x, edge_index)
+            if edge_attr is not None:
+                output = model(x, edge_index, edge_attr)
+            else:
+                output = model(x, edge_index)
+            # output = model(x, edge_index, edge_attr) if edge_attr is not None else model(x, edge_index)
         del model
 
         return output
@@ -340,12 +351,35 @@ class BaseTest:
         
         self.dut._log.info(formatted_message)
 
-    def log_model_input(self,x):
-        self.dut._log.debug(f"Input")
-        for idx,x_input in enumerate(x):
-            self.dut._log.debug(f"Input {idx}:")
+    def log_model_input(self, data):
+        # x = data.get('x')
+        # edge_index = data.get('edge_index')
+        # edge_attr = data.get('edge_attr', None)
+        
+        #Temp change for when there is no edge_attr
+        x, edge_index, edge_attr = data
+
+        self.dut._log.debug("Input Tensors:")
+
+        # Log node features (x)
+        for idx, x_input in enumerate(x):
+            self.dut._log.debug(f"Node Feature {idx}:")
             self.dut._log.debug(x_input)
             self.dut._log.debug("\n")
+
+        # Log edge index
+        self.dut._log.debug("Edge Index:")
+        self.dut._log.debug(edge_index)
+        self.dut._log.debug("\n")
+
+        # Log edge attributes if they are provided
+        if edge_attr is not None:
+            self.dut._log.debug("Edge Attributes:")
+            for idx, attr in enumerate(edge_attr):
+                self.dut._log.debug(f"Edge Attribute {idx}:")
+                self.dut._log.debug(attr)
+                self.dut._log.debug("\n")
+
 
     def get_cycle_count(self,):
         current_time_ns = get_sim_time(units='ns')
