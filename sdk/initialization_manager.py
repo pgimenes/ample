@@ -375,7 +375,7 @@ class InitManager:
             'adjacency_list_address_msb': 0,
             'scale_factors_address_lsb': edge_meta['scale_factors_address'],
             'scale_factors_address_msb': 0,
-            'out_messages_address_lsb': edge_meta['edge_id'] * self.calc_axi_addr(self.trained_graph.edge_feature_count), #Change to edge feature count # /*self.memory_mapper.offsets['out_messages'] + */#
+            'out_messages_address_lsb': edge_meta['edge_id'] * self.calc_axi_addr(self.trained_graph.feature_count), #Change to edge feature count # /*self.memory_mapper.offsets['out_messages'] + */#
             'out_messages_address_msb': 0
         }
 

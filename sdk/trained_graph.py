@@ -72,7 +72,8 @@ class TrainedGraph:
 
         for index, (u, v) in enumerate(self.nx_graph.edges()):
             # Access or compute necessary features for the edge
-            edge_id = index + 2* len(self.nx_graph.nodes)
+
+            edge_id = index + 1*len(self.nx_graph.nodes)
             # print('selft_ptr',[self.calc_axi_addr(self.feature_count)*edge_id])
 
             # print(u,v)
@@ -207,7 +208,6 @@ class TrainedGraph:
             for idx, edge in enumerate(self.nx_graph.edges):
                 # Access edge metadata
                 edge_meta = self.nx_graph.edges[edge].get("meta", {})
-
                 # Define range according to precision
                 precision = edge_meta.get('precision', "FLOAT_32")
                 if precision == "FLOAT_32":
