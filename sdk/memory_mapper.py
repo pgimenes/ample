@@ -108,12 +108,10 @@ class Memory_Mapper:
             self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]["meta"]['embedding'], align=True, alignment=64)
 
         #TODO:include edge attributes
-       # Process edge attributes
-
         for edge in self.graph.edges:
-            # Access the edge metadata correctly
-            edge_data = self.graph.edges[edge]["meta"]
+            edge_data = self.graph.edges[edge]["meta"] 
             if 'embedding' in edge_data:
+                # print('edge embedding',edge_data['embedding'])
                 self.memory_hex += float_list_to_byte_list(self.graph.edges[edge]["meta"]['embedding'], align=True, alignment=64)
 
         # Set offset for next memory range
@@ -121,7 +119,7 @@ class Memory_Mapper:
 
     def map_weights(self):
         for idx,layer in enumerate(self.model.layers):
-            print('-----layer---j',idx,layer.name)
+            # print('-----layer---j',idx,layer.name)
             if isinstance(layer, GCNConv):
                 linear = layer.lin
             elif isinstance(layer, GINConv):

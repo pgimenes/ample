@@ -53,6 +53,7 @@ class BaseTest:
         #     )
 
         self.axi_monitor = AXIWriteMasterMonitor(
+            dut=dut,
             clk=dut.sys_clk,
             req_valid=dut.top_i.transformation_engine_i.axi_write_master_req_valid,
             req_ready=dut.top_i.transformation_engine_i.axi_write_master_req_ready,
@@ -102,7 +103,6 @@ class BaseTest:
         self.load_nodeslot_programming()
         # print(self.load_edge_programming())
         
-
         self.load_layer_config()
         self.load_regbanks()
 
@@ -238,9 +238,9 @@ class BaseTest:
 
         self.dut._log.debug("Starting nodeslot programming.")
         free_mask = "1" * self.nodeslot_count
-
+        # print('ns_programmingI',self.nodeslot_programming)
         for ns_programming in self.nodeslot_programming:
-
+            # print('ns_programmingII',ns_programming)
             # Skip nodeslots with no neighbours
             if (ns_programming["neighbour_count"] == 0):
                 continue

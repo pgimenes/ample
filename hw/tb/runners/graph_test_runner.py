@@ -28,31 +28,32 @@ def get_log_level():
 
 
 async def graph_test_runner(dut):
+
     tolerance = float(os.environ.get('AMPLE_GRAPH_TB_TOLERANCE', 1))
     log_level = get_log_level()
     dut._log.setLevel(log_level)  # Set to the desired level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 
     nodeslot_count = int(os.environ.get('AMPLE_GRAPH_TB_NODESLOT_COUNT', 64))
-    test = BaseTest(dut,nodeslot_count, tolerance)
+    test = BaseTest(dut,nodeslot_count,tolerance)
+    
     test.log_info(dut, "Starting Graph Test")
 
-    model = test.load_jit_model()
+    model  = test.load_jit_model()
     inputs = test.load_graph()
     output = test.get_expected_outputs(model,inputs)
     test.log_model_input(inputs)
     
-
     # Load nodeslot/register programming and start clocks/reset
     await test.initialize()
 
-    await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.global_config["node_count"])
+    #if layer edge - load edge count
 
 
     layer_cycle_count = []
-    print(output)
+    # print(output)
     for layer_idx, layer in tqdm_asyncio(enumerate(test.layers), total=len(test.layers)):
         await test.start_monitors()
-        print('layer features')
+        # print('layer features')
        
         layer_features = output[layer_idx]
         dut._log.info(f"Starting layer {layer_idx+1}")
@@ -72,6 +73,17 @@ async def graph_test_runner(dut):
 
         # Program nodeslots
         # await drive_nodeslots(test)
+
+        #Should only fetch every time nodeslots change
+        print(f"Layer {layer_idx} nodeslot count: {test.layers[layer_idx]['nodeslot_count']}")
+        await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.layers[layer_idx]['nodeslot_count'])
+       
+        #Temp TODO program nodeslot start address for layer
+        print(f"Layer {layer_idx} nodeslot start address: {test.layers[layer_idx]['nodeslot_start_address']}")
+        
+        await test.driver.axil_driver.axil_write(test.driver.nsb_regs["ctrl_start_nodeslot_fetch_start_addr"], test.layers[layer_idx]['nodeslot_start_address'])
+
+
         await test.driver.axil_driver.axil_write(test.driver.nsb_regs["ctrl_start_nodeslot_fetch"], 1)
 
         await test.driver.wait_done_ack(
@@ -88,6 +100,7 @@ async def graph_test_runner(dut):
         layer_cycle_count.append(int(final_cycle - initial_cycle))
 
         await test.end_test()
+        # assert test.axi_monitor.empty_expected_layer_features() == True, f"Not all nodeslots written back {layer_idx}"
 
         if test.axi_monitor.empty_expected_layer_features():
             dut._log.info("All nodes written.")

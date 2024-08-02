@@ -88,3 +88,8 @@ hw/tb/module_tests/lib/test/*
 
 sdk/models/model_architecture
 sdk/models/model_architecture.png
+sdk/models/edge_embedder.ipynb
+sdk/models/edge_notebook2.ipynb
+sdk/models/notebook.ipynb
+sdk/models/models_extra.py
+sdk/model_mapper.py

@@ -278,7 +278,7 @@ def agg_mlp(x1, x2, x3):
 
 
 class AGG_MLP_Model(nn.Module):
-    def __init__(self, in_features, out_features):
+    def __init__(self, in_features=32, out_features=32):
         super().__init__()
         # self.add = add_tensors()
         self.in_features = in_features
@@ -292,7 +292,7 @@ class AGG_MLP_Model(nn.Module):
         return out
 
 class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
-    def __init__(self, in_channels, out_channels=32, layer_count=1, hidden_dimension=32, precision = torch.float32):
+    def __init__(self, in_channels=32, out_channels=32, layer_count=1, hidden_dimension=32, precision = torch.float32):
         super().__init__()
         self.precision = precision
         self.layers = nn.ModuleList()
@@ -316,14 +316,6 @@ class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         self.rx_embedder.name = 'rx_embedder'
         self.layers.append(self.rx_embedder)
 
-        # layer.name = 'input_output_layer_rx'  # Assign name directly
-        # self.layers.append(layer)
-
-
-   
-        # layer.name = 'input_layer_edge'  # Assign name directly
-        # self.layers.append(layer)
-
 
         #########Edge Node GCN#########
         self.edge_update = AGG_MLP_Model(in_channels, hidden_dimension)
@@ -338,21 +330,99 @@ class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         x = x.to(self.precision)  
         outputs = []
 
-        row = edge_index[0]
-        col = edge_index[1]
-
+        #TODO change to U and V to match with SDK
+        u = edge_index[0]
+        v = edge_index[1]
+        # print('edege_index')
+        # print(u)
+        # print(v)
         src_embed = self.src_embedder(x)
         outputs.append(src_embed)
 
 
         edge_embed = self.edge_embedder(edge_attr)
+        # print('e at44tr', edge_attr)
+        
         outputs.append(edge_embed)
 
         rx_embed = self.rx_embedder(x)
         outputs.append(rx_embed)
 
-        src_embed = src_embed[col]
-        rx_embed = rx_embed[row]
+        src_embed = src_embed[u]
+        rx_embed = rx_embed[v]
+        
+        updated_edge = self.edge_update(src_embed,rx_embed,edge_embed)
+
+        outputs.append(updated_edge)
+
+        return outputs
+
+
+
+
+
+class Interaction_Net_Model(torch.nn.Module): 
+    def __init__(self, in_channels=32, out_channels=32, layer_count=1, hidden_dimension=32, precision = torch.float32):
+        super().__init__()
+        self.precision = precision
+        self.layers = nn.ModuleList()
+
+        #########Source Node MLP#########
+        self.src_embedder = nn.Linear(in_channels, out_channels, bias=False)
+        self.src_embedder.name  = 'src_embedder'
+        self.layers.append(self.src_embedder) #Used to map weights in SDK
+
+
+
+        #########Edge Node MLP#########
+        #Change to GCN to aggregate itself and last layer edge if not first model
+        self.edge_embedder = nn.Linear(in_channels, hidden_dimension, bias=False)
+        self.edge_embedder.name = 'edge_embedder'
+        self.layers.append(self.edge_embedder)
+
+
+        #########Receive Node MLP#########
+        self.rx_embedder = nn.Linear(in_channels, out_channels, bias=False)
+        self.rx_embedder.name = 'rx_embedder'
+        self.layers.append(self.rx_embedder)
+
+
+        #########Edge Node GCN#########
+        self.edge_update = AGG_MLP_Model(in_channels, hidden_dimension)
+        self.edge_update.name = 'edge_update'
+        self.layers.append(self.edge_update)
+
+
+        
+
+
+        for layer in self.layers:
+            layer.to(self.precision)
+
+    def forward(self, x, edge_index,edge_attr):
+        x = x.to(self.precision)  
+        outputs = []
+
+        #TODO change to U and V to match with SDK
+        u = edge_index[0]
+        v = edge_index[1]
+        # print('edege_index')
+        # print(u)
+        # print(v)
+        src_embed = self.src_embedder(x)
+        outputs.append(src_embed)
+
+
+        edge_embed = self.edge_embedder(edge_attr)
+        # print('e at44tr', edge_attr)
+        
+        outputs.append(edge_embed)
+
+        rx_embed = self.rx_embedder(x)
+        outputs.append(rx_embed)
+
+        src_embed = src_embed[u]
+        rx_embed = rx_embed[v]
         
         updated_edge = self.edge_update(src_embed,rx_embed,edge_embed)
 

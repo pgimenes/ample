@@ -15,7 +15,8 @@ from torch import tensor
 
 
 class AXIWriteMasterMonitor:
-    def __init__(self, clk, req_valid, req_ready, start_address, req_len, data_valid, data, pop, resp_valid, resp_ready, tolerance = 1e-1, log_level=logging.INFO):
+    def __init__(self, dut, clk, req_valid, req_ready, start_address, req_len, data_valid, data, pop, resp_valid, resp_ready, tolerance = 1e-1, log_level=logging.INFO):
+        self.dut = dut
         self.clk = clk
         self.req_valid = req_valid
         self.req_ready = req_ready
@@ -27,22 +28,19 @@ class AXIWriteMasterMonitor:
         self.resp_valid = resp_valid
         self.resp_ready = resp_ready
         self.transactions = {}  # Tracking ongoing transactions
-        self.log = SimLog("cocotb.AXIWriteMasterMonitor")
-        self.log.setLevel(log_level)  # Set to the desired level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        # self.log = SimLog("cocotb.AXIWriteMasterMonitor")
+        # self.log.setLevel(log_level)  # Set to the desired level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         self.tolerance = tolerance
         self.expected = {}  # Tracking ongoing transactions
         self.running = False
         self.expected_layer_features_by_address = {}
 
     def kill(self):
-        self.log.debug("Killing monitor")
+        self.dut._log.debug("Killing monitor")
         self._running = False
         if self._thread:
             self._thread.kill()
             self._thread = None
-
-
-
 
 
     async def monitor_write_transactions(self):
@@ -61,7 +59,7 @@ class AXIWriteMasterMonitor:
                     'data': [],
                     'expected_length': length+1
                 }
-                self.log.debug(f"Transaction {current_transaction}")
+                self.dut._log.debug(f"Transaction {current_transaction}")
 
             # Data
             if self.data_valid.value and self.pop.value and current_transaction:
@@ -74,30 +72,30 @@ class AXIWriteMasterMonitor:
                 assert len(current_transaction['data']) == current_transaction['expected_length'], f"Transaction data length mismatch at address {current_transaction['start_address']}"
      
              
-                self.log.debug("Getting node")
+                self.dut._log.debug("Getting node")
                 expected_node = self.get_node_by_address(current_transaction['start_address'])
                 if expected_node: #Change to assertion
-                    self.log.debug("--------------------")
-                    self.log.debug("")
-                    self.log.debug(f"Node found: {expected_node['node_id']}, Address: {expected_node['address']}")
+                    self.dut._log.debug("--------------------")
+                    self.dut._log.debug("")
+                    self.dut._log.debug(f"Node found: {expected_node['node_id']}, Address: {expected_node['address']}")
 
 
                     # Check
-                    self.log.debug(f"Data expected {expected_node['data']}")
+                    self.dut._log.debug(f"Data expected {expected_node['data']}")
                     current_transaction['data'] = tensor([item for sublist in current_transaction['data'] for item in sublist[::-1]])
 
-                    self.log.debug(f"Data gotten {current_transaction['data']}")
+                    self.dut._log.debug(f"Data gotten {current_transaction['data']}")
                     assert current_transaction['data'].shape == expected_node['data'].shape, f"Data size mismatch for address {current_transaction['start_address']}"
 
                     
                     assert torch.allclose(current_transaction['data'], expected_node['data'], atol=self.tolerance), \
                         f"Data mismatch for node {expected_node['node_id']} address {current_transaction['start_address']}"
                     
-                    self.log.debug(f"Data and address correctly matched for node: {expected_node['node_id']}")
-                    self.log.debug(" ")
-                    self.log.debug("--------------------")
+                    self.dut._log.debug(f"Data and address correctly matched for node: {expected_node['node_id']}")
+                    self.dut._log.debug(" ")
+                    self.dut._log.debug("--------------------")
                 else:
-                    self.log.warning(f"No node found with address {current_transaction['start_address']}")
+                    self.dut._log.warning(f"No node found with address {current_transaction['start_address']}")
                     
                     
                 if current_transaction:
@@ -106,16 +104,15 @@ class AXIWriteMasterMonitor:
 
 
     def load_layer_features(self, nodeslot_programming,layer_features,layer_config,global_config):
-        self.log.debug("Loading Layer Features")
+        self.dut._log.debug("Loading Layer Features")
         if layer_config['edge_node']:
             print('edge_layer')
-            nodeslots = nodeslot_programming['edges']
-            edge_count = global_config['edge_count']
+            nodeslots = nodeslot_programming[1]
+            edge_offset = global_config['node_count'] #TODO Fix
         else:
             print('node_layer')
-            edge_count = 0
-            nodeslots = nodeslot_programming['nodeslots']
-
+            edge_offset = 0
+            nodeslots = nodeslot_programming[0]
 
 
         self.expected_layer_features_by_address = {}
@@ -123,12 +120,17 @@ class AXIWriteMasterMonitor:
         
         for nodeslot in nodeslots:
             node_id = nodeslot['node_id']
-
-            data = layer_features[node_id-edge_count] #Remove edge count offset to look at results
+            # print(node_id,'node_id')
+            # print('offset_id',node_id-(edge_offset))
+            data = layer_features[node_id-(edge_offset)] #Remove edge count offset to look at results
+            # print(data,'data')
+            # print(nodeslot,'nodeslot')
+            # print(layer_out_message_offset,'layer_out_message_offset')
+           
             #check this matches
             out_messages_address_lsb = nodeslot['out_messages_address_lsb'] + layer_out_message_offset
             axi_write_master_address =int(out_messages_address_lsb)
-            
+            # print(axi_write_master_address,'axi_write_master_address')
             node_dict = {
                 'node_id': node_id,
                 'address': axi_write_master_address, 
@@ -137,10 +139,10 @@ class AXIWriteMasterMonitor:
 
             self.expected_layer_features_by_address[axi_write_master_address] = node_dict
 
-        self.log.debug("Expected Data Indexed by Address:")
+        self.dut._log.debug("Expected Data Indexed by Address:")
         for address, node in self.expected_layer_features_by_address.items():
-            self.log.debug(f"Address: {address}, Node: {node['node_id']}")
-            self.log.debug(f"Data: {node['data']}")
+            self.dut._log.debug(f"Address: {address}, Node: {node['node_id']}")
+            self.dut._log.debug(f"Data: {node['data']}")
 
 
     def get_node_by_address(self,address):

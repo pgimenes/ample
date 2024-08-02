@@ -55,7 +55,8 @@ class InitManager:
         self.layer_config = {'global_config': {}, 'layers': []}
         # self.model_layer_max_features = max([self.get_feature_counts(self.model)])
         # Nodeslot programming
-        self.nodeslot_programming = {'nodeslots':[],'edges':[]}
+        self.nodeslot_programming = []
+        self.nodeslot_programming_group_start_address = []
 
         # self.traced_model = GraphTracer(model)
 
@@ -147,7 +148,8 @@ class InitManager:
             'aggregation_wait_count': 16,
             'transformation_wait_count': 16,
             'aggregate_enable' : aggregate_enable,
-            'edge_node': edge_node
+            'edge_node': edge_node,
+            'nodeslot_start_address': self.nodeslot_programming_group_start_address[edge]
         }
         
 
@@ -159,6 +161,7 @@ class InitManager:
         else:
             nodeslot_count = len(self.trained_graph.nx_graph.nodes)
             adj_list_data = self.memory_mapper.offsets['adj_list']['nodes']
+            print('adj_list_data',adj_list_data)
 
         if linear:
             adjacency_list_address = adj_list_data['self_ptr']
@@ -183,59 +186,15 @@ class InitManager:
             'aggregation_wait_count': 16,
             'transformation_wait_count': 16,
             'aggregate_enable' : aggregate_enable,
-            'edge_node': edge
+            'edge_node': edge,
+            'nodeslot_start_address': self.nodeslot_programming_group_start_address[edge] #Temp TODO change to index that can be specified not jsut edge - or use dict and call it Vg,Eg, Vm,Em etc
         }
 
 
 
 
 
-    def edge_embedder_layer(self, in_messages, out_messages, aggregate_enable, edge_node,adjacency_list_address):
-
-        edge_node = 'edge' in layer.name
-        #Multi-layer support - out messages become in messages for next layer
-        if 'input' in layer.name:
-            in_messages_address = self.memory_mapper.offsets['in_messages']
-        else:
-            in_messages_address = self.memory_mapper.out_messages_ptr
-
-
-        if 'hidden' or 'input' in layer.name:
-            out_messages_address = self.memory_mapper.out_messages_ptr#Can change this to have intermediate out messages (['out_messages'][idx-1])
-        else:
-            out_messages_address= self.memory_mapper.out_messages_ptr
-            self.memory_mapper.offsets['out_messages'][idx] = out_messages_address
-            #Will need to modify if writing back edge embeddings as there is likely to be more edges than nodes
-            #New out messages pointer = [data_needed_to_store(number of features in [this layer])] * number of nodes in graph
-            #This needs to be modfied as there are more edges than nodes
-            self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.get_feature_counts(self.model))[idx]) * len(self.trained_graph.nx_graph.nodes[node_id])
-        inc, outc = self.get_layer_feature_count(layer)
-
-        if 'hidden' or 'input' in layer.name:
-            out_messages_address = self.memory_mapper.out_messages_ptr#Can change this to have intermediate out messages (['out_messages'][idx-1])
-        else:
-            out_messages_address= self.memory_mapper.out_messages_ptr
-            self.memory_mapper.offsets['out_messages'][idx] = out_messages_address
-
-            self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.get_feature_counts(self.model))[idx]) * len(self.trained_graph.nx_graph.nodes[node_id])
-        return {
-            'nodeslot_count': len(self.trained_graph.nx_graph.nodes)+len(self.trained_graph.nx_graph.edges),
-            'in_feature_count': inc,
-            'out_feature_count': outc,
-            'transformation_activation': 0,
-            'leaky_relu_alpha': 0,
-            'transformation_bias': 0,
-            'dequantization_parameter': self.trained_graph.dequantization_parameter,
-            'adjacency_list_address': self.memory_mapper.offsets['adj_list'][idx],
-            'in_messages_address': in_messages_address, 
-            'weights_address': self.memory_mapper.offsets['weights'][idx],
-            'out_messages_address': out_messages_address,
-            'aggregation_wait_count': 16,
-            'transformation_wait_count': 16,
-            'aggregate_enable' : aggregate_enable,
-            'edge_node': edge_node
-        }
-
+    
 
     def set_layer_config_edge_embedder(self):
         # 4 layers per actual SAGEConv layer
@@ -245,19 +204,18 @@ class InitManager:
         #|IIIIIEEEEEEEEEE |SSSSS      | EEEEEEEEEEEEE | RRRRR
         #|in_msg          |out_msg[0] |+#nodes        | +#nodes +#edges
 
-
-
         #TODO take offsets from trained graph so that only need declare once
 
         ######Source Embedder######
         in_messages_address = self.memory_mapper.offsets['in_messages']
-        
+        self.memory_mapper.out_messages_ptr = self.memory_mapper.offsets['out_messages'][0] 
+
         #Read from in messages, write to out_msg[0] 
         l1 = self.get_layer_config(self.model.src_embedder,in_messages_address = in_messages_address,idx=0,edge=0,linear=1)
         self.layer_config['layers'].append(l1)
 
-        print('node num:')
-        print(len(self.trained_graph.nx_graph.nodes))
+        # print('node num:')
+        # print(len(self.trained_graph.nx_graph.nodes))
         
         #Edge already indexed to start after nodes
         # self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.model.src_embedder.out_features) * len(self.trained_graph.nx_graph.nodes))
@@ -268,11 +226,10 @@ class InitManager:
         l2 = self.get_layer_config(self.model.edge_embedder,in_messages_address = in_messages_address,idx=1,edge=1,linear=1)
         self.layer_config['layers'].append(l2)
 
-        print('edge num:')
-        print(len(self.trained_graph.nx_graph.edges))
+        # print('edge num:')
+        # print(len(self.trained_graph.nx_graph.edges))
         
-        self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.model.edge_embedder.out_features) * len(self.trained_graph.nx_graph.edges))
-        edge_embed_start_addr = self.memory_mapper.out_messages_ptr
+        self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.trained_graph.feature_count) * len(self.trained_graph.nx_graph.edges))
 
         #Receive Embedder
         #Read from in messages, write to out_msg[0] +#nodes +#edges (not included in index)
@@ -281,9 +238,10 @@ class InitManager:
         self.layer_config['layers'].append(l3)
         out_message_end = self.memory_mapper.out_messages_ptr
 
+        self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.trained_graph.feature_count) * len(self.trained_graph.nx_graph.nodes))
+
         #Edge update
         #Read from out_msg[0], write to out_msg[0] +#nodes(included in index) - wrinting to edges
-        print(self.memory_mapper.offsets)
         embeddings_start_address = self.memory_mapper.offsets['out_messages'][0]
         self.memory_mapper.out_messages_ptr = self.memory_mapper.offsets['out_messages'][0] 
         l4 = self.get_layer_config(self.model.edge_update,in_messages_address = embeddings_start_address,idx=3,edge=1,linear=0)
@@ -314,6 +272,8 @@ class InitManager:
     def set_layer_config(self):
         logging.info(f"Generating layer configuration.")
 
+
+        #Can add precision here?
         self.layer_config['global_config'] = {
             "layer_count": len(self.model.layers),
             "node_count": self.trained_graph.dataset.x.shape[0],
@@ -365,7 +325,7 @@ class InitManager:
 
     def get_default_edge(self, edge):
         edge_meta = edge[2]['meta']
-        print('edge_meta',edge_meta)
+        # print('edge_meta',edge_meta)
         return {
             'node_id' : edge_meta['edge_id'],  #Refactor name
             'neighbour_count':3, #Self, rx, src
@@ -381,33 +341,35 @@ class InitManager:
 
     def program_nodeslots_graphsage(self):
         # Layer 1: W1 projection
+        nodeslot_group = []
         for node in self.trained_graph.nx_graph.nodes:
             nodeslot = self.get_default_nodeslot(node)
             nodeslot["neighbour_count"] = 1
-            self.nodeslot_programming['nodeslots'].append(nodeslot)
+            nodeslot_group.append(nodeslot)
 
         # Layer 2: W3 projection
         for node in self.trained_graph.nx_graph.nodes:
             nodeslot = self.get_default_nodeslot(node)
             nodeslot["neighbour_count"] = 1
-            self.nodeslot_programming['nodeslots'].append(nodeslot)
+            nodeslot_group.append(nodeslot)
 
         # Layer 3: mean aggregation + W2 transformation
         for node in self.trained_graph.nx_graph.nodes:
             nodeslot = self.get_default_nodeslot(node)
-            self.nodeslot_programming['nodeslots'].append(nodeslot)
+            nodeslot_group.append(nodeslot)
 
         # Layer 4: sum aggregation result with residual
         for node in self.trained_graph.nx_graph.nodes:
             nodeslot = self.get_default_nodeslot(node)
             nodeslot["neighbour_count"] = 2
             nodeslot["aggregation_function"] = "SUM"
-            self.nodeslot_programming['nodeslots'].append(nodeslot)
+            nodeslot_group.append(nodeslot)
 
-
+        self.nodeslot_programming.append(nodeslot_group)
 
     def load_nodeslot_programming_from_graph(self):
         dense_nodes = []
+        nodeslot_group = []
         for node in self.trained_graph.nx_graph.nodes:
             nb_cnt = self.trained_graph.nx_graph.nodes[node]["meta"]['neighbour_count']
             if (self.ignore_isolated_nodes and nb_cnt == 0):
@@ -416,17 +378,19 @@ class InitManager:
                 dense_nodes.append(node)
                 continue
             nodeslot = self.get_default_nodeslot(node)
-            self.nodeslot_programming['nodeslots'].append(nodeslot)
-        
+            nodeslot_group.append(nodeslot)
+        self.nodeslot_programming.append(nodeslot_group)
         logging.debug(f"Dense node count: {len(dense_nodes)}")
 
 
     def load_edges_programming_from_graph(self):
+        nodeslot_group = []
         for edge in self.trained_graph.nx_graph.edges(data=True):
             edge = self.get_default_edge(edge)     
-            self.nodeslot_programming['edges'].append(edge)
+            nodeslot_group.append(edge)
             # Print all the features (attributes) of the edge
- 
+        self.nodeslot_programming.append(nodeslot_group)
+
             
 
     def program_nodeslots(self, ignore_isolated_nodes=True):
@@ -444,8 +408,9 @@ class InitManager:
 
 
 
-    def generate_nodeslots_mem(self):
-        node_groups = np.array(self.nodeslot_programming["nodeslots"])
+    def generate_nodeslots_mem(self,nodeslot_group):
+        # print('nodeslot_group',nodeslot_group)
+        node_groups = np.array(nodeslot_group)
         
         node_groups = np.pad(
                                 node_groups, 
@@ -476,19 +441,31 @@ class InitManager:
         
         assert (len(nodeslot_mem_hex) % 2 == 0)
         nmh = [nodeslot_mem_hex[i] + nodeslot_mem_hex[i+1] for i in range(0, len(nodeslot_mem_hex), 2)]
-        return nmh
+
+        nodeslot_mem_len = len(nodeslot_mem_hex)//2 #byte indexed
+        return nmh,nodeslot_mem_len
+
 
     def dump_nodeslot_programming(self):
         # self.nodeslot_programming = {'nodeslots':[]}
         self.program_nodeslots()
-
         with open(self.nodeslot_json_dump_file, 'w') as file:
             json.dump(self.nodeslot_programming, file, indent=4)
 
-        # Dump nodeslots.mem file
-        nodeslot_byte_list = self.generate_nodeslots_mem()
-        dump_byte_list(nodeslot_byte_list, self.nodeslot_mem_dump_file)
+        nodeslot_memory_pointer = 0
+        nodeslot_byte_list = []
+        for group,nodeslot_group in enumerate(self.nodeslot_programming):
+            # print('node group',group)
+            # print(nodeslot_group)
+            self.nodeslot_programming_group_start_address.append(nodeslot_memory_pointer)
+            # Dump nodeslots.mem file
+            group_byte_list,nmh_length = self.generate_nodeslots_mem(nodeslot_group)
+            # print('nhm',nmh_length)
+            nodeslot_byte_list +=group_byte_list
+            nodeslot_memory_pointer += nmh_length
 
+
+        dump_byte_list(nodeslot_byte_list, self.nodeslot_mem_dump_file)
 
     def dump_memory(self):
         self.memory_mapper.dump_memory()
