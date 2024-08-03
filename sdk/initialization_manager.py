@@ -156,7 +156,7 @@ class InitManager:
         }
         
 
-    def get_layer_config(self, layer,in_messages_address,idx,edge=0,linear=0):
+    def get_layer_config(self, layer,in_messages_address,idx,edge=0,linear=0,concat=0,concat_width =1):
         inc, outc = self.get_layer_feature_count(layer)
         if edge:
             nodeslot_count = len(self.trained_graph.nx_graph.edges())
@@ -164,8 +164,11 @@ class InitManager:
             nodeslot_count = len(self.trained_graph.nx_graph.nodes)
 
         if linear:
-            adjacency_list_address = self.memory_mapper.offsets['adj_list']['self_ptr']
             aggregate_enable = 0
+            if concat:
+                adjacency_list_address = self.memory_mapper.offsets['adj_list']['concat_ptr'] #Workaround to aggregate from different layers
+            else:
+                adjacency_list_address = self.memory_mapper.offsets['adj_list']['self_ptr']
         else:
             adjacency_list_address = self.memory_mapper.offsets['adj_list']['nbrs']
             aggregate_enable = 1
@@ -185,8 +188,10 @@ class InitManager:
             'aggregation_wait_count': 16,
             'transformation_wait_count': 16,
             'aggregate_enable' : aggregate_enable,
-            'edge_node': edge,
-            'nodeslot_start_address': self.nodeslot_programming_group_start_address[edge] #Temp TODO change to index that can be specified not jsut edge - or use dict and call it Vg,Eg, Vm,Em etc
+            'edge_node': edge, #Change to nodeslot grouping - where is this used?
+            'nodeslot_start_address': self.nodeslot_programming_group_start_address[edge], #Temp TODO change to index that can be specified not jsut edge - or use dict and call it Vg,Eg, Vm,Em etc
+            'concat_width': concat_width #Temp TODO change to index that can be specified not jsut edge - or use dict and call it Vg,Eg, Vm,Em etc
+
         }
 
 
@@ -249,11 +254,11 @@ class InitManager:
     def set_layer_config_interaction_net(self):
         self.layer_config["global_config"]["layer_count"] =  2
         
-        #0                1           2               3                 4                          5          6
+        #0                1           2               3                 4                       5          6
         #|IIIIIEEEEEEEEEE |SSSSS      | EEEEEEEEEEE(1)| RRRRR(1)        | XXXXXXXEEEEEEEEEE(2)  | RRRR (2) | RRRR (3)
-        #|in_msg          |out_msg[0] |+#nodes        | +#nodes +#edges | +2*#nodes +#edges     |
+        #|in_msg          |out_msg[0] |+#nodes        | +#nodes +#edges | +2*#nodes +#edges     |          |
 
-        #TODO take offsets from trained graph so that only need declare once
+        #TODO take offsets from trained graph so that only need declare once - use outmessages idx
 
         ######Source Embedder######
         in_messages_address = self.memory_mapper.offsets['in_messages'] #0
@@ -297,6 +302,7 @@ class InitManager:
 
         self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.trained_graph.feature_count) * (len(self.trained_graph.nx_graph.edges)+len(self.trained_graph.nx_graph.nodes)))
         #5
+        rx_node_embed_address = self.memory_mapper.out_messages_ptr
 
 
         #######RX Node Embed ########
@@ -315,7 +321,16 @@ class InitManager:
         l5 = self.get_layer_config(self.model.rx_edge_aggr,in_messages_address = in_messages_address,idx=5,edge=0,linear=0)
         self.layer_config['layers'].append(l5)
 
+        #######Rx Node Update ######## 
+        in_messages_address = rx_node_embed_address
+        l6 = self.get_layer_config(self.model.rx_node_update,in_messages_address = in_messages_address,idx=6,edge=0,linear=1,concat=1,concat_width=2)
+        self.layer_config['layers'].append(l6)
+
         self.memory_mapper.out_messages_ptr = out_message_end 
+
+
+
+
     def set_layer_config_graphsage(self):
         # 4 layers per actual SAGEConv layer
         self.layer_config["global_config"]["layer_count"] = len(self.model.layers) * 4

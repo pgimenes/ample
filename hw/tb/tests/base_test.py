@@ -253,7 +253,7 @@ class BaseTest:
                     for i in range(0, int(self.nodeslot_count/32)):
                         empty_mask = await self.driver.axil_driver.axil_read(self.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
                         free_mask = empty_mask.binstr + free_mask
-                    self.dut._log.debug("Free nodeslots: %s", free_mask)
+                    # self.dut._log.debug("Free nodeslots: %s", free_mask)
 
             # Check nodeslot range based on precision
             if (ns_programming["precision"] == "FLOAT_32"):
@@ -288,7 +288,7 @@ class BaseTest:
                 empty_mask = await self.driver.axil_driver.axil_read(self.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
                 free_mask = empty_mask.binstr + free_mask
             
-            self.dut._log.debug("Free nodeslots: %s", free_mask)
+            # self.dut._log.debug("Free nodeslots: %s", free_mask)
 
             if (free_mask == "1" * self.nodeslot_count):
                 break

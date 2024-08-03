@@ -58,41 +58,29 @@ class Memory_Mapper:
             edge_metadata = self.graph[u][v]['meta']
             self.memory_hex += int_list_to_byte_list(edge_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
 
-
-       
-
-
-        # #Can change this when models get larger
-        #     #Dynamically change adj list between layers
-        # for idx,layer in enumerate(self.model.layers):
-        #     # If there is a linear layer, add another adjacency list to point to the address of the features of a nodes own embedding
-        #     if 'input' in layer.name:
-
-        #         if 'edge' in layer.name:
-        #             graph_nodes = self.graph.edges()
-        #         else:
-        #             graph_nodes = self.graph.nodes
-
-        #         for node in graph_nodes:
-        #             if 'edge' in layer.name:
-        #                 u,v = node
-        #                 node_metadata = self.graph[u][v]['meta']
-        #             else:
-        #                 node_metadata = self.graph.nodes[node]['meta']
-
-        #             if isinstance(layer, Linear):
-        #                 self.memory_hex += int_list_to_byte_list(node_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
-        #             else:
-        #                 self.memory_hex += int_list_to_byte_list(node_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
-                
+        #Node update
 
 
-        #     if(idx < self.num_layers-1):
-        #         self.offsets['adj_list'][idx+1] = len(self.memory_hex)
+        self.offsets['adj_list']['concat_ptr'] = len(self.memory_hex)
+        last_node_key = max(self.graph.nodes.keys())
 
-        # Set offset for next memory range
+        concat_offset = self.graph.nodes[last_node_key]['meta']['self_ptr'][0]+128 #TODO change this
+
+        for node in self.graph.nodes:
+            #TODO for x in len concat width etc
+            node_metadata = self.graph.nodes[node]['meta']
+            print('node',node)
+            print(node_metadata['self_ptr'][0])
+            print(node_metadata['self_ptr'][0] + concat_offset)
+            concat_ptr = [node_metadata['self_ptr'][0], (node_metadata['self_ptr'][0]+concat_offset)]
+
+            self.memory_hex += int_list_to_byte_list(concat_ptr, align=True, alignment=64, pad_side="right")
+
+      
         self.offsets['scale_factors'] = len(self.memory_hex)
    
+    # def calc_axi_addr(self,feature_count):
+    #     return math.ceil(4*feature_count / data_width) *data_width
 
     def map_scale_factors(self):
         for node in self.graph.nodes:

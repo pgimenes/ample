@@ -371,11 +371,11 @@ class AggregateEdges(torch.nn.Module):
         # x: Node feature matrix with shape [num_nodes, num_node_features]
         # edge_index: Graph connectivity (edge indices) with shape [2, num_edges]
         # edge_attr: Edge feature matrix with shape [num_edges, num_edge_features]
-        print('edge_index')
-        print(edge_index)
-        print('rx')
+        # print('edge_index')
+        # print(edge_index)
+        # print('rx')
         rx  = edge_index[1]
-        print(rx)
+        # print(rx)
         output = torch_scatter.scatter_add(edge_attr, rx.unsqueeze(1).expand(-1, edge_attr.size(1)), dim=0)
         # x = torch_scatter.scatter_add(edge_attr, rx)
         output = self.lin(output)
@@ -444,7 +444,6 @@ class Interaction_Net_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
 
         #---------- Node Update --------------
 
-
         #########Receive Node Embed #########
         self.rx_node_embedder = nn.Linear(in_channels, out_channels, bias=False)
         self.rx_node_embedder.name = 'rx_node_embedder'
@@ -457,9 +456,9 @@ class Interaction_Net_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
 
 
         #########Receive Node Update #########
-        # self.rx_node_update = AGG_MLP_Model(in_channels, hidden_dimension)
-        # self.rx_node_update.name = 'rx_update'
-        # self.layers.append(self.rx_node_update)
+        self.rx_node_update = AGG_MLP_Model(in_channels, hidden_dimension)
+        self.rx_node_update.name = 'rx_node_update'
+        self.layers.append(self.rx_node_update)
 
 
 
@@ -500,6 +499,15 @@ class Interaction_Net_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
 
         rx_aggregated_edges = self.rx_edge_aggr(edge_index,updated_edge) #TODO change to x[v] - more efficient
         outputs.append(rx_aggregated_edges)
+
+        print('rx_node_embed',rx_node_embed)
+        print('rx_aggregated_edges',rx_aggregated_edges)
+
+        # rx_node_embed = rx_node_embed
+        updated_node = self.rx_node_update(rx_node_embed,rx_aggregated_edges,0)
+
+        outputs.append(updated_node)
+
 
 
         return outputs

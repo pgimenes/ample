@@ -107,6 +107,9 @@ logic [0:0] ctrl_fetch_layer_weights_done_ack_ack;                      // value
 
 logic ctrl_start_nodeslot_fetch_strobe;
 logic ctrl_start_nodeslot_fetch_start_addr_strobe;
+
+logic concat_width_strobe;
+logic[31:0] concat_width_value;
 logic ctrl_start_nodeslot_fetch_done_strobe;
 logic ctrl_start_nodeslot_fetch_done_ack_strobe;
 
@@ -293,6 +296,7 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
     .graph_config_node_count_value,
     .ctrl_start_nodeslot_fetch_value,
     .ctrl_start_nodeslot_fetch_start_addr_value,
+    .concat_width_value,
     .ctrl_start_nodeslot_fetch_done_ack_value,
     .ctrl_start_nodeslot_fetch_done_value,
 
@@ -639,7 +643,7 @@ always_comb begin : nsb_prefetcher_req_logic
                                     : '0;
     
     //Enable/Disable aggregation
-    nsb_prefetcher_req.neighbour_count = (layer_config_aggregate_enable_value) ? nsb_nodeslot_neighbour_count_count[prefetcher_arbiter_grant_bin] : 1;
+    nsb_prefetcher_req.neighbour_count = (layer_config_aggregate_enable_value) ? nsb_nodeslot_neighbour_count_count[prefetcher_arbiter_grant_bin] : concat_width_value;
     
     nsb_prefetcher_req.aggregate = layer_config_aggregate_enable_value;
 
