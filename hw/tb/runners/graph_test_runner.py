@@ -52,7 +52,9 @@ async def graph_test_runner(dut):
     layer_cycle_count = []
     # print(output)
 
-    for layer_idx, layer in tqdm_asyncio(enumerate(test.layers), total=len(test.layers)):
+    # for layer_idx, layer in tqdm_asyncio(enumerate(test.layers), total=len(test.layers)):
+    for layer_idx, layer in enumerate(test.layers):
+
         await test.start_monitors()
         # print('layer features')
 

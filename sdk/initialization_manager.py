@@ -250,8 +250,8 @@ class InitManager:
         self.layer_config["global_config"]["layer_count"] =  2
         
         #0                1           2               3                 4                          5          6
-        #|IIIIIEEEEEEEEEE |SSSSS      | EEEEEEEEEEE(1)| RRRRR(1)        | XXXXXXXEEEEEEEEEE(2)     | RRRR (2) | RRRR (3)
-        #|in_msg          |out_msg[0] |+#nodes        | +#nodes +#edges | +2*#nodes +#edges        |
+        #|IIIIIEEEEEEEEEE |SSSSS      | EEEEEEEEEEE(1)| RRRRR(1)        | XXXXXXXEEEEEEEEEE(2)  | RRRR (2) | RRRR (3)
+        #|in_msg          |out_msg[0] |+#nodes        | +#nodes +#edges | +2*#nodes +#edges     |
 
         #TODO take offsets from trained graph so that only need declare once
 
@@ -264,8 +264,6 @@ class InitManager:
         #Read from in messages, write to out_msg[0] 
         l0 = self.get_layer_config(self.model.src_embedder,in_messages_address = in_messages_address,idx=0,edge=0,linear=1)
         self.layer_config['layers'].append(l0)
-
-
 
         ######Edge Embedder###### - do second so that index starts at end of last nodeslot
         #Read from in messages (indexed), write to out_msg[0] + #nodes (included in index)
@@ -308,7 +306,7 @@ class InitManager:
 
 
         self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.trained_graph.feature_count) * (len(self.trained_graph.nx_graph.nodes)))
-
+        #6
 
         #######RX Edge Aggregate ######## 
         # Aggregate edge neighbours

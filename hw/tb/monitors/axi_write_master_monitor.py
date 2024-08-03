@@ -87,7 +87,8 @@ class AXIWriteMasterMonitor:
                     self.dut._log.debug(f"Data gotten {current_transaction['data']}")
                     assert current_transaction['data'].shape == expected_node['data'].shape, f"Data size mismatch for address {current_transaction['start_address']}"
 
-                    
+
+                    #TODO reinstate this when edge aggregation is working
                     assert torch.allclose(current_transaction['data'], expected_node['data'], atol=self.tolerance), \
                         f"Data mismatch for node {expected_node['node_id']} address {current_transaction['start_address']}"
                     

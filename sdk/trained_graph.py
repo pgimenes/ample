@@ -34,7 +34,7 @@ class TrainedGraph:
         self.feature_count = dataset.x.shape[1] if feature_count is None else feature_count
 
 
-        self.init_nx_graph_edges(self_connection=self_connection)
+        self.init_nx_graph_edges(self_connection=self_connection) #TODO change to or to not accept edges
         #if edges:
         edge = list(self.nx_graph.edges(data=True))[0]
         _,_, attributes = edge
@@ -187,11 +187,15 @@ class TrainedGraph:
 
             # Assign the edge features to the edge's metadata
             self.nx_graph[src][rx]['meta'] = edge_features
+            
+        print(len(self.nx_graph.nodes()))
+        
+        print(self.nx_graph.edges)
+        print(rx_node_edge_neighbours)
 
         # print(self.nx_graph.edgeindex)
         for node in self.nx_graph.nodes:
             print('node',node)
-            print(rx_node_edge_neighbours)
             neighbours =rx_node_edge_neighbours[node] #self.nx_graph.nodes[rx]["meta"]['neighbours']
             print('neighbours')
             print(neighbours)
