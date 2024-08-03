@@ -57,7 +57,7 @@ async def graph_test_runner(dut):
         # print('layer features')
 
         layer_features = output[layer_idx]
-        dut._log.info(f"Starting layer {layer_idx+1}")
+        dut._log.info(f"Starting layer {layer_idx}")
         dut._log.debug(f"Layer Out Expected {layer_features}")
 
         # Load monitor

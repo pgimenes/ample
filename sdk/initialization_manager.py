@@ -16,7 +16,7 @@ from copy import deepcopy
 from torch.nn import Linear
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 
-from .models.models import GraphSAGE_Model, Edge_Embedding_Model, EdgeGCNLayer, AGG_MLP_Model #AGG_MLP_Model - temp
+from .models.models import GraphSAGE_Model, Edge_Embedding_Model,Interaction_Net_Model, EdgeGCNLayer, AGG_MLP_Model, AggregateEdges#AGG_MLP_Model - temp
 
 import math
 
@@ -81,7 +81,7 @@ class InitManager:
 
     # Nodeslot programming and layer configuration
     # ===============================================
-
+    #TODO change this
     def get_layer_feature_count(self, layer):
         if isinstance(layer, GCNConv):
             inc = layer.in_channels
@@ -101,6 +101,9 @@ class InitManager:
         elif isinstance(layer, AGG_MLP_Model):
             inc = layer.in_features
             outc = layer.out_features
+        elif isinstance(layer, AggregateEdges):
+            inc = layer.in_channels
+            outc = layer.in_channels
         else:
             raise RuntimeError(f"Unrecognized layer type {type(layer)}")        
         return inc, outc
@@ -193,7 +196,6 @@ class InitManager:
     
 
     def set_layer_config_edge_embedder(self):
-        # 4 layers per actual SAGEConv layer
         self.layer_config["global_config"]["layer_count"] =  4
         
 
@@ -244,7 +246,78 @@ class InitManager:
 
         self.memory_mapper.out_messages_ptr = out_message_end 
 
+    def set_layer_config_interaction_net(self):
+        self.layer_config["global_config"]["layer_count"] =  2
+        
+        #0                1           2               3                 4                          5          6
+        #|IIIIIEEEEEEEEEE |SSSSS      | EEEEEEEEEEE(1)| RRRRR(1)        | XXXXXXXEEEEEEEEEE(2)     | RRRR (2) | RRRR (3)
+        #|in_msg          |out_msg[0] |+#nodes        | +#nodes +#edges | +2*#nodes +#edges        |
 
+        #TODO take offsets from trained graph so that only need declare once
+
+        ######Source Embedder######
+        in_messages_address = self.memory_mapper.offsets['in_messages'] #0
+        self.memory_mapper.out_messages_ptr = self.memory_mapper.offsets['out_messages'][0] 
+
+
+        #Out messages start set to 1
+        #Read from in messages, write to out_msg[0] 
+        l0 = self.get_layer_config(self.model.src_embedder,in_messages_address = in_messages_address,idx=0,edge=0,linear=1)
+        self.layer_config['layers'].append(l0)
+
+
+
+        ######Edge Embedder###### - do second so that index starts at end of last nodeslot
+        #Read from in messages (indexed), write to out_msg[0] + #nodes (included in index)
+
+        l1 = self.get_layer_config(self.model.edge_embedder,in_messages_address = in_messages_address,idx=1,edge=1,linear=1)
+        self.layer_config['layers'].append(l1)
+
+        # print('edge num:')
+        # print(len(self.trained_graph.nx_graph.edges))
+
+        self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.trained_graph.feature_count) * (len(self.trained_graph.nx_graph.edges)+len(self.trained_graph.nx_graph.nodes)))
+        #out messages - 3
+
+        #Receive Embedder
+        #Read from in messages, write to out_msg[0] +#nodes +#edges (not included in index)
+
+        l2 = self.get_layer_config(self.model.rx_embedder,in_messages_address = in_messages_address,idx=2,edge=0,linear=1)
+        self.layer_config['layers'].append(l2)
+        out_message_end = self.memory_mapper.out_messages_ptr
+
+        self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.trained_graph.feature_count) * len(self.trained_graph.nx_graph.nodes))
+        #Out messages 4
+        addr_4 = self.memory_mapper.out_messages_ptr
+
+        #Edge update
+        #Read from out_msg[0], write to out_msg[0] +#nodes(included in index) - wrinting to edges
+        embeddings_start_address = self.memory_mapper.offsets['out_messages'][0]
+        # self.memory_mapper.out_messages_ptr = self.memory_mapper.offsets['out_messages'][0] 
+        l3 = self.get_layer_config(self.model.edge_update,in_messages_address = embeddings_start_address,idx=3,edge=1,linear=0)
+        self.layer_config['layers'].append(l3)
+
+        self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.trained_graph.feature_count) * (len(self.trained_graph.nx_graph.edges)+len(self.trained_graph.nx_graph.nodes)))
+        #5
+
+
+        #######RX Node Embed ########
+        in_messages_address = self.memory_mapper.offsets['in_messages']
+        l4 = self.get_layer_config(self.model.rx_node_embedder, in_messages_address = in_messages_address,idx=4,edge=0,linear=1)
+        self.layer_config['layers'].append(l4)
+
+
+        self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.trained_graph.feature_count) * (len(self.trained_graph.nx_graph.nodes)))
+
+
+        #######RX Edge Aggregate ######## 
+        # Aggregate edge neighbours
+        in_messages_address = addr_4 #Take message from previous layer (4), write to the same layer
+        #out message for this is same location as l4 - how to resolve?
+        l5 = self.get_layer_config(self.model.rx_edge_aggr,in_messages_address = in_messages_address,idx=5,edge=0,linear=0)
+        self.layer_config['layers'].append(l5)
+
+        self.memory_mapper.out_messages_ptr = out_message_end 
     def set_layer_config_graphsage(self):
         # 4 layers per actual SAGEConv layer
         self.layer_config["global_config"]["layer_count"] = len(self.model.layers) * 4
@@ -279,6 +352,8 @@ class InitManager:
             self.set_layer_config_graphsage()
         elif (isinstance(self.model, Edge_Embedding_Model)):
             self.set_layer_config_edge_embedder()
+        elif (isinstance(self.model, Interaction_Net_Model)):
+            self.set_layer_config_interaction_net()
 
         else :
             # print(self.model.named_children() and isinstance(self.model.named_children(),list))
@@ -362,6 +437,8 @@ class InitManager:
 
         self.nodeslot_programming.append(nodeslot_group)
 
+
+    #TODO change soloads all indicies in graph
     def load_nodeslot_programming_from_graph(self):
         dense_nodes = []
         nodeslot_group = []
@@ -395,6 +472,9 @@ class InitManager:
         if (isinstance(self.model, GraphSAGE_Model)):
             self.program_nodeslots_graphsage()
         elif(isinstance(self.model, Edge_Embedding_Model)):
+            self.load_nodeslot_programming_from_graph()
+            self.load_edges_programming_from_graph()
+        elif(isinstance(self.model, Interaction_Net_Model)):
             self.load_nodeslot_programming_from_graph()
             self.load_edges_programming_from_graph()
         else:
@@ -474,7 +554,8 @@ class InitManager:
         self.model.eval()
         with torch.no_grad():
             embeddings = self.trained_graph.dataset.x
-            if (isinstance(self.model, Edge_Embedding_Model)): #Temp
+            #TODO Change to have edge flag
+            if (isinstance(self.model, Edge_Embedding_Model)) or (isinstance(self.model, Interaction_Net_Model)): #Temp
                 output = self.model(self.trained_graph.dataset.x,self.trained_graph.dataset.edge_attr, self.trained_graph.dataset.edge_index)
             else:
                 output = self.model(self.trained_graph.dataset.x, self.trained_graph.dataset.edge_index)
@@ -496,7 +577,8 @@ class InitManager:
 
         # data = (x, edge_attr,edge_index)
         #Traced Model - allow TB to be compatible with GCNConv
-        if (isinstance(self.model, Edge_Embedding_Model)):
+        #TODO Change to have edge flag
+        if (isinstance(self.model, Edge_Embedding_Model) or (isinstance(self.model, Interaction_Net_Model))):
             edge_attr = self.trained_graph.dataset.edge_attr  # Edge attributes tensor
             data = (x,edge_index,edge_attr) 
             # edge_attr = self.trained_graph.dataset

@@ -8,7 +8,7 @@ import torch
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 from torch.nn import Linear
 
-from .models.models import GraphSAGE_Model, Edge_Embedding_Model, AGG_MLP_Model
+from .models.models import GraphSAGE_Model, Edge_Embedding_Model, AGG_MLP_Model, AggregateEdges, Interaction_Net_Model
 
 class Memory_Mapper:
 
@@ -131,6 +131,8 @@ class Memory_Mapper:
             elif isinstance(layer, Linear):
                 linear = layer
             elif isinstance(layer, AGG_MLP_Model):
+                linear = layer.lin
+            elif isinstance(layer, AggregateEdges):
                 linear = layer.lin
             else:
                 raise RuntimeError(f"Unrecognized layer {layer}")

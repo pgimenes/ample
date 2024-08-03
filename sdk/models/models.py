@@ -4,12 +4,13 @@ import torch.nn.functional as F
 
 from torch.nn import Linear
 from torch.nn import ReLU
-from torch_geometric.nn import GCNConv, GATConv, SAGEConv, GINConv
+from torch_geometric.nn import MessagePassing, GCNConv, GATConv, SAGEConv, GINConv
 import pytorch_lightning as pl
 from torch import Tensor
 from torch_geometric.typing import SparseTensor
-
 import numpy as np
+# import torch_scatter
+
 '''
 Graph Convolutional Network
 '''
@@ -297,8 +298,8 @@ class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         self.precision = precision
         self.layers = nn.ModuleList()
 
-        #########Source Node MLP#########
-        self.src_embedder = nn.Linear(in_channels, out_channels, bias=False)
+        #########Source Node Edge Embed MLP#########
+        self.src_embedder = nn.Linear(in_channels, out_channels, bias=False) 
         self.src_embedder.name  = 'src_embedder'
         self.layers.append(self.src_embedder) #Used to map weights in SDK
 
@@ -310,13 +311,13 @@ class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         self.layers.append(self.edge_embedder)
 
 
-        #########Receive Node MLP#########
+        #########Receive Node Edge Embed MLP#########
         self.rx_embedder = nn.Linear(in_channels, out_channels, bias=False)
         self.rx_embedder.name = 'rx_embedder'
         self.layers.append(self.rx_embedder)
 
 
-        #########Edge Node GCN#########
+        #########Edge Node Update#########
         self.edge_update = AGG_MLP_Model(in_channels, hidden_dimension)
         self.edge_update.name = 'edge_update'
         self.layers.append(self.edge_update)
@@ -359,19 +360,69 @@ class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
 
 
 
+class AggregateEdges(MessagePassing):
+    def __init__(self,in_channels=32,out_channels=32):
+        super(AggregateEdges, self).__init__(aggr='add')  # Use 'add' for sum aggregation
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.lin = torch.nn.Linear(in_channels, out_channels,bias=False)
 
+    def forward(self, x, edge_index, edge_attr):
+        # x: Node feature matrix with shape [num_nodes, num_node_features]
+        # edge_index: Graph connectivity (edge indices) with shape [2, num_edges]
+        # edge_attr: Edge feature matrix with shape [num_edges, num_edge_features]
+        
+        return self.propagate(edge_index, x=x, edge_attr=edge_attr)
 
-class Interaction_Net_Model(torch.nn.Module): 
+    def message(self, x_j, edge_attr):
+        # x_j: Neighbor node features
+        # edge_attr: Edge features
+        # Return the message to be aggregated
+        return edge_attr
+
+    def update(self, aggr_out):
+        # aggr_out: Aggregated messages for each node
+        transformed = self.lin(aggr_out)
+        return transformed
+
+class AggregateEdges1(MessagePassing):
+    def __init__(self,in_channels=32,out_channels=32):
+        super().__init__()
+
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.lin = torch.nn.Linear(in_channels, out_channels,bias=False)
+
+    def forward(self, x, edge_index, edge_attr):
+        # Add self loops to the adjacency matrix if needed
+        # edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))
+
+        # Start propagating messages
+        return self.propagate(edge_index, x=x, edge_attr=edge_attr)
+
+    def message(self, edge_attr):
+        # Return edge attributes as the message to be passed
+        return edge_attr
+
+    # def aggregate(self, inputs, index):
+    #     # Summing up all incoming edge attributes for each node
+    #     return torch_scatter.scatter(inputs, index, dim=0, reduce='sum')
+
+    def update(self, aggr_out):
+        # Return the aggregated result as the updated node features
+        transformed = self.lin(aggr_out)
+        return transformed
+
+class Interaction_Net_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
     def __init__(self, in_channels=32, out_channels=32, layer_count=1, hidden_dimension=32, precision = torch.float32):
         super().__init__()
         self.precision = precision
         self.layers = nn.ModuleList()
 
-        #########Source Node MLP#########
+        #########Source Node Edge Embed MLP#########
         self.src_embedder = nn.Linear(in_channels, out_channels, bias=False)
         self.src_embedder.name  = 'src_embedder'
         self.layers.append(self.src_embedder) #Used to map weights in SDK
-
 
 
         #########Edge Node MLP#########
@@ -381,7 +432,7 @@ class Interaction_Net_Model(torch.nn.Module):
         self.layers.append(self.edge_embedder)
 
 
-        #########Receive Node MLP#########
+        #########Receive Node Edge Embed MLP#########
         self.rx_embedder = nn.Linear(in_channels, out_channels, bias=False)
         self.rx_embedder.name = 'rx_embedder'
         self.layers.append(self.rx_embedder)
@@ -393,7 +444,25 @@ class Interaction_Net_Model(torch.nn.Module):
         self.layers.append(self.edge_update)
 
 
-        
+        #---------- Node Update --------------
+
+
+        #########Receive Node Embed #########
+        self.rx_node_embedder = nn.Linear(in_channels, out_channels, bias=False)
+        self.rx_node_embedder.name = 'rx_node_embedder'
+        self.layers.append(self.rx_node_embedder)
+
+        #########Receive Node Aggregate Edges #########
+        self.rx_edge_aggr = AggregateEdges(in_channels, out_channels)
+        self.rx_edge_aggr.name = 'rx_edge_aggr'
+        self.layers.append(self.rx_edge_aggr)
+
+
+        #########Receive Node Update #########
+        # self.rx_node_update = AGG_MLP_Model(in_channels, hidden_dimension)
+        # self.rx_node_update.name = 'rx_update'
+        # self.layers.append(self.rx_node_update)
+
 
 
         for layer in self.layers:
@@ -404,19 +473,20 @@ class Interaction_Net_Model(torch.nn.Module):
         outputs = []
 
         #TODO change to U and V to match with SDK
-        u = edge_index[0]
-        v = edge_index[1]
+        u = edge_index[0] #Source nodes
+        v = edge_index[1] #Receive nodes
         # print('edege_index')
         # print(u)
         # print(v)
         src_embed = self.src_embedder(x)
         outputs.append(src_embed)
 
+        #Check edge attributes are mapped correctly
 
         edge_embed = self.edge_embedder(edge_attr)
-        # print('e at44tr', edge_attr)
-        
         outputs.append(edge_embed)
+        # print('edge_embed')
+        # print(edge_embed)
 
         rx_embed = self.rx_embedder(x)
         outputs.append(rx_embed)
@@ -424,11 +494,20 @@ class Interaction_Net_Model(torch.nn.Module):
         src_embed = src_embed[u]
         rx_embed = rx_embed[v]
         
-        updated_edge = self.edge_update(src_embed,rx_embed,edge_embed)
-
+        updated_edge = self.edge_update(src_embed,edge_embed,rx_embed)
         outputs.append(updated_edge)
 
+        rx_node_embed = self.rx_node_embedder(x) #TODO change to x[v] - more efficient
+        outputs.append(rx_node_embed)
+
+        rx_aggregated_edges = self.rx_edge_aggr(x,edge_index,edge_attr) #TODO change to x[v] - more efficient
+        outputs.append(rx_aggregated_edges)
+
+
         return outputs
+
+
+
 
 
 

@@ -40,7 +40,7 @@ sage = false
 gcn_mlp = false
 mlp = false
 edge = false
-
+int_net = false
 
 
 cpu = false

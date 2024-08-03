@@ -20,7 +20,7 @@ from sdk.graphs.random_graph import RandomGraph
 from sdk.graphs.planetoid_graph import PlanetoidGraph
 from sdk.graphs.large_graphs import RedditGraph, FlickrGraph, YelpGraph, AmazonProductsGraph
 
-from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model, Edge_Embedding_Model
+from sdk.models.models import GCN_Model, GAT_Model, GraphSAGE_Model, GIN_Model, GCN_MLP_Model, MLP_Model, Edge_Embedding_Model, Interaction_Net_Model
 
 from sdk.benchmarking_manager import BenchmarkingManager
 
@@ -80,17 +80,19 @@ model_map = {
   'sage': GraphSAGE_Model,
   'gcn_mlp': GCN_MLP_Model,
   'mlp': MLP_Model,
-  'edge': Edge_Embedding_Model
+  'edge': Edge_Embedding_Model,
+  'int_net': Interaction_Net_Model
 }
 
 def main(args):
     # Load Graphs
     graphs = []
+    
     for arg, graph_cls in graph_map.items():
         if getattr(args, arg):
             # To do: temporary
             if arg == "erdos":
-                graph = RandomGraph(num_nodes=args.num_nodes, avg_degree=args.avg_degree, num_channels=args.in_features, graph_precision=args.precision,edge_dim=args.edge_dim,edges = args.edge)
+                graph = RandomGraph(num_nodes=args.num_nodes, avg_degree=args.avg_degree, num_channels=args.in_features, graph_precision=args.precision,edge_dim=args.edge_dim,edges = True) #TODO add var
             else:
                 graph = graph_cls(graph_precision=args.precision)
             
@@ -279,7 +281,8 @@ def parse_arguments():
     parser.add_argument('--sage', action='store_true', default=config.get('sage', False), help='Use GraphSAGE Model')
     parser.add_argument('--gcn_mlp', action='store_true', default=config.get('gcn_mlp', False), help='Use GCN MLP Model')
     parser.add_argument('--mlp', action='store_true', default=config.get('mlp', False), help='Use MLP Model')
-    parser.add_argument('--edge', action='store_true', default=config.get('edge', False), help='Use EDGE Model')
+    parser.add_argument('--edge', action='store_true', default=config.get('edge', False), help='Use Edge embedding Model')
+    parser.add_argument('--int_net', action='store_true', default=config.get('int_net', False), help='Use Interaction Net Model')
 
     # Additional parameters
     parser.add_argument('--layers', type=int, default=config.get('layers', 2), help='Number of layers')
@@ -297,6 +300,7 @@ def parse_arguments():
     parser.add_argument('--avg_degree', type=float, default=config.get('avg_degree', 1.0), help='Average number of neighbours per node')
     parser.add_argument('--num_nodes', type=int, default=config.get('num_nodes', 10), help='Approximate number of nodes in the graph')
     parser.add_argument('--edge_dim', type=int, default=config.get('edge_dim', 32), help='Edge dimension for random graph ') 
+    # parser.add_argument('--edge_attr', action='store_true', default=config.get('edge', False), help='Use EDGE Model')
 
     parser.add_argument('--random', action='store_true', default=config.get('random', False), help='Initialize graph with random embedding.')
 
