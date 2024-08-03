@@ -51,14 +51,14 @@ async def graph_test_runner(dut):
 
     layer_cycle_count = []
     # print(output)
+
     for layer_idx, layer in tqdm_asyncio(enumerate(test.layers), total=len(test.layers)):
         await test.start_monitors()
         # print('layer features')
-       
+
         layer_features = output[layer_idx]
         dut._log.info(f"Starting layer {layer_idx+1}")
-        outs = output[layer_idx]
-        dut._log.debug(f"Layer Out Expected {outs}")
+        dut._log.debug(f"Layer Out Expected {layer_features}")
 
         # Load monitor
         test.load_layer_test(layer_features,layer_idx)
@@ -75,11 +75,11 @@ async def graph_test_runner(dut):
         # await drive_nodeslots(test)
 
         #Should only fetch every time nodeslots change
-        print(f"Layer {layer_idx} nodeslot count: {test.layers[layer_idx]['nodeslot_count']}")
+        # print(f"Layer {layer_idx} nodeslot count: {test.layers[layer_idx]['nodeslot_count']}")
         await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.layers[layer_idx]['nodeslot_count'])
        
         #Temp TODO program nodeslot start address for layer
-        print(f"Layer {layer_idx} nodeslot start address: {test.layers[layer_idx]['nodeslot_start_address']}")
+        # print(f"Layer {layer_idx} nodeslot start address: {test.layers[layer_idx]['nodeslot_start_address']}")
         
         await test.driver.axil_driver.axil_write(test.driver.nsb_regs["ctrl_start_nodeslot_fetch_start_addr"], test.layers[layer_idx]['nodeslot_start_address'])
 

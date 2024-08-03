@@ -117,8 +117,10 @@ class AXIWriteMasterMonitor:
 
         self.expected_layer_features_by_address = {}
         layer_out_message_offset = layer_config['out_messages_address']
-        
+        # print('lyaer features')
+        # print(layer_features)
         for nodeslot in nodeslots:
+            # print(data)
             node_id = nodeslot['node_id']
             # print(node_id,'node_id')
             # print('offset_id',node_id-(edge_offset))

@@ -20,7 +20,7 @@ class Memory_Mapper:
         weights_list = [0]*self.num_layers
         out_messages_list = [0]*self.num_layers #Can remove - using ptr
         #Used to change adj list between layers
-        adj_list = {'nodes': {'nbrs': 0, 'self_ptr': 0 },'edges': {'gcn': 0, 'self_ptr': 0 }} # Change name perhaps to layer offset adj
+        adj_list = {'nbrs': 0, 'self_ptr': 0 } # Change name perhaps to layer offset adj
         self.offsets = {'adj_list': adj_list, 'scale_factors': 0, 'in_messages':0, 'weights':weights_list, 'out_messages': out_messages_list}
         self.out_messages_ptr = 0
         
@@ -36,28 +36,30 @@ class Memory_Mapper:
 
 
     def map_adj_list(self):
-        self.offsets['adj_list']['nodes']['nbrs'] = len(self.memory_hex)
+        #TODO change adj list so it can be switched out and only serve a node group instead of all
+        self.offsets['adj_list']['nbrs'] = len(self.memory_hex)
         for node in self.graph.nodes:
             node_metadata = self.graph.nodes[node]['meta']
             self.memory_hex += int_list_to_byte_list(node_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
         
+        for (u,v) in self.graph.edges():
+            edge_metadata = self.graph[u][v]['meta']
+            self.memory_hex += int_list_to_byte_list(edge_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+
+
+
         #if linear layers
-        self.offsets['adj_list']['nodes']['self_ptr'] = len(self.memory_hex)
+        self.offsets['adj_list']['self_ptr'] = len(self.memory_hex)
         for node in self.graph.nodes:
             node_metadata = self.graph.nodes[node]['meta']
             self.memory_hex += int_list_to_byte_list(node_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
 
-
-        self.offsets['adj_list']['edges']['self_ptr'] = len(self.memory_hex)
         for (u,v) in self.graph.edges():
             edge_metadata = self.graph[u][v]['meta']
             self.memory_hex += int_list_to_byte_list(edge_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
 
 
-        self.offsets['adj_list']['edges']['nbrs'] = len(self.memory_hex)
-        for (u,v) in self.graph.edges():
-            edge_metadata = self.graph[u][v]['meta']
-            self.memory_hex += int_list_to_byte_list(edge_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+       
 
 
         # #Can change this when models get larger

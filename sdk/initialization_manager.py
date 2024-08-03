@@ -111,10 +111,10 @@ class InitManager:
         inc, outc = self.get_layer_feature_count(layer)
         if isinstance(layer, torch.nn.Linear):
             aggregate_enable = 0
-            adj_list_addr= self.memory_mapper.offsets['adj_list']['nodes']['self_ptr']
+            adj_list_addr= self.memory_mapper.offsets['adj_list']['self_ptr']
 
         else:
-            adj_list_addr= self.memory_mapper.offsets['adj_list']['nodes']['nbrs']
+            adj_list_addr= self.memory_mapper.offsets['adj_list']['nbrs']
             aggregate_enable = 1
 
         edge_node = 'edge' in layer.name
@@ -156,19 +156,15 @@ class InitManager:
     def get_layer_config(self, layer,in_messages_address,idx,edge=0,linear=0):
         inc, outc = self.get_layer_feature_count(layer)
         if edge:
-            adj_list_data = self.memory_mapper.offsets['adj_list']['edges']
             nodeslot_count = len(self.trained_graph.nx_graph.edges())
         else:
             nodeslot_count = len(self.trained_graph.nx_graph.nodes)
-            adj_list_data = self.memory_mapper.offsets['adj_list']['nodes']
-            print('adj_list_data',adj_list_data)
 
         if linear:
-            adjacency_list_address = adj_list_data['self_ptr']
+            adjacency_list_address = self.memory_mapper.offsets['adj_list']['self_ptr']
             aggregate_enable = 0
         else:
-
-            adjacency_list_address = adj_list_data['nbrs']
+            adjacency_list_address = self.memory_mapper.offsets['adj_list']['nbrs']
             aggregate_enable = 1
 
         return {
@@ -228,8 +224,7 @@ class InitManager:
 
         # print('edge num:')
         # print(len(self.trained_graph.nx_graph.edges))
-        
-        self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.trained_graph.feature_count) * len(self.trained_graph.nx_graph.edges))
+        self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.trained_graph.feature_count) * (len(self.trained_graph.nx_graph.edges)+len(self.trained_graph.nx_graph.nodes)))
 
         #Receive Embedder
         #Read from in messages, write to out_msg[0] +#nodes +#edges (not included in index)

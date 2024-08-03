@@ -145,9 +145,9 @@ class TrainedGraph:
                 'neighbour_message_ptrs': [
                     #Memory UUUUUU | EEEEEE |  VVVVVV
                     #Temp TODO complete
-                    self.calc_axi_addr(self.feature_count) * u,  #SRC
-                    self.calc_axi_addr(self.feature_count) * u,#(edge_id), #Change to self feature count
-                    self.calc_axi_addr(self.feature_count) * u #(v + len(self.nx_graph.nodes) + len(self.nx_graph.edges)), #RX
+                    self.calc_axi_addr(self.feature_count) * (edge_id),  #SRC
+                    self.calc_axi_addr(self.feature_count) * (edge_id), #Change to self feature count
+                    self.calc_axi_addr(self.feature_count) * (edge_id), #(v + len(self.nx_graph.nodes) + len(self.nx_graph.edges)), #RX
                      # change to offset for rx embeddings - keep for now + len(self.nx_graph.nodes) + len(self.nx_graph.edges))  #add offset to access rx embedded
                 ]
             }

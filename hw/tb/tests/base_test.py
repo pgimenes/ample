@@ -313,23 +313,16 @@ class BaseTest:
         
 
     def get_expected_outputs(self,model,data):
-        ####Remove bias from the model TODO Add biases####
+        ####Remove bias from the model, TODO Add biases####
         state_dict = model.state_dict()
         for name, param in state_dict.items():
+            # print(name,param,'name,param')
             if 'bias' in name:
                 # Reset the bias tensor to all zeros
                 state_dict[name] = torch.zeros_like(param)
 
         model.load_state_dict(state_dict)
-        ###################################################
-
-        # state_dict = model.state_dict()
-        # state_dict['layers.0.bias'] = torch.tensor([0] * state_dict['layers.0.bias'].size()[0])
-        # state_dict['layers.1.bias'] = torch.tensor([0] * state_dict['layers.1.bias'].size()[0])
-        # # state_dict['layers.2.bias'] = torch.tensor([0] * state_dict['layers.2.bias'].size()[0])
-        # # state_dict['layers.3.bias'] = torch.tensor([0] * state_dict['layers.3.bias'].size()[0])
-
-        # model.load_state_dict(state_dict)
+        
         x, edge_index, edge_attr = data
         model.eval()
         with torch.no_grad():

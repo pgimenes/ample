@@ -303,7 +303,6 @@ class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         self.layers.append(self.src_embedder) #Used to map weights in SDK
 
 
-
         #########Edge Node MLP#########
         #Change to GCN to aggregate itself and last layer edge if not first model
         self.edge_embedder = nn.Linear(in_channels, hidden_dimension, bias=False)
@@ -339,11 +338,12 @@ class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         src_embed = self.src_embedder(x)
         outputs.append(src_embed)
 
+        #Check edge attributes are mapped correctly
 
         edge_embed = self.edge_embedder(edge_attr)
-        # print('e at44tr', edge_attr)
-        
         outputs.append(edge_embed)
+        # print('edge_embed')
+        # print(edge_embed)
 
         rx_embed = self.rx_embedder(x)
         outputs.append(rx_embed)
@@ -351,7 +351,7 @@ class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         src_embed = src_embed[u]
         rx_embed = rx_embed[v]
         
-        updated_edge = self.edge_update(src_embed,rx_embed,edge_embed)
+        updated_edge = self.edge_update(edge_embed,edge_embed,edge_embed)
 
         outputs.append(updated_edge)
 
