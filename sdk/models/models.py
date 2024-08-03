@@ -500,8 +500,6 @@ class Interaction_Net_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         rx_aggregated_edges = self.rx_edge_aggr(edge_index,updated_edge) #TODO change to x[v] - more efficient
         outputs.append(rx_aggregated_edges)
 
-        print('rx_node_embed',rx_node_embed)
-        print('rx_aggregated_edges',rx_aggregated_edges)
 
         # rx_node_embed = rx_node_embed
         updated_node = self.rx_node_update(rx_node_embed,rx_aggregated_edges,0)

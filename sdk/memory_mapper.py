@@ -69,9 +69,7 @@ class Memory_Mapper:
         for node in self.graph.nodes:
             #TODO for x in len concat width etc
             node_metadata = self.graph.nodes[node]['meta']
-            print('node',node)
-            print(node_metadata['self_ptr'][0])
-            print(node_metadata['self_ptr'][0] + concat_offset)
+
             concat_ptr = [node_metadata['self_ptr'][0], (node_metadata['self_ptr'][0]+concat_offset)]
 
             self.memory_hex += int_list_to_byte_list(concat_ptr, align=True, alignment=64, pad_side="right")

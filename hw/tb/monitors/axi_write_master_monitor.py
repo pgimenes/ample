@@ -107,11 +107,11 @@ class AXIWriteMasterMonitor:
     def load_layer_features(self, nodeslot_programming,layer_features,layer_config,global_config):
         self.dut._log.debug("Loading Layer Features")
         if layer_config['edge_node']:
-            print('edge_layer')
+            # print('edge_layer')
             nodeslots = nodeslot_programming[1]
             edge_offset = global_config['node_count'] #TODO Fix
         else:
-            print('node_layer')
+            # print('node_layer')
             edge_offset = 0
             nodeslots = nodeslot_programming[0]
 

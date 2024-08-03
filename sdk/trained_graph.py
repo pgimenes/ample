@@ -187,18 +187,11 @@ class TrainedGraph:
 
             # Assign the edge features to the edge's metadata
             self.nx_graph[src][rx]['meta'] = edge_features
-            
-        print(len(self.nx_graph.nodes()))
-        
-        print(self.nx_graph.edges)
-        print(rx_node_edge_neighbours)
 
         # print(self.nx_graph.edgeindex)
         for node in self.nx_graph.nodes:
-            print('node',node)
             neighbours =rx_node_edge_neighbours[node] #self.nx_graph.nodes[rx]["meta"]['neighbours']
-            print('neighbours')
-            print(neighbours)
+ 
             self.nx_graph.nodes[node]["meta"] = {
                 # 'neighbours' : neighbours,
                 'neighbour_count': len(neighbours),
