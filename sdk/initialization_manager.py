@@ -416,7 +416,9 @@ class InitManager:
         
         nodeslot_mem_hex = []
 
-        for group in tqdm(node_groups):
+        for group_idx,group in tqdm(enumerate(node_groups)):
+            logging.info(f"Generating nodeslot group {group_idx} memory.")
+
             assert(len(group) == 8)
             str_lst = []
             for nodeslot in group:

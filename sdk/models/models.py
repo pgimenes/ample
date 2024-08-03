@@ -351,7 +351,7 @@ class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         src_embed = src_embed[u]
         rx_embed = rx_embed[v]
         
-        updated_edge = self.edge_update(edge_embed,edge_embed,edge_embed)
+        updated_edge = self.edge_update(src_embed,edge_embed,rx_embed)
 
         outputs.append(updated_edge)
 
