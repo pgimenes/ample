@@ -149,7 +149,7 @@ class InitManager:
             'transformation_wait_count': 16,
             'aggregate_enable' : aggregate_enable,
             'edge_node': edge_node,
-            'nodeslot_start_address': self.nodeslot_programming_group_start_address[edge]
+            'nodeslot_start_address': 0
         }
         
 

@@ -93,10 +93,13 @@ async def graph_test_runner(dut):
         )
 
         dut._log.debug("Nodeslot fetching done, waiting for nodeslots to be flushed.")
+        # print('cycle start, layer:',layer_idx)
         initial_cycle = test.get_cycle_count()
 
         await test.flush_nodeslots(test)
         final_cycle = test.get_cycle_count()
+        # print('cycle startend')
+
         layer_cycle_count.append(int(final_cycle - initial_cycle))
 
         await test.end_test()
@@ -108,7 +111,7 @@ async def graph_test_runner(dut):
             dut._log.error("Not all nodes not written.")
 
   
-        test.dut._log.info(f"Layer {layer_idx+1} finished.")
+        test.dut._log.info(f"Layer {layer_idx} finished.")
 
         await delay(dut.regbank_clk, 10)
 
