@@ -106,7 +106,8 @@ class BenchmarkingManager:
         data = self.graph.dataset
         data.x = data.x.to(torch.device(f"cuda:{self.device}"))
         data.edge_index = data.edge_index.to(torch.device(f"cuda:{self.device}"))
-        
+        data.edge_attr = data.edge_attr.to(torch.device(f"cuda:{self.device}"))
+
         times = []
         for i in range(1000):
             time_taken = self.bman.predict(batch=(data.x, data.edge_index, data.edge_attr))
@@ -237,6 +238,8 @@ class BenchmarkingManager:
             "fpga_nodes_per_ms": throughput,
             "fpga_throughput_per_watt": throughput/mean_power
         }
+
+
 
         # print(f"Metrics: {metrics}")
         return metrics
