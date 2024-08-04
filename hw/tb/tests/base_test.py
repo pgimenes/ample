@@ -324,13 +324,24 @@ class BaseTest:
         model.load_state_dict(state_dict)
         
         x, edge_index, edge_attr = data
+        print('data')
+        print(x, edge_index, edge_attr)
+
+        # edge_attr = self.trained_graph.dataset.edge_attr  # Edge attributes tensor
+        # data = (x,edge_index,edge_attr) 
+
+        model_input = (x, edge_index)
+        if edge_attr is not None:
+            model_input = model_input + (edge_attr,)  
+
         model.eval()
         with torch.no_grad():
-            if edge_attr is not None:
-                output = model(x, edge_index, edge_attr)
-            else:
-                output = model(x, edge_index)
+            # if edge_attr is not None:
+            output = model(*model_input)
+            # else:
+            #     output = model(x, edge_index)
             # output = model(x, edge_index, edge_attr) if edge_attr is not None else model(x, edge_index)
+            # a = b
         del model
 
         return output

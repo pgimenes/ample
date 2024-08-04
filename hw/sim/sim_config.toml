@@ -31,6 +31,8 @@ in_features = 32
 hidden_dimension = 32
 out_features = 32
 edge_dim = 32
+# edge_attr = 0
+
 num_nodes = 10
 
 gcn = false
@@ -50,6 +52,7 @@ payloads = true
 gui = false
 tb_log_level = "INFO"
 sim = false
+build = false
 
 
 #true

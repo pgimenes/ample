@@ -86,7 +86,7 @@ class GIN_Model(pl.LightningModule):
                 torch.nn.Linear(hidden_dimension, out_channels, bias=False)
                 ))
 
-    def forward(self, x, edge_index):
+    def forward(self, x, edge_index,edge_attr= 0):
         for layer in self.layers:
             out = layer(x, edge_index)
         return out

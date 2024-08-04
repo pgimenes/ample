@@ -20,11 +20,16 @@ class Memory_Mapper:
         weights_list = [0]*self.num_layers
         out_messages_list = [0]*self.num_layers #Can remove - using ptr
         #Used to change adj list between layers
-        adj_list = {'nbrs': 0, 'self_ptr': 0 } # Change name perhaps to layer offset adj
+        adj_list = {'nbrs': 0, 'edge_nbrs': 0, 'self_ptr': 0 } # Change name perhaps to layer offset adj
         self.offsets = {'adj_list': adj_list, 'scale_factors': 0, 'in_messages':0, 'weights':weights_list, 'out_messages': out_messages_list}
         self.out_messages_ptr = 0
         
         self.dump_file = os.path.join(base_path, dump_file)
+
+        if isinstance(self.model, Interaction_Net_Model) or isinstance(self.model, Edge_Embedding_Model): #TODO put in initializer and then pass
+            self.edge_attr = 1
+        else:
+            self.edge_attr = 0
 
     def map_memory(self):
         logging.debug(f"Mapping memory contents.")
@@ -36,16 +41,33 @@ class Memory_Mapper:
 
 
     def map_adj_list(self):
+
+
+        
+
+
+
         #TODO change adj list so it can be switched out and only serve a node group instead of all
         self.offsets['adj_list']['nbrs'] = len(self.memory_hex)
         for node in self.graph.nodes:
             node_metadata = self.graph.nodes[node]['meta']
             self.memory_hex += int_list_to_byte_list(node_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
         
-        for (u,v) in self.graph.edges():
-            edge_metadata = self.graph[u][v]['meta']
-            self.memory_hex += int_list_to_byte_list(edge_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
 
+        if self.edge_attr:
+            for (u,v) in self.graph.edges():
+                edge_metadata = self.graph[u][v]['meta']
+                self.memory_hex += int_list_to_byte_list(edge_metadata['neighbour_message_ptrs'], align=True, alignment=64, pad_side="right")
+
+
+
+
+        # self.offsets['adj_list']['edge_nbrs'] = len(self.memory_hex)
+        # for node in self.graph.nodes:
+        #     node_metadata = self.graph.nodes[node]['meta']
+        #     self.memory_hex += int_list_to_byte_list(node_metadata['edge_message_ptrs'], align=True, alignment=64, pad_side="right")
+        
+        
 
 
         #if linear layers
@@ -54,9 +76,10 @@ class Memory_Mapper:
             node_metadata = self.graph.nodes[node]['meta']
             self.memory_hex += int_list_to_byte_list(node_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
 
-        for (u,v) in self.graph.edges():
-            edge_metadata = self.graph[u][v]['meta']
-            self.memory_hex += int_list_to_byte_list(edge_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
+        if self.edge_attr:
+            for (u,v) in self.graph.edges():
+                edge_metadata = self.graph[u][v]['meta']
+                self.memory_hex += int_list_to_byte_list(edge_metadata['self_ptr'], align=True, alignment=64, pad_side="right")
 
         #Node update
 
@@ -96,11 +119,13 @@ class Memory_Mapper:
             self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]["meta"]['embedding'], align=True, alignment=64)
 
         #TODO:include edge attributes
-        for edge in self.graph.edges:
-            edge_data = self.graph.edges[edge]["meta"] 
-            if 'embedding' in edge_data:
-                # print('edge embedding',edge_data['embedding'])
-                self.memory_hex += float_list_to_byte_list(self.graph.edges[edge]["meta"]['embedding'], align=True, alignment=64)
+
+        if self.edge_attr:
+            for edge in self.graph.edges:
+                edge_data = self.graph.edges[edge]["meta"] 
+                if 'embedding' in edge_data:
+                    # print('edge embedding',edge_data['embedding'])
+                    self.memory_hex += float_list_to_byte_list(self.graph.edges[edge]["meta"]['embedding'], align=True, alignment=64)
 
         # Set offset for next memory range
         self.offsets['weights'][0] = len(self.memory_hex)

@@ -108,7 +108,7 @@ class InitManager:
             raise RuntimeError(f"Unrecognized layer type {type(layer)}")        
         return inc, outc
 
-
+    #TODO use other layer_config
     def get_default_layer_config(self, layer,idx):
         
         inc, outc = self.get_layer_feature_count(layer)
@@ -119,8 +119,7 @@ class InitManager:
         else:
             adj_list_addr= self.memory_mapper.offsets['adj_list']['nbrs']
             aggregate_enable = 1
-
-        edge_node = 'edge' in layer.name
+        edge_node = 0
         #Multi-layer support - out messages become in messages for next layer
         if 'input' in layer.name:
             in_messages_address = self.memory_mapper.offsets['in_messages']
@@ -152,7 +151,8 @@ class InitManager:
             'transformation_wait_count': 16,
             'aggregate_enable' : aggregate_enable,
             'edge_node': edge_node,
-            'nodeslot_start_address': 0
+            'nodeslot_start_address': 0,
+            'concat_width': 1
         }
         
 
@@ -170,6 +170,9 @@ class InitManager:
             else:
                 adjacency_list_address = self.memory_mapper.offsets['adj_list']['self_ptr']
         else:
+            # if edge: 
+            #     adjacency_list_address = self.memory_mapper.offsets['adj_list']['edge_nbrs'] #Only use if node is using edges
+            # else:
             adjacency_list_address = self.memory_mapper.offsets['adj_list']['nbrs']
             aggregate_enable = 1
 
@@ -591,14 +594,24 @@ class InitManager:
         # data = (x, edge_attr,edge_index)
         #Traced Model - allow TB to be compatible with GCNConv
         #TODO Change to have edge flag
-        if (isinstance(self.model, Edge_Embedding_Model) or (isinstance(self.model, Interaction_Net_Model))):
-            edge_attr = self.trained_graph.dataset.edge_attr  # Edge attributes tensor
-            data = (x,edge_index,edge_attr) 
-            # edge_attr = self.trained_graph.dataset
-            jit_model = torch.jit.trace(self.model, data)
-        else:
-        
-            jit_model = torch.jit.trace(self.model, (x, edge_index))
+        # if (isinstance(self.model, Edge_Embedding_Model) or (isinstance(self.model, Interaction_Net_Model))):
+        #     edge_attr = self.trained_graph.dataset.edge_attr  # Edge attributes tensor
+        #     data = (x,edge_index,edge_attr) 
+        #     # edge_attr = self.trained_graph.dataset
+        #     jit_model = torch.jit.trace(self.model, data)
+        # else:
+        edge_attr = self.trained_graph.dataset.edge_attr  # Edge attributes tensor
+        # data = (x,edge_index,edge_attr) 
+
+        # Start with the required elements
+        data = [x, edge_index]
+
+        # Append edge_attr if it's not None
+        if edge_attr is not None:
+            data.append(edge_attr)
+            # print('edge_attr',edge_attr)
+
+        jit_model = torch.jit.trace(self.model, data)
         #Non-traced model
         # jit_model = torch.jit.script(self.model).to('cpu')
         torch.jit.save(jit_model, 'model.pt')

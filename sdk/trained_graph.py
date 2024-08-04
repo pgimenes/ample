@@ -22,7 +22,7 @@ class TrainedGraph:
         self.dataset = dataset
         self.nx_graph = to_networkx(self.dataset)
         self.graph_precision = graph_precision
-
+        # self.model = model #Need model to define the graph stucture e.g interaction net
         # Node offsets in adjacency list
         node_ids, node_offsets = np.unique(dataset.edge_index[0], return_index=True)
 
@@ -33,8 +33,8 @@ class TrainedGraph:
         # Feature count initialization may change when embeddings are trained
         self.feature_count = dataset.x.shape[1] if feature_count is None else feature_count
 
-
-        self.init_nx_graph_edges(self_connection=self_connection) #TODO change to or to not accept edges
+        #Check if using edge attributes:
+        self.init_nx_graph(self_connection=self_connection) #TODO change to or to not accept edges
         #if edges:
         edge = list(self.nx_graph.edges(data=True))[0]
         _,_, attributes = edge
@@ -107,7 +107,7 @@ class TrainedGraph:
             self.nx_graph[u][v]['meta'] = edge_features
 
 
-    def init_nx_graph(self, self_connection=False):
+    def init_nx_graph_old(self, self_connection=False):
         for node in self.nx_graph.nodes:
             neighbours = list(self.nx_graph.neighbors(node))
             if self_connection:
@@ -159,44 +159,55 @@ class TrainedGraph:
             self.nx_graph[u][v]['meta'] = edge_features
 
 
-    def init_nx_graph_edges(self, self_connection=False):
+    def init_nx_graph(self, self_connection=False):
         rx_node_edge_neighbours  = [[] for _ in range(len(self.nx_graph.nodes()))]
+        
+        if self.dataset.edge_attr is not None:
+            # print('EDGE ATTR')
+            # print(self.dataset.edge_attr)
+            for index, (src, rx) in enumerate(self.nx_graph.edges()):
+                edge_id = index + len(self.nx_graph.nodes)
 
-        for index, (src, rx) in enumerate(self.nx_graph.edges()):
-            edge_id = index + len(self.nx_graph.nodes)
+                rx_node_edge_neighbours[rx].append(edge_id) #Add edge to rx neighbours
+            
+                edge_features = {
+                    'edge_id': edge_id, #+num nodes - need to seperate in memory
+                    'precision': "FLOAT_32", #random.choice(["FLOAT_32", "FIXED_8"]) if self.graph_precision == 'mixed' else self.graph_precision,
+                    'aggregation_function': "SUM",
+                    # 'adjacency_list_address_lsb' : int(self.edge_offsets[index]), #
+                    'self_ptr' : [self.calc_axi_addr(self.feature_count)*edge_id], 
+                    'scale_factors_address' : 0,
+                    # 'adj_list_offset': 0, #int(self.edge_offsets[(u, v)]),
+                    'neighbour_message_ptrs': [
+                        #Memory UUUUUU | EEEEEE |  VVVVVV
+                        #Temp TODO complete
+                        self.calc_axi_addr(self.feature_count) * (src),  #SRC
+                        self.calc_axi_addr(self.feature_count) * (edge_id), #Change to self feature count
+                        self.calc_axi_addr(self.feature_count) * (rx + len(self.nx_graph.nodes) + len(self.nx_graph.edges)), #RX (edge_id), #
+                        # change to offset for rx embeddings - keep for now + len(self.nx_graph.nodes) + len(self.nx_graph.edges))  #add offset to access rx embedded
+                    ]
+                }
 
-            rx_node_edge_neighbours[rx].append(edge_id) #Add edge to rx neighbours
-           
-            edge_features = {
-                'edge_id': edge_id, #+num nodes - need to seperate in memory
-                'precision': "FLOAT_32", #random.choice(["FLOAT_32", "FIXED_8"]) if self.graph_precision == 'mixed' else self.graph_precision,
-                'aggregation_function': "SUM",
-                # 'adjacency_list_address_lsb' : int(self.edge_offsets[index]), #
-                'self_ptr' : [self.calc_axi_addr(self.feature_count)*edge_id], 
-                'scale_factors_address' : 0,
-                # 'adj_list_offset': 0, #int(self.edge_offsets[(u, v)]),
-                'neighbour_message_ptrs': [
-                    #Memory UUUUUU | EEEEEE |  VVVVVV
-                    #Temp TODO complete
-                    self.calc_axi_addr(self.feature_count) * (src),  #SRC
-                    self.calc_axi_addr(self.feature_count) * (edge_id), #Change to self feature count
-                    self.calc_axi_addr(self.feature_count) * (rx + len(self.nx_graph.nodes) + len(self.nx_graph.edges)), #RX (edge_id), #
-                     # change to offset for rx embeddings - keep for now + len(self.nx_graph.nodes) + len(self.nx_graph.edges))  #add offset to access rx embedded
-                ]
-            }
+                # Assign the edge features to the edge's metadata
+                self.nx_graph[src][rx]['meta'] = edge_features
+                node_neighbours = rx_node_edge_neighbours #Use edges as neighbours (MPNN)
+        else:
+            # node_neighbours = self.nx_graph.neighbors #Use nodes as neighbours
+            node_neighbours = [list(self.nx_graph.neighbors(node)) for node in self.nx_graph.nodes()]
 
-            # Assign the edge features to the edge's metadata
-            self.nx_graph[src][rx]['meta'] = edge_features
-
+            # print('node_neighbours')
+            # print(node_neighbours)
         # print(self.nx_graph.edgeindex)
         for node in self.nx_graph.nodes:
-            neighbours =rx_node_edge_neighbours[node] #self.nx_graph.nodes[rx]["meta"]['neighbours']
- 
+            neighbours = node_neighbours[node]
+            # edge_neighbours =rx_node_edge_neighbours[node] #self.nx_graph.nodes[rx]["meta"]['neighbours']
+            # node_neighbours = list(self.nx_graph.neighbors(node))
             self.nx_graph.nodes[node]["meta"] = {
                 # 'neighbours' : neighbours,
                 'neighbour_count': len(neighbours),
-                'aggregation_function': "SUM",
-                
+                'aggregation_function': "SUM", #Change feature size to edge features
+                # 'edge_message_ptrs': [self.calc_axi_addr(self.feature_count)*nb_ptr for nb_ptr in edge_neighbours],
+
                 # 'adj_list_offset': int(self.node_offsets[node]),
                 'neighbour_message_ptrs': [self.calc_axi_addr(self.feature_count)*nb_ptr for nb_ptr in neighbours],
                 # 'adjacency_list_address_lsb': 0, # to be defined by init manager

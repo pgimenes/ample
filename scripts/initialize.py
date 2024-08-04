@@ -2,6 +2,7 @@ import argparse
 import sys
 import os
 import toml
+import pandas as pd
 
 workarea = os.environ.get('WORKAREA')
 
@@ -73,6 +74,7 @@ graph_map = {
     'amazon': AmazonProductsGraph,
 }
 
+#TODO split into models using edges and models not using edges, then use it as  flag to generate edges
 model_map = {
   'gcn': GCN_Model,
   'gat': GAT_Model,
@@ -87,12 +89,22 @@ model_map = {
 def main(args):
     # Load Graphs
     graphs = []
-    
+
+    #TODO replace this logic
+    for arg, _ in model_map.items():
+        if getattr(args, arg):
+            if arg == 'int_net' or arg =='edge':
+                print('use_edges')
+                use_edges = 1
+            else:
+                use_edges = 0
+        
+
     for arg, graph_cls in graph_map.items():
         if getattr(args, arg):
             # To do: temporary
             if arg == "erdos":
-                graph = RandomGraph(num_nodes=args.num_nodes, avg_degree=args.avg_degree, num_channels=args.in_features, graph_precision=args.precision,edge_dim=args.edge_dim,edges = True) #TODO add var
+                graph = RandomGraph(num_nodes=args.num_nodes, avg_degree=args.avg_degree, num_channels=args.in_features, graph_precision=args.precision,edge_dim=args.edge_dim,edges = use_edges) #TODO add var
             else:
                 graph = graph_cls(graph_precision=args.precision)
             
@@ -198,6 +210,22 @@ def run_pass(
     if (args.dq):
         graph.quantize_dq()
 
+     # Prepare data for the DataFrame
+
+    # Prepare data for the DataFrame with formatted metric names
+    rows = []
+    for component, values in metrics.items():
+        for metric, value in values.items():
+            formatted_metric = metric.replace("_", " ").replace("-", " ").title()
+            formatted_value = f"{value:.6f}" if isinstance(value, float) else f"{value:.6f}"
+            rows.append([component, formatted_metric, formatted_value])
+
+    # Create a DataFrame and print it
+    df = pd.DataFrame(rows, columns=["Component", "Metric", "Value"])
+    print(df.to_markdown(index=False))
+    
+
+
 
     return metrics
 
@@ -300,7 +328,7 @@ def parse_arguments():
     parser.add_argument('--avg_degree', type=float, default=config.get('avg_degree', 1.0), help='Average number of neighbours per node')
     parser.add_argument('--num_nodes', type=int, default=config.get('num_nodes', 10), help='Approximate number of nodes in the graph')
     parser.add_argument('--edge_dim', type=int, default=config.get('edge_dim', 32), help='Edge dimension for random graph ') 
-    # parser.add_argument('--edge_attr', action='store_true', default=config.get('edge', False), help='Use EDGE Model')
+    # parser.add_argument('--edge_attr', action='store_true', default=config.get('edge_attr', 0), help='Use EDGE Model')
 
     parser.add_argument('--random', action='store_true', default=config.get('random', False), help='Initialize graph with random embedding.')
 
@@ -317,6 +345,8 @@ def parse_arguments():
 
     # Simulation settings
     parser.add_argument('--sim', action='store_true', default=config.get('sim', False), help='Run benchmarking steps in Cocotb simulation')
+    parser.add_argument('--build', action='store_true', default=config.get('build', 0), help='Build FPGA simulation')
+
     parser.add_argument('--preload', action='store_true', default=config.get('preload', False), help='Pre-load GPU results and layer configs')
 
     # Logging and GUI
