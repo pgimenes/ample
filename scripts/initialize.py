@@ -94,7 +94,7 @@ def main(args):
     for arg, _ in model_map.items():
         if getattr(args, arg):
             if arg == 'int_net' or arg =='edge':
-                print('use_edges')
+                # print('use_edges')
                 use_edges = 1
             else:
                 use_edges = 0

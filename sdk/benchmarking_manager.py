@@ -147,9 +147,13 @@ class BenchmarkingManager:
 
         avg_time = np.mean(times)
         std_dev = np.std(times)
+        throughput = self.graph.dataset.y.shape[0] / avg_time
+
         return {
             "cpu_latency_mean": avg_time,
-            "cpu_latency_std_dev": std_dev
+            "cpu_latency_std_dev": std_dev,
+            "cpu_nodes_per_ms": throughput
+
         }
 
     def gpu_benchmark(self):
@@ -228,7 +232,7 @@ class BenchmarkingManager:
 
         cycles_dict = self.read_cycles_file(f"{path}/sim_cycles.txt")
         sim_cycle_time = sum(cycles_dict.values()) * (1/self.fpga_clk_freq)
-        throughput = self.graph.dataset.y.shape[0] / float(stime)
+        throughput = self.graph.dataset.y.shape[0] / float(sim_cycle_time)
         mean_power = 30.0
 
         metrics  = {

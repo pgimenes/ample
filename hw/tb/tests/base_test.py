@@ -324,8 +324,8 @@ class BaseTest:
         model.load_state_dict(state_dict)
         
         x, edge_index, edge_attr = data
-        print('data')
-        print(x, edge_index, edge_attr)
+        # print('data')
+        # print(x, edge_index, edge_attr)
 
         # edge_attr = self.trained_graph.dataset.edge_attr  # Edge attributes tensor
         # data = (x,edge_index,edge_attr) 
