@@ -136,6 +136,7 @@ class InitManager:
             #New out messages pointer = [data_needed_to_store(number of features in [this layer])] * number of nodes in graph
             self.memory_mapper.out_messages_ptr += self.calc_axi_addr((self.get_feature_counts(self.model))[idx]) * len(self.trained_graph.nx_graph.nodes[node_id])
         return {
+            'name' : layer.name,
             'nodeslot_count': len(self.trained_graph.nx_graph.nodes),
             'in_feature_count': inc,
             'out_feature_count': outc,
@@ -177,6 +178,7 @@ class InitManager:
             aggregate_enable = 1
 
         return {
+            'name' : layer.name,
             'nodeslot_count': nodeslot_count,
             'in_feature_count': inc,
             'out_feature_count': outc,

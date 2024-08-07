@@ -157,13 +157,13 @@ class GCN_MLP_Model(nn.Module):
             for i in range(layer_count-2):
                 layer = Linear(hidden_dimension, hidden_dimension, bias=False)
                 if i == 0:
-                    layer.name = f'linear_input_layer{i}'
+                    layer.name = f'mlp_linear_input_layer{i}'
                 else:
-                    layer.name = f'linear_hidden_layer{i}'
+                    layer.name = f'mlp_linear_hidden_layer{i}'
 
                 self.layers.append(layer)
             layer = Linear(hidden_dimension, out_channels, bias=False)
-            layer.name = f'linear_output_layer{layer_count-1}'
+            layer.name = f'mlp_linear_output_layer{layer_count-1}'
             self.layers.append(layer)
 
 
@@ -194,12 +194,12 @@ class MLP_Model(torch.nn.Module):
         self.layers = nn.ModuleList()
         if layer_count == 1:
             layer = nn.Linear(in_channels, out_channels, bias=True)
-            layer.name = 'input_output_layer'  # Assign name directly
+            layer.name = 'mlp_input_output_layer'  # Assign name directly
             self.layers.append(layer)
 
         else:
             layer = nn.Linear(in_channels, hidden_dimension, bias=True)
-            layer.name = 'input_layer'
+            layer.name = 'mlp_input_layer'
             self.layers.append(layer)
             for i in range(layer_count-2):
                 layer = nn.Linear(hidden_dimension, hidden_dimension, bias=True)
@@ -207,7 +207,7 @@ class MLP_Model(torch.nn.Module):
                 self.layers.append(layer)
                 
             layer = nn.Linear(hidden_dimension, out_channels, bias=True)
-            layer.name = 'output_layer'
+            layer.name = 'mlp_output_layer'
             self.layers.append(layer)
 
         for layer in self.layers:
@@ -300,26 +300,26 @@ class Edge_Embedding_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
 
         #########Source Node Edge Embed MLP#########
         self.src_embedder = nn.Linear(in_channels, out_channels, bias=False) 
-        self.src_embedder.name  = 'src_embedder'
+        self.src_embedder.name  = 'linear_src_embedder'
         self.layers.append(self.src_embedder) #Used to map weights in SDK
 
 
         #########Edge Node MLP#########
         #Change to GCN to aggregate itself and last layer edge if not first model
         self.edge_embedder = nn.Linear(in_channels, hidden_dimension, bias=False)
-        self.edge_embedder.name = 'edge_embedder'
+        self.edge_embedder.name = 'linear_edge_embedder'
         self.layers.append(self.edge_embedder)
 
 
         #########Receive Node Edge Embed MLP#########
         self.rx_embedder = nn.Linear(in_channels, out_channels, bias=False)
-        self.rx_embedder.name = 'rx_embedder'
+        self.rx_embedder.name = 'linear_rx_embedder'
         self.layers.append(self.rx_embedder)
 
 
         #########Edge Node Update#########
         self.edge_update = AGG_MLP_Model(in_channels, hidden_dimension)
-        self.edge_update.name = 'edge_update'
+        self.edge_update.name = 'gcn_edge_update'
         self.layers.append(self.edge_update)
 
 
@@ -419,26 +419,26 @@ class Interaction_Net_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
 
         #########Source Node Edge Embed MLP#########
         self.src_embedder = nn.Linear(in_channels, out_channels, bias=False)
-        self.src_embedder.name  = 'src_embedder'
+        self.src_embedder.name  = 'linear_src_embedder'
         self.layers.append(self.src_embedder) #Used to map weights in SDK
 
 
         #########Edge Node MLP#########
         #Change to GCN to aggregate itself and last layer edge if not first model
         self.edge_embedder = nn.Linear(in_channels, hidden_dimension, bias=False)
-        self.edge_embedder.name = 'edge_embedder'
+        self.edge_embedder.name = 'linear_edge_embedder'
         self.layers.append(self.edge_embedder)
 
 
         #########Receive Node Edge Embed MLP#########
         self.rx_embedder = nn.Linear(in_channels, out_channels, bias=False)
-        self.rx_embedder.name = 'rx_embedder'
+        self.rx_embedder.name = 'linear_rx_embedder'
         self.layers.append(self.rx_embedder)
 
 
         #########Edge Node GCN#########
         self.edge_update = AGG_MLP_Model(in_channels, hidden_dimension)
-        self.edge_update.name = 'edge_update'
+        self.edge_update.name = 'gcn_edge_update'
         self.layers.append(self.edge_update)
 
 
@@ -446,12 +446,12 @@ class Interaction_Net_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
 
         #########Receive Node Embed #########
         self.rx_node_embedder = nn.Linear(in_channels, out_channels, bias=False)
-        self.rx_node_embedder.name = 'rx_node_embedder'
+        self.rx_node_embedder.name = 'linear_rx_node_embedder'
         self.layers.append(self.rx_node_embedder)
 
         #########Receive Node Aggregate Edges #########
         self.rx_edge_aggr = AggregateEdges(in_channels, out_channels)
-        self.rx_edge_aggr.name = 'rx_edge_aggr'
+        self.rx_edge_aggr.name = 'gcn_rx_edge_aggr'
         self.layers.append(self.rx_edge_aggr)
 
 
@@ -459,8 +459,6 @@ class Interaction_Net_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         self.rx_node_update = AGG_MLP_Model(in_channels, hidden_dimension)
         self.rx_node_update.name = 'rx_node_update'
         self.layers.append(self.rx_node_update)
-
-
 
         for layer in self.layers:
             layer.to(self.precision)
@@ -472,19 +470,14 @@ class Interaction_Net_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         #TODO change to U and V to match with SDK
         u = edge_index[0] #Source nodes
         v = edge_index[1] #Receive nodes
-        # print('edege_index')
-        # print(u)
-        # print(v)
+    
         src_embed = self.src_embedder(x)
         outputs.append(src_embed)
 
-        #Check edge attributes are mapped correctly
 
         edge_embed = self.edge_embedder(edge_attr)
         outputs.append(edge_embed)
-        # print('edge_embed')
-        # print(edge_embed)
-
+  
         rx_embed = self.rx_embedder(x)
         outputs.append(rx_embed)
 
@@ -500,13 +493,9 @@ class Interaction_Net_Model(torch.nn.Module): #NodeRx_Src_Embedding_Model
         rx_aggregated_edges = self.rx_edge_aggr(edge_index,updated_edge) #TODO change to x[v] - more efficient
         outputs.append(rx_aggregated_edges)
 
-
-        # rx_node_embed = rx_node_embed
         updated_node = self.rx_node_update(rx_node_embed,rx_aggregated_edges,0)
 
         outputs.append(updated_node)
-
-
 
         return outputs
 

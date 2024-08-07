@@ -58,4 +58,10 @@ build = false
 #true
 #false
 
-
+#SIM Monitors
+nsb = false
+pref = false
+age = false
+fte = false
+write_monitor = false
+profiler = false

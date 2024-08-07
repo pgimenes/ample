@@ -17,14 +17,15 @@ class Monitor:
 
     def start(self) -> None:
         """Start monitor"""
-        if self._coro is not None:
-            raise RuntimeError("Monitor already started")
-        self._coro = cocotb.start_soon(self._run())
-
+        # if self._coro is not None:
+        #     raise RuntimeError("Monitor already started")
+        # self._coro = cocotb.start_soon(self._run())
+        cocotb.start_soon(self._run())
+        
     async def stop(self) -> None:
         """Stop monitor"""
         if self._coro is None:
-            raise RuntimeError("AGE Monitor never started")
+            raise RuntimeError("Monitor never started")
         await Join(self._coro)  # Wait for the coroutine to complete
 
         self._coro.kill()

@@ -212,6 +212,7 @@ def run_pass(
 
      # Prepare data for the DataFrame
 
+    #TODO Make function
     # Prepare data for the DataFrame with formatted metric names
     rows = []
     for component, values in metrics.items():
