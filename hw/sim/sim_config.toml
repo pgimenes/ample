@@ -1,0 +1,67 @@
+[settings]
+sweep = false
+dq = false
+
+matrix = false
+karate = false
+erdos = true
+pubmed = false
+cora = false
+citeseer = false
+reddit = false
+flickr = false
+yelp = false
+amazon = false
+
+avg_degree = 1.0
+random = true
+precision = "FLOAT_32"
+reduce = false
+
+device = 0
+fpga_clk_freq = 200e6
+
+preload = false
+tb_tolerance = 0.1
+preload_path = "/home/pg519/shared/agile_results"
+
+
+layers = 2
+in_features = 32
+hidden_dimension = 32
+out_features = 32
+edge_dim = 32
+# edge_attr = 0
+
+num_nodes = 10
+
+gcn = false
+gin = false
+gat = false
+sage = false
+gcn_mlp = false
+mlp = false
+edge = false
+int_net = false
+
+
+cpu = false
+gpu = false
+
+payloads = true
+gui = false
+tb_log_level = "INFO"
+sim = false
+build = false
+
+
+#true
+#false
+
+#SIM Monitors
+nsb = false
+pref = false
+age = false
+fte = false
+write_monitor = false
+profiler = false

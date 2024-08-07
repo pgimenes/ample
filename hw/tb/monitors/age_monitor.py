@@ -8,7 +8,7 @@ from tb.monitor import Monitor
 from tb.utils.common import NodePrecision
 
 class AGE_Monitor (Monitor):
-    def __init__(self, dut, variant):
+    def __init__(self, dut, variant,logger):
         super().__init__(dut, variant)
 
         # Observation queues
@@ -17,11 +17,14 @@ class AGE_Monitor (Monitor):
         self.message_channel_reqs = [Queue[Dict[str, int]]() for _ in range(self.message_channel_count)]
         self.scale_factors = [Queue[Dict[str, int]]() for _ in range(self.message_channel_count)]
         self.buffer_writes = [[Queue[Dict[str, int]]() for _ in range(self.aggregation_buffer_slots)] for _ in range (self.precision_count)]
-
+        self._log = logger
+        self.running = False
 
     async def _run(self) -> None:
         try:
             while True:
+                if self.running == False:
+                    return
                 await RisingEdge(self.dut.core_clk)
 
                 # NSB responses
@@ -30,7 +33,7 @@ class AGE_Monitor (Monitor):
                         "nodeslot": self.dut.nsb_age_resp.nodeslot
                     }
                     sampled_value = self._sample(data, self.nsb_responses)
-                    self.dut._log.debug("Observed AGE response to NSB for Nodeslot: %d", data["nodeslot"].value)
+                    self._log.debug("Observed AGE response to NSB for Nodeslot: %d", data["nodeslot"].value)
 
                 # Message Channel requests
                 for mc in range(self.message_channel_count):
@@ -40,7 +43,7 @@ class AGE_Monitor (Monitor):
                             "fetch_tag": self.dut.message_channel_req[mc].fetch_tag
                         }
                         _ = self._sample(data, self.message_channel_reqs[mc])
-                        self.dut._log.debug("Observed Message Channel request for Nodeslot: %d, Fetch Tag: %d", data["nodeslot"].value, data["fetch_tag"].value)
+                        self._log.debug("Observed Message Channel request for Nodeslot: %d, Fetch Tag: %d", data["nodeslot"].value, data["fetch_tag"].value)
 
                     # Scale Factor Queue
                     if (self.dut.scale_factor_queue_pop[mc].value):
@@ -49,7 +52,7 @@ class AGE_Monitor (Monitor):
                             "data": self.dut.scale_factor_queue_out_data[mc]
                         }
                         _ = self._sample(data, self.scale_factors[mc])
-                        self.dut._log.debug("Observed scale factor pop for fetch tag %d with data: %s", mc, data["data"].value)
+                        self._log.debug("Observed scale factor pop for fetch tag %d with data: %s", mc, data["data"].value)
 
                 # Aggregation Buffer Writes
                 for precision in range(self.precision_count):
@@ -60,6 +63,6 @@ class AGE_Monitor (Monitor):
                                 "data": self.dut.aggregation_buffer_slot_write_data[precision][slot]
                             }
                             _ = self._sample(data, self.buffer_writes[precision][slot])
-                            self.dut._log.debug("Observing %s Aggregation Buffer write to slot %d", NodePrecision(precision).name, slot)
+                            self._log.debug("Observing %s Aggregation Buffer write to slot %d", NodePrecision(precision).name, slot)
         except Exception as e:
-            self.dut._log.error("Error AGE")
+            self._log.error("Error AGE")

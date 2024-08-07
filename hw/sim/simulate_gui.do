@@ -1,7 +1,6 @@
 log -r *
 set NumericStdNoWarnings 1
 set StdArithNoWarnings 1
-do waves.do
 view wave1
 do nsb.do
 view wave2

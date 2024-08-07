@@ -26,21 +26,26 @@ class BenchmarkWrapper():
         self.starter, self.ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
         self.loss_criterion = torch.nn.CrossEntropyLoss(reduction="sum")
 
-    def forward(self, x, edge_index):
-        out = self.model(x, edge_index)
+    def forward(self, x, edge_index, edge_attr):
+        model_input = (x, edge_index)
+        if edge_attr is not None:
+            model_input = model_input + (edge_attr,)  
+        out = self.model(*(model_input))
         return out
 
     def predict(self, batch):
-        x, edge_index = batch[0], batch[1]
+        x, edge_index,edge_attr = batch[0], batch[1], batch[2]
+        
         torch.cuda.empty_cache()
         torch.cuda._sleep(1_000_000)
         self.starter.record()
-        _ = self.forward(x, edge_index)
+        
+        _ = self.forward(x, edge_index,edge_attr)
         torch.cuda.synchronize()
         self.ender.record()
         torch.cuda.synchronize()
-        inference_time = self.starter.elapsed_time(self.ender)
-        return inference_time
+        inference_time = self.starter.elapsed_time(self.ender) /1000.0
+        return inference_time 
 
     def warm_up(self, batch, steps=10):
         x, edge_index = batch[0], batch[1]
@@ -56,15 +61,24 @@ class CPUBenchmarkWrapper():
         # self.starter, self.ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
         self.loss_criterion = torch.nn.CrossEntropyLoss(reduction="sum")
 
-    def forward(self, x, edge_index):
-        out = self.model(x, edge_index)
+    # def forward(self, x, edge_index,edge_attr):
+    #     out = self.model(x, edge_index,edge_attr)
+    #     return out
+
+
+    def forward(self, x, edge_index, edge_attr):
+        model_input = (x, edge_index)
+        if edge_attr is not None:
+            model_input = model_input + (edge_attr,)  
+        out = self.model(*(model_input))
         return out
 
+
     def predict(self, batch):
-        x, edge_index = batch[0], batch[1]
+        x, edge_index,edge_attr = batch[0], batch[1], batch[2]
         start_time = time.time()
         with torch.no_grad():  # Disable gradient calculation
-            _ = self.forward(x, edge_index)
+            _ = self.forward(x, edge_index,edge_attr)
         end_time = time.time()
         inference_time = end_time - start_time
         return inference_time
@@ -92,10 +106,11 @@ class BenchmarkingManager:
         data = self.graph.dataset
         data.x = data.x.to(torch.device(f"cuda:{self.device}"))
         data.edge_index = data.edge_index.to(torch.device(f"cuda:{self.device}"))
-        
+        data.edge_attr = data.edge_attr.to(torch.device(f"cuda:{self.device}"))
+
         times = []
-        for i in range(100):
-            time_taken = self.bman.predict(batch=(data.x, data.edge_index))
+        for i in range(1000):
+            time_taken = self.bman.predict(batch=(data.x, data.edge_index, data.edge_attr))
             times.append(time_taken)
 
         avg_time = np.mean(times)
@@ -127,14 +142,18 @@ class BenchmarkingManager:
         
         times = []
         for i in range(100):
-            time_taken = self.bman.predict(batch=(data.x, data.edge_index))
+            time_taken = self.bman.predict(batch=(data.x, data.edge_index,data.edge_attr))
             times.append(time_taken)
 
         avg_time = np.mean(times)
         std_dev = np.std(times)
+        throughput = self.graph.dataset.y.shape[0] / avg_time
+
         return {
             "cpu_latency_mean": avg_time,
-            "cpu_latency_std_dev": std_dev
+            "cpu_latency_std_dev": std_dev,
+            "cpu_nodes_per_ms": throughput
+
         }
 
     def gpu_benchmark(self):
@@ -194,31 +213,40 @@ class BenchmarkingManager:
         # * Run simulation (assume )
         path = os.environ.get("WORKAREA") + "/hw/sim"
         print(f"cd {path}")
+        command = ""
+        if (self.args.build):
+            command += f"cd {path}; make build"
 
         if (self.args.gui):
-            command = f"cd {path}; make run_simgui"
+            command += f"cd {path}; make run_simgui"
 
         else:
-            command = f"cd {path}; make run_sim"
+            command += f"cd {path}; make run_sim"
 
         print(f"==== Running command: {command}")
         process = subprocess.run(command, shell=True, capture_output=False, text=True)
 
         with open(f"{path}/sim_time.txt", "r") as f:
-            stime = f.readline()
+            stime = float(f.readline())
 
 
         cycles_dict = self.read_cycles_file(f"{path}/sim_cycles.txt")
         sim_cycle_time = sum(cycles_dict.values()) * (1/self.fpga_clk_freq)
-        throughput = self.graph.dataset.y.shape[0] / float(stime)
-        return {
+        throughput = self.graph.dataset.y.shape[0] / float(sim_cycle_time)
+        mean_power = 30.0
+
+        metrics  = {
             "fpga_latency": stime,
             "fpga_sim_cycle_time": sim_cycle_time,
-            "fpga_mean_power": 30,
+            "fpga_mean_power": mean_power,
             "fpga_nodes_per_ms": throughput,
-            "fpga_throughput_per_watt": throughput/30
+            "fpga_throughput_per_watt": throughput/mean_power
         }
 
+
+
+        # print(f"Metrics: {metrics}")
+        return metrics
 
     def read_cycles_file(self,file_path):
         cycles_dict = {}

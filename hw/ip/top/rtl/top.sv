@@ -304,6 +304,7 @@ logic [255:0]                                   nsb_nodeslot_config_make_valid_s
 
 logic [31:0]         graph_config_node_count_value;
 logic [0:0]          ctrl_start_nodeslot_fetch_value;
+logic [31:0]         ctrl_start_nodeslot_fetch_start_addr_value;
 logic                ctrl_start_nodeslot_fetch_done_value;
 logic                ctrl_start_nodeslot_fetch_done_ack_value;
 
@@ -376,6 +377,8 @@ node_scoreboard #(
     // Instruction pre-fetcher
     .graph_config_node_count_value,
     .ctrl_start_nodeslot_fetch_value,
+    .ctrl_start_nodeslot_fetch_start_addr_value,
+
     .ctrl_start_nodeslot_fetch_done_value,
     .ctrl_start_nodeslot_fetch_done_ack_value,
     .nodeslot_finished,
@@ -465,6 +468,7 @@ nodeslot_prefetcher nodeslot_prefetcher_i (
 
     .graph_config_node_count_value,
     .ctrl_start_nodeslot_fetch_value,
+    .ctrl_start_nodeslot_fetch_start_addr_value,
     .ctrl_start_nodeslot_fetch_done_value,
     .ctrl_start_nodeslot_fetch_done_ack_value,
     .nodeslot_finished

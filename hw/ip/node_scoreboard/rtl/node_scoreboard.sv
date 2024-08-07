@@ -55,8 +55,10 @@ module node_scoreboard #(
     input  NSB_PREF_RESP_t                                      nsb_prefetcher_resp,
 
     // HW programming
-    output logic [31:0]                                         graph_config_node_count_value,
+    output logic [31:0]                                         graph_config_node_count_value, //Not defined?
     output logic [0:0]                                          ctrl_start_nodeslot_fetch_value,
+    output logic [31:0]                                         ctrl_start_nodeslot_fetch_start_addr_value,
+
     input  logic                                                ctrl_start_nodeslot_fetch_done_value,
     output logic                                                ctrl_start_nodeslot_fetch_done_ack_value,
     output logic [NODESLOT_COUNT-1:0]                           nodeslot_finished,
@@ -104,6 +106,10 @@ logic ctrl_fetch_layer_weights_done_ack_strobe;                         // strob
 logic [0:0] ctrl_fetch_layer_weights_done_ack_ack;                      // value of field 'CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK.ACK'
 
 logic ctrl_start_nodeslot_fetch_strobe;
+logic ctrl_start_nodeslot_fetch_start_addr_strobe;
+
+logic concat_width_strobe;
+logic[31:0] concat_width_value;
 logic ctrl_start_nodeslot_fetch_done_strobe;
 logic ctrl_start_nodeslot_fetch_done_ack_strobe;
 
@@ -285,6 +291,14 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
     .status_nodeslots_empty_mask_5_value,
     .status_nodeslots_empty_mask_6_value,
     .status_nodeslots_empty_mask_7_value,
+
+
+    .graph_config_node_count_value,
+    .ctrl_start_nodeslot_fetch_value,
+    .ctrl_start_nodeslot_fetch_start_addr_value,
+    .concat_width_value,
+    .ctrl_start_nodeslot_fetch_done_ack_value,
+    .ctrl_start_nodeslot_fetch_done_value,
 
     .nsb_nodeslot_neighbour_count_count   (nsb_nodeslot_neighbour_count_count_sw),
     .nsb_nodeslot_node_id_id              (nsb_nodeslot_node_id_id_sw),
@@ -629,7 +643,7 @@ always_comb begin : nsb_prefetcher_req_logic
                                     : '0;
     
     //Enable/Disable aggregation
-    nsb_prefetcher_req.neighbour_count = (layer_config_aggregate_enable_value) ? nsb_nodeslot_neighbour_count_count[prefetcher_arbiter_grant_bin] : 1;
+    nsb_prefetcher_req.neighbour_count = (layer_config_aggregate_enable_value) ? nsb_nodeslot_neighbour_count_count[prefetcher_arbiter_grant_bin] : concat_width_value;
     
     nsb_prefetcher_req.aggregate = layer_config_aggregate_enable_value;
 

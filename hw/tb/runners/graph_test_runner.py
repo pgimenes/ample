@@ -1,5 +1,7 @@
 import os
 import pdb
+# from tqdm import tqdm
+from tqdm.asyncio import tqdm as tqdm_asyncio
 
 from cocotb.utils import get_sim_time
 
@@ -26,36 +28,40 @@ def get_log_level():
 
 
 async def graph_test_runner(dut):
+
     tolerance = float(os.environ.get('AMPLE_GRAPH_TB_TOLERANCE', 1))
     log_level = get_log_level()
     dut._log.setLevel(log_level)  # Set to the desired level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 
     nodeslot_count = int(os.environ.get('AMPLE_GRAPH_TB_NODESLOT_COUNT', 64))
-    test = BaseTest(dut,nodeslot_count, tolerance)
+    test = BaseTest(dut,nodeslot_count,tolerance,log_level)
+    
     test.log_info(dut, "Starting Graph Test")
 
-    model = test.load_jit_model()
-    x_loaded,edge_index_loaded = test.load_graph()
-    output = test.get_expected_outputs(model, x_loaded, edge_index_loaded)
-    test.log_model_input(x_loaded)
+    model  = test.load_jit_model()
+    inputs = test.load_graph()
+    output = test.get_expected_outputs(model,inputs)
+    test.log_model_input(inputs)
     
-
     # Load nodeslot/register programming and start clocks/reset
     await test.initialize()
 
-    await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.global_config["node_count"])
     layer_cycle_count = []
+    dut._log.info("Graph initialized with log level: %s", dut._log.level)
+    cycle_lists = []
+    layer_lables = []
+    # for layer_idx, layer in tqdm_asyncio(enumerate(test.layers), total=len(test.layers)):
+
     for layer_idx, layer in enumerate(test.layers):
-        await test.start_monitors()
+        layer_lables.append(f"{layer['name']}")
+
         layer_features = output[layer_idx]
-        dut._log.info(f"Starting layer {layer_idx+1}")
-        outs = output[layer_idx]
-        dut._log.debug(f"Layer Out Expected {outs}")
+        dut._log.info(f"Starting layer {layer_idx}")
+        dut._log.debug(f"Layer Out Expected {layer_features}")
 
         # Load monitor
-        test.load_layer_test(layer_features)
+        test.load_layer_test(layer_features,layer_idx)
         
-        # test.start_monitors()
         # Layer configuration
         await test.driver.program_layer_config(layer)
 
@@ -63,8 +69,18 @@ async def graph_test_runner(dut):
         await test.driver.request_weights_fetch(precision=NodePrecision.FLOAT_32)
         dut._log.debug("Weights fetch done.")
 
-        # Program nodeslots
-        # await drive_nodeslots(test)
+
+        #Should only fetch every time nodeslots change
+        # print(f"Layer {layer_idx} nodeslot count: {test.layers[layer_idx]['nodeslot_count']}")
+        await test.driver.axil_driver.axil_write(test.driver.nsb_regs["graph_config_node_count"], test.layers[layer_idx]['nodeslot_count'])
+       
+        #Temp TODO program nodeslot start address for layer
+        # print(f"Layer {layer_idx} nodeslot start address: {test.layers[layer_idx]['nodeslot_start_address']}")
+        
+        await test.driver.axil_driver.axil_write(test.driver.nsb_regs["ctrl_start_nodeslot_fetch_start_addr"], test.layers[layer_idx]['nodeslot_start_address'])
+        await test.driver.axil_driver.axil_write(test.driver.nsb_regs["concat_width"], test.layers[layer_idx]['concat_width'])
+
+
         await test.driver.axil_driver.axil_write(test.driver.nsb_regs["ctrl_start_nodeslot_fetch"], 1)
 
         await test.driver.wait_done_ack(
@@ -75,12 +91,17 @@ async def graph_test_runner(dut):
 
         dut._log.debug("Nodeslot fetching done, waiting for nodeslots to be flushed.")
         initial_cycle = test.get_cycle_count()
+        await test.start_monitors()
+
 
         await test.flush_nodeslots(test)
         final_cycle = test.get_cycle_count()
+        # print('cycle startend')
+
         layer_cycle_count.append(int(final_cycle - initial_cycle))
 
         await test.end_test()
+        # assert test.axi_monitor.empty_expected_layer_features() == True, f"Not all nodeslots written back {layer_idx}"
 
         if test.axi_monitor.empty_expected_layer_features():
             dut._log.info("All nodes written.")
@@ -88,7 +109,10 @@ async def graph_test_runner(dut):
             dut._log.error("Not all nodes not written.")
 
   
-        test.dut._log.info(f"Layer {layer_idx+1} finished.")
+        test.dut._log.info(f"Layer {layer_idx} finished.")
+        #Append layer cycle profile
+        cycles = test.state_monitor.get_cycle_profile()
+        cycle_lists.append(cycles)
 
         await delay(dut.regbank_clk, 10)
 
@@ -96,13 +120,13 @@ async def graph_test_runner(dut):
   
     # await test.stop_monitors()
     test.dut._log.info(f"Test finished. Simulation time: {stime}ms.")
-   
 
+    test.plot_stacked_cycles(cycle_lists, layer_lables)
     with open(f"sim_time.txt", "w") as f:
         f.write(str(stime))
 
     with open(f"sim_cycles.txt", "w") as f:
         for idx,item in enumerate(layer_cycle_count):
-            dut._log.info(f"Layer {idx} cycle count: {item}")
+            dut._log.info(f"Layer {idx} cycles taken: {item}")
             f.write(f"Layer {idx} cycles: {item}")
             f.write("\n")

@@ -100,5 +100,5 @@ class Driver():
         await self.wait_done_ack(
             done_reg = self.nsb_regs["CTRL_FETCH_LAYER_WEIGHTS_DONE"],
             ack_reg = self.nsb_regs["CTRL_FETCH_LAYER_WEIGHTS_DONE_ACK"],
-            tries = 10000
+            tries = 100000
         )

@@ -3,6 +3,7 @@
 import top_pkg::*;
 
 // TO DO: handle case when some slots not valid, less than 8 nodeslots in the response beat
+// TODO: Fetch mulitple nodeslot lists
 
 module nodeslot_prefetcher (
     input logic core_clk,
@@ -68,6 +69,8 @@ module nodeslot_prefetcher (
 
     input  logic [31:0]         graph_config_node_count_value,
     input  logic [0:0]          ctrl_start_nodeslot_fetch_value,
+    input  logic [31:0]         ctrl_start_nodeslot_fetch_start_addr_value,
+
     output logic                ctrl_start_nodeslot_fetch_done_value,
     input  logic                ctrl_start_nodeslot_fetch_done_ack_value,
     input  logic [top_pkg::MAX_NODESLOT_COUNT-1:0] nodeslot_finished
@@ -185,9 +188,10 @@ always_ff @(posedge core_clk or negedge resetn) begin
         fetch_start_address   <= '0;
 
     end else begin
-        if (ctrl_start_nodeslot_fetch_value) begin
+        if (ctrl_start_nodeslot_fetch_value) begin //If edge request, set this to graph_config_edge_count_value
             required_transactions <= (graph_config_node_count_value >> 9) + (|graph_config_node_count_value[8:0] ? 1'b1 : 1'b0); // Divide by 512 and round up
-            fetch_start_address   <= '0;
+            // fetch_start_address   <= '0; //Set this in config
+            fetch_start_address   <= ctrl_start_nodeslot_fetch_start_addr_value;
         end 
 
         if (fetch_req_valid && fetch_req_ready) begin
