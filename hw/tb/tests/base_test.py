@@ -1,10 +1,18 @@
 
 import os
 import json
+import logging
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import torch
 
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
+from cocotb.utils import get_sim_time
 
 import tb.scoreboard as sb
 from tb.driver import Driver
@@ -12,37 +20,110 @@ from tb.driver import Driver
 from tb.utils.common import NodePrecision
 
 from tb.variant import Variant
-# from tb.monitors.age_monitor import AGE_Monitor
-# from tb.monitors.nsb_monitor import NSB_Monitor
+from tb.monitors.age_monitor import AGE_Monitor
+from tb.monitors.nsb_monitor import NSB_Monitor
 from tb.monitors.prefetcher_monitor import Prefetcher_Monitor
 from tb.monitors.fte_monitor import FTE_Monitor
+from tb.monitors.state_monitor import State_Monitor
+# from tb.monitors.mase_cocotb.stream_monitor import StreamMonitor
+
+
+from tb.utils.common import NodeState, NodePrecision
+from tb.utils.common import delay, allocate_lsb
+
+from tb.monitors.axi_write_master_monitor import AXIWriteMasterMonitor
 
 from tb.monitors.bm_monitor import BM_Monitor
 
+
+
+
 class BaseTest:
-    def __init__(self, dut, base_path=None):
+    def __init__(self, dut, nodeslot_count,tolerance, log_level, base_path=None):#TODO change to inherint log level from logger not args
         self.dut = dut
-
         self.driver = Driver(dut)
-
+        self.nodeslot_count = nodeslot_count
         self.variant = Variant()
+        self.tolerance = tolerance
+        self.clk_period = 5
+        self.log_level = log_level
 
-        # self.age_monitor = AGE_Monitor(dut.top_i.aggregation_engine_i, self.variant)
-        # self.nsb_monitor = NSB_Monitor(dut.top_i.node_scoreboard_i, self.variant)
-        # self.prefetcher_monitor = Prefetcher_Monitor(dut.top_i.prefetcher_i, self.variant)
-        # self.fte_monitor = FTE_Monitor(dut.top_i.transformation_engine_i, self.variant)
+        self.test_nodes=10
 
-        # Buffer Manager Monitors
+
+        self.state_monitor = State_Monitor(
+            dut.top_i.node_scoreboard_i,
+            self.variant,
+            self.dut._log,
+            self.test_nodes
+        )
+        self.age_monitor = AGE_Monitor(
+            dut.top_i.aggregation_engine_i,
+            self.variant,
+            self.dut._log
+        )
+
+        self.nsb_monitor = NSB_Monitor(
+            dut.top_i.node_scoreboard_i,
+            self.variant,
+            self.dut._log
+        )
+        self.prefetcher_monitor = Prefetcher_Monitor(
+            dut.top_i.prefetcher_i,
+            self.variant,
+            self.dut._log
+        )
+
+        self.fte_monitor = FTE_Monitor(
+            dut.top_i.transformation_engine_i,
+            self.variant,
+            self.dut._log
+        )
+
+        self.axi_monitor = AXIWriteMasterMonitor(
+            dut=dut,
+            clk=dut.sys_clk,
+            req_valid=dut.top_i.transformation_engine_i.axi_write_master_req_valid,
+            req_ready=dut.top_i.transformation_engine_i.axi_write_master_req_ready,
+            start_address=dut.top_i.transformation_engine_i.axi_write_master_req_start_address,
+            req_len=dut.top_i.transformation_engine_i.axi_write_master_req_len,
+            data_valid=dut.top_i.transformation_engine_i.axi_write_master_data_valid,
+            data=dut.top_i.transformation_engine_i.transformation_core_axi_write_master_data_unreversed,
+            pop=dut.top_i.transformation_engine_i.axi_write_master_pop,
+            resp_valid=dut.top_i.transformation_engine_i.axi_write_master_resp_valid,
+            resp_ready=dut.top_i.transformation_engine_i.axi_write_master_resp_ready,
+            tolerance = self.tolerance 
+            # log_level = #connect logging level from main test
+        )
+
+
+        # # Buffer Manager Monitors
         # self.float_bm_monitors = [None] * self.variant.aggregation_buffer_slots
         # self.fixed_bm_monitors = [None] * self.variant.aggregation_buffer_slots
         # for id in range(self.variant.aggregation_buffer_slots):
         #         self.dut._log.info("%s", dir(dut.top_i.aggregation_engine_i.precision_block[0].aggregation_mesh_i))
         #         self.dut._log.info(f"Creating monitor for BM {id}")
-        #         self.float_bm_monitors[id] = BM_Monitor(dut.top_i.aggregation_engine_i.precision_block[0].aggregation_mesh_i.bm_block[id].buffer_manager_i,
-        #                                                         self.variant, NodePrecision.FLOAT_32.value, id)
+        #         self.float_bm_monitors[id] = BM_Monitor(
+        #                                         dut.top_i.aggregation_engine_i.precision_block[0].aggregation_mesh_i.bm_block[id].buffer_manager_i,
+        #                                         self.variant, NodePrecision.FLOAT_32.value,
+        #                                         id,
+        #                                         self.dut._log
+        #                                       )
 
-        self.scoreboard = sb.Scoreboard(nodeslot_count=256)
+    
+        # self.data_out_0_monitor = StreamMonitor(
+        #         dut.sys_clk,
+        #         dut.top_i.transformation_engine_i.axi_write_master_data,
+        #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
+        #         dut.top_i.transformation_engine_i.axi_write_master_data_valid,
+        #         check=False,
+        #     )
+
+
+        self.scoreboard = sb.Scoreboard(nodeslot_count=64)
         self.nodeslot_programming = {}
+        self.edge_programming = {}
+
         self.global_config = {}
         self.layers = {}
 
@@ -60,6 +141,8 @@ class BaseTest:
     async def initialize(self):
         # Load nodeslot programming and layer config
         self.load_nodeslot_programming()
+        # print(self.load_edge_programming())
+        
         self.load_layer_config()
         self.load_regbanks()
 
@@ -68,31 +151,76 @@ class BaseTest:
         await self.driver.axil_driver.reset_axi_interface()
         await self.drive_reset()
 
+
+
         # Start monitors
-        # self.nsb_monitor.start()
+
         # self.age_monitor.start()
         # self.prefetcher_monitor.start()
         # self.fte_monitor.start()
+        # self.state_monitor.start()
 
         # for id in range(self.variant.aggregation_buffer_slots):
         #     print(f"Binding monitor for BM {id}")
         #     self.float_bm_monitors[id].start()
 
+
+    def load_layer_test(self,layer_features,layer_idx):
+        self.dut._log.debug("Loading expected nodes into monitor")
+        self.axi_monitor.load_layer_features(self.nodeslot_programming,layer_features,self.layers[layer_idx],self.global_config)
+
+    async def start_monitors(self):
+        self.axi_monitor.running = True
+        cocotb.start_soon(self.axi_monitor.monitor_write_transactions())
+
+        ######Start all monitors#####
+        # self.nsb_monitor.running = True
+        # self.nsb_monitor.start()
+        # self.prefetcher_monitor.running = True
+        # self.prefetcher_monitor.start()
+        # self.fte_monitor.running = True
+        # self.fte_monitor.start()
+        # self.age_monitor.running = True
+        # self.age_monitor.start()
+
+        self.state_monitor.running = True
+        self.state_monitor.start()
+
+        ############################
+        
+    async def stop_monitors(self):
+        # self.fte_monitor.stop()
+        # self.axi_monitor._monitor_write_transactions.kill()
+        pass
+
     async def end_test(self):
         # Stop monitors
-        # self.nsb_monitor.stop()
+        # self.nsb_monitor.running = False
+        self.axi_monitor.running = False
+        ######Stop all monitors######
+        # self.nsb_monitor.running = False
+        # self.prefetcher_monitor.running = False
+        # self.fte_monitor.running = False
+        # self.age_monitor.running = False
+        self.state_monitor.running = False
+        # self.state_monitor.stop()
+        #############################
+        # await self.nsb_monitor.stop()
         # self.age_monitor.stop()
-        pass
+        # self.fte_monitor.stop()
+        # self.data_out_0_monitor.kill()
+        # self.axi_monitor.end()
+        # pass
 
     def load_regbank(self, regbank):
         json_path = os.path.join(self.regbank_path, regbank, regbank + "_regs.json")
-        self.dut._log.info("Loading %s from %s", regbank, json_path)
+        self.dut._log.debug("Loading %s from %s", regbank, json_path)
         with open(json_path) as f:
             data = json.load(f)
         return data
 
     def load_regbanks(self):
-        self.dut._log.info("Loading register banks.")
+        self.dut._log.debug("Loading register banks.")
 
         nsb_regmap = self.load_regbank("node_scoreboard_regbank")["registerMap"]
         prefetcher_regmap = self.load_regbank("prefetcher_regbank")["registerMap"]
@@ -110,14 +238,22 @@ class BaseTest:
         self.driver.fte_regs = {register["name"]: fte_regmap["baseAddress"] + register["addressOffset"] for register in self.fte_regbank.values()}
 
     def load_nodeslot_programming(self):
-        self.dut._log.info("Loading nodeslot programming")
+        self.dut._log.debug("Loading nodeslot programming")
         with open(self.nodeslot_programming_file) as f:
             ns_programming = json.load(f)
-        self.nodeslot_programming = ns_programming["nodeslots"]
-        return ns_programming["nodeslots"]
+        self.nodeslot_programming = ns_programming
+        # return ns_programming
+
+
+    # def load_edge_programming(self):
+    #     self.dut._log.debug("Loading edge programming")
+    #     with open(self.nodeslot_programming_file) as f:
+    #         ns_programming = json.load(f)
+    #     self.nodeslot_programming = ns_programming["edges"]
+    #     return ns_programming["edges"]
 
     def load_layer_config(self):
-        self.dut._log.info("Loading layer configuration")
+        self.dut._log.debug("Loading layer configuration")
         with open(self.layer_config_file) as f:
             data = json.load(f)
         self.global_config = data["global_config"]
@@ -129,23 +265,300 @@ class BaseTest:
     def program_layer_config (self, layer_id=0):
         self.driver.program_layer_config(self.layers[layer_id])
 
+    async def wait_end(self, timeout=1, timeout_unit="ms"):
+        while True:
+            await RisingEdge(self.clk)
+            break
+
     # CLOCK AND RESET
 
     async def start_clocks(self):
-        cocotb.start_soon(Clock(self.dut.sys_clk, 5, units="ns").start())
-        cocotb.start_soon(Clock(self.dut.regbank_clk, 5, units="ns").start())
+        cocotb.start_soon(Clock(self.dut.sys_clk, self.clk_period, units="ns").start())
+        cocotb.start_soon(Clock(self.dut.regbank_clk, self.clk_period, units="ns").start())
 
     async def drive_reset(self):
-        self.dut._log.info("Driving reset")
-        self.dut.sys_rst = 1
-        self.dut.regbank_resetn = 0
+        self.dut._log.debug("Driving reset")
+        self.dut.sys_rst.value = 1
+        self.dut.regbank_resetn.value = 0
         for _ in range(50):
             await RisingEdge(self.dut.regbank_clk)
-        self.dut._log.info("Reset done")
-        self.dut.sys_rst = 0
-        self.dut.regbank_resetn = 1
+        self.dut._log.debug("Reset done")
+        self.dut.sys_rst.value = 0
+        self.dut.regbank_resetn.value = 1
 
-        self.dut._log.info("Starting wait after reset")
+        self.dut._log.debug("Starting wait after reset")
         for _ in range(10):
             await RisingEdge(self.dut.regbank_clk)
-        self.dut._log.info("Done waiting after reset")
+        self.dut._log.debug("Done waiting after reset")
+
+
+    async def drive_nodeslots(self,test):
+
+        self.dut._log.debug("Starting nodeslot programming.")
+        free_mask = "1" * self.nodeslot_count
+        # print('ns_programmingI',self.nodeslot_programming)
+        for ns_programming in self.nodeslot_programming:
+            # print('ns_programmingII',ns_programming)
+            # Skip nodeslots with no neighbours
+            if (ns_programming["neighbour_count"] == 0):
+                continue
+
+            # Read empty_mask if all previously free nodeslots have been programmed
+            if (free_mask == "0"*self.nodeslot_count):
+                self.dut._log.debug("Waiting for free nodeslot.")
+                while ("1" not in free_mask):
+                    free_mask = ''
+                    for i in range(0, int(self.nodeslot_count/32)):
+                        empty_mask = await self.driver.axil_driver.axil_read(self.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
+                        free_mask = empty_mask.binstr + free_mask
+                    # self.dut._log.debug("Free nodeslots: %s", free_mask)
+
+            # Check nodeslot range based on precision
+            if (ns_programming["precision"] == "FLOAT_32"):
+                chosen_ns = allocate_lsb(free_mask, bit_range=range(0, self.nodeslot_count))
+            # elif (ns_programming["precision"] == "FIXED_8"):
+            #     chosen_ns = allocate_lsb(free_mask, bit_range=range(16, self.nodeslot_count))
+            else:
+                raise ValueError(f"Unknown precision: {ns_programming['precision']}")
+
+            if (chosen_ns is not None):
+                ml = list(free_mask)
+                ml[-(chosen_ns+1)] = '0'
+                free_mask = ''.join(ml)
+
+            self.dut._log.debug("Ready to program node ID %s into nodeslot %s.", ns_programming["node_id"], chosen_ns)
+
+            await test.driver.program_nodeslot(ns_programming, chosen_ns)
+            self.scoreboard.set_state(chosen_ns, NodeState["PROG_DONE"])
+            self.scoreboard.set_programming(chosen_ns, ns_programming)
+
+        self.dut._log.info("Nodeslot programming done.")
+
+
+
+    async def flush_nodeslots(self,test):
+        # Wait for work to finish
+        self.dut._log.debug("Waiting for nodeslots to be empty.")
+        while(True):
+            # Build free mask
+            free_mask = ''
+            for i in range(0, int(self.nodeslot_count/32)):
+                empty_mask = await self.driver.axil_driver.axil_read(self.driver.nsb_regs["status_nodeslots_empty_mask_" + str(i)])
+                free_mask = empty_mask.binstr + free_mask
+            
+            # self.dut._log.debug("Free nodeslots: %s", free_mask)
+
+            if (free_mask == "1" * self.nodeslot_count):
+                break
+            
+            await delay(self.dut.regbank_clk, 10)
+
+    def load_jit_model(self,model_path = '/home/aw1223/ip/agile/model.pt'):
+        model = torch.jit.load(model_path)
+        return model
+
+
+    def load_graph(self,graph_path = '/home/aw1223/ip/agile/graph.pth'):
+        graph = torch.load(graph_path)
+        input_data = graph['input_data']
+        x_loaded = input_data['x']
+        edge_index_loaded = input_data['edge_index']
+
+        # Check if edge attributes are present and load them if they are
+        edge_attr_loaded = input_data.get('edge_attr', None)
+        
+        return (x_loaded, edge_index_loaded, edge_attr_loaded)
+        
+
+    def get_expected_outputs(self,model,data):
+        ####Remove bias from the model, TODO Add biases####
+        state_dict = model.state_dict()
+        for name, param in state_dict.items():
+            # print(name,param,'name,param')
+            if 'bias' in name:
+                # Reset the bias tensor to all zeros
+                state_dict[name] = torch.zeros_like(param)
+
+        model.load_state_dict(state_dict)
+        
+        x, edge_index, edge_attr = data
+        # print('data')
+        # print(x, edge_index, edge_attr)
+
+        # edge_attr = self.trained_graph.dataset.edge_attr  # Edge attributes tensor
+        # data = (x,edge_index,edge_attr) 
+
+        model_input = (x, edge_index)
+        if edge_attr is not None:
+            model_input = model_input + (edge_attr,)  
+
+        model.eval()
+        with torch.no_grad():
+            # if edge_attr is not None:
+            output = model(*model_input)
+            # else:
+            #     output = model(x, edge_index)
+            # output = model(x, edge_index, edge_attr) if edge_attr is not None else model(x, edge_index)
+            # a = b
+        del model
+
+        return output
+    
+    def log_info(self,dut, message, border_char='*', width=60):
+        border = border_char * width
+        empty_line = border_char + ' ' * (width - 2) + border_char
+        formatted_message = f"{border}\n{empty_line}\n"
+        formatted_message += f"{border_char} {message.center(width - 4)} {border_char}\n"
+        formatted_message += f"{empty_line}\n{border}"
+        
+        self.dut._log.info(formatted_message)
+
+    def log_model_input(self, data):
+        # x = data.get('x')
+        # edge_index = data.get('edge_index')
+        # edge_attr = data.get('edge_attr', None)
+        
+        #Temp change for when there is no edge_attr
+        x, edge_index, edge_attr = data
+
+        self.dut._log.debug("Input Tensors:")
+
+        # Log node features (x)
+        for idx, x_input in enumerate(x):
+            self.dut._log.debug(f"Node Feature {idx}:")
+            self.dut._log.debug(x_input)
+            self.dut._log.debug("\n")
+
+        # Log edge index
+        self.dut._log.debug("Edge Index:")
+        self.dut._log.debug(edge_index)
+        self.dut._log.debug("\n")
+
+        # Log edge attributes if they are provided
+        if edge_attr is not None:
+            self.dut._log.debug("Edge Attributes:")
+            for idx, attr in enumerate(edge_attr):
+                self.dut._log.debug(f"Edge Attribute {idx}:")
+                self.dut._log.debug(attr)
+                self.dut._log.debug("\n")
+
+
+    def get_cycle_count(self):
+        current_time_ns = get_sim_time(units='ns')
+        cycle_count = current_time_ns // self.clk_period 
+        return cycle_count
+
+
+
+
+    # def plot_stacked_cyclesa(self, state_cycle_dicts, labels=None, index_names=None, output_file="stacked_plot.png"):
+    #     # If index_names is not provided, use default states
+    #     if index_names is None:
+    #         index_names = ['EMPTY', 'PROG_DONE', 'FETCH_NB_LIST', 'FETCH_SCALE_FACTORS', 'FETCH_NEIGHBOURS', 'AGGREGATION', 'TRANSFORMATION', 'PASS', 'WRITEBACK', 'HALT']
+
+    #     # Prepare the data for plotting
+    #     cycle_dicts = []
+    #     for state_cycles in state_cycle_dicts:
+    #         # Collect the cycle count for each state, in the order of index_names
+    #         state_sums = [state_cycles.get(state, 0) for state in index_names]
+    #         cycle_dicts.append(state_sums)
+
+    #     # Determine the number of bars to be plotted (the number of states)
+    #     num_bars = len(index_names)
+
+    #     # Get the colormap
+    #     cmap = plt.get_cmap('tab20', num_bars)
+
+    #     # Adjust figure size: width is proportional to the data length, and height is reduced for a sleeker look
+    #     fig, ax = plt.subplots(figsize=(16, 4))
+
+    #     y_pos = np.arange(len(cycle_dicts))
+    #     left_positions = np.zeros(len(cycle_dicts))
+
+    #     for index in range(num_bars):
+    #         # Gather the bar lengths for the current state (across all nodeslots)
+    #         bar_lengths = [cycle_dict[index] for cycle_dict in cycle_dicts]
+
+    #         # Assign colors using the colormap
+    #         color = cmap(index)
+    #         ax.barh(y_pos, bar_lengths, left=left_positions, color=color, edgecolor='black', label=index_names[index] if index_names else f"Index {index + 1}")
+    #         left_positions += bar_lengths
+
+    #     # Set the y-ticks to be the labels
+    #     if labels:
+    #         ax.set_yticks(y_pos)
+    #         ax.set_yticklabels(labels)
+
+    #     ax.set_xlim(0, max(np.sum(cycle_dict) for cycle_dict in cycle_dicts))
+    #     ax.set_xlabel("Cycles")
+    #     ax.set_ylabel("Layers")
+    #     ax.set_title(f"{self} State Cycle Bar Plot")
+
+    #     # Adding a legend to label each index/color
+    #     ax.legend(title="Index Names", bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    #     plt.tight_layout()
+
+    #     # Save the plot to a file
+    #     plt.savefig(output_file, bbox_inches='tight')
+
+    #     # Close the plot to free up memory
+    #     plt.close(fig)
+
+
+
+
+
+    def plot_stacked_cycles(self, state_cycle_dicts, labels=['l1'], index_names=None, output_file="stacked_plot.png",colormap='viridis'):
+        # If index_names is not provided, use default states
+        if index_names is None:
+            index_names = ['EMPTY', 'PROG_DONE', 'FETCH_NB_LIST', 'FETCH_SCALE_FACTORS', 'FETCH_NEIGHBOURS', 'AGGREGATION', 'TRANSFORMATION', 'PASS', 'WRITEBACK', 'HALT']
+
+        # Prepare the data for plotting
+        cycle_dicts = []
+        for state_cycles in state_cycle_dicts:
+            # Collect the cycle count for each state, in the order of index_names
+            state_sums = [state_cycles.get(state, 0) for state in index_names]
+            cycle_dicts.append(state_sums)
+
+        # Determine the number of bars to be plotted (the number of states)
+        num_bars = len(index_names)
+
+        # Get the colormap
+        cmap = plt.get_cmap(colormap, num_bars)
+
+        # Adjust figure size: width is proportional to the data length, and height is reduced for a sleeker look
+        fig, ax = plt.subplots(figsize=(16, 4))
+
+        y_pos = np.arange(len(cycle_dicts))
+        left_positions = np.zeros(len(cycle_dicts))
+
+        for index in range(num_bars):
+            # Gather the bar lengths for the current state (across all nodeslots)
+            bar_lengths = [cycle_dict[index] for cycle_dict in cycle_dicts]
+
+            # Assign colors using the colormap
+            color = cmap(index)
+            ax.barh(y_pos, bar_lengths, left=left_positions, color=color, edgecolor='black', label=index_names[index] if index_names else f"Index {index + 1}")
+            left_positions += bar_lengths
+
+        # Set the y-ticks to be the labels
+        if labels:
+            ax.set_yticks(y_pos)
+            ax.set_yticklabels(labels)
+
+        ax.set_xlim(0, max(np.sum(cycle_dict) for cycle_dict in cycle_dicts))
+        ax.set_xlabel("Cycles")
+        ax.set_ylabel("Layer")
+        ax.set_title(f"State Cycle Bar Plot by Layer")
+
+        # Adding a legend to label each index/color
+        ax.legend(title="Index Names", bbox_to_anchor=(1.05, 1), loc='upper left')
+
+        plt.tight_layout()
+
+        # Save the plot to a file
+        plt.savefig(output_file, bbox_inches='tight')
+
+        # Close the plot to free up memory
+        plt.close(fig)

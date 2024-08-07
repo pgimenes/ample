@@ -261,6 +261,8 @@ logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [NODE_ID_WID
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0]                                              aggregation_buffer_write_enable;
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_WRITE_DEPTH)-1:0] aggregation_buffer_write_address;
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [AGGREGATION_BUFFER_WRITE_WIDTH-1:0]         aggregation_buffer_write_data;
+logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0]     aggregation_buffer_write_count;
+
 logic [top_pkg::PRECISION_COUNT-1:0] [AGGREGATION_BUFFER_SLOTS-1:0] [$clog2(AGGREGATION_BUFFER_READ_DEPTH)-1:0]  aggregation_buffer_feature_count;
 
 // FTE -> Aggregation Buffer Interface
@@ -302,6 +304,7 @@ logic [255:0]                                   nsb_nodeslot_config_make_valid_s
 
 logic [31:0]         graph_config_node_count_value;
 logic [0:0]          ctrl_start_nodeslot_fetch_value;
+logic [31:0]         ctrl_start_nodeslot_fetch_start_addr_value;
 logic                ctrl_start_nodeslot_fetch_done_value;
 logic                ctrl_start_nodeslot_fetch_done_ack_value;
 
@@ -374,6 +377,8 @@ node_scoreboard #(
     // Instruction pre-fetcher
     .graph_config_node_count_value,
     .ctrl_start_nodeslot_fetch_value,
+    .ctrl_start_nodeslot_fetch_start_addr_value,
+
     .ctrl_start_nodeslot_fetch_done_value,
     .ctrl_start_nodeslot_fetch_done_ack_value,
     .nodeslot_finished,
@@ -463,6 +468,7 @@ nodeslot_prefetcher nodeslot_prefetcher_i (
 
     .graph_config_node_count_value,
     .ctrl_start_nodeslot_fetch_value,
+    .ctrl_start_nodeslot_fetch_start_addr_value,
     .ctrl_start_nodeslot_fetch_done_value,
     .ctrl_start_nodeslot_fetch_done_ack_value,
     .nodeslot_finished
@@ -666,6 +672,7 @@ aggregation_engine aggregation_engine_i (
     .aggregation_buffer_slot_write_enable         (aggregation_buffer_write_enable),
     .aggregation_buffer_slot_write_address        (aggregation_buffer_write_address),
     .aggregation_buffer_slot_write_data           (aggregation_buffer_write_data),
+    .aggregation_buffer_slot_write_count          (aggregation_buffer_write_count),
 
     .aggregation_buffer_slot_feature_count        (aggregation_buffer_feature_count),
     .aggregation_buffer_slot_slot_free            (aggregation_buffer_slot_free),
@@ -679,35 +686,41 @@ aggregation_engine aggregation_engine_i (
 // Aggregation Buffer
 // ====================================================================================
 
-for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin
 
-    hybrid_buffer #(
-        .NUM_SLOTS   (top_pkg::AGGREGATION_BUFFER_SLOTS),
-        .WRITE_WIDTH (top_pkg::AGGREGATION_BUFFER_WRITE_WIDTH),
-        .WRITE_DEPTH (top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH),
-        .READ_WIDTH  (top_pkg::AGGREGATION_BUFFER_READ_WIDTH),
-        .READ_DEPTH  (top_pkg::AGGREGATION_BUFFER_READ_DEPTH)
-    ) aggregation_buffer_i (
-        .core_clk           (sys_clk),
-        .resetn             (!sys_rst),
+generate begin:AGGREGATION_BUFFER
 
-        .set_node_id_valid  (aggregation_buffer_set_node_id_valid [precision]),
-        .set_node_id        (aggregation_buffer_set_node_id       [precision]),
-        .slot_node_id       (aggregation_buffer_node_id           [precision]),
+    for (genvar precision = top_pkg::FLOAT_32; precision < top_pkg::PRECISION_COUNT; precision++) begin: AGGREGATION_BUFFER_i
 
-        .write_enable       (aggregation_buffer_write_enable    [precision]),
-        .write_address      (aggregation_buffer_write_address   [precision]),
-        .write_data         (aggregation_buffer_write_data      [precision]),
-        .feature_count      (aggregation_buffer_feature_count   [precision]),
+        hybrid_buffer #(
+            .NUM_SLOTS   (top_pkg::AGGREGATION_BUFFER_SLOTS),
+            .WRITE_WIDTH (top_pkg::AGGREGATION_BUFFER_WRITE_WIDTH),
+            .WRITE_DEPTH (top_pkg::AGGREGATION_BUFFER_WRITE_DEPTH),
+            .READ_WIDTH  (top_pkg::AGGREGATION_BUFFER_READ_WIDTH),
+            .READ_DEPTH  (top_pkg::AGGREGATION_BUFFER_READ_DEPTH)
+        ) aggregation_buffer_i (
+            .core_clk           (sys_clk),
+            .resetn             (!sys_rst),
 
-        .pop                (aggregation_buffer_pop               [precision]),
-        .out_feature        (aggregation_buffer_out_feature       [precision]),
-        .out_feature_valid  (aggregation_buffer_out_feature_valid [precision]),
-        .slot_free          (aggregation_buffer_slot_free         [precision])
+            .set_node_id_valid  (aggregation_buffer_set_node_id_valid [precision]),
+            .set_node_id        (aggregation_buffer_set_node_id       [precision]),
+            .slot_node_id       (aggregation_buffer_node_id           [precision]),
 
-    );
+            .write_enable       (aggregation_buffer_write_enable    [precision]),
+            .write_address      (aggregation_buffer_write_address   [precision]),
+            .write_data         (aggregation_buffer_write_data      [precision]),
+            .write_count        (aggregation_buffer_write_count      [precision]),
+
+            .feature_count      (aggregation_buffer_feature_count   [precision]),
+
+            .pop                (aggregation_buffer_pop               [precision]),
+            .out_feature        (aggregation_buffer_out_feature       [precision]),
+            .out_feature_valid  (aggregation_buffer_out_feature_valid [precision]),
+            .slot_free          (aggregation_buffer_slot_free         [precision])
+
+        );
+    end
 end
-
+endgenerate
 
 // ====================================================================================
 // Transformation Engine

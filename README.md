@@ -117,7 +117,7 @@ source $WORKAREA/scripts/build.sh
 6. Generate the simulation payloads. For example, for the KarateClub dataset:
 
 ```bash
-$WORKAREA/scripts/initialize.py --karate --gcn --payloads --random
+python3 $WORKAREA/scripts/initialize.py --karate --gcn --payloads --random
 ```
 
 7. Build the testbench.
@@ -130,6 +130,19 @@ make build
 ```bash
 make sim GUI=1
 ```
+
+
+8. Benchmark AMPLE against a CPU
+```bash
+make build 
+python3 $WORKAREA/scripts/initialize.py --karate --mlp --payloads --random --layers 10 --sim --cpu --tb_log_level INFO
+```
+
+
+
+Note: Defining ```SIMULATION``` in the Modelsim makefile  will simualte without Xillinx IP and ```SIMULATION_QUICK``` will simulate without FP units, activaiton, bias or aggregation
+
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

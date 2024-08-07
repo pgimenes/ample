@@ -6,6 +6,7 @@ from torch_geometric.datasets import Planetoid
 
 class PlanetoidGraph(TrainedGraph):
     def __init__(self, name="Pubmed", embeddings=[], graph_precision="FLOAT_32", self_connection=False, feature_count=None):
+        self.name = name
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         dataset=Planetoid(root=".", name=name)[0]
         embeds = dataset.x if (embeddings == []) else embeddings

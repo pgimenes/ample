@@ -18,7 +18,7 @@ module sum_aggregator #(
 
 if (PRECISION == top_pkg::FLOAT_32) begin
   
-`ifdef SIMULATION
+`ifdef SIMULATION_QUICK
 
     assign out_feature_valid = in_feature_valid;
     assign out_feature = in_feature;
@@ -27,15 +27,11 @@ if (PRECISION == top_pkg::FLOAT_32) begin
 
     // Adder is combinatorial
     fp_add fp_add_i (
-        // .s_axis_a_tvalid              (in_feature_valid),
         .in1               (acc_feature),
-
-        // .s_axis_b_tvalid              (in_feature_valid),
         .in2               (in_feature),
-
-        // .m_axis_result_tvalid         (out_feature_valid),
         .res          (out_feature)
     );
+    assign out_feature_valid = in_feature_valid;
     
 `endif
 

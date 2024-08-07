@@ -9,6 +9,9 @@ vivado_*
 *.runs
 *.sim
 *.tmp
+*.pt
+*.pth
+*.csv
 
 *.log
 *.jou
@@ -18,9 +21,13 @@ vivado_*
 *.vdb
 *.sdb
 
+
+
+
 # Simulation
 xsim.dir/
 .Xil/
+.nfs*
 
 vagrant/
 
@@ -42,6 +49,7 @@ graph_dump.txt
 nodeslot_programming.json
 layer_config.json
 *.mem
+Cora/
 
 hw/build/
 hw/sim/xsim.ini
@@ -53,6 +61,7 @@ hw/update_regbanks.tcl
 # Modelsim simulation
 sim_build/
 modelsim_lib/
+verilator_build/
 
 # Cocotb
 results.xml
@@ -62,3 +71,25 @@ transcript
 compile.do
 simulate.do
 opt.do
+
+
+.vscode/
+
+
+hw/sim/-debugDB
+hw/sim/sim_cycles.txt
+hw/sim/vsim.dbg
+hw/sim/sim_time.txt
+imports/verilog-axi
+imports/nocrouter
+imports/
+
+hw/tb/module_tests/lib/test/*
+
+sdk/models/model_architecture
+sdk/models/model_architecture.png
+sdk/models/edge_embedder.ipynb
+sdk/models/edge_notebook2.ipynb
+sdk/models/notebook.ipynb
+sdk/models/models_extra.py
+sdk/model_mapper.py
