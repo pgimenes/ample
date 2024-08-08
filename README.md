@@ -117,7 +117,7 @@ source $WORKAREA/scripts/build.sh
 6. Generate the simulation payloads. For example, for the KarateClub dataset:
 
 ```bash
-$WORKAREA/scripts/initialize.py --karate --gcn --payloads --random
+python3 $WORKAREA/scripts/initialize.py --karate --gcn --payloads --random
 ```
 
 7. Build the testbench.

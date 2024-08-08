@@ -1,29 +1,55 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+from torch.nn import Linear
+from torch.nn import ReLU
 from torch_geometric.nn import GCNConv, GATConv, SAGEConv, GINConv
 import pytorch_lightning as pl
+from torch import Tensor
+from torch_geometric.typing import SparseTensor
 
+import numpy as np
 '''
 Graph Convolutional Network
 '''
 
-class GCN_Model(pl.LightningModule):
-    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=64):
+class GCN_Model(torch.nn.Module):
+    def __init__(self, in_channels: int, out_channels: int, layer_count=1, hidden_dimension=64, precision = torch.float32):
         super().__init__()
+        self.precision = precision
         self.layers = nn.ModuleList()
         if layer_count == 1:
-            self.layers.append(GCNConv(in_channels, out_channels))
+            self.layers.append(GCNConv(in_channels, out_channels,normalize =False))
         else:
-            self.layers.append(GCNConv(in_channels, hidden_dimension))
-            for _ in range(layer_count-2):
-                self.layers.append(GCNConv(hidden_dimension, hidden_dimension))
-            self.layers.append(GCNConv(hidden_dimension, out_channels))
+            layer  = GCNConv(in_channels, hidden_dimension,normalize =False)
+            layer.name = 'gcn_layer0'
+            self.layers.append(layer)
+            for i in range(layer_count-2):
+                layer = GCNConv(hidden_dimension, hidden_dimension,normalize =False)
+                layer.name = f'gcn_layer_{i}'
+                self.layers.append(layer)
+            layer = GCNConv(hidden_dimension, out_channels,normalize =False)
+            layer.name = f'gcn_layer_{layer_count-1}'
+            self.layers.append(layer)
 
-    def forward(self, x, edge_index):
+
         for layer in self.layers:
-            out = layer(x, edge_index)
-        return out
+            layer.to(self.precision)
+            
+    def forward(self, x, edge_index):
+        x = x.to(self.precision)  
+        outputs = []
+        for layer in self.layers:
+            x = layer(x, edge_index)
+            outputs.append(x)
+
+        return outputs
+
+
+
+
+
 
 '''
 Graph Isomorphism Network
@@ -106,3 +132,34 @@ class GraphSAGE_Model(pl.LightningModule):
         for layer in self.layers:
             out = layer(x, edge_index)
         return out
+    
+
+'''
+Graph Convolutional Network with attatched linear layers
+'''
+
+class GCN_MLP_Model(nn.Module):
+    def __init__(self, in_channels, out_channels, layer_count=1, hidden_dimension=32):
+        super().__init__()
+        self.layers = nn.ModuleList()
+        self.layers.append(GCNConv(in_channels, out_channels, normalize =False))
+        for _ in range(layer_count-2):
+            self.layers.append(Linear(hidden_dimension, hidden_dimension, bias=True))
+            # self.layers.append(ReLU())
+
+        self.layers.append(Linear(hidden_dimension, out_channels, bias=True))
+
+    def forward(self, x: Tensor, edge_index: Tensor):
+        if isinstance(edge_index, SparseTensor):
+            edge_index = edge_index.to_torch_sparse_coo_tensor()  # Ensure edge_index is a Tensor
+        outputs = []
+        for layer in self.layers:
+            if isinstance(layer, torch.nn.Linear):
+                x = layer(x)
+            else:
+                x = layer(x, edge_index)
+            outputs.append(x)
+        return outputs
+
+
+

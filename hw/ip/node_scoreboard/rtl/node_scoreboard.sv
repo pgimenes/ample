@@ -126,6 +126,10 @@ logic layer_config_weights_address_lsb_strobe;                          // strob
 logic [3:0] [31:0] layer_config_weights_address_lsb_lsb;                      // value of field 'LAYER_CONFIG_WEIGHTS_ADDRESS_LSB.LSB'
 logic layer_config_weights_address_msb_strobe;                          // strobe signal for register 'LAYER_CONFIG_WEIGHTS_ADDRESS_MSB' (pulsed when the register is written from the bus)
 logic [3:0] [1:0] layer_config_weights_address_msb_msb;                       // value of field 'LAYER_CONFIG_WEIGHTS_ADDRESS_MSB.MSB'
+logic layer_config_aggregate_enable_strobe;
+logic [0:0] layer_config_aggregate_enable_value;
+
+
 
 // Nodeslots
 
@@ -263,6 +267,9 @@ node_scoreboard_regbank_regs node_scoreboard_regbank_i (
     .layer_config_adjacency_list_address_msb_msb,
     .layer_config_weights_address_lsb_lsb,
     .layer_config_weights_address_msb_msb,
+
+    .layer_config_aggregate_enable_value,
+
 
     .ctrl_fetch_layer_weights_fetch,
     .ctrl_fetch_layer_weights_done_done,

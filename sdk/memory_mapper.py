@@ -5,13 +5,18 @@ import logging
 import os
 from .utilities import int_list_to_byte_list, float_list_to_byte_list
 from torch_geometric.nn import GCNConv, GINConv, SAGEConv
+from torch.nn import Linear
+import torch
+
 class Memory_Mapper:
 
     def __init__(self, graph, model, base_path="config_files", dump_file="memory.mem"):
         self.graph = graph
         self.model = model
         self.memory_hex = []
-        self.offsets = {'adj_list': 0, 'scale_factors': 0, 'in_messages':0, 'weights':0, 'out_messages':0}
+        self.num_layers = self.count_layers(self.model)
+        weights_list = [0]*self.num_layers
+        self.offsets = {'adj_list': 0, 'scale_factors': 0, 'in_messages':0, 'weights':weights_list, 'out_messages':0}
         self.dump_file = os.path.join(base_path, dump_file)
 
     def map (self):
@@ -43,13 +48,13 @@ class Memory_Mapper:
 
     def map_in_messages(self):
         for node in self.graph.nodes:
+         
             self.memory_hex += float_list_to_byte_list(self.graph.nodes[node]["meta"]['embedding'], align=True, alignment=64)
-        
         # Set offset for next memory range
-        self.offsets['weights'] = len(self.memory_hex)
+        self.offsets['weights'][0] = len(self.memory_hex)
 
     def map_weights(self):
-        for layer in self.model.layers:
+        for idx,layer in enumerate(self.model.layers):
             if isinstance(layer, GCNConv):
                 linear = layer.lin
             elif isinstance(layer, GINConv):
@@ -60,9 +65,10 @@ class Memory_Mapper:
                 raise RuntimeError(f"Unrecognized layer {layer}")
             
             out_feature_count = linear.weight.shape[0]
-
             for outf in range(out_feature_count):
                 self.memory_hex += float_list_to_byte_list(linear.weight[outf], align=True, alignment=64)
+            if(idx < self.num_layers-1):
+                self.offsets['weights'][idx+1] = len(self.memory_hex)
 
         # Set offset for next memory range
         self.offsets['out_messages'] = len(self.memory_hex)
@@ -77,3 +83,18 @@ class Memory_Mapper:
                 file.write('\n')
             file.write(''.join(self.memory_hex[64*(len(self.memory_hex)//64):]))
             file.write('\n')
+
+    def pad_list(self,input_list,target_length):
+        current_length = len(input_list)
+        if current_length < target_length:
+            padding_length = target_length - current_length
+            input_list.extend([0] * padding_length)
+        return input_list
+    
+
+    def count_layers(self,model):
+        count = 0
+        for module in model.modules():
+            if isinstance(module, (torch.nn.Conv2d, torch.nn.Linear,GCNConv,GINConv,SAGEConv)):
+                count += 1
+        return count

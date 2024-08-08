@@ -1,0 +1,39 @@
+name: Verilog Code Linting with Verilator
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+
+jobs:
+  verilog-lint:
+    runs-on: ubuntu-latest
+    container:
+      image: verilator/verilator:latest  # Use your Docker image
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Verilator Linter
+        run: |
+          mkdir -p lint_reports
+          find . -name "*.sv" -or -name "*.v" | xargs -I {} sh -c 'verilator --lint-only  {} > lint_reports/$(basename {}).lint || true'
+
+      - name: Upload lint reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: verilator-lint-reports
+          path: lint_reports/

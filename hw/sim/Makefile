@@ -25,10 +25,10 @@ endif
 
 ifeq ($(GUI),1)
     CMD += -gui
-    VSIM_ARGS += -onfinish stop
+    VSIM_ARGS += -onfinish stop -do $(SIM_BUILD)/../simulate_gui.do -quiet -suppress vsim-3015 -suppress vish-4014 
 else
     CMD += -c
-    VSIM_ARGS += -onfinish exit
+    VSIM_ARGS += -onfinish exit -do $(SIM_BUILD)/../simulate_no_gui.do -quiet -suppress vsim-3015
 endif
 
 ifeq ($(PYTHON_ARCH),64bit)
@@ -171,28 +171,66 @@ $(SIM_BUILD)/opt.do: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do | $(SIM_BUILD)
 
 # Generate simulation script
 $(SIM_BUILD)/simulate.do: $(SIM_BUILD)/opt.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/libs.do | $(SIM_BUILD)
-	@echo "onbreak resume" >> $@
+	# @echo "onbreak resume" >> $@
+	# @echo "set NumericStdNoWarnings 1" >> $@
+	# @echo "set StdArithNoWarnings 1" >> $@
+	# # @echo "log -recursive /*" >> $@
+	# # @echo "add log -r *" >> $@
+	# @echo "do waves.do" >> $@
+	# @echo "run -all" >> $@
+
+	#@echo "vcd file wave.vcd" >> $@
+	#@echo "vcd add -r /*" >> $@
+	@echo "log -r *" >> $@
 	@echo "set NumericStdNoWarnings 1" >> $@
 	@echo "set StdArithNoWarnings 1" >> $@
-	# @echo "log -recursive /*" >> $@
-	# @echo "add log -r *" >> $@
 	@echo "do waves.do" >> $@
+	@echo "view wave1" >> $@
+	@echo "do nsb.do" >> $@
+	@echo "view wave2" >> $@
+	@echo "do pref.do" >> $@
+	@echo "view wave3" >> $@
+	@echo "do age.do" >> $@
+	@echo "view wave4" >> $@
+	@echo "do fte.do" >> $@
 	@echo "run -all" >> $@
+
+	@echo "view wave" >> $@
+	@echo "wave zoom full" >> $@
+	@echo "view wave1" >> $@
+	@echo "wave zoom full" >> $@
+	@echo "view wave2" >> $@
+	@echo "wave zoom full" >> $@
+	@echo "view wave3" >> $@
+	@echo "wave zoom full" >> $@
+	@echo "view wave4" >> $@
+	@echo "wave zoom full" >> $@
+	#@echo	"vcd flush" >> $@
+
+
+
+
 
 build: $(SIM_BUILD)/libs.do $(SIM_BUILD)/compile.do $(SIM_BUILD)/opt.do
 	source $(WORKAREA)/scripts/add_hash.sh
 	source $(SIM_BUILD)/libs.do
 	source $(SIM_BUILD)/compile.do
 	source $(SIM_BUILD)/opt.do
-
+	@touch $(SIM_BUILD)/modelsim.log
+	
+#-l $(SIM_BUILD)/modelsim.log
 run_sim: $(SIM_BUILD)/simulate.do
+	cp $(SIM_BUILD)/modelsim.log $(SIM_BUILD)/run.log
 	set -o pipefail; LIBPYTHON_LOC=$(shell cocotb-config --libpython) MODULE=$(TEST_RUNNER) TESTCASE=$(TESTCASE) TOPLEVEL=$(TOPLEVEL) \
 	GPI_EXTRA=$(GPI_EXTRA) TOPLEVEL_LANG=$(TOPLEVEL_LANG) \
-	$(SIM_CMD_PREFIX) $(CMD) $(VSIM_ARGS) \
+	$(SIM_CMD_PREFIX) $(CMD) -l $(SIM_BUILD)/modelsim.log $(VSIM_ARGS) \
 	$(RUN_ARGS) \
 	$(TOPLEVEL_LIBRARY).$(TOPLEVEL_LIBRARY)_opt \
-	-do $(SIM_BUILD)/simulate.do \
 	$(PLUSARGS) 2>&1 | tee $(SIM_BUILD)/simulate.log
+	@find $(SIM_BUILD)/.. -maxdepth 1 -type f -name 'wlft*' -exec rm -f {} +
+	@#find $(SIM_BUILD)/.. -maxdepth 1 -type f -name '.nfs*' -exec rm -f {} +
+
+
 
 libs: $(SIM_BUILD)/libs.do
 comp: $(SIM_BUILD)/compile.do

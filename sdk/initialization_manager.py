@@ -16,6 +16,10 @@ from torch_geometric.nn import GCNConv, GINConv, SAGEConv
 
 from .models.models import GraphSAGE_Model
 
+import math
+
+data_width = 64
+
 class InitManager:
 
     def __init__(self, 
@@ -68,8 +72,11 @@ class InitManager:
             raise RuntimeError(f"Unrecognized layer type {type(layer)}")        
         return inc, outc
     
-    def get_default_layer_config(self, layer):
+    def get_default_layer_config(self, layer,idx):
         inc, outc = self.get_layer_feature_count(layer)
+  
+
+        in_messages_address= self.memory_mapper.offsets['in_messages']
         return {
             'nodeslot_count': len(self.trained_graph.nx_graph.nodes),
             'in_feature_count': inc,
@@ -79,11 +86,12 @@ class InitManager:
             'transformation_bias': 0,
             'dequantization_parameter': self.trained_graph.dequantization_parameter,
             'adjacency_list_address': self.memory_mapper.offsets['adj_list'],
-            'in_messages_address': self.memory_mapper.offsets['in_messages'],
-            'weights_address': self.memory_mapper.offsets['weights'],
+            'in_messages_address': in_messages_address, 
+            'weights_address': self.memory_mapper.offsets['weights'][idx],
             'out_messages_address': self.memory_mapper.offsets['out_messages'],
             'aggregation_wait_count': 4,
-            'transformation_wait_count': 4
+            'transformation_wait_count': 4,
+            'aggregate_enable' : 1,
         }
 
     def set_layer_config_graphsage(self):
@@ -117,8 +125,8 @@ class InitManager:
             self.set_layer_config_graphsage()
         else :
             # Default layer configuration
-            for layer in self.model.layers:
-                layer = self.get_default_layer_config(layer)
+            for idx,layer in enumerate(self.model.layers):
+                layer = self.get_default_layer_config(layer,idx)
                 self.layer_config['layers'].append(layer)
 
     def dump_layer_config (self):
@@ -138,7 +146,7 @@ class InitManager:
                 'adjacency_list_address_msb': 0,
                 'scale_factors_address_lsb': self.trained_graph.nx_graph.nodes[node_id]["meta"]['scale_factors_address'],
                 'scale_factors_address_msb': 0,
-                'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.trained_graph.feature_count * 4,
+                'out_messages_address_lsb': self.memory_mapper.offsets['out_messages'] + node_id * self.calc_axi_addr(self.trained_graph.feature_count),
                 'out_messages_address_msb': 0
             }
 
@@ -244,10 +252,52 @@ class InitManager:
         with torch.no_grad():
             embeddings = self.trained_graph.dataset.x
             output = self.model(self.trained_graph.dataset.x, self.trained_graph.dataset.edge_index)
-        np.savetxt(self.updated_embeddings_file, output.numpy(), delimiter=',')
+        np.savetxt(self.updated_embeddings_file, (output[-1]).numpy(), delimiter=',')
+
+    #Save JIT model for testbench
+    def save_model(self):
+        self.model.eval()
+        x = self.trained_graph.dataset.x  # Node features tensor
+        edge_index = self.trained_graph.dataset.edge_index  # Edge indices tensor
+
+        #Traced Model - allow TB to be compatible with GCNConv
+        jit_model = torch.jit.trace(self.model, (x, edge_index))
+        #Non-traced model
+        # jit_model = torch.jit.script(self.model).to('cpu')
+        torch.jit.save(jit_model, 'model.pt')
+
+        return jit_model
+
+    
+    #Save graph for testbench
+    def save_graph(self):
+        input_data = {
+            'x': self.trained_graph.dataset.x,  
+            'edge_index': self.trained_graph.dataset.edge_index  
+        }
+
+        torch.save({
+            'input_data': input_data
+        }, 'graph.pth')
+
+    def calc_axi_addr(self,feature_count):
+        return math.ceil(4*feature_count / data_width) * data_width
+    
+    # Function to get feature count of each layer
+    def get_feature_counts(self,model):
+        feature_counts = []
+        for layer in model.modules():
+            if isinstance(layer, torch.nn.Conv2d):
+                feature_counts.append(layer.out_channels)
+            elif isinstance(layer, torch.nn.Linear):
+                feature_counts.append(layer.out_features)
+        return feature_counts
 
     # Sampling
     # ===============================================
     
     def reduce_graph(self):
         self.trained_graph.reduce()
+    
+    def map(self):
+        self.memory_mapper.map()
