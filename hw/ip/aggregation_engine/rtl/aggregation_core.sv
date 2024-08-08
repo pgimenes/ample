@@ -35,15 +35,17 @@ module aggregation_core #(
 );
 
 parameter ALLOCATION_PKT_AGGR_FUNC_OFFSET = $clog2(top_pkg::MAX_NODESLOT_COUNT);
+parameter ALLOCATION_PKT_NUM_FEATURES_OFFSET = ALLOCATION_PKT_AGGR_FUNC_OFFSET + $bits(top_pkg::AGGREGATION_FUNCTION_e) ;
 
 parameter EXPECTED_FLITS_PER_PACKET = 1;
 
-typedef enum logic [3:0] {
+typedef enum logic [4:0] {
     AGC_FSM_IDLE,
     AGC_FSM_NODESLOT_ALLOCATION,
     AGC_FSM_WAIT_FEATURE_HEAD,
     AGC_FSM_WAIT_FEATURE_BODY,
     AGC_FSM_UPDATE_ACCS,
+    AGC_FSM_WAIT_UPDATE_ACCS,
     AGC_FSM_WAIT_BUFFER_REQ,
     AGC_FSM_SEND_BUFF_MAN,
     AGC_FSM_WAIT_DRAIN
@@ -118,6 +120,11 @@ logic [$clog2(FEATURE_COUNT/2)-1:0]             sent_flits_counter;
 logic                                           noc_router_waiting;
 
 logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]       scale_factor_q;
+
+
+logic [$clog2(top_pkg::MAX_FEATURE_COUNT)-1:0] num_features;
+logic [MESH_NODE_ID_WIDTH - 1 : 0] agc_loc;
+
 
 // ==================================================================================================================================================
 // Instantiations
@@ -202,6 +209,12 @@ always_comb begin
     end
     
     AGC_FSM_UPDATE_ACCS: begin
+        agc_state_n = feature_aggregator_in_feature_ready ? AGC_FSM_WAIT_UPDATE_ACCS
+                    : AGC_FSM_UPDATE_ACCS;
+    end
+
+
+    AGC_FSM_WAIT_UPDATE_ACCS: begin
         agc_state_n = 
                     // Updating last feature accumulator and last packet flag has already been received
                     (received_flits == EXPECTED_FLITS_PER_PACKET[3:0]) && &feature_updated && aggregation_manager_packet_last_q ? AGC_FSM_WAIT_BUFFER_REQ // updating final features
@@ -209,8 +222,9 @@ always_comb begin
                     // Updating last feature accumulator but packets still pending
                     : (received_flits == EXPECTED_FLITS_PER_PACKET[3:0]) && &feature_updated ? AGC_FSM_WAIT_FEATURE_HEAD
 
-                    : AGC_FSM_UPDATE_ACCS;
+                    : AGC_FSM_WAIT_UPDATE_ACCS;
     end
+    
     
     AGC_FSM_WAIT_BUFFER_REQ: begin
         agc_state_n = router_aggregation_core_valid && aggregation_manager_pkt && received_buffer_req_head && tail_packet && correct_pkt_dest ? AGC_FSM_SEND_BUFF_MAN
@@ -239,6 +253,7 @@ logic [noc_pkg::MESH_NODE_ID_WIDTH-1:0] packet_source;
 always_comb begin    
     head_packet = (router_aggregation_core_data.flit_label == noc_pkg::HEAD);
     tail_packet = (router_aggregation_core_data.flit_label == noc_pkg::TAIL);
+
 
     packet_source = router_aggregation_core_data.data.head_data.head_pl[noc_pkg::HEAD_PAYLOAD_SIZE-1 : noc_pkg::HEAD_PAYLOAD_SIZE-MESH_NODE_ID_WIDTH];    
     packet_source_col = packet_source[MESH_NODE_ID_WIDTH - 1 : MESH_NODE_ID_WIDTH - $clog2(noc_pkg::MAX_MESH_COLS)];
@@ -351,10 +366,23 @@ always_comb begin
                                             : sent_flits_counter == EXPECTED_FLITS_PER_PACKET[$clog2(FEATURE_COUNT/2)-1:0] ? noc_pkg::TAIL
                                             : noc_pkg::BODY;
 
-    aggregation_core_router_data.data.bt_pl = {buffer_manager_pkt_dest_col, buffer_manager_pkt_dest_row,
-                                                X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], // source node coordinates
-                                                bm_chosen_data };
-end
+    if (sent_flits_counter == '0) begin
+
+        aggregation_core_router_data.data.head_data.x_dest = {buffer_manager_pkt_dest_col};
+        aggregation_core_router_data.data.head_data.y_dest = {buffer_manager_pkt_dest_row};
+
+        agc_loc[MESH_NODE_ID_WIDTH - 1 : MESH_NODE_ID_WIDTH - $clog2(MAX_MESH_COLS)] = X_COORD[$clog2(MAX_MESH_COLS)-1:0]; 
+        agc_loc[$clog2(MAX_MESH_ROWS)-1:0] = Y_COORD[$clog2(MAX_MESH_ROWS)-1:0];
+
+        aggregation_core_router_data.data.head_data.head_pl[noc_pkg::HEAD_PAYLOAD_SIZE-1 : noc_pkg::HEAD_PAYLOAD_SIZE-MESH_NODE_ID_WIDTH] = agc_loc;
+       
+        aggregation_core_router_data.data.head_data.head_pl[noc_pkg::HEAD_PAYLOAD_SIZE-MESH_NODE_ID_WIDTH- 1 : noc_pkg::HEAD_PAYLOAD_SIZE-MESH_NODE_ID_WIDTH - $bits(num_features)] = {num_features};
+
+
+    end else begin
+        aggregation_core_router_data.data.bt_pl = {bm_chosen_data};
+    end
+end 
 
 // Nodeslot allocation
 // --------------------------------------------
@@ -384,6 +412,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
                                                 : router_aggregation_core_data.data.bt_pl [ALLOCATION_PKT_AGGR_FUNC_OFFSET + $bits(top_pkg::AGGREGATION_FUNCTION_e) - 1 : ALLOCATION_PKT_AGGR_FUNC_OFFSET] == 2'd1 ? top_pkg::MEAN
                                                 : router_aggregation_core_data.data.bt_pl [ALLOCATION_PKT_AGGR_FUNC_OFFSET + $bits(top_pkg::AGGREGATION_FUNCTION_e) - 1 : ALLOCATION_PKT_AGGR_FUNC_OFFSET] == 2'd2 ? top_pkg::WEIGHTED_SUM
                                                 : AGGR_FUNC_RESERVED;
+
+        num_features <= router_aggregation_core_data.data.bt_pl [ALLOCATION_PKT_NUM_FEATURES_OFFSET + $bits(top_pkg::MAX_FEATURE_COUNT) - 1 : ALLOCATION_PKT_NUM_FEATURES_OFFSET];  
 
     end
 end

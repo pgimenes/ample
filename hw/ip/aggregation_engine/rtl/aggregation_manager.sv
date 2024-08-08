@@ -8,55 +8,56 @@ module aggregation_manager #(
     parameter AGGREGATION_ROWS = noc_pkg::MAX_AGGREGATION_ROWS,
     parameter AGGREGATION_COLS = noc_pkg::MAX_AGGREGATION_COLS
 ) (
-    input logic                                                 core_clk,
-    input logic                                                 resetn,
+    input logic                                                         core_clk,
+    input logic                                                         resetn,
 
     // AGE requests
-    input  logic                                                age_aggregation_manager_req_valid,
-    output logic                                                age_aggregation_manager_req_ready,
-    input  AGE_AGM_REQ_t                                        age_aggregation_manager_req,
+    input  logic                                                        age_aggregation_manager_req_valid,
+    output logic                                                        age_aggregation_manager_req_ready,
+    input  AGE_AGM_REQ_t                                                age_aggregation_manager_req,
 
     // Done signals to pulse NSB response
-    output logic                                                aggregation_manager_age_done_valid,
-    input  logic                                                aggregation_manager_age_done_ready,
+    output logic                                                        aggregation_manager_age_done_valid,
+    input  logic                                                        aggregation_manager_age_done_ready,
 
     // Buffer Manager Allocation
-    input  logic                                                age_aggregation_manager_buffer_manager_allocation_valid,
-    output logic                                                age_aggregation_manager_buffer_manager_allocation_ready,
-    input  logic [$clog2(AGGREGATION_ROWS)-1:0]                 age_aggregation_manager_buffer_manager_allocation,
+    input  logic                                                        age_aggregation_manager_buffer_manager_allocation_valid,
+    output logic                                                        age_aggregation_manager_buffer_manager_allocation_ready,
+    input  logic [$clog2(AGGREGATION_ROWS)-1:0]                         age_aggregation_manager_buffer_manager_allocation,
 
     // Message Channel: AGE -> Prefetcher (request)
-    output logic                                                message_channel_req_valid,
-    input  logic                                                message_channel_req_ready,
-    output MESSAGE_CHANNEL_REQ_t                                message_channel_req,
+    output logic                                                        message_channel_req_valid,
+    input  logic                                                        message_channel_req_ready,
+    output MESSAGE_CHANNEL_REQ_t                                        message_channel_req,
     
     // Message Channel: Prefetcher -> AGE (response)
-    input  logic                                                message_channel_resp_valid,
-    output logic                                                message_channel_resp_ready,
-    input  MESSAGE_CHANNEL_RESP_t                               message_channel_resp,
+    input  logic                                                        message_channel_resp_valid,
+    output logic                                                        message_channel_resp_ready,
+    input  MESSAGE_CHANNEL_RESP_t                                       message_channel_resp,
 
     // Aggregation Manager -> Router
-    input  logic                                                aggregation_manager_router_on,
-    output logic                                                aggregation_manager_router_valid,
-    input  logic                                                aggregation_manager_router_ready,
-    output flit_t                                               aggregation_manager_router_data,
+    input  logic                                                        aggregation_manager_router_on,
+    output logic                                                        aggregation_manager_router_valid,
+    input  logic                                                        aggregation_manager_router_ready,
+    output flit_t                                                       aggregation_manager_router_data,
 
     // Router -> Aggregation Manager
-    output logic                                                router_aggregation_manager_on,
-    input  logic                                                router_aggregation_manager_valid,
-    output logic                                                router_aggregation_manager_ready,
-    input  flit_t                                               router_aggregation_manager_data,
+    output logic                                                        router_aggregation_manager_on,
+    input  logic                                                        router_aggregation_manager_valid,
+    output logic                                                        router_aggregation_manager_ready,
+    input  flit_t                                                       router_aggregation_manager_data,
 
     // Output AGM allocation payloads for AGE visibility
-    output NSB_AGE_REQ_t                                        agm_allocation,
-    output logic [MAX_AGC_COUNT-1:0]                            agm_allocated_agcs,
-    output logic [$clog2(MAX_AGC_PER_NODE)-1:0]                 agm_allocated_agcs_count,
-    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_COLS)-1:0] coords_buffer_x,
-    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_ROWS)-1:0] coords_buffer_y,
+    output NSB_AGE_REQ_t                                                agm_allocation,
+    output logic [MAX_AGC_COUNT-1:0]                                    agm_allocated_agcs,
+    output logic [$clog2(MAX_AGC_PER_NODE)-1:0]                         agm_allocated_agcs_count,
+    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_COLS)-1:0]     coords_buffer_x,
+    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_MESH_ROWS)-1:0]     coords_buffer_y,
+    output logic [MAX_AGC_PER_NODE-1:0] [$clog2(MAX_FEATURE_COUNT)-1:0] num_features_buffer,
 
-    output logic                                                scale_factor_queue_pop,
-    input  logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]            scale_factor_queue_out_data,
-    input  logic                                                scale_factor_queue_out_valid
+    output logic                                                        scale_factor_queue_pop,
+    input  logic [SCALE_FACTOR_QUEUE_READ_WIDTH-1:0]                    scale_factor_queue_out_data,
+    input  logic                                                        scale_factor_queue_out_valid
 );
 
 typedef enum logic [4:0] {
@@ -285,8 +286,8 @@ always_comb begin
                                             // Tail packet contains aggregation function and nodeslot
                                             agc_pkt_head_sent ? {coords_buffer_x[coord_ptr], coords_buffer_y[coord_ptr],
                                                                         X_COORD[$clog2(MAX_MESH_COLS)-1:0], Y_COORD[$clog2(MAX_MESH_ROWS)-1:0], // source node coordinates
-                                                                        {(PAYLOAD_DATA_WIDTH - $bits(AGGREGATION_FUNCTION_e) - $bits(agm_allocation.nodeslot)){1'b0}}, // 56 zeros
-                                                                        agm_allocation.aggregation_function, agm_allocation.nodeslot
+                                                                        {(PAYLOAD_DATA_WIDTH - $bits(AGGREGATION_FUNCTION_e) - $bits(agm_allocation.nodeslot)- $bits(num_features_buffer[coord_ptr])){1'b0}}, 
+                                                                        num_features_buffer[coord_ptr],agm_allocation.aggregation_function, agm_allocation.nodeslot
                                                                     }
                                             
                                             // Head packet contains packet type and last flag (always set to 1 for allocation packets)
@@ -355,6 +356,7 @@ always_ff @(posedge core_clk or negedge resetn) begin
         coords_buffer_x    <= '0;
         coords_buffer_y    <= '0;
         coord_ptr          <= '0;
+        // num_features       <= '0;
         
         agc_pkt_head_sent <= '0;
 
@@ -364,6 +366,8 @@ always_ff @(posedge core_clk or negedge resetn) begin
         coords_buffer_y      <= age_aggregation_manager_req.coords_y;
         coord_ptr            <= '0;
         
+        num_features_buffer      <= age_aggregation_manager_req.num_features;
+
         agc_pkt_head_sent <= '0;
 
     // Sending final flit into network
